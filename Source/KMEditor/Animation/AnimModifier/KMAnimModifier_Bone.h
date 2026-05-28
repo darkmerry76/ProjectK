@@ -1,0 +1,154 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AnimationModifier.h"
+#include "KMAnimModifier_Bone.generated.h"
+
+UENUM(BlueprintType)
+enum class EKM_BoneTransformType : uint8
+{
+	TRANS_X,
+	TRANS_Y,
+	TRANS_Z,
+	SCALE_X,
+	SCALE_Y,
+	SCALE_Z,
+	ROTATION_X,
+	ROTATION_Y,
+	ROTATION_Z,
+};
+
+UENUM(BlueprintType)
+enum class EKM_OperatorType : uint8
+{
+	Set,
+	Add,
+	Subtract,
+	Multiply,
+	Divide,
+};
+
+UCLASS()
+class KMEDITOR_API UKMAnimModifier_Bone : public UAnimationModifier
+{
+	GENERATED_BODY()
+
+public:
+	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FName BoneName = FName("Root");
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FName TargetCurveName = NAME_None;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	EKM_BoneTransformType Type = EKM_BoneTransformType::TRANS_X;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	EKM_OperatorType OperatorType = EKM_OperatorType::Add; 
+};
+
+UCLASS()
+class KMEDITOR_API UKMAnimModifier_BoneToRoot : public UAnimationModifier
+{
+	GENERATED_BODY()
+
+public:
+	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FName BoneName = FName("Pelvis");
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	int32 X = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	int32 Y = 1;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	int32 Z = 2;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool CopyTranslateX = true;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool CopyTranslateY = true;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool CopyTranslateZ = true;
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FVector DefaultTranslate;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool DefaultTranslateX = true;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool DefaultTranslateY = true;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool DefaultTranslateZ = true;
+};
+
+UCLASS()
+class KMEDITOR_API UKMAnimModifier_BoneTransform : public UAnimationModifier
+{
+	GENERATED_BODY()
+
+public:
+	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FName BoneName = FName("Pelvis");
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FVector AddTransform = FVector(0.0f, 0.0f, 0.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FRotator AddRotator = FRotator(0.0f, 0.0f, 0.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FVector RotateScale = FVector::One();
+};
+
+UCLASS()
+class KMEDITOR_API UKMAnimModifier_FrameCut : public UAnimationModifier
+{
+	GENERATED_BODY()
+
+public:
+	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float StartFrame = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float EndFrame = 0.f;
+};
+
+struct FKMBoneInfo
+{
+	FKMBoneInfo() { };
+	int32 ParentBoneIndex = INDEX_NONE;
+	TArray<int32> ChildBoneIndices;
+	FName BoneName;
+};
+
+UCLASS()
+class UKMFixPelvisYawModifier : public UAnimationModifier
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FRotator OffsetRotator = FRotator(0.f, 180, 0.f);
+
+	TArray<FKMBoneInfo> BoneInfos;
+
+public:
+	virtual void OnApply_Implementation(UAnimSequence* animationSequence) override;
+
+private:
+	void FixedWorldPose(UAnimSequence* animationSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms);
+	void CreateBoneInfo(const UAnimSequence* animationSequence, TArray<FKMBoneInfo>& outBoneInfos);
+};

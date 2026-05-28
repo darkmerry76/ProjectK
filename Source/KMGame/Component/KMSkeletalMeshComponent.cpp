@@ -1,0 +1,61 @@
+#include "KMSkeletalMeshComponent.h"
+#include "Core/KMParameterLayerSystem.h"
+
+UKMSkeletalMeshComponent::UKMSkeletalMeshComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+void UKMSkeletalMeshComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
+	{
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> parameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(this);
+		check(parameterLayer.IsValid());
+	}
+}
+
+void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+	Super::EndPlay(endPlayReason);
+
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
+	{
+		parameterLayerSubsystem->OnComponentRemoved(this);
+	}
+}
+
+void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterface* material)
+{
+	Super::SetMaterial(elementIndex, material);
+
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
+	{
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> parameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(this);
+		if (parameterLayer.IsValid())
+		{
+			parameterLayer->SetMaterial(elementIndex, material);
+		}
+	}
+}
+
+void UKMSkeletalMeshComponent::FinalizeBoneTransform()
+{
+	Super::FinalizeBoneTransform();
+}
+
+void UKMSkeletalMeshComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)
+{
+	Super::TickComponent(deltaTime, tickType, thisTickFunction);
+
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
+	{
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> parameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(this);
+		if (parameterLayer.IsValid())
+		{
+			parameterLayer->ApplyMaterialParameter();
+		}
+	}
+}

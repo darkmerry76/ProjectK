@@ -1,0 +1,66 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Runtime/Engine/Classes/Engine/DataTable.h"
+#include "EMDataTable.h"
+#include "KMTableEnums.h"
+#include "KMTableStructures.h"
+#include "KMTable_RecommendContent.generated.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FKMTable_RecommendContentRow
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+USTRUCT(BlueprintType)
+struct FKMTable_RecommendContentRow : public FEM_TableBaseRow
+{
+	GENERATED_USTRUCT_BODY()
+
+	// 추천콘텐츠 Id
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName                Id = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                UnlockId = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                RecommendIconId = { NAME_None };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	inline virtual void PostLoadRowTable() override;
+
+	inline static const FKMTable_RecommendContentRow* FindRowPtr(FName IdKey);
+	inline static const FKMTable_RecommendContentRow& FindRow(FName IdKey);
+	inline static FString MakeTableKeyToString(FName IdKey);
+
+	static const int32   RefTableIndex = 34;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// KMTable_RecommendContent Inline
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void FKMTable_RecommendContentRow::PostLoadRowTable()
+{
+	BaseScriptStruct = this->StaticStruct();
+}
+
+inline FString FKMTable_RecommendContentRow::MakeTableKeyToString(FName IdKey)
+{
+	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey);
+}
+
+inline const FKMTable_RecommendContentRow* FKMTable_RecommendContentRow::FindRowPtr(FName IdKey)
+{
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_RecommendContentRow>(*MakeTableKeyToString(IdKey));
+}
+
+inline const FKMTable_RecommendContentRow& FKMTable_RecommendContentRow::FindRow(FName IdKey)
+{
+	return *FindRowPtr(IdKey);
+}
+

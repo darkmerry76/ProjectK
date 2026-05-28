@@ -1,0 +1,22 @@
+#pragma once
+
+#include "EMTableGenerator.h"
+#include "EMTableExport.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// EMTableExportJson
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class EMTableExportJson : public EMTableExport
+{
+public:
+	EMTableExportJson();
+
+protected:
+	virtual bool DoExport() override;
+
+protected:
+	bool SingleExport();
+	bool MergeExport();
+
+	FString ConvertJsonString(const class UDataTable* ExportDataTable);
+};

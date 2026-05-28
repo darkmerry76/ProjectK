@@ -1,0 +1,216 @@
+#include "KMUtil.h"
+#include <Tables/Generated/KMTable_Chapter.h>
+#include "AIController.h"
+#include "Character/KMCharacter.h"
+#include "GameObject/KMGhostInstance.h"
+#include "GameObject/KMHeroInstance.h"
+#include "GameObject/KMMonsterInstance.h"
+
+UKMCharacterInstance* UKMUtil::GetCharacterInstance(const AKMCharacter* character)
+{
+	check(IsValid(character) == true);
+
+	return character->GetCharacterInstance();
+}
+
+UKMCharacterInstance* UKMUtil::GetCharacterInstanceByController(const AAIController* controller)
+{
+	check(IsValid(controller) == true);
+
+	return GetCharacterInstance(Cast<AKMCharacter>(controller->GetPawn()));
+}
+
+void UKMUtil::GetMeshSnapShot(USkeletalMeshComponent* skeletalMeshComponent, FPoseSnapshot& outSnapShot)
+{
+	skeletalMeshComponent->SnapshotPose(outSnapShot);
+}
+
+bool UKMUtil::IsInTargetType(const TArray<EKMSkillTargetType>& TargetType,
+	const UKMCharacterInstance* ownerInstance, const UKMCharacterInstance* targetInstance)
+{
+	for (int32 targetTypeIndex = 0; targetTypeIndex < TargetType.Num(); ++targetTypeIndex)
+	{
+		switch (TargetType[targetTypeIndex])
+		{
+		case EKMSkillTargetType::Self:
+			if(ownerInstance == targetInstance)
+			{
+				return true;
+			}
+			break;
+		case EKMSkillTargetType::Hero:
+			if(IsValid(targetInstance) == true && targetInstance->IsA<UKMHeroInstance>() == true)
+			{
+				return true;
+			}
+			break;
+
+		case EKMSkillTargetType::Monster:
+			if(IsValid(targetInstance) == true && targetInstance->IsA<UKMMonsterInstance>() == true)
+			{
+				return true;
+			}
+			break;
+		case EKMSkillTargetType::Ghost:
+			if(IsValid(targetInstance) == true && targetInstance->IsA<UKMGhostInstance>() == true)
+			{
+				return true;
+			}
+			break;
+		default:break;
+		}
+	}
+	return false;
+}
+
+void UKMUtil::PutAllRigidBodiesToSleep(USkeletalMeshComponent* skeletalMeshComponent)
+{
+	skeletalMeshComponent->PutAllRigidBodiesToSleep();
+}
+
+void UKMUtil::WakeAllRigidBodies(USkeletalMeshComponent* skeletalMeshComponent)
+{
+	skeletalMeshComponent->WakeAllRigidBodies();
+}
+
+float UKMUtil::GetWorldSeconds(const UObject* worldContextObject)
+{
+	check(IsValid(worldContextObject));
+
+	return worldContextObject->GetWorld()->GetTimeSeconds();
+}
+
+FString UKMUtil::SecondsToHMSString(float seconds)
+{
+	int32 secondsint = static_cast<int32>(seconds);
+	
+	int32 hours = secondsint / 3600;
+	int32 min = (secondsint % 3600) / 60;
+	int32 sec = secondsint % 60;
+
+	return FString::Printf(TEXT("%02d:%02d:%02d"), hours,min,sec);
+}
+
+FVector2D UKMUtil::GetCameraToDirection2D(const FVector2D direction, const AController* controller)
+{
+	if (direction.IsNearlyZero())
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	if (!IsValid(controller))
+	{
+		return FVector2D::ZeroVector;
+	}
+	
+	const FRotator controlRotation = controller->GetControlRotation();
+	const FRotator yawRotation(0.f, controlRotation.Yaw, 0.f);
+
+	const FVector forward = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
+	const FVector right = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
+	const FVector moveDirection = (forward * direction.Y) + (right * direction.X);
+	return FVector2D(moveDirection.GetSafeNormal2D());
+}
+
+
+float UKMUtil::GetCircularAngle2D(const FVector2D direction)
+{
+	float angle = FMath::Atan2(direction.Y, direction.X);
+	float movementCircularDirection = FMath::Fmod((angle / (PI * 2.f)) + 1.f,1.f);
+	return movementCircularDirection;
+}
+
+float UKMUtil::GetCircularAngle2D8Way(const FVector2D direction)
+{
+	float circularAngle = GetCircularAngle2D(direction);
+	const float step = 1.f / 8.f;
+
+	float snappedCircularAngle = FMath::RoundToFloat(circularAngle / step) * step;
+
+	if (FMath::IsNearlyEqual(snappedCircularAngle, 1.f))
+	{
+		snappedCircularAngle = 0.f;
+	}
+
+	return snappedCircularAngle;
+}
+
+float UKMUtil::FInterpToCircular(float currentValue, float targetValue, float deltaTime, float interpSpeed)
+{
+	if (interpSpeed <= 0.f)
+	{
+		return targetValue;
+	}
+
+	float currentYaw = currentValue * 360.f;
+	float targetYaw = targetValue * 360.f;
+
+	float deltaYaw = FMath::FindDeltaAngleDegrees(currentYaw, targetYaw);
+	float desiredYaw = currentYaw + deltaYaw;
+
+	float resultYaw = FMath::FInterpTo(currentYaw, desiredYaw, deltaTime, interpSpeed);
+	return FMath::Fmod((resultYaw / 360.f) + 1.f,1.f);
+}
+
+float UKMUtil::InverseCircularDirection(float circularDirection)
+{
+	return FMath::Fmod(circularDirection + 0.5f,1.f);
+}
+
+float UKMUtil::GetRelativeCircularDirectionDegrees(float baseCircularDirection, float targetCircularDirection)
+{
+	const float baseYaw = baseCircularDirection * 360.f;
+	const float targetYaw = targetCircularDirection * 360.f;
+	return FMath::FindDeltaAngleDegrees(baseYaw, targetYaw);
+}
+
+EKM8WayDirection UKMUtil::ConvertDegreesTo8WayDirection(float baseCircularDirection, float targetCircularDirection)
+{
+	const float relativeDegrees = GetRelativeCircularDirectionDegrees(baseCircularDirection, targetCircularDirection);
+
+	switch (FMath::RoundToInt(relativeDegrees / 45.f))
+	{
+	case 0: return EKM8WayDirection::Angle_0;
+	case 1: return EKM8WayDirection::Angle_L45;
+	case 2: return EKM8WayDirection::Angle_L90;
+	case 3: return EKM8WayDirection::Angle_L135;
+	case 4: return EKM8WayDirection::Angle_180;
+	case -1: return EKM8WayDirection::Angle_R45;
+	case -2: return EKM8WayDirection::Angle_R90;
+	case -3: return EKM8WayDirection::Angle_R135;
+	case -4: return EKM8WayDirection::Angle_180;
+		default:break;
+	}
+	
+	return EKM8WayDirection::Angle_0;
+}
+
+float UKMUtil::Get8WayDirectionYaw(EKM8WayDirection direction)
+{
+	switch (direction)
+	{
+	case EKM8WayDirection::Angle_0: return 0.f;
+	case EKM8WayDirection::Angle_L45: return -45.f;
+	case EKM8WayDirection::Angle_L90: return -90.f;
+	case EKM8WayDirection::Angle_L135: return -135.f;
+	case EKM8WayDirection::Angle_180: return 180.f;
+	case EKM8WayDirection::Angle_R45: return 45;
+	case EKM8WayDirection::Angle_R90: return 90;
+	case EKM8WayDirection::Angle_R135: return 135;
+	default : break;
+	}
+	return 0.f;
+}
+
+FRotator UKMUtil::GetYawRotation(const FVector& baseDirection, float yawAngle)
+{
+	FVector normalizedDirection = baseDirection;
+	normalizedDirection.Z = 0.f;
+	normalizedDirection.Normalize();
+
+	float baseYaw = normalizedDirection.Rotation().Yaw;
+
+	float finalYaw = baseYaw + yawAngle;
+
+	return FRotator(0.f, finalYaw, 0.f);
+}

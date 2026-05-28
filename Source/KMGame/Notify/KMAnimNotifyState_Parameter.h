@@ -1,0 +1,23 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "KMAnimNotifyState.h"
+#include "StructUtils/InstancedStruct.h"
+#include "KMAnimNotifyState_Parameter.generated.h"
+
+UCLASS(Blueprintable, BlueprintType)
+class KMGAME_API UKMAnimNotifyState_Parameter : public UKMAnimNotifyState
+{
+	GENERATED_UCLASS_BODY()
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<TInstancedStruct<struct FKMParameterBase>> Parameters;
+
+public:
+	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
+
+	FName GetLayerName() const;
+};
