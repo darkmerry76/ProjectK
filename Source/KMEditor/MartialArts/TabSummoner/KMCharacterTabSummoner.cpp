@@ -12,9 +12,9 @@ FKMCharacterTabSummoner::FKMCharacterTabSummoner(TSharedPtr<FAssetEditorToolkit>
 
 TSharedRef<SWidget> FKMCharacterTabSummoner::CreateOutliner() const
 {
-	FEMCreateOutlinerMode modeFactory = FEMCreateOutlinerMode::CreateLambda([](SEMOutliner* Outliner)
+	FEMCreateOutlinerMode modeFactory = FEMCreateOutlinerMode::CreateLambda([](SEMOutliner* outliner)
 	{
-		return new FKMCharacterOutlinerMode(Outliner);
+		return new FKMCharacterOutlinerMode(outliner);
 	});
 	
 	FEMOutlinerInitializationOptions outlinerOptions;

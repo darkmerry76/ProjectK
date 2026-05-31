@@ -36,7 +36,10 @@ public class KMEditor : ModuleRules
 			"ApplicationCore",
 			"EMMartialArts",
 			"EMMartialArtsEditor",
-			"Persona"
+			"Persona",
+			"GameplayTags"
 		});
+		
+		PublicIncludePaths.Add("KMEditor");
 }
 }

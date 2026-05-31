@@ -6,6 +6,7 @@
 #include "ComponentVisualizer/KMSpringArmComponentVisualizer.h"
 #include "Editor/UnrealEdEngine.h"
 #include "MartialArts/KMMartialArtsEditor.h"
+#include "PropertyCustomization/EMAnimationSetPropertyCustomization.h"
 
 void FKMEditorModule::StartupModule()
 {
@@ -23,6 +24,12 @@ void FKMEditorModule::StartupModule()
 		{
 			return MakeShared<FKMMartialArtsEditor>();
 		});
+
+		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		PropertyModule.RegisterCustomPropertyTypeLayout("EMAnimationSetTag",
+	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FKMChooserPropertyCustomization::MakeInstance));
+
+PropertyModule.NotifyCustomizationModuleChanged();
 	});
 
 }

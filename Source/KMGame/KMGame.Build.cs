@@ -28,7 +28,8 @@ public class KMGame : ModuleRules
 			"GameplayTags",
 			"EMCurveWarping",
 			"MotionWarping",
-			"Niagara"
+			"Niagara",
+			"EMMartialArts"
 		});
 		
 		if (Target.Platform == UnrealTargetPlatform.Android)
