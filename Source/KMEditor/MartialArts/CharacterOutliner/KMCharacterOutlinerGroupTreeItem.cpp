@@ -1,5 +1,5 @@
 #include "KMCharacterOutlinerGroupTreeItem.h"
-#include "EMMartialArtsUtil.h"
+#include "EMMartialArtsEditorUtil.h"
 
 const FEMOutlinerTreeItemType FKMCharacterOutlinerGroupTreeItem::Type(&IEMOutlinerTreeItem::Type);
 FKMCharacterOutlinerGroupTreeItem::FKMCharacterOutlinerGroupTreeItem(const FFolder& folder, FEMOutlinerTreeItemType type) : FEMOutlinerFolderTreeItem(folder, type)
@@ -43,7 +43,7 @@ bool SKMCharacterOutlinerGroupTreeItem::OnVerifyItemLabelChanged(const FText& la
 	}
 	else
 	{
-		bIsValidLabel = UEMMartialArtsUtil::IsValidAssetName(label.ToString());
+		bIsValidLabel = UEMMartialArtsEditorUtil::IsValidAssetName(label.ToString());
 	}
 	bIsValidLabel &= !label.IsEmpty();
 	if (!bIsValidLabel)

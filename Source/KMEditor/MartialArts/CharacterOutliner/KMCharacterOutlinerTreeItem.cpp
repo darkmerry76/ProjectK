@@ -1,5 +1,5 @@
 #include "KMCharacterOutlinerTreeItem.h"
-#include "EMMartialArtsUtil.h"
+#include "EMMartialArtsEditorUtil.h"
 #include "Animation/SkeletalMeshActor.h"
 #include "Styling/SlateIconFinder.h"
 
@@ -43,7 +43,7 @@ bool SKMCharacterOutlinerTreeItem::OnVerifyItemLabelChanged(const FText& label, 
 	}
 	else
 	{
-		bIsValidLabel = UEMMartialArtsUtil::IsValidAssetName(label.ToString());
+		bIsValidLabel = UEMMartialArtsEditorUtil::IsValidAssetName(label.ToString());
 	}
 
 	bIsValidLabel &= !label.IsEmpty();

@@ -12,9 +12,9 @@ FKMMartialArtsEditor::~FKMMartialArtsEditor()
 	}
 }
 
-void FKMMartialArtsEditor::InitAnimationEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset)
+void FKMMartialArtsEditor::InitEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset)
 {
-	FEMMartialArtsEditor::InitAnimationEditor(mode, initToolkitHost, animationAsset);
+	FEMMartialArtsEditor::InitEditor(mode, initToolkitHost, animationAsset);
 
 	if (!FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.IsBoundToObject(this))
 	{

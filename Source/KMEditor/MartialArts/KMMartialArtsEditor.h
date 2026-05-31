@@ -9,7 +9,7 @@ public:
 	virtual ~FKMMartialArtsEditor() override;
 	
 protected:
-	virtual void InitAnimationEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset) override;
+	virtual void InitEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset) override;
 	virtual TSharedPtr<class FEMMartialArtsEditorMode> CreateEditorMode() override;
 
 	void OnCharacterelected(const struct FKMTable_CharacterRow* newCharacterTable);
