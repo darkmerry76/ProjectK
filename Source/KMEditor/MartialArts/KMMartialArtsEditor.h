@@ -12,5 +12,18 @@ protected:
 	virtual void InitEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset) override;
 	virtual TSharedPtr<class FEMMartialArtsEditorMode> CreateEditorMode() override;
 
-	void OnCharacterelected(const struct FKMTable_CharacterRow* newCharacterTable);
+	virtual void AddReferencedObjects(FReferenceCollector& collector) override;
+
+	void OnOwnerCharacterelected(const struct FKMTable_CharacterRow* newCharacterTable);
+	void AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable);
+
+	void SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable);
+
+protected:
+	class UKMCharacterInstance* SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
+	bool DestroyCharacterInstance(class UKMCharacterInstance* characterInstance);
+
+protected:
+	TObjectPtr<class UKMCharacterInstance> OwnerCharacterInstance;
+	TArray<TObjectPtr<class UKMCharacterInstance>> TargetCharacterInstances;
 };

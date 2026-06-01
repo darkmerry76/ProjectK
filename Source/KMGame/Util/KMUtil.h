@@ -62,4 +62,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	static FRotator GetYawRotation(const FVector& baseDirection, float yawAngle);
+
+	UFUNCTION(BlueprintCallable)
+	static class UKMCharacterInstance* SpawnCharacterObjectById(UObject* worldContextObject, FName characterTableId, const FTransform transform = FTransform());
+	
+	static class UKMCharacterInstance* SpawnCharacterObjectByTable(UObject* worldContextObject, const FKMTable_CharacterRow* characterTable, const FTransform& transform = FTransform::Identity); 
 };

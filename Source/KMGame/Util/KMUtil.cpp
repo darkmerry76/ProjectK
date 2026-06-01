@@ -2,6 +2,9 @@
 #include <Tables/Generated/KMTable_Chapter.h>
 #include "AIController.h"
 #include "Character/KMCharacter.h"
+#include "DataAsset/KMAssetManager.h"
+#include "DataAsset/KMCharacterPDA.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
@@ -213,4 +216,49 @@ FRotator UKMUtil::GetYawRotation(const FVector& baseDirection, float yawAngle)
 	float finalYaw = baseYaw + yawAngle;
 
 	return FRotator(0.f, finalYaw, 0.f);
+}
+
+UKMCharacterInstance* UKMUtil::SpawnCharacterObjectById(UObject* worldContextObject, FName characterTableId, const FTransform transform)
+{
+	const FKMTable_CharacterRow* characterTable = FKMTable_CharacterRow::FindRowPtr(characterTableId);
+	check (characterTable != nullptr);
+
+	return SpawnCharacterObjectByTable(worldContextObject, characterTable, transform);
+}
+
+UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContextObject, const FKMTable_CharacterRow* characterTable, const FTransform& transform)
+{
+	if (!characterTable)
+	{
+		return nullptr;
+	}
+	
+	if (!IsValid(worldContextObject) || !worldContextObject->GetWorld())
+	{
+		return nullptr;
+	}
+	
+	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
+	check(IsValid(assetManager) == true);
+	
+	UKMCharacterPDA* characterPDA = Cast<UKMCharacterPDA>(assetManager->GetAsset(characterTable->pdaKey));
+	check(IsValid(characterPDA) == true);
+	
+	AKMCharacter* newCharacter = worldContextObject->GetWorld()->SpawnActorDeferred<AKMCharacter>(
+		characterPDA->CharacterClass, transform, nullptr, nullptr);
+	if(!IsValid(newCharacter))
+	{
+		return nullptr;
+	}
+
+	UKMCharacterInstance* newCharacterInstance = NewObject<UKMCharacterInstance>(newCharacter, characterPDA->InstanceClass);
+	newCharacterInstance->SetDepthSort(transform.GetLocation().X);
+	newCharacterInstance->SetTable(characterTable);
+	newCharacterInstance->SetTransform(transform);
+
+	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
+	newCharacter->FinishSpawning(transform, false);
+	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	
+	return newCharacterInstance;
 }

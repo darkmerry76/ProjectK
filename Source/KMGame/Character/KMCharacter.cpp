@@ -1,13 +1,11 @@
 #include "KMCharacter.h"
 
-#include "MotionWarpingComponent.h"
-#include "../../../Plugins/EMCurveWarping/Source/EMCurveWarping/Public/EMCurveWarpingComponent.h"
+#include "EMMartialArtsComponent.h"
+#include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
-#include "Animation/AnimSet/KMAnimationSetSkill.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Curves/CurveVector.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMItemPDA.h"
 #include "GameObject/KMGameObjectInstance.h"
@@ -20,7 +18,7 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 		SetDefaultSubobjectClass<UKMCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	CurveWarping  = CreateDefaultSubobject<UEMCurveWarpingComponent>(TEXT("CurveWarping"));
-
+	MartialArtsComponent = CreateDefaultSubobject<UEMMartialArtsComponent>(TEXT("MartialArts"));
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{
 		characterMovement->CustomMovementDelegate.AddDynamic(CurveWarping, &UEMCurveWarpingComponent::OnCustomMovement);
@@ -55,6 +53,16 @@ void AKMCharacter::BeginPlay()
 
 		WeaponInstance->Equip(GetMesh(), TEXT("Bip001-L-Hand"));
 	}
+}
+
+void AKMCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+	Super::EndPlay(endPlayReason);
+}
+
+UEMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
+{
+	return MartialArtsComponent;
 }
 
 void AKMCharacter::SetMirror(bool bMirror)

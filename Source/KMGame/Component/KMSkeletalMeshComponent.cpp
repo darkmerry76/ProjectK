@@ -9,7 +9,12 @@ UKMSkeletalMeshComponent::UKMSkeletalMeshComponent(const FObjectInitializer& obj
 void UKMSkeletalMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+void UKMSkeletalMeshComponent::OnRegister()
+{
+	Super::OnRegister();
+	
 	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
 	{
 		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> parameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(this);
@@ -17,14 +22,19 @@ void UKMSkeletalMeshComponent::BeginPlay()
 	}
 }
 
-void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
+void UKMSkeletalMeshComponent::OnUnregister()
 {
-	Super::EndPlay(endPlayReason);
-
+	Super::OnUnregister();
+	
 	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(this))
 	{
 		parameterLayerSubsystem->OnComponentRemoved(this);
 	}
+}
+
+void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+	Super::EndPlay(endPlayReason);
 }
 
 void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterface* material)

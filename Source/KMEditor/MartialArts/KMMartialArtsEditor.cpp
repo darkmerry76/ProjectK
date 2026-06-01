@@ -1,6 +1,11 @@
 #include "KMMartialArtsEditor.h"
+#include "EMMartialArts.h"
+#include "EMMartialArtsComponent.h"
+#include "EMMartialArtsEditorModule.h"
 #include "KMMartialArtsEditorMode.h"
+#include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
+#include "Util/KMUtil.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
 
@@ -18,7 +23,7 @@ void FKMMartialArtsEditor::InitEditor(const EToolkitMode::Type mode, const TShar
 
 	if (!FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.IsBoundToObject(this))
 	{
-		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnCharacterelected);
+		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnOwnerCharacterelected);
 	}
 }
 
@@ -27,8 +32,98 @@ TSharedPtr<FEMMartialArtsEditorMode> FKMMartialArtsEditor::CreateEditorMode()
 	return MakeShared<FKMMartialArtsEditorMode>(SharedThis(this), SkeletonTree.ToSharedRef());
 }
 
-void FKMMartialArtsEditor::OnCharacterelected(const FKMTable_CharacterRow* newCharacterTable)
+void FKMMartialArtsEditor::AddReferencedObjects(FReferenceCollector& collector)
 {
+	FEMMartialArtsEditor::AddReferencedObjects(collector);
+
+	collector.AddReferencedObject(OwnerCharacterInstance);
+	collector.AddReferencedObjects(TargetCharacterInstances);
+}
+
+UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform)
+{
+	UWorld* world = GetWorld();
+	if (!IsValid(world))
+	{
+		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::SpawnCharacter world == nullptr"));
+		return nullptr;
+	}
+
+	UKMCharacterInstance* spwnCharacterInstance = UKMUtil::SpawnCharacterObjectByTable(world, characterTable, spawnedTransform);
+	if (!IsValid(spwnCharacterInstance))
+	{
+		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::SpawnCharacter spwnCharacterInstance == nullptr"));
+		return nullptr;
+	}
+	
+	return spwnCharacterInstance;
+}
+
+bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* characterInstance)
+{
+	UWorld* world = GetWorld();
+	if (!IsValid(world))
+	{
+		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::DestroyCharacter world == nullptr"));
+		return false;
+	}
+
+	if (OwnerCharacterInstance == characterInstance)
+	{
+		OwnerCharacterInstance->EndPlay();
+		OwnerCharacterInstance = nullptr;
+	}
+	
+	int32 targetCharacterIndex = TargetCharacterInstances.Find(characterInstance);
+	if (targetCharacterIndex != INDEX_NONE)
+	{
+		if (!IsValid(TargetCharacterInstances[targetCharacterIndex]))
+		{
+			TargetCharacterInstances[targetCharacterIndex]->EndPlay();
+		}
+		TargetCharacterInstances.RemoveAt(targetCharacterIndex);
+	}
+
+	return true;
+}
+
+void FKMMartialArtsEditor::OnOwnerCharacterelected(const FKMTable_CharacterRow* newCharacterTable)
+{
+	SpawnOwnerCharacterInstance(newCharacterTable);	
+}
+
+void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable)
+{
+	if (IsValid(OwnerCharacterInstance))
+	{
+		if (DestroyCharacterInstance(OwnerCharacterInstance))
+		{
+			OwnerCharacterInstance = nullptr;
+		}
+	}
+	
+	UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(characterTable);
+	if (!IsValid(spawnCharacterInstance))
+	{
+		return;
+	}
+	OwnerCharacterInstance = spawnCharacterInstance;
+	
+	if (AKMCharacter* character = Cast<AKMCharacter>(spawnCharacterInstance->GetCharacter()))
+	{
+		UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
+		check(IsValid(martialArtsComponent));
+
+		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(AnimationAsset))
+		{
+			martialArtsComponent->Play(martialArts, nullptr);
+		}
+	}
+}
+
+void FKMMartialArtsEditor::AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable)
+{
+	
 }
 
 #undef LOCTEXT_NAMESPACE

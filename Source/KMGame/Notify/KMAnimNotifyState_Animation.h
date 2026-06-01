@@ -27,5 +27,10 @@ protected:
 	FEMAnimationSetTag AnimationSetTag;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify)
-	TObjectPtr<class UAnimMontage> Montage; 
+	TObjectPtr<class UAnimMontage> Montage;
+
+protected:
+	virtual void NotifyBegin(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyTick(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyEnd(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, const FAnimNotifyEventReference& eventReference) override;
 };

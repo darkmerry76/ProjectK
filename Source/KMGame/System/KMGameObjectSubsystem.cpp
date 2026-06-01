@@ -95,6 +95,7 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(transform, false);
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	
 	AddGameObject(newCharacterInstance);
 
 	return newCharacterInstance;

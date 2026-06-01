@@ -25,6 +25,9 @@ public:
 	TObjectPtr<class UEMCurveWarpingComponent> CurveWarping;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UEMMartialArtsComponent> MartialArtsComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -37,6 +40,8 @@ public:
 	class UKMCharacterInstance* GetCharacterInstance() const;
 	virtual void PossessedByCharacterInstance(class UEMGameObjectInstance* newCharacterInstance) override;
 
+	class UEMMartialArtsComponent* GetMartialArtsComponent() const;
+
 	class UEMCurveWarpingComponent* GetCurveWarping() const { return CurveWarping; }
 
 	void SetMirror(bool bMirror);
@@ -46,6 +51,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
 protected:
 	bool bIsMirror = false;

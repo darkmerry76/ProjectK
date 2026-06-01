@@ -74,12 +74,12 @@ void UKMCharacterInstance::EndPlay()
 {
 	Super::EndPlay();
 
-	if (IsValid(StatModifier) == true)
+	if (IsValid(StatModifier))
 	{
 		StatModifier->GetEffectiveStat().StatChange.RemoveAll(this);
 	}
 
-	if (Character.IsValid() == true)
+	if (Character.IsValid())
 	{
 		Character->Destroy();
 		Character = nullptr;
