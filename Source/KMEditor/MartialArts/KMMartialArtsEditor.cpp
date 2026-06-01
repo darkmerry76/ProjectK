@@ -1,7 +1,10 @@
 #include "KMMartialArtsEditor.h"
+
+#include "EMAnimationEditorPreviewActor.h"
 #include "EMMartialArts.h"
 #include "EMMartialArtsComponent.h"
 #include "EMMartialArtsEditorModule.h"
+#include "IPersonaPreviewScene.h"
 #include "KMMartialArtsEditorMode.h"
 #include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
@@ -94,10 +97,15 @@ void FKMMartialArtsEditor::OnOwnerCharacterelected(const FKMTable_CharacterRow* 
 
 void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable)
 {
+	AEMAnimationEditorPreviewActor* previewActor = Cast<AEMAnimationEditorPreviewActor>(GetPreviewScene()->GetActor());
 	if (IsValid(OwnerCharacterInstance))
 	{
 		if (DestroyCharacterInstance(OwnerCharacterInstance))
 		{
+			if (IsValid(previewActor))
+			{
+				previewActor->SetAdjustCharacter(OwnerCharacterInstance->GetCharacter());
+			}
 			OwnerCharacterInstance = nullptr;
 		}
 	}
@@ -108,9 +116,15 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 		return;
 	}
 	OwnerCharacterInstance = spawnCharacterInstance;
-	
+
+	if (IsValid(previewActor))
+	{
+		previewActor->SetAdjustCharacter(OwnerCharacterInstance->GetCharacter());
+	}
+
 	if (AKMCharacter* character = Cast<AKMCharacter>(spawnCharacterInstance->GetCharacter()))
 	{
+
 		UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
 		check(IsValid(martialArtsComponent));
 
