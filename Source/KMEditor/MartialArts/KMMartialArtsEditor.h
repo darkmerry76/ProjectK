@@ -13,6 +13,7 @@ protected:
 	virtual TSharedPtr<class FEMMartialArtsEditorMode> CreateEditorMode() override;
 
 	virtual void AddReferencedObjects(FReferenceCollector& collector) override;
+	virtual FSphere GetCameraTargetSphere() const override;
 
 	void OnOwnerCharacterelected(const struct FKMTable_CharacterRow* newCharacterTable);
 	void AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable);

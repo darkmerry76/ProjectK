@@ -1,13 +1,15 @@
 #include "KMMartialArtsEditor.h"
-
 #include "EMAnimationEditorPreviewActor.h"
+#include "EMAnimationEditorViewportClient.h"
 #include "EMMartialArts.h"
 #include "EMMartialArtsComponent.h"
 #include "EMMartialArtsEditorModule.h"
 #include "IPersonaPreviewScene.h"
+#include "ISkeletonTree.h"
 #include "KMMartialArtsEditorMode.h"
 #include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
+#include "EMMartialArtsEditor/Private/EMMartialArtsEditorPreviewScene.h"
 #include "Util/KMUtil.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
@@ -95,6 +97,21 @@ void FKMMartialArtsEditor::OnOwnerCharacterelected(const FKMTable_CharacterRow* 
 	SpawnOwnerCharacterInstance(newCharacterTable);	
 }
 
+FSphere FKMMartialArtsEditor::GetCameraTargetSphere() const
+{
+	if (!IsValid(OwnerCharacterInstance))
+	{
+		return FEMMartialArtsEditor::GetCameraTargetSphere();
+	}
+	AKMCharacter* character = Cast<AKMCharacter>(OwnerCharacterInstance->GetCharacter());
+	if (!IsValid(character))
+	{
+		return FEMMartialArtsEditor::GetCameraTargetSphere();
+	}
+
+	return character->GetMesh()->CalcBounds(FTransform::Identity).GetSphere();
+}
+
 void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable)
 {
 	AEMAnimationEditorPreviewActor* previewActor = Cast<AEMAnimationEditorPreviewActor>(GetPreviewScene()->GetActor());
@@ -124,7 +141,6 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 
 	if (AKMCharacter* character = Cast<AKMCharacter>(spawnCharacterInstance->GetCharacter()))
 	{
-
 		UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
 		check(IsValid(martialArtsComponent));
 
@@ -133,7 +149,10 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 			martialArtsComponent->Play(martialArts, nullptr, 1.f, true);
 		}
 		martialArtsComponent->SetPause(true);
+		SkeletonTree->SetSkeletalMesh(character->GetMesh()->GetSkeletalMeshAsset());
+		static_cast<FEMAnimationViewportClient*>(ViewportClient.Get())->SetAdjustSkeletalMeshComponent(character->GetMesh());
 	}
+	FocusCamera();
 }
 
 void FKMMartialArtsEditor::AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable)
