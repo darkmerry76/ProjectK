@@ -104,7 +104,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 		{
 			if (IsValid(previewActor))
 			{
-				previewActor->SetAdjustCharacter(OwnerCharacterInstance->GetCharacter());
+				previewActor->SetAdjustCharacter(nullptr);
 			}
 			OwnerCharacterInstance = nullptr;
 		}
