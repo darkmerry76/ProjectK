@@ -9,7 +9,6 @@
 #include "KMMartialArtsEditorMode.h"
 #include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
-#include "EMMartialArtsEditor/Private/EMMartialArtsEditorPreviewScene.h"
 #include "Util/KMUtil.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
