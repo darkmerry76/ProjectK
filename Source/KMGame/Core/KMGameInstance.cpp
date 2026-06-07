@@ -5,7 +5,11 @@
 #include "Engine/GameViewportClient.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sequencer/EMCameraCacheManager.h"
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UKMGameInstance
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UKMGameInstance::UKMGameInstance() : Super()
 {
 	bIsInitLevel = false;
@@ -27,6 +31,9 @@ void UKMGameInstance::Init()
 {
 	Super::Init();
 
+	CameraCacheManager = MakeShared<FEMCameraCacheManager>();
+	CameraCacheManager->Initialize();
+
 	GEngine->GameViewport->Viewport->ViewportResizedEvent.AddUObject(this, &UKMGameInstance::OnViewportResized);
 
 	UKMCharacterInstance::DefaultPassiveSkills.Empty();
@@ -45,6 +52,11 @@ void UKMGameInstance::OpenInitLevel(FSoftObjectPath mapPath)
 const UKMAbilityEffectSet* UKMGameInstance::GetAnormalAbilitySet() const
 {
 	return AnormalAbilitySet;
+}
+
+TSharedPtr<FEMCameraCacheManager> UKMGameInstance::GetCameraCacheManager() const
+{
+	return CameraCacheManager;
 }
 
 void UKMGameInstance::Shutdown()

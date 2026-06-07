@@ -5,6 +5,9 @@
 #include "Core/EMGameInstance.h"
 #include "KMGameInstance.generated.h"
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UKMGameInstance
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UCLASS()
 class KMGAME_API UKMGameInstance : public UEMGameInstance
 {
@@ -34,6 +37,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	const class UKMAbilityEffectSet* GetAnormalAbilitySet() const;
 
+	TSharedPtr<class FEMCameraCacheManager> GetCameraCacheManager() const;
+
 protected:
 	UPROPERTY()
 	TWeakObjectPtr<class AKMCameraActor> CameraActor = nullptr;
@@ -52,4 +57,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UKMPlayerAccount> PlayerAccount;
+
+	TSharedPtr<class FEMCameraCacheManager> CameraCacheManager;
 };

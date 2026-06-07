@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Object.h"
 #include "KMDefine.generated.h"
 
@@ -192,3 +193,15 @@ namespace KMGame
 {
 	KMGAME_API UEnum* GetCharacterTypeEnum();
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FEMAnimationSetTag
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+USTRUCT(BlueprintType)
+struct KMGAME_API FEMAnimationSetTag
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FGameplayTag Tag;
+};
