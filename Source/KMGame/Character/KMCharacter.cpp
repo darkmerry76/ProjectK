@@ -1,9 +1,8 @@
 #include "KMCharacter.h"
-
-#include "EMMartialArtsComponent.h"
 #include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMMartialArtsComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -18,7 +17,7 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 		SetDefaultSubobjectClass<UKMCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	CurveWarping  = CreateDefaultSubobject<UEMCurveWarpingComponent>(TEXT("CurveWarping"));
-	MartialArtsComponent = CreateDefaultSubobject<UEMMartialArtsComponent>(TEXT("MartialArts"));
+	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{
 		characterMovement->CustomMovementDelegate.AddDynamic(CurveWarping, &UEMCurveWarpingComponent::OnCustomMovement);

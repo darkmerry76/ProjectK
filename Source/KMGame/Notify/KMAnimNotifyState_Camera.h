@@ -13,7 +13,7 @@ class KMGAME_API UKMAnimNotifyState_Camera : public UEMAnimNotifyStateMA
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=AnimNotify)
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(DisplayAfter="GroupType"))
 	TObjectPtr<class UCameraAnimationSequence> CameraSequence;
 
 	UPROPERTY(Transient)
@@ -27,4 +27,7 @@ protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
+
+protected:
+	virtual FString GetNotifyName_Implementation() const override;
 };

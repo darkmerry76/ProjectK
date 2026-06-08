@@ -15,9 +15,14 @@ protected:
 	FReply OnOpenChooser();
 	void OnTagSelected(TSharedPtr<struct IEMOutlinerTreeItem> treeItem);
 
+	void CreateChooser();
+	void OnChooserAddItem(TSharedPtr<IEMOutlinerTreeItem> item);
+
 protected:
 	TSharedPtr<class SButton> ChooserButton;
 	TSharedPtr<class SKMTagChooserOutliner> ChooserWidget;
 	TSharedPtr<class IPropertyHandle> PropertyHandle;
 	TSharedPtr<IPropertyUtilities> PropertyUtilities;
+
+	class AKMCharacter* OwnerCharacter = nullptr;
 };

@@ -32,6 +32,11 @@ public class KMGame : ModuleRules
 			"EMMartialArts",
 			"TemplateSequence"
 		});
+
+		if (Target.bBuildEditor == true)
+		{
+			PublicDependencyModuleNames.Add("UnrealEd");
+		}
 		
 		if (Target.Platform == UnrealTargetPlatform.Android)
 		{

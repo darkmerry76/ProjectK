@@ -2,6 +2,8 @@
 #include "KMTagChooserOutlinerTreeItem.h"
 #include "EMOutlinerMode.h"
 #include "GameplayTagsManager.h"
+#include "KMTagChooserOutlinerMode.h"
+#include "SKMTagChooserOutliner.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 
 TArray<FEMOutlinerTreeItemPtr> FKMTagChooserOutlinerHierarchy::RememberAllItems;
@@ -43,7 +45,7 @@ TSharedPtr<IEMOutlinerTreeItem> FKMTagChooserOutlinerHierarchy::GetParentItem(co
 
 FEMOutlinerTreeItemPtr FKMTagChooserOutlinerHierarchy::FindOrCreateParentItem(const IEMOutlinerTreeItem& item, const TMap<FEMOutlinerTreeItemID, FEMOutlinerTreeItemPtr>& items, bool bCreate)
 {
-	TSharedPtr<IEMOutlinerTreeItem>* parentItem = ParentItems.Find(item.AsShared());
+	TSharedPtr<IEMOutlinerTreeItem>* parentItem = ParentItems.Find(item.AsShared().ToSharedPtr());
 	if (!parentItem)
 	{
 		return nullptr;
@@ -79,13 +81,10 @@ void FKMTagChooserOutlinerHierarchy::Init()
 	AllItems.Empty();
 	ParentItems.Empty();
 
+	SKMTagChooserOutliner* chooserOutliner = static_cast<SKMTagChooserOutliner*>(Mode->GetOutliner());
+
 	FGameplayTag rootTag = FGameplayTag::RequestGameplayTag(TEXT("Anim"));
 	FGameplayTagContainer tagContainer = UGameplayTagsManager::Get().RequestGameplayTagChildren(rootTag);
-
-	FAssetRegistryModule& assetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-
-	FAssetData assetData = assetRegistryModule.Get().GetAssetByObjectPath(
-			FSoftObjectPath(TEXT("/Game/KM/World/Character/Hero/RyuX/Animation/Code_CDY_NGD_6_Montage.Code_CDY_NGD_6_Montage")));
 
 	TMap<FGameplayTag, TSharedPtr<IEMOutlinerTreeItem>> tagItemMap;
 	for (const FGameplayTag& tag : tagContainer)
@@ -102,32 +101,36 @@ void FKMTagChooserOutlinerHierarchy::Init()
 			}
 		}
 
-		FString itemName = TEXT("None");
+		FString itemName;
 		TArray<FString> tagParts;
 		tag.GetTagName().ToString().ParseIntoArray(tagParts, TEXT("."), true);
 		if (!tagParts.IsEmpty())
 		{
-			itemName = tagParts[tagParts.Num() - 1];
+			for (int32 tagIndex = 0; tagIndex < tagParts.Num(); ++tagIndex)
+			{
+				itemName += TEXT("/") + tagParts[tagIndex];
+			}
 		}
 		TSharedPtr<IEMOutlinerTreeItem> newItem;
+		FFolder itemFolder(Mode->GetRootObject(), *itemName);
 		if (!childTags.IsEmpty())
 		{
-			TSharedPtr<FKMTagChooserOutlinerGroupTreeItem> groupItem = AddItem<FKMTagChooserOutlinerGroupTreeItem>(FFolder(Mode->GetRootObject(), *itemName), parentItem,true);;
+			TSharedPtr<FKMTagChooserOutlinerGroupTreeItem> groupItem = AddItem<FKMTagChooserOutlinerGroupTreeItem>(itemFolder, parentItem,true);
 			groupItem->SetTag(tag);
-			groupItem->SetAssetData(assetData);
+			chooserOutliner->AddItemDelegate.ExecuteIfBound(groupItem);
 			newItem = groupItem;
 		}
 		else
 		{
-			TSharedPtr<FKMTagChooserOutlinerTreeItem> treeItem = AddItem<FKMTagChooserOutlinerTreeItem>(FText::FromString(itemName), parentItem,true);
+			TSharedPtr<FKMTagChooserOutlinerTreeItem> treeItem = AddItem<FKMTagChooserOutlinerTreeItem>(FText::FromName(itemFolder.GetLeafName()), parentItem,true);
 			treeItem->SetTag(tag);
-			treeItem->SetAssetData(assetData);
+			chooserOutliner->AddItemDelegate.ExecuteIfBound(treeItem);
 			newItem = treeItem;
+			ItemCount++;
 
 		}
 		if (newItem.IsValid())
 		{
-			ItemCount++;
 			tagItemMap.Add(tag, newItem);
 		}
 	}

@@ -1,10 +1,15 @@
 #include "EMAnimationSetPropertyCustomization.h"
 #include "DetailWidgetRow.h"
+#include "EMMartialArts.h"
 #include "EMOutlinerPublicTypes.h"
 #include "IPropertyUtilities.h"
+#include "Animation/AnimSet/KMAnimationSetTag.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Character/KMCharacter.h"
 #include "Chooser/Tag/KMTagChooserOutlinerMode.h"
 #include "Chooser/Tag/KMTagChooserOutlinerTreeItem.h"
 #include "Chooser/Tag/SKMTagChooserOutliner.h"
+#include "MartialArts/KMMartialArtsEditor.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
 
 TSharedRef<IPropertyTypeCustomization> FKMChooserPropertyCustomization::MakeInstance()
@@ -23,14 +28,76 @@ FKMChooserPropertyCustomization::~FKMChooserPropertyCustomization()
 	}
 }
 
+void FKMChooserPropertyCustomization::OnChooserAddItem(TSharedPtr<IEMOutlinerTreeItem> item)
+{
+	if (!IsValid(OwnerCharacter) || !IsValid(OwnerCharacter->AnimsetTag))
+	{
+		return;
+	}
+
+	if (!item->IsA<FKMTagChooserOutlinerTreeItem>())
+	{
+		return;
+	}
+
+	TSharedPtr<FKMTagChooserOutlinerTreeItem> treeItem = StaticCastSharedPtr<FKMTagChooserOutlinerTreeItem>(item);
+	TObjectPtr<UAnimMontage>* animMontage = OwnerCharacter->AnimsetTag->AnimMontageMap.Find(treeItem->GetTag());
+	if (!animMontage || !IsValid(*animMontage))
+	{
+		return;
+	}
+	FAssetData assetData(*animMontage);
+	treeItem->SetAssetData(assetData);
+}
+
+void FKMChooserPropertyCustomization::CreateChooser()
+{
+	TArray<UObject*> outerObjects;
+	PropertyHandle->GetOuterObjects(outerObjects);
+
+	UAssetEditorSubsystem* assetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	TArray<UObject*> editedAssets = assetEditorSubsystem->GetAllEditedAssets();
+	for (UObject* object : outerObjects)
+	{
+		UAnimNotifyState* notifyState = Cast<UAnimNotifyState>(object);
+		if (IsValid(notifyState))
+		{
+			IAssetEditorInstance* assetEditor =
+				assetEditorSubsystem->FindEditorForAsset(notifyState->GetOuter(), false);
+
+			if (assetEditor->GetEditorName() == TEXT("KMMartialArtsEditor"))
+			{
+				if (FKMMartialArtsEditor* martialArtsEditor = static_cast<FKMMartialArtsEditor*>(assetEditor))
+				{
+					OwnerCharacter = martialArtsEditor->GetOwnerCharacter();
+					break;
+				}
+			}
+		}
+	}
+	
+	ChooserWidget = MakeShared<SKMTagChooserOutliner>();
+	ChooserWidget->AddItemDelegate.BindRaw(this, &FKMChooserPropertyCustomization::OnChooserAddItem);
+	
+	FEMCreateOutlinerMode modeFactory = FEMCreateOutlinerMode::CreateLambda([](SEMOutliner* outliner)
+	{
+		return new FKMTagChooserOutlinerMode(outliner);
+	});
+	FEMOutlinerInitializationOptions initializationOptions;
+	initializationOptions.ModeFactory = modeFactory;
+
+	SEMOutliner::FArguments args;
+	ChooserWidget->Construct(args, initializationOptions);
+	ChooserWidget->GetDoubleClickEvent().AddRaw(this, &FKMChooserPropertyCustomization::OnTagSelected);
+}
+
 void FKMChooserPropertyCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> propertyHandle, FDetailWidgetRow& headerRow, IPropertyTypeCustomizationUtils& customizationUtils)
 {
 	PropertyHandle = propertyHandle;
 	PropertyUtilities = customizationUtils.GetPropertyUtilities();
-	
-	TSharedPtr<IPropertyHandle> tagHandle =	propertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FEMAnimationSetTag, Tag));
 
+	TSharedPtr<IPropertyHandle> tagHandle =	PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FEMAnimationSetTag, Tag));
 	FGameplayTag gameplayTag;
 	void* tagValuePtr = nullptr;
 	if (tagHandle->GetValueData(tagValuePtr) == FPropertyAccess::Success)
@@ -39,21 +106,9 @@ void FKMChooserPropertyCustomization::CustomizeHeader(
 	}
 
 	FText displayOpenButtonText = gameplayTag.IsValid() ? FText::FromString(gameplayTag.ToString()) : FText::FromString(TEXT("None"));
-
-	FEMCreateOutlinerMode modeFactory = FEMCreateOutlinerMode::CreateLambda([](SEMOutliner* outliner)
-	{
-		return new FKMTagChooserOutlinerMode(outliner);
-	});
-	FEMOutlinerInitializationOptions initializationOptions;
-	initializationOptions.ModeFactory = modeFactory;
-	SAssignNew(ChooserWidget, SKMTagChooserOutliner, initializationOptions);
-
-	ChooserWidget->GetDoubleClickEvent().AddRaw(this, &FKMChooserPropertyCustomization::OnTagSelected);
-
 	SAssignNew(ChooserButton, SButton)
 		.Text(displayOpenButtonText)
 		.OnClicked(this, &FKMChooserPropertyCustomization::OnOpenChooser);
-	
 	
 	headerRow
 	.NameContent()
@@ -73,6 +128,8 @@ void FKMChooserPropertyCustomization::CustomizeChildren(
 
 FReply FKMChooserPropertyCustomization::OnOpenChooser()
 {
+	CreateChooser();
+	
 	TSharedRef<SWidget> menuContent =
 		SNew(SBorder)
 		.BorderBackgroundColor( FLinearColor(1.0f, 1.0f, 1.0f, 1.0f ) )
@@ -125,22 +182,38 @@ void FKMChooserPropertyCustomization::OnTagSelected(TSharedPtr<IEMOutlinerTreeIt
 	}
 
 	FGameplayTag resultGameplayTag;
+	TObjectPtr<UAnimMontage>* animMontage = nullptr;
 	if (treeItem->IsA<FKMTagChooserOutlinerTreeItem>())
 	{
 		resultGameplayTag = StaticCastSharedRef<FKMTagChooserOutlinerTreeItem>(treeItem.ToSharedRef())->GetTag();
+		if (IsValid(OwnerCharacter) && IsValid(OwnerCharacter->AnimsetTag))
+		{
+			animMontage = OwnerCharacter->AnimsetTag->AnimMontageMap.Find(resultGameplayTag);
+		}
 	}
 	else if (treeItem->IsA<FKMTagChooserOutlinerGroupTreeItem>())
 	{
 		resultGameplayTag = StaticCastSharedRef<FKMTagChooserOutlinerGroupTreeItem>(treeItem.ToSharedRef())->GetTag();
 	}
 
-	TSharedPtr<IPropertyHandle> tagHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FEMAnimationSetTag, Tag));
-	if (tagHandle.IsValid() && tagHandle->SetValueFromFormattedString(resultGameplayTag.ToString()) == FPropertyAccess::Success)
+	TSharedPtr<IPropertyHandle> montageHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FEMAnimationSetTag, Montage));
+	if (montageHandle.IsValid())
 	{
-		if (PropertyUtilities.IsValid())
+		if (animMontage)
 		{
-			PropertyUtilities->ForceRefresh();
+			montageHandle->SetValue(*animMontage);
 		}
-		FSlateApplication::Get().DismissAllMenus();
 	}
+
+	TSharedPtr<IPropertyHandle> tagHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FEMAnimationSetTag, Tag));
+	if (tagHandle.IsValid())
+	{
+		tagHandle->SetValueFromFormattedString(resultGameplayTag.ToString());
+	}
+	
+	if (PropertyUtilities.IsValid())
+	{
+		PropertyUtilities->ForceRefresh();
+	}
+	FSlateApplication::Get().DismissAllMenus();
 }

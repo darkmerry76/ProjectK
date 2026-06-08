@@ -204,4 +204,7 @@ struct KMGAME_API FEMAnimationSetTag
 
 	UPROPERTY(EditAnywhere)
 	FGameplayTag Tag;
+
+	UPROPERTY()
+	TWeakObjectPtr<class UAnimMontage> Montage;
 };

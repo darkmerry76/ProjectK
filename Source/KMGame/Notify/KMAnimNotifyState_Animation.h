@@ -5,6 +5,17 @@
 #include "Notify/EMAnimNotifyStateMA.h"
 #include "KMAnimNotifyState_Animation.generated.h"
 
+USTRUCT()
+struct KMGAME_API FKMAnimNotifyState_Animation_Context
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UAnimMontage> ActivatedMontage;
+
+	float ElapsedTime = 0.f;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_Animation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -14,17 +25,32 @@ class KMGAME_API UKMAnimNotifyState_Animation : public UEMAnimNotifyStateMA
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=AnimNotify)
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(DisplayAfter="GroupType"))
 	bool bUseSkillSet = true;
 	
-	UPROPERTY(VisibleAnywhere, Category=AnimNotify, BlueprintReadOnly, meta=(AllowPrivateAccess=true, EditCondition="bUseSkillSet", DisplayAfter=""))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, BlueprintReadOnly, meta=(AllowPrivateAccess=true, EditCondition="bUseSkillSet", DisplayAfter="bUseSkillSet"))
 	FEMAnimationSetTag AnimationSetTag;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify)
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
 	TObjectPtr<class UAnimMontage> Montage;
 
+	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
+
+	float CustomDuration = 0.f;
+
 protected:
-	virtual void NotifyBegin(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
-	virtual void NotifyTick(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
-	virtual void NotifyEnd(class USkeletalMeshComponent * meshComp, class UAnimSequenceBase * animation, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
+
+	virtual bool IsCustomDuration() const override;
+	virtual float GetCustomDuration() const override;
+
+	class UAnimMontage* GetUsedMontage(AActor* actor);
+
+protected:
+	virtual FString GetNotifyName_Implementation() const override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(AActor* ownerActor, FPropertyChangedEvent& propertyChangedEvent) override;
+#endif
 };

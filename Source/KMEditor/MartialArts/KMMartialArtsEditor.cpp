@@ -9,6 +9,7 @@
 #include "KMMartialArtsEditorMode.h"
 #include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
+#include "Notify/KMAnimNotifyState_Animation.h"
 #include "Util/KMUtil.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
@@ -19,6 +20,10 @@ FKMMartialArtsEditor::~FKMMartialArtsEditor()
 	{
 		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.RemoveAll(this);
 	}
+	if (!FCoreUObjectDelegates::OnObjectPropertyChanged.IsBoundToObject(this))
+	{
+		FCoreUObjectDelegates::OnObjectPropertyChanged.RemoveAll(this);
+	}
 }
 
 void FKMMartialArtsEditor::InitEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset)
@@ -28,6 +33,18 @@ void FKMMartialArtsEditor::InitEditor(const EToolkitMode::Type mode, const TShar
 	if (!FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.IsBoundToObject(this))
 	{
 		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnOwnerCharacterelected);
+	}
+	if (!FCoreUObjectDelegates::OnObjectPropertyChanged.IsBoundToObject(this))
+	{
+		FCoreUObjectDelegates::OnObjectPropertyChanged.AddSP(this, &FKMMartialArtsEditor::OnObjectPropertyChanged);
+	}
+}
+
+void FKMMartialArtsEditor::OnObjectPropertyChanged(UObject* object, FPropertyChangedEvent& propertyChangedEvent)
+{
+	if (IEMAnimNotifyInterfaceMA* animNotifyInteface = Cast<IEMAnimNotifyInterfaceMA>(object))
+	{
+		animNotifyInteface->PostEditChangeProperty(GetOwnerCharacter(), propertyChangedEvent);
 	}
 }
 
@@ -42,6 +59,20 @@ void FKMMartialArtsEditor::AddReferencedObjects(FReferenceCollector& collector)
 
 	collector.AddReferencedObject(OwnerCharacterInstance);
 	collector.AddReferencedObjects(TargetCharacterInstances);
+}
+
+UKMCharacterInstance* FKMMartialArtsEditor::GetOwnerCharacterInstance() const
+{
+	return OwnerCharacterInstance;
+}
+
+AKMCharacter* FKMMartialArtsEditor::GetOwnerCharacter() const
+{
+	if (!IsValid(OwnerCharacterInstance))
+	{
+		return nullptr;
+	}
+	return OwnerCharacterInstance->GetCharacter();
 }
 
 UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform)

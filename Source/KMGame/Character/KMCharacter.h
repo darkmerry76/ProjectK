@@ -22,10 +22,13 @@ public:
 	TObjectPtr<class UKMAnimationSetEffect> EffectAnimset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMAnimationSetTag> AnimsetTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UEMCurveWarpingComponent> CurveWarping;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UEMMartialArtsComponent> MartialArtsComponent;
+	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;

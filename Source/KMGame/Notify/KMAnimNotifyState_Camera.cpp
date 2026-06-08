@@ -1,4 +1,6 @@
 #include "KMAnimNotifyState_Camera.h"
+
+#include "CameraAnimationSequence.h"
 #include "EMMartialArtsModule.h"
 #include "Sequencer/EMCameraCacheManager.h"
 
@@ -13,6 +15,18 @@ UKMAnimNotifyState_Camera::UKMAnimNotifyState_Camera(const FObjectInitializer& o
 	{
 		CameraCacheManager = martialArtsModule->GetCameraCacheManager();
 	}
+}
+
+FString UKMAnimNotifyState_Camera::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	
+	if (IsValid(CameraSequence))
+	{
+		notifyName += FString::Printf(TEXT("-'%s'"), *CameraSequence->GetName());		
+	}
+	
+	return notifyName;
 }
 
 void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)

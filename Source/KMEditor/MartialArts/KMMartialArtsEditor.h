@@ -7,7 +7,10 @@ class FKMMartialArtsEditor : public FEMMartialArtsEditor
 {
 public:
 	virtual ~FKMMartialArtsEditor() override;
-	
+
+	class UKMCharacterInstance* GetOwnerCharacterInstance() const;
+	class AKMCharacter* GetOwnerCharacter() const;
+
 protected:
 	virtual void InitEditor(const EToolkitMode::Type mode, const TSharedPtr<class IToolkitHost>& initToolkitHost, class UAnimationAsset* animationAsset) override;
 	virtual TSharedPtr<class FEMMartialArtsEditorMode> CreateEditorMode() override;
@@ -20,9 +23,16 @@ protected:
 
 	void SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable);
 
+	virtual FName GetEditorName() const override
+	{
+		return TEXT("KMMartialArtsEditor");
+	}
+
 protected:
 	class UKMCharacterInstance* SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
 	bool DestroyCharacterInstance(class UKMCharacterInstance* characterInstance);
+
+	void OnObjectPropertyChanged(UObject* object, FPropertyChangedEvent& propertyChangedEvent);
 
 protected:
 	TObjectPtr<class UKMCharacterInstance> OwnerCharacterInstance;
