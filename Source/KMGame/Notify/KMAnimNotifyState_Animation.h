@@ -13,6 +13,8 @@ struct KMGAME_API FKMAnimNotifyState_Animation_Context
 	UPROPERTY(Transient)
 	TObjectPtr<class UAnimMontage> ActivatedMontage;
 
+	FAnimMontageInstance* MontageInstance = nullptr;
+
 	float ElapsedTime = 0.f;
 };
 
@@ -50,7 +52,9 @@ protected:
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
+	
 #if WITH_EDITOR
+	virtual void SetEditorPosition(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void PostEditChangeProperty(AActor* ownerActor, FPropertyChangedEvent& propertyChangedEvent) override;
 #endif
 };

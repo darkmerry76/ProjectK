@@ -4,7 +4,9 @@
 
 UKMAnimNotifyState_Animation::UKMAnimNotifyState_Animation(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	GroupType = EEMNotifyGroupType::Animation;
+#if WITH_EDITOR
+	SetGroupType(EEMNotifyGroupType::Animation);
+#endif
 }
 
 FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
@@ -71,7 +73,12 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
 		CustomDuration = newContext->ActivatedMontage->GetPlayLength();
-		ownerCharacter->PlayAnimMontage(newContext->ActivatedMontage);
+
+		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
+		{
+			animInstance->Montage_Play(newContext->ActivatedMontage);
+			animInstance->Montage_Pause(newContext->ActivatedMontage);
+		}
 	}
 }
 
@@ -96,23 +103,43 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 }
 
 #if WITH_EDITOR
+
+void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+{
+	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(meshComp))
+	{
+		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
+		{
+			if (FAnimMontageInstance* montageInstance = animInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage))
+			{
+				montageInstance->SetPosition(currentTime);
+			}
+		}
+	}
+}
+
 void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FPropertyChangedEvent& propertyChangedEvent)
 {
 	Super::PostEditChangeProperty(ownerActor, propertyChangedEvent);
-	if (propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, AnimationSetTag))
+	if (propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, AnimationSetTag) ||
+		propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, bUseSkillSet))
 	{
-		if (AKMCharacter* character = Cast<AKMCharacter>(ownerActor))
+		if (bUseSkillSet)
 		{
-			if (character->AnimsetTag)
+			if (AKMCharacter* character = Cast<AKMCharacter>(ownerActor))
 			{
-				if (TObjectPtr<UAnimMontage>* existMontage = character->AnimsetTag->AnimMontageMap.Find(AnimationSetTag.Tag))
+				if (character->AnimsetTag)
 				{
-					Montage = *existMontage;
+					if (TObjectPtr<UAnimMontage>* existMontage = character->AnimsetTag->AnimMontageMap.Find(AnimationSetTag.Tag))
+					{
+						Montage = *existMontage;
 
-					CustomDuration = Montage->GetPlayLength();
+						CustomDuration = Montage->GetPlayLength();
+					}
 				}
 			}
 		}
 	}
 }
+
 #endif

@@ -9,7 +9,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UKMAnimNotifyState_Camera::UKMAnimNotifyState_Camera(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	GroupType = EEMNotifyGroupType::Animation;
+#if WITH_EDITOR
+	SetGroupType(EEMNotifyGroupType::Animation);
+#endif
 
 	if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
 	{
