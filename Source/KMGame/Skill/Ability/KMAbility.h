@@ -1,10 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EMMartialArts.h"
 #include "KMAbility.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class UKMAbility : public UObject
+class UKMAbility : public UEMAbility
 {
 	GENERATED_UCLASS_BODY()
 
