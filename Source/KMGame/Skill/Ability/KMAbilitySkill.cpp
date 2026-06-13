@@ -14,27 +14,34 @@ void UKMAbilitySkill::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	UKMAnimationSetSkill* animSetSkill = character->SkillAnimset;
-	check(IsValid(animSetSkill));
-
-	TObjectPtr<UAnimMontage>* existMontage = animSetSkill->AnimMontageMap.Find(AnimSkillType);
-	if (existMontage && IsValid(*existMontage))
+	if (AnimSkillType != EKMAnimSetSkillType::None || IsValid(Montage))
 	{
-		Montage = *existMontage;
+		UKMAnimationSetSkill* animSetSkill = character->SkillAnimset;
+		check(IsValid(animSetSkill));
+
+		TObjectPtr<UAnimMontage>* existMontage = animSetSkill->AnimMontageMap.Find(AnimSkillType);
+		if (existMontage && IsValid(*existMontage))
+		{
+			Montage = *existMontage;
+		}
+		
+		MontageInstance = PlayerMontage(Montage, Rate);
+
+		if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
+		{
+			UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+			check(IsValid(ownerCharacterInstance));
+			
+			FVector targetToDirection = GetTargetCharacter()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
+			targetToDirection.Z = 0.0f;
+			targetToDirection.Normalize();
+			
+			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection)));
+		}
 	}
-
-	MontageInstance = PlayerMontage(Montage, Rate);
-
-	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
+	else
 	{
-		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-		check(IsValid(ownerCharacterInstance));
-		
-		FVector targetToDirection = GetTargetCharacter()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
-		targetToDirection.Z = 0.0f;
-		targetToDirection.Normalize();
-		
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection)));
+		PlayMartialArts();
 	}
 }
 

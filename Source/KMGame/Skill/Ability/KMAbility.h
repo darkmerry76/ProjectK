@@ -57,6 +57,9 @@ public:
 	void OnRequestEnd();
 
 	UFUNCTION(BlueprintCallable)
+	void PlayMartialArts();
+
+	UFUNCTION(BlueprintCallable)
 	void MontageJump(FName sectionName);
 
 	UFUNCTION(BlueprintPure)

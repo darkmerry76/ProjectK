@@ -19,12 +19,15 @@ void FKMEditorModule::StartupModule()
 			visualizer->OnRegister();
 		}
 
-		FEMMartialArtsEditorModule& martialArtsEditorModule = FModuleManager::GetModuleChecked<FEMMartialArtsEditorModule>("EMMartialArtsEditor");
-		martialArtsEditorModule.GetCreateMartialArtsEditorDelegate().BindLambda([]()
+		FEMMartialArtsEditorModule* martialArtsEditorModule = FModuleManager::GetModulePtr<FEMMartialArtsEditorModule>("EMMartialArtsEditor");
+		if (martialArtsEditorModule)
 		{
-			return MakeShared<FKMMartialArtsEditor>();
-		});
-
+			martialArtsEditorModule->GetCreateMartialArtsEditorDelegate().BindLambda([]()
+			{
+				return MakeShared<FKMMartialArtsEditor>();
+			});
+		}
+		
 		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		PropertyModule.RegisterCustomPropertyTypeLayout("EMAnimationSetTag",
 	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FKMChooserPropertyCustomization::MakeInstance));

@@ -1,5 +1,6 @@
 #include "KMAbility.h"
 #include "EMCurveWarpingComponent.h"
+#include "EMMartialArtsComponent.h"
 #include "Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "System/KMTargetSubsystem.h"
@@ -84,6 +85,27 @@ void UKMAbility::OnDeacivated_Implementation()
 void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 {
 	
+}
+
+void UKMAbility::PlayMartialArts()
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	UEMMartialArtsComponent* martialArtsComponent = ownerCharacter->GetMartialArtsComponent();
+	if (!IsValid(martialArtsComponent))
+	{
+		return;
+	}
+	UEMMartialArts* martialArts = GetMartialArts();
+	if (!IsValid(martialArts))
+	{
+		return;
+	}
+
+	martialArtsComponent->Play(martialArts);
 }
 
 void UKMAbility::MontageJump(FName sectionName)

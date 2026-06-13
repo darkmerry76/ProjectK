@@ -621,16 +621,28 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 		AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter();
 		check(IsValid(ownerCharacter) == true);
 
-		UClass* abilityClass = Cast<UClass>(assetManager->GetAsset(normalSkillTable->Ability));
-		if (IsValid(abilityClass))
+		UKMAbility* newAbility = nullptr;
+		UObject* assetObject = assetManager->GetAsset(normalSkillTable->Ability);
+		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(assetObject))
 		{
-			UKMAbility* newAbility = NewObject<UKMAbility>(this, abilityClass);
-			if (IsValid(newAbility) == true)
+			if (IsValid(martialArts->GetAbilityBP()->GeneratedClass))
 			{
-				newAbility->SetLockOnCluster(newSkillInstance->Target);
-				newAbility->Activate();
-				newAbility->SetSkillInstance(newSkillInstance);
+				newAbility = NewObject<UKMAbility>(this, martialArts->GetAbilityBP()->GeneratedClass);
+				newAbility->SetMartialArts(martialArts);
 			}
+		}
+		else
+		{
+			if (UClass* abilityClass = Cast<UClass>(assetObject))
+			{
+				newAbility = NewObject<UKMAbility>(this, abilityClass);
+			}
+		}
+		if (IsValid(newAbility))
+		{
+			newAbility->SetLockOnCluster(newSkillInstance->Target);
+			newAbility->Activate();
+			newAbility->SetSkillInstance(newSkillInstance);
 		}
 	}
 	
