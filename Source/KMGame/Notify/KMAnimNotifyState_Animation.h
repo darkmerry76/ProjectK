@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "KMAnimNotifyState.h"
 #include "Core/KMDefine.h"
-#include "Notify/EMAnimNotifyStateMA.h"
 #include "KMAnimNotifyState_Animation.generated.h"
 
 USTRUCT()
@@ -21,13 +21,13 @@ struct KMGAME_API FKMAnimNotifyState_Animation_Context
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_Animation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-UCLASS(Blueprintable, BlueprintType, DisplayName="Play Animation")
-class KMGAME_API UKMAnimNotifyState_Animation : public UEMAnimNotifyStateMA
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Animation")
+class KMGAME_API UKMAnimNotifyState_Animation : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(DisplayAfter="GroupType"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	bool bUseSkillSet = true;
 	
 	UPROPERTY(EditAnywhere, Category=AnimNotify, BlueprintReadOnly, meta=(AllowPrivateAccess=true, EditCondition="bUseSkillSet", DisplayAfter="bUseSkillSet"))

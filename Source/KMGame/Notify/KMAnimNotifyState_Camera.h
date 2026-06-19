@@ -1,19 +1,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Notify/EMAnimNotifyStateMA.h"
+#include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_Camera.generated.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_Camera
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-UCLASS(Blueprintable, BlueprintType, DisplayName="Play Camera")
-class KMGAME_API UKMAnimNotifyState_Camera : public UEMAnimNotifyStateMA
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Camera")
+class KMGAME_API UKMAnimNotifyState_Camera : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(DisplayAfter="GroupType"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	TObjectPtr<class UCameraAnimationSequence> CameraSequence;
 
 	UPROPERTY(Transient)

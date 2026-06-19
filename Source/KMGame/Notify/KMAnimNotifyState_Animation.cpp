@@ -112,7 +112,10 @@ void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* mes
 		{
 			if (FAnimMontageInstance* montageInstance = animInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage))
 			{
+				float previousPosition = montageInstance->GetPosition();
 				montageInstance->SetPosition(currentTime);
+				montageInstance->HandleEvents(previousPosition, currentTime, nullptr);
+				animInstance->TriggerAnimNotifies(currentTime - previousPosition);
 			}
 		}
 	}
@@ -133,7 +136,6 @@ void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FP
 					if (TObjectPtr<UAnimMontage>* existMontage = character->AnimsetTag->AnimMontageMap.Find(AnimationSetTag.Tag))
 					{
 						Montage = *existMontage;
-
 						CustomDuration = Montage->GetPlayLength();
 					}
 				}

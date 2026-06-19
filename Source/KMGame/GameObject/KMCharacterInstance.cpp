@@ -8,6 +8,7 @@
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityEffect.h"
 #include "Skill/Ability/KMAbilitySkillDirection.h"
+#include "Skill/Ability/KMAbilitySkillDirectionTag.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
@@ -409,7 +410,10 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 					{
 						abilitySkillDirection->ApplyAngle(direction8way, 150.f, 0.35f);
 					}
-					
+					else if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(cancelSkillInstance->GetAbility()))
+					{
+						abilitySkillDirectionTag->ApplyAngle(direction8way, 150.f, 0.35f);
+					}
 				}
 			}
 			TimingCancel = nullptr;
@@ -652,7 +656,10 @@ void UKMCharacterInstance::RemoveGameplayTag(FGameplayTag Tag)
 
 	if (Tag == FKMGameplayTagName::Event_Cancel_Combo_Available_Tag)
 	{
-		SkillHandler->ActivatedNextComboSkill();
+		if (IsValid(SkillHandler))
+		{
+			SkillHandler->ActivatedNextComboSkill();
+		}
 	}
 }
 

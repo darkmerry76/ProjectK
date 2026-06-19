@@ -4,7 +4,18 @@
 
 UKMAnimNotifyState_GameplayTag::UKMAnimNotifyState_GameplayTag(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SetGroupType(EEMNotifyGroupType::Plan);
+}
 
+FString UKMAnimNotifyState_GameplayTag::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	
+	if (!TagContainer.IsEmpty())
+	{
+		notifyName += FString::Printf(TEXT("-'%s'"), *TagContainer.ToStringSimple());		
+	}
+	return notifyName;
 }
 
 void UKMAnimNotifyState_GameplayTag::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

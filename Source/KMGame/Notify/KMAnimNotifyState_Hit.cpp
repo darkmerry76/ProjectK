@@ -4,13 +4,25 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
-#include "Skill/Ability/KMAbilityEffect.h"
 #include "System/KMTargetSubsystem.h"
 
 UKMAnimNotifyState_Hit::UKMAnimNotifyState_Hit(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	ObjectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 	ActorClassFilter = ACharacter::StaticClass();
+
+	SetGroupType(EEMNotifyGroupType::Plan);
+}
+
+FString UKMAnimNotifyState_Hit::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	
+	if (!SocketName.IsValid())
+	{
+		notifyName += FString::Printf(TEXT("-'%s'"), *SocketName.ToString());		
+	}
+	return notifyName;
 }
 
 void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
