@@ -1,4 +1,6 @@
 #include "KMAbilitySkill.h"
+
+#include "EMMartialArtsComponent.h"
 #include "Animation/AnimSet/KMAnimationSetSkill.h"
 #include "Character/KMCharacter.h"
 #include "Util/KMUtil.h"
@@ -26,22 +28,22 @@ void UKMAbilitySkill::Activate()
 		}
 		
 		MontageInstance = PlayerMontage(Montage, Rate);
-
-		if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
-		{
-			UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-			check(IsValid(ownerCharacterInstance));
-			
-			FVector targetToDirection = GetTargetCharacter()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
-			targetToDirection.Z = 0.0f;
-			targetToDirection.Normalize();
-			
-			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection)));
-		}
 	}
 	else
 	{
 		PlayMartialArts();
+	}
+
+	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
+	{
+		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+		check(IsValid(ownerCharacterInstance));
+			
+		FVector targetToDirection = GetTargetCharacter()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
+		targetToDirection.Z = 0.0f;
+		targetToDirection.Normalize();
+
+		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection)));
 	}
 }
 
@@ -56,16 +58,23 @@ void UKMAbilitySkill::Deactivate()
 		{
 			StopMontage(Montage);
 		}
-	}
-	if (bIsDirectionFallow)
-	{
-		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-		check(IsValid(ownerCharacterInstance));
+		if (MartialArtsHandle != INDEX_NONE)
+		{
+			if (UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent())
+			{
+				martialArtsComponent->StopByInstanceId(MartialArtsHandle);
+			}
+		}
+		if (bIsDirectionFallow)
+		{
+/*			UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+			check(IsValid(ownerCharacterInstance));
+			
+			FVector ownerForwardDirection = character->GetActorForwardVector();
+			ownerForwardDirection.Z = 0.0f;
+			ownerForwardDirection.Normalize();
 		
-		FVector ownerForwardDirection = GetOwnerCharacter()->GetActorForwardVector();
-		ownerForwardDirection.Z = 0.0f;
-		ownerForwardDirection.Normalize();
-	
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerForwardDirection)));
+			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerForwardDirection)));*/
+		}
 	}
 }

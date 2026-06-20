@@ -105,7 +105,7 @@ void UKMAbility::PlayMartialArts()
 		return;
 	}
 
-	martialArtsComponent->Play(martialArts);
+	MartialArtsHandle = martialArtsComponent->Play(martialArts);
 }
 
 void UKMAbility::MontageJump(FName sectionName)

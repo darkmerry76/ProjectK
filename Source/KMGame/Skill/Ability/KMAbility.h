@@ -26,6 +26,7 @@ protected:
 	struct FAnimMontageInstance* MontageInstance = nullptr;
 
 	FTransform ImpactTransform;
+	int32 MartialArtsHandle = INDEX_NONE;
 
 public:
 	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance> newSkillInstance);

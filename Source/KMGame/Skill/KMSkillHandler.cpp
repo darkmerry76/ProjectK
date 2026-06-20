@@ -353,6 +353,11 @@ void UKMSkillHandler::ActivatedNextComboSkill()
 	{
 		return;
 	}
+
+	if (ComboData.CurrentCombo == ComboData.NextCombo)
+	{
+		return;
+	}
 	
 	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(ComboData.skillSet->Skills[ComboData.NextCombo], 0), ComboData.LockOnCluster);
 	if (!newSkillInstance.IsValid())
@@ -462,7 +467,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillNormal(const TSharedPtr<FK
 	{
 		skillSet = EvalurateSkillSet(lockOnCluster);
 		ComboData.skillSet = skillSet;
-		ComboData.CurrentCombo = 0;
+		ComboData.CurrentCombo = -1;
 		ComboData.NextCombo = 0;
 	}
 

@@ -77,7 +77,12 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
 		{
 			animInstance->Montage_Play(newContext->ActivatedMontage);
-			animInstance->Montage_Pause(newContext->ActivatedMontage);
+#if WITH_EDITOR
+			if (!meshComp->GetWorld()->IsGameWorld())
+			{
+				animInstance->Montage_Pause(newContext->ActivatedMontage);
+			}
+#endif
 		}
 	}
 }
@@ -97,7 +102,7 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
 	if (currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 	{
-		ownerCharacter->StopAnimMontage((*currContext)->ActivatedMontage);
+		//ownerCharacter->StopAnimMontage((*currContext)->ActivatedMontage);
 	}
 	Context.Remove(meshComp);
 }
