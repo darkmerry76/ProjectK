@@ -16,12 +16,6 @@ struct FKMTable_SkillEffect_NormalRow : public FKMTable_SkillEffectRow
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMAnimType          AnimSet = { EKMAnimType::None };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMAnimSetEffectType AnimSetType = { EKMAnimSetEffectType::None };
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 

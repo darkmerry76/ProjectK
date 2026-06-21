@@ -386,11 +386,12 @@ void FKMSkillEffectInstance::Enter()
 	check(IsValid(targetStat) == true);
 
 	check(targetCharacterInstance == targetStat->GetTypedOuter<UKMCharacterInstance>());
+
 	if (const FKMTable_SkillEffect_NormalRow* skillEffectNormalRow = CastRow<FKMTable_SkillEffect_NormalRow>(EffectTableRecord))
 	{
-		if (skillEffectNormalRow->AnimSetType != EKMAnimSetEffectType::None)
+		if (skillEffectNormalRow->Ability.IsValid())
 		{
-			if (UKMAbilityEffect* effectAbility = Cast<UKMAbilityEffect>(targetStat->ApplyEffectiveAnimation(skillEffectNormalRow->AnimSetType)))
+			if (UKMAbilityEffect* effectAbility = Cast<UKMAbilityEffect>(targetStat->ApplyEffectiveAnimation(skillEffectNormalRow->Ability.PdaKey)))
 			{
 				effectAbility->SetLockOnCluster(OwnerSkillInstance->Target);
 				effectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);

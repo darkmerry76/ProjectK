@@ -509,34 +509,6 @@ public:
 		return *GetTableEM<FKMTable_SkillEffectRow>(*FKMTable_SkillEffectRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
-	// KMTable_SkillEffect_Grab FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_SkillEffect_GrabRow& GetTableKMTable_SkillEffect_Grab(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_SkillEffect_GrabRow>(IndexName, IsFind);
-	}
-
-	// KMTable_SkillEffect_Grab Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_SkillEffect_GrabRow& GetTableKMTable_SkillEffect_GrabByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_SkillEffect_GrabRow>(*FKMTable_SkillEffect_GrabRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
-	// KMTable_SkillEffect_Normal FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_SkillEffect_NormalRow& GetTableKMTable_SkillEffect_Normal(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_SkillEffect_NormalRow>(IndexName, IsFind);
-	}
-
-	// KMTable_SkillEffect_Normal Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_SkillEffect_NormalRow& GetTableKMTable_SkillEffect_NormalByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_SkillEffect_NormalRow>(*FKMTable_SkillEffect_NormalRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
 	// KMTable_SkillEffectTransition FName으로 검색되는 블루프린트 노출함수
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static const FKMTable_SkillEffectTransitionRow& GetTableKMTable_SkillEffectTransition(FName IndexName, bool& IsFind)

@@ -18,16 +18,22 @@ void UKMAbilityEffect::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	UKMAnimationSetEffect* animSetEffect = character->EffectAnimset;
-	check(IsValid(animSetEffect));
-
-	TObjectPtr<UAnimMontage>* existMontage = animSetEffect->AnimMontageMap.Find(animEffectType);
-	if (existMontage && IsValid(*existMontage))
+	if (animEffectType != EKMAnimSetEffectType::None || IsValid(Montage))
 	{
-		Montage = *existMontage;
-	}
+		UKMAnimationSetEffect* animSetEffect = character->EffectAnimset;
+		check(IsValid(animSetEffect));
 
-	MontageInstance = PlayerMontage(Montage, Rate);
+		TObjectPtr<UAnimMontage>* existMontage = animSetEffect->AnimMontageMap.Find(animEffectType);
+		if (existMontage && IsValid(*existMontage))
+		{
+			Montage = *existMontage;
+		}
+		MontageInstance = PlayerMontage(Montage, Rate);
+	}
+	else
+	{
+		PlayMartialArts();
+	}
 
 	if (bIsDirectionFallow && IsValid(GetCasterCharacter()))
 	{

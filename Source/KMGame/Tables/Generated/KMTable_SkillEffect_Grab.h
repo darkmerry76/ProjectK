@@ -16,9 +16,6 @@ struct FKMTable_SkillEffect_GrabRow : public FKMTable_SkillEffectRow
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FEMPrimaryAssetRef   Ability = { };
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 

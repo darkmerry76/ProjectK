@@ -42,6 +42,9 @@ struct FKMTable_SkillEffectRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMOperatorType      Operator = { EKMOperatorType::None };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEMPrimaryAssetRef   Ability = { };
+
 	UPROPERTY(EditAnywhere)
 	double               BaseValue = { 0.f };
 

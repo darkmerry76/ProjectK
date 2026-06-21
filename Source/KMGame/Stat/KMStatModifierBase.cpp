@@ -117,15 +117,31 @@ UObject* UKMStatModifierBase::ApplyEffectiveAnimation(const FName& pDAKey)
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
 	check(IsValid(assetManager) == true);
 
-	UClass* abilityClass = Cast<UClass>(assetManager->GetAsset(pDAKey));
-	if (!abilityClass)
+	UObject* assetObject = assetManager->GetAsset(pDAKey);
+
+	UKMAbility* newAbility = nullptr;
+	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(assetObject))
+	{
+		if (IsValid(martialArts->GetAbilityBP()->GeneratedClass))
+		{
+			newAbility = NewObject<UKMAbility>(this, martialArts->GetAbilityBP()->GeneratedClass);
+			newAbility->SetMartialArts(martialArts);
+		}
+	}
+	else
+	{
+		UClass* abilityClass = Cast<UClass>(assetObject);
+		if (!abilityClass)
+		{
+			return nullptr;
+		}
+		newAbility = NewObject<UKMAbility>(this, abilityClass);
+	}
+	if (!IsValid(newAbility))
 	{
 		return nullptr;
 	}
-			
-	UKMAbility* newAbility = NewObject<UKMAbility>(this, abilityClass);
 	AbnormalAbilities.Emplace(newAbility);
-
 	return newAbility;
 }
 
