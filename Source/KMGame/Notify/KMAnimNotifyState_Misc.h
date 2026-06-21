@@ -10,13 +10,13 @@ class KMGAME_API UKMAnimNotifyState_Misc : public UKMAnimNotifyState
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	bool bIsOverride_GlobalTimedilation = false;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bIsOverride_GlobalTimedilation))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(EditCondition=bIsOverride_GlobalTimedilation, AllowPrivateAccess=true, DisplayAfter="bIsOverride_GlobalTimedilation"))
 	float GlobalTimeDilationScale = 1.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bIsOverride_GlobalTimedilation))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(EditCondition=bIsOverride_GlobalTimedilation, AllowPrivateAccess=true, DisplayAfter="GlobalTimeDilationScale"))
 	TObjectPtr<UCurveFloat> GlobalTimeDilationCurve;
 
 	float ElapsedTime = 0.f;

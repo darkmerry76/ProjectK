@@ -10,28 +10,28 @@ class KMGAME_API UKMAnimNotifyState_NiagaraFX : public UKMAnimNotifyState
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta = (DisplayName = "Niagara System"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(DisplayName = "Niagara System", AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	TObjectPtr<class UNiagaraSystem> Template;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="Template"))
 	float TimeDilation = 1.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta = (DisplayName = "Attached"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(DisplayName = "Attached", AllowPrivateAccess=true, DisplayAfter="TimeDilation"))
 	bool bIsAttached = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta = (AnimNotifyBoneName = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AnimNotifyBoneName = "true", AllowPrivateAccess=true, DisplayAfter="bIsAttached"))
 	FName SocketName = NAME_None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="SocketName"))
 	FVector LocationOffset = FVector::Zero();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="LocationOffset"))
 	FRotator RotationOffset = FRotator(0.f, 0.f, 0.f);
 
-	UPROPERTY(EditAnywhere, Category = "AnimNotify")
+	UPROPERTY(EditAnywhere, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="RotationOffset"))
 	FVector Scale = FVector(1.0f, 1.0f, 1.0f);
 
-	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "AnimNotify")
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="Scale"))
 	bool bAbsoluteScale = false;
 
 	UPROPERTY()

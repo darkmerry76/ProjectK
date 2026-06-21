@@ -11,7 +11,7 @@ class KMGAME_API UKMAnimNotifyState_MotionWarping : public UAnimNotifyState_Moti
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category=AnimNotify)
+	UPROPERTY(VisibleAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true))
 	EEMNotifyGroupType GroupType = EEMNotifyGroupType::Animation;
 
 protected:

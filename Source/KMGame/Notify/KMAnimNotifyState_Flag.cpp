@@ -4,7 +4,7 @@
 
 UKMAnimNotifyState_Flag::UKMAnimNotifyState_Flag(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-
+	SetGroupType(EEMNotifyGroupType::Plan);
 }
 
 void UKMAnimNotifyState_Flag::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

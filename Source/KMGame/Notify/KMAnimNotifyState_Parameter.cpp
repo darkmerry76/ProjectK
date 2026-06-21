@@ -4,6 +4,7 @@
 
 UKMAnimNotifyState_Parameter::UKMAnimNotifyState_Parameter(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SetGroupType(EEMNotifyGroupType::FX);
 }
 
 FName UKMAnimNotifyState_Parameter::GetLayerName() const

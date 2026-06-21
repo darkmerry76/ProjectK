@@ -10,7 +10,7 @@ class KMGAME_API UKMAnimNotifyState_Movement : public UKMAnimNotifyState
 	GENERATED_UCLASS_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	TEnumAsByte<EMovementMode> MovementMode = EMovementMode::MOVE_Walking;
 	
 protected:

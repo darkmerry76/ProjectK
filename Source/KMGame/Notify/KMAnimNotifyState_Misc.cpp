@@ -3,6 +3,7 @@
 
 UKMAnimNotifyState_Misc::UKMAnimNotifyState_Misc(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SetGroupType(EEMNotifyGroupType::Plan);
 }
 
 void UKMAnimNotifyState_Misc::SetTimeDilation(USkeletalMeshComponent* meshComp, float newTimeDilation)

@@ -4,6 +4,7 @@
 
 UKMAnimNotifyState_CurveWarping::UKMAnimNotifyState_CurveWarping(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SetGroupType(EEMNotifyGroupType::Animation);
 }
 
 FString UKMAnimNotifyState_CurveWarping::GetNotifyName_Implementation() const

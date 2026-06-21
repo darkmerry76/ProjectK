@@ -4,7 +4,7 @@
 
 UKMAnimNotifyState_Movement::UKMAnimNotifyState_Movement(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-
+	SetGroupType(EEMNotifyGroupType::Animation);
 }
 
 void UKMAnimNotifyState_Movement::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

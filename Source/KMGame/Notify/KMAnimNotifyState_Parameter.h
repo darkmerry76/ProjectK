@@ -11,7 +11,7 @@ class KMGAME_API UKMAnimNotifyState_Parameter : public UKMAnimNotifyState
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	TArray<TInstancedStruct<struct FKMParameterBase>> Parameters;
 
 public:

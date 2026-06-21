@@ -4,6 +4,7 @@
 
 UKMAnimNotifyState_NiagaraFX::UKMAnimNotifyState_NiagaraFX(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SetGroupType(EEMNotifyGroupType::FX);
 }
 
 void UKMAnimNotifyState_NiagaraFX::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
