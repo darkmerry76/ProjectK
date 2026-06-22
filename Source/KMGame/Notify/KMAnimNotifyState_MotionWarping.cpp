@@ -9,7 +9,6 @@ UKMAnimNotifyState_MotionWarping::UKMAnimNotifyState_MotionWarping(const FObject
 	newNotifyColor *= 10.f;
 	newNotifyColor.A = 1.f;
 	NotifyColor = newNotifyColor.ToFColor(false);	
-
 #endif
 }
 
