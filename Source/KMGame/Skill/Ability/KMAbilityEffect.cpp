@@ -32,7 +32,7 @@ void UKMAbilityEffect::Activate()
 	}
 	else
 	{
-		PlayMartialArts();
+		PlayMartialArts(nullptr, Rate, false);
 	}
 
 	if (bIsDirectionFallow && IsValid(GetCasterCharacter()))

@@ -73,17 +73,16 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
 		CustomDuration = newContext->ActivatedMontage->GetPlayLength();
-
+		ownerCharacter->PlayAnimMontage(newContext->ActivatedMontage);
+#if WITH_EDITOR
 		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
 		{
-			animInstance->Montage_Play(newContext->ActivatedMontage);
-#if WITH_EDITOR
 			if (!meshComp->GetWorld()->IsGameWorld())
 			{
 				animInstance->Montage_Pause(newContext->ActivatedMontage);
 			}
-#endif
 		}
+#endif
 	}
 }
 

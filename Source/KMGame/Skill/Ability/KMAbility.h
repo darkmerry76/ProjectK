@@ -57,8 +57,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnRequestEnd();
 
-	UFUNCTION(BlueprintCallable)
-	void PlayMartialArts();
+	void PlayMartialArts(TSharedPtr<class FEMMartialArtsContextData> newContextData, float newRate = 1.f, bool bLooping = false);
 
 	UFUNCTION(BlueprintCallable)
 	void MontageJump(FName sectionName);
@@ -71,6 +70,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetTargetCharacterInstance() const;
+
+	UFUNCTION(BlueprintPure)
+	class UEMMartialArtsComponent* GetMartialArtsComponent() const;
 	
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetTargetCharacter() const;
@@ -104,6 +106,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FVector GetOffsetToTargetByOwnerForward(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
 
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight, bool bIgnoreZ) const;
+	
 	UFUNCTION(BlueprintPure)
 	FVector GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ = false) const;
 

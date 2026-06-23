@@ -45,6 +45,16 @@ UKMCharacterInstance* UKMAbility::GetTargetCharacterInstance() const
 	return LockOnCluster->GetBestTarget();
 }
 
+UEMMartialArtsComponent* UKMAbility::GetMartialArtsComponent() const
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return nullptr;
+	}
+	return ownerCharacter->GetMartialArtsComponent();
+}
+
 AKMCharacter* UKMAbility::GetTargetCharacter() const
 {
 	UKMCharacterInstance* targetCharacterInstance = GetTargetCharacterInstance();
@@ -87,7 +97,7 @@ void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 	
 }
 
-void UKMAbility::PlayMartialArts()
+void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContextData, float newRate, bool bLooping)
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	if (!IsValid(ownerCharacter))
@@ -105,7 +115,7 @@ void UKMAbility::PlayMartialArts()
 		return;
 	}
 
-	MartialArtsHandle = martialArtsComponent->Play(martialArts);
+	MartialArtsHandle = martialArtsComponent->Play(martialArts, newContextData, newRate, bLooping);
 }
 
 void UKMAbility::MontageJump(FName sectionName)
@@ -266,6 +276,24 @@ FVector UKMAbility::GetOffsetToTargetByOwnerForward(float offsetDistance, float 
 	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
 }
 
+FVector UKMAbility::GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight, bool bIgnoreZ) const
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
+
+	AKMCharacter* targetCharacter = GetTargetCharacter();
+	if(!IsValid(targetCharacter))
+	{
+		return ownerCharacter->GetActorLocation(); 
+	}
+	
+	FVector targetToOwner = targetCharacter->GetActorLocation() - ownerCharacter->GetActorLocation();
+	targetToOwner.Normalize();
+
+	FVector result = ownerCharacter->GetActorLocation() + (targetToOwner * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+}
+
 FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ) const
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
@@ -283,6 +311,7 @@ FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, flo
 	FVector result = targetCharacter->GetActorLocation() + (targetToOwner * offsetDistance * weight);
 	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
 }
+
 
 void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation)
 {

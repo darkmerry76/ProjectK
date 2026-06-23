@@ -31,7 +31,7 @@ void UKMAbilitySkill::Activate()
 	}
 	else
 	{
-		PlayMartialArts();
+		PlayMartialArts(nullptr, Rate, false);
 	}
 
 	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
