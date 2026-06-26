@@ -20,9 +20,21 @@ class KMGAME_API UKMCameralayerBase : public UObject
 public:
 	void SetAlpha(float newAlpha);
 	float GetAlpha() const;
+
+	virtual void Initalize();
 	
 	virtual void Evaluate(float deltaTime, FEMCameraOutput& output);
-	
+
+	class AActor* GetTargetActor() const;
+
+	void SetCameraActor(class AActor* newOwnerActor);
+	class AActor* GetCamaeraActor() const;
+
+	class USceneComponent* GetCameraOffsetComponent() const;
+
 protected:
+	UPROPERTY()
+	TWeakObjectPtr<class AActor> CamaeraActor;
+	
 	float Alpha = 0.f;
 };

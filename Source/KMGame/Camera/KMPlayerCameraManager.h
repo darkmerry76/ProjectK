@@ -16,9 +16,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class AKMCameraActorBase> CurrentCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
-	TMap<EKMCameralayerType, TObjectPtr<class UKMCameralayerBase>> AdvanceLayers;
-
 protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void UpdateViewTarget(FTViewTarget& outVT, float deltaTime) override;
@@ -32,9 +29,6 @@ public:
 	static AKMPlayerCameraManager* GetActiveCameraManager(const UObject* worldContextObject);
 	
 	virtual void SetViewTarget(class AActor* newViewTarget, FViewTargetTransitionParams transitionParams = FViewTargetTransitionParams()) override;
-
-	UFUNCTION(BlueprintPure)
-	class UKMCameralayerBase* GetCameraLayer(EKMCameralayerType cameraLayerType) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetCamera(FName cameraName, AActor* newTargetActor);

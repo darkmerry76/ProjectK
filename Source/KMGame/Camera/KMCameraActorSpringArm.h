@@ -11,14 +11,12 @@ class AKMCameraActorSpringArm : public AKMCameraActorBase
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class USceneComponent> Scene;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMSpringArmComponent> SpringArm;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UCameraComponent> Camera;
 
 protected:
+	virtual class USceneComponent* GetCameraOffset() const override;
 	virtual void Tick(float deltaTime) override;
 };

@@ -23,16 +23,6 @@ void AKMPlayerCameraManager::EndPlay(const EEndPlayReason::Type endPlayReason)
 	Super::EndPlay(endPlayReason);
 }
 
-UKMCameralayerBase* AKMPlayerCameraManager::GetCameraLayer(EKMCameralayerType cameraLayerType) const
-{
-	const TObjectPtr<UKMCameralayerBase>* existCameraLayer = AdvanceLayers.Find(cameraLayerType);
-	if (!existCameraLayer || !*existCameraLayer)
-	{
-		return nullptr;
-	}
-	return *existCameraLayer;
-}
-
 void AKMPlayerCameraManager::SetViewTarget(AActor* newViewTarget, FViewTargetTransitionParams transitionParams)
 {
 	Super::SetViewTarget(newViewTarget, transitionParams);

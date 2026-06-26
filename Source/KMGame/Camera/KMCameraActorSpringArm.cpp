@@ -4,13 +4,16 @@
 
 AKMCameraActorSpringArm::AKMCameraActorSpringArm(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	RootComponent = CreateDefaultSubobject<USceneComponent>("Scene");
-
 	SpringArm = CreateDefaultSubobject<UKMSpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+}
+
+USceneComponent* AKMCameraActorSpringArm::GetCameraOffset() const
+{
+	return SpringArm;
 }
 
 void AKMCameraActorSpringArm::Tick(float deltaTime)
