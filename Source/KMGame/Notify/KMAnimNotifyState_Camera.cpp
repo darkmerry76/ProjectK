@@ -1,9 +1,9 @@
 #include "KMAnimNotifyState_Camera.h"
-
 #include "CameraAnimationSequence.h"
 #include "EMMartialArtsModule.h"
+#include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
-#include "Kismet/GameplayStatics.h"
+#include "Camera/Layer/KMCameralayerOverlaySequence.h"
 #include "Sequencer/EMCameraCacheManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,20 +40,46 @@ void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UA
 		CameraCache = CameraCacheManager.Pin()->GetCameraCacheData(CameraSequence);
 	}
 	AnimationTimes.Emplace(meshComp, 0.f);
+
+	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
+	if(IsValid(playerCameraManager))
+	{
+		if (AKMCameraActorBase* currentCamera = playerCameraManager->GetCurrentCamera())
+		{
+			CameraOverlayLayer = Cast<UKMCameralayerOverlaySequence>(currentCamera->GetCameraLayer(EKMCameralayerType::OverlaySequence));
+			CameraOverlayLayer->SetAlpha(0.f);
+		}
+	}
 }
 
 void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
 	if (CameraCache.IsValid())
 	{
-		AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
-		if(IsValid(playerCameraManager))
+		if (CameraOverlayLayer.IsValid())
 		{
 			if (float* alphaTime = AnimationTimes.Find(meshComp))
 			{
+				float blendInAlpha = 1.0f;
+				if (BlendInTime > 0.0f)
+				{
+					blendInAlpha = FMath::Clamp((*alphaTime) / BlendInTime, 0.0f, 1.0f);
+				}
+
+				float blendOutAlpha = 1.0f;
+				if (BlendOutTime > 0.0f)
+				{
+					blendOutAlpha = FMath::Clamp((eventReference.GetNotify()->Duration - (*alphaTime)) / BlendOutTime, 0.0f, 1.0f);
+				}
+
+				float alpha = FMath::Min(blendInAlpha, blendOutAlpha);
+				
+				CameraOverlayLayer->SetAlpha(alpha);
+				
 				FEMCameraOutput cameraOutput;
 				CameraCache->Evaluate(*alphaTime, cameraOutput);
 
+				CameraOverlayLayer->SetRelativeCameraData(cameraOutput);
 				(*alphaTime) += frameDeltaTime;
 			}
 		}
@@ -63,4 +89,9 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 void UKMAnimNotifyState_Camera::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
 	AnimationTimes.Remove(meshComp);
+
+	if (CameraOverlayLayer.IsValid())
+	{
+		CameraOverlayLayer->SetAlpha(0.f);
+	}
 }

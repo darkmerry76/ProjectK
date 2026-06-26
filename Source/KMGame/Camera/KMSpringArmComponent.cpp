@@ -1,5 +1,6 @@
 ﻿#include "KMSpringArmComponent.h"
 #include "KMCameraActorBase.h"
+#include "Camera/CameraComponent.h"
 
 const FName UKMSpringArmComponent::SocketName(TEXT("SpringEndpoint"));
 
@@ -68,6 +69,7 @@ void UKMSpringArmComponent::TickComponent(float deltaTime, enum ELevelTick tickT
 
 			finalCameraOut.Location = FMath::Lerp(finalCameraOut.Location, output.Location, cameraLayer.Value->GetAlpha());
 			finalCameraOut.Rotation = FQuat::Slerp(finalCameraOut.Rotation.Quaternion(), output.Rotation.Quaternion(), cameraLayer.Value->GetAlpha()).Rotator();
+			finalCameraOut.FOV = FMath::Lerp(finalCameraOut.FOV, output.FOV, cameraLayer.Value->GetAlpha());
 		}
 	}
 
@@ -77,5 +79,13 @@ void UKMSpringArmComponent::TickComponent(float deltaTime, enum ELevelTick tickT
 	RelativeSocketLocation = relCamTM.GetLocation();
 	RelativeSocketRotation = relCamTM.GetRotation();
 
+	if (IsValid(GetOwner()))
+	{
+		if (UCameraComponent* cameraComponent = GetOwner()->GetComponentByClass<UCameraComponent>())
+		{
+			cameraComponent->SetFieldOfView(finalCameraOut.FOV);
+		}
+	}
+	
 	UpdateChildTransforms();
 }

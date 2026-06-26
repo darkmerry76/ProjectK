@@ -33,6 +33,19 @@ void FKMParameterScalar::Evaluate(float alpha, TInstancedStruct<FKMParameterValu
 	outValue.GetMutable<FKMParameterScalarValue>().Value = v;
 }
 
+float FKMParameterSimpleScalar::Evaluate(float alpha) const
+{
+	if (!IsValid(ScalarCurve))
+	{
+		return Value * alpha;
+	}
+	float minTime, maxTime;
+	ScalarCurve->GetTimeRange(minTime, maxTime);
+
+	float currTime = FMath::Lerp(minTime, maxTime, FMath::Clamp(alpha, 0.f,1.f));
+	return ScalarCurve->GetFloatValue(currTime) * Value;
+}
+
 FVector FKMParameterVector::GetVectorValue(float alpha) const
 {
 	if (IsValid(VectorCurve))

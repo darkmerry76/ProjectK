@@ -1,4 +1,6 @@
 #include "KMCameralayerGameplay.h"
+
+#include "Camera/CameraComponent.h"
 #include "Camera/KMCameraActorBase.h"
 #include "Character/KMCharacter.h"
 
@@ -37,6 +39,14 @@ void UKMCameralayerGameplay::Initalize()
 	CameraLagSpeed = FMath::Max(CameraLagSpeed, 0.f);
 
 	UpdateDesiredArmLocation(false, false, false, 0.f);
+
+	if (IsValid(GetTargetActor()))
+	{
+		if (UCameraComponent* cameraComponent = GetTargetActor()->GetComponentByClass<UCameraComponent>())
+		{
+			DefaultFOV = cameraComponent->FieldOfView;
+		}
+	}
 }
 
 FVector UKMCameralayerGameplay::GetUnfixedCameraPosition() const
@@ -214,4 +224,5 @@ void UKMCameralayerGameplay::Evaluate(float deltaTime, FEMCameraOutput& output)
 
 	output.Location = CameraTransform.GetLocation();
 	output.Rotation = CameraTransform.GetRotation().Rotator();
+	output.FOV = DefaultFOV;
 }

@@ -47,10 +47,10 @@ public:
 };
 
 USTRUCT()
-struct FKMParameterScalarValue : public FKMParameterValueBase
+struct KMGAME_API FKMParameterScalarValue : public FKMParameterValueBase
 {
-	GENERATED_BODY()
-
+	GENERATED_USTRUCT_BODY()
+	
 	float Value = 1.f;
 
 	virtual void Add(const FKMParameterValueBase* other) override
@@ -83,6 +83,20 @@ struct KMGAME_API FKMParameterScalar : public FKMParameterBase
 	TObjectPtr<class UCurveFloat> ScalarCurve;
 	
 	virtual void Evaluate(float alpha, TInstancedStruct<FKMParameterValueBase>& outValue) const override;
+};
+
+USTRUCT(BlueprintType, Blueprintable)
+struct KMGAME_API FKMParameterSimpleScalar
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float Value = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	TObjectPtr<class UCurveFloat> ScalarCurve;
+	
+	float Evaluate(float alpha) const;
 };
 
 USTRUCT()

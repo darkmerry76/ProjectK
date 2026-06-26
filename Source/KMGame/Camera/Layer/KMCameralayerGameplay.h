@@ -97,6 +97,8 @@ private:
 	FQuat RelativeSocketRotation;
 
 	FTransform CameraTransform;
+
+	float DefaultFOV = 45.f;
 	
 public:
 	static const FName SocketName;

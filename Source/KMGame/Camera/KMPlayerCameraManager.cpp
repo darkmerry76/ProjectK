@@ -60,6 +60,11 @@ void AKMPlayerCameraManager::SetCamera(FName cameraName, AActor* newTargetActor)
 	}
 }
 
+AKMCameraActorBase* AKMPlayerCameraManager::GetCurrentCamera() const
+{
+	return CurrentCamera;
+}
+
 void AKMPlayerCameraManager::UpdateViewTarget(FTViewTarget& outVT, float deltaTime)
 {
 	Super::UpdateViewTarget(outVT, deltaTime);

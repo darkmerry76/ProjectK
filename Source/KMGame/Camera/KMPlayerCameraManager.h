@@ -32,4 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetCamera(FName cameraName, AActor* newTargetActor);
+
+	UFUNCTION(BlueprintPure)
+	class AKMCameraActorBase* GetCurrentCamera() const;
 };

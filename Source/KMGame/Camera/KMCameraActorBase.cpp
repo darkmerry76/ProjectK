@@ -13,8 +13,8 @@ void AKMCameraActorBase::BeginPlay()
 
 	for (auto layer : CameraLayers)
 	{
-		layer.Value->Initalize();
 		layer.Value->SetCameraActor(this);
+		layer.Value->Initalize();
 	}
 }
 

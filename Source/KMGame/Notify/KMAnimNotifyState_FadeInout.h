@@ -3,41 +3,31 @@
 #include "CoreMinimal.h"
 #include "KMAnimNotifyState.h"
 #include "Core/KMParameterValue.h"
-#include "KMAnimNotifyState_Camera.generated.h"
+#include "KMAnimNotifyState_FadeInout.generated.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UKMAnimNotifyState_Camera
+// UKMAnimNotifyState_FadeInout
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Camera")
-class KMGAME_API UKMAnimNotifyState_Camera : public UKMAnimNotifyState
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] FadeInout")
+class KMGAME_API UKMAnimNotifyState_FadeInout : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
-	TObjectPtr<class UCameraAnimationSequence> CameraSequence;
+	FKMParameterSimpleScalar FadeIn;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="CameraSequence"))
-	FKMParameterSimpleScalar BlendIn;
-
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
-	float BlendInTime = 0.2f;
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="FadeIn"))
+	float FadeInTime = 0.2f;
 	
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
-    FKMParameterSimpleScalar BlendOut;
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="FadeInTime"))
+    FKMParameterSimpleScalar FadeOut;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendOut"))
-	float BlendOutTime = 0.2f;
-    	
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="FadeOut"))
+	float FadeOutTime = 0.2f;
+
 	UPROPERTY(Transient)
 	TMap<class USkeletalMeshComponent*, float> AnimationTimes;
-
-	UPROPERTY()
-	TWeakObjectPtr<class UKMCameralayerOverlaySequence> CameraOverlayLayer;
-
-protected:
-	TSharedPtr<struct FEMCameraCache> CameraCache;
-	TWeakPtr<class FEMCameraCacheManager> CameraCacheManager;
 
 protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;

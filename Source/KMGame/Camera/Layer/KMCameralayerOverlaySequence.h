@@ -10,5 +10,11 @@ class KMGAME_API UKMCameralayerOverlaySequence : public UKMCameralayerBase
 	GENERATED_UCLASS_BODY()
 	
 protected:
+	FEMCameraOutput RelativeCameraData;
+	
+public:
+	void SetRelativeCameraData(const FEMCameraOutput& newRelativeCameraData);
+	
+protected:
 	virtual void Evaluate(float deltaTime, FEMCameraOutput& output) override;
 };
