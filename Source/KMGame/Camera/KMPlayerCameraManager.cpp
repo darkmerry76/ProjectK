@@ -1,11 +1,11 @@
 ﻿#include "KMPlayerCameraManager.h"
 #include "KMCameraActorBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Layer/KMCameraLayerBase.h"
 
 AKMPlayerCameraManager::AKMPlayerCameraManager(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
 }
 
 AKMPlayerCameraManager* AKMPlayerCameraManager::GetActiveCameraManager(const UObject* worldContextObject)
@@ -21,6 +21,16 @@ void AKMPlayerCameraManager::BeginPlay()
 void AKMPlayerCameraManager::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
 	Super::EndPlay(endPlayReason);
+}
+
+UKMCameralayerBase* AKMPlayerCameraManager::GetCameraLayer(EKMCameralayerType cameraLayerType) const
+{
+	const TObjectPtr<UKMCameralayerBase>* existCameraLayer = AdvanceLayers.Find(cameraLayerType);
+	if (!existCameraLayer || !*existCameraLayer)
+	{
+		return nullptr;
+	}
+	return *existCameraLayer;
 }
 
 void AKMPlayerCameraManager::SetViewTarget(AActor* newViewTarget, FViewTargetTransitionParams transitionParams)
@@ -64,8 +74,8 @@ void AKMPlayerCameraManager::UpdateViewTarget(FTViewTarget& outVT, float deltaTi
 {
 	Super::UpdateViewTarget(outVT, deltaTime);
 
-	outVT.POV.FOV = 30.f;
-/*	outVT.POV.Location = CurrentCamera->GetCameraLocation();
+/*	outVT.POV.FOV = 30.f;
+	outVT.POV.Location = CurrentCamera->GetCameraLocation();
 	outVT.POV.Rotation = CurrentCamera->GetCameraRotation();
 	outVT.POV.ProjectionMode = CurrentCamera->GetCameraProjectionMode();
 	outVT.POV.OrthoWidth = CurrentCamera->GetCameraOrthoWidth();*/

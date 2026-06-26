@@ -1,9 +1,19 @@
-#include "KMCameraLayerBase.h"
+#include "KMCameralayerBase.h"
 
-UKMCameraLayerBase::UKMCameraLayerBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+UKMCameralayerBase::UKMCameralayerBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 }
 
-void UKMCameraLayerBase::Evalate(float deltaTime, FEMCameraOutput& output)
+void UKMCameralayerBase::SetAlpha(float newAlpha)
+{
+	Alpha = newAlpha;
+}
+
+float UKMCameralayerBase::GetAlpha() const
+{
+	return Alpha;
+}
+
+void UKMCameralayerBase::Evaluate(float deltaTime, FEMCameraOutput& output)
 {
 }
