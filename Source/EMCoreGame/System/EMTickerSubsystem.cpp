@@ -4,15 +4,18 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UEMTickerSubsystem
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-UEMTickerSubsystem* UEMTickerSubsystem::GetTickerSubsystem(UObject* WorldContextObject)
+UEMTickerSubsystem* UEMTickerSubsystem::GetTickerSubsystem(UObject* worldContextObject)
 {
-	UGameInstance* GameInstance = Cast<UGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	if (false == IsValid(GameInstance))
+	if (!IsValid(worldContextObject))
 	{
 		return nullptr;
 	}
-
-	return GameInstance->GetSubsystem<UEMTickerSubsystem>();
+	UWorld* world = worldContextObject->GetWorld();
+	if (!IsValid(world))
+	{
+		return nullptr;
+	}
+	return world->GetSubsystem<UEMTickerSubsystem>();
 }
 
 FEMTickerHandle UEMTickerSubsystem::AddTicker(UObject* WorldContextObject, FBTMTickerDynamicDelegate EventDelegate, double Duration, double StartEplipseTime)
@@ -182,7 +185,7 @@ void UEMTickerSubsystem::Tick(float DeltaTime)
 		double EplipsedSeconds = Tickers[TickerIndex].Data->GetElipsedSeconds(WorldSeconds);
 		if (Tickers[TickerIndex].Data->GetElipsedSecondsAbs(WorldSeconds) >= FMath::Abs(Tickers[TickerIndex].Data->Duration))
 		{
-			Tickers[TickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::UPDATED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
+			Tickers[TickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::REMOVED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
 			Tickers[TickerIndex].Data->EventDynamic.ExecuteIfBound(eTickerEventType::REMOVED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
 			RemoveTickerAt(TickerIndex);
 			continue;
@@ -209,4 +212,9 @@ bool UEMTickerSubsystem::IsTickable() const
 ETickableTickType UEMTickerSubsystem::GetTickableTickType() const
 {
 	return HasAnyFlags(RF_ClassDefaultObject) ? ETickableTickType::Never : ETickableTickType::Always;
+}
+
+bool UEMTickerSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
+{
+	return true;
 }

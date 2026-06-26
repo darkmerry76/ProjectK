@@ -76,14 +76,14 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UEMTickerSubsystem
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-UCLASS(Blueprintable, BlueprintType, Abstract)
-class EMCOREGAME_API UEMTickerSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
+UCLASS(Blueprintable, BlueprintType)
+class EMCOREGAME_API UEMTickerSubsystem : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (WorldContext = "WorldContextObject"))
-	static UEMTickerSubsystem* GetTickerSubsystem(UObject* WorldContextObject);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (WorldContext = "worldContextObject"))
+	static UEMTickerSubsystem* GetTickerSubsystem(UObject* worldContextObject);
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
 	static FEMTickerHandle AddTicker(UObject* WorldContextObject, FBTMTickerDynamicDelegate EventDelegate, double Duration = 1.f, double StartElapsedTime = 0.f);
@@ -122,6 +122,8 @@ protected:
 	virtual ETickableTickType GetTickableTickType() const override;
 	virtual bool IsTickable() const override;
 	// FTickableGameObject end
+
+	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 
 protected:
 	TArray<FEMTickerHandle> Tickers;
