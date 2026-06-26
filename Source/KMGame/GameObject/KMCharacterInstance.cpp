@@ -1,9 +1,12 @@
 #include "KMCharacterInstance.h"
+
+#include "Actor/KMItemAppearanceActor.h"
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityEffect.h"
@@ -175,6 +178,86 @@ void UKMCharacterInstance::StartForceMove(const float& newDirection)
 		return;
 	}
 	MoveAccelate = newDirection;
+}
+
+void UKMCharacterInstance::HitCheckClear()
+{
+	HitCheckData.Actors.Empty();	
+}
+
+void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orientationTransform)
+{
+	if (GetCharacter() == hitActor)
+	{
+		return;
+	}
+	if (HitCheckData.Actors.Contains(hitActor))
+	{
+		return;
+	}
+
+	AKMCharacter* hitharacter = Cast<AKMCharacter>(hitActor);
+	if (!IsValid(hitharacter))
+	{
+		return;
+	}
+
+	UKMCharacterInstance* hitCharacterInstance = hitharacter->GetCharacterInstance();
+	check(IsValid(hitCharacterInstance));
+
+	if (hitCharacterInstance->IsDead() ||
+		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag) ||
+		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
+	{
+		return;
+	}
+
+	HitCheckData.Actors.FindOrAdd(hitActor);
+
+	Inflict(hitCharacterInstance);
+	if (!SkillHandler->GetLatestActiveSkillInstance().IsValid())
+	{
+		return;
+	}
+	
+	TSharedPtr<FKMSkillInstance> latestSkillInstance = MakeShared<FKMSkillInstance>(*SkillHandler->GetLatestActiveSkillInstance().Get());
+	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitharacter->GetRootComponent());
+	FVector closestPoint;
+	rootComp->GetClosestPointOnCollision(orientationTransform.GetLocation(), closestPoint);
+
+	if (latestSkillInstance.IsValid())
+	{
+		latestSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
+		latestSkillInstance->Target->Targets.Emplace(hitharacter->GetCharacterInstance()->GetId());
+				
+		UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
+		check(IsValid(hitCharacterSkillHandler));
+
+		hitCharacterInstance->Hit(this, latestSkillInstance, closestPoint);
+	}
+}
+void UKMCharacterInstance::BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter)
+{
+	if (objectTypeQuery.IsEmpty())
+	{
+		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	}
+	if (!IsValid(actorClassFilter))
+	{
+		actorClassFilter = ACharacter::StaticClass();
+	}
+
+	TArray<AActor*> overlapActors;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Emplace(GetCharacter());
+	if (UKismetSystemLibrary::BoxOverlapActorsWithOrientation(this, orientationTransform.GetLocation(),
+		orientationTransform.GetScale3D(), orientationTransform.GetRotation().Rotator(), objectTypeQuery, actorClassFilter, ActorsToIgnore, overlapActors))
+	{
+		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
+		{
+			HitCollection(*actorItr, orientationTransform);
+		}
+	}
 }
 
 void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
@@ -691,6 +774,13 @@ void UKMCharacterInstance::OnAddGameplayTag_Implementation(const FGameplayTag& n
 			characterMoveComponent->SweepPawnHitDelegate.AddUObject(this, &ThisClass::OnUpdatePawnThrowOverlapResults);
 		}
 	}
+	else if (newTag == FKMGameplayTagName::Event_Item_Launch)
+	{
+		if (IsValid(ownerCharacter->WeaponInstance))
+		{
+			ownerCharacter->WeaponInstance->Launch();
+		}
+	}
 }
 
 void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag)
@@ -713,6 +803,13 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 		{
 			ThrowOverlapActors.Reset();
 			characterMoveComponent->SweepPawnHitDelegate.RemoveAll(this);
+		}
+	}
+	else if (removedTag == FKMGameplayTagName::Event_Item_Launch)
+	{
+		if (IsValid(ownerCharacter->WeaponInstance))
+		{
+			ownerCharacter->WeaponInstance->LaunchStop();
 		}
 	}
 }

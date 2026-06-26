@@ -16,6 +16,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class AKMCameraActorBase> CurrentCamera;
 
+	TArray<TObjectPtr<class UKMCameraLayerBase>> Layers;
+
 protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void UpdateViewTarget(FTViewTarget& outVT, float deltaTime) override;
@@ -25,6 +27,9 @@ protected:
 		ECameraShakePlaySpace playSpace = ECameraShakePlaySpace::CameraLocal, FRotator userPlaySpaceRot = FRotator::ZeroRotator) override;
 	
 public:
+	UFUNCTION(BlueprintPure, meta=(WorldContext="worldContextObject"))
+	static AKMPlayerCameraManager* GetActiveCameraManager(const UObject* worldContextObject);
+	
 	virtual void SetViewTarget(class AActor* newViewTarget, FViewTargetTransitionParams transitionParams = FViewTargetTransitionParams()) override;
 
 	UFUNCTION(BlueprintCallable)

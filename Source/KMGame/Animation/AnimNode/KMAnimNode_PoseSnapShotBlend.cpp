@@ -3,174 +3,88 @@
 #include "Character/KMChainAnimInstance.h"
 #include "Animation/AttributesRuntime.h"
 
-void FKMAnimNode_PoseSnapShotBlend::Initialize_AnyThread(const FAnimationInitializeContext& Context)
+void FKMAnimNode_PoseSnapShotBlend::Initialize_AnyThread(const FAnimationInitializeContext& context)
 {
-	AttackPose.Initialize(Context);
+	AttackPose.Initialize(context);
 }
 
-void FKMAnimNode_PoseSnapShotBlend::Update_AnyThread(const FAnimationUpdateContext& Context)
+void FKMAnimNode_PoseSnapShotBlend::Update_AnyThread(const FAnimationUpdateContext& context)
 {
-	AttackPose.Update(Context);
+	AttackPose.Update(context);
 
-	Time += Context.GetDeltaTime() * 20.f;
+	Time += context.GetDeltaTime() * 20.f;
 }
 
-void FKMAnimNode_PoseSnapShotBlend::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context)
+void FKMAnimNode_PoseSnapShotBlend::CacheBones_AnyThread(const FAnimationCacheBonesContext& context)
 {
-	AttackPose.CacheBones(Context);
+	AttackPose.CacheBones(context);
 
-	const FBoneContainer& BoneContainer =
-		Context.AnimInstanceProxy->GetRequiredBones();
+	const FBoneContainer& boneContainer = context.AnimInstanceProxy->GetRequiredBones();
 
-	ChainRootBone.Initialize(BoneContainer);
-
-	ChainRootIndex =
-		ChainRootBone.GetCompactPoseIndex(BoneContainer);
+	ChainRootBone.Initialize(boneContainer);
+	ChainRootIndex = ChainRootBone.GetCompactPoseIndex(boneContainer);
 }
 
-void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& Output)
+void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 {
-	FPoseContext AttackContext(Output);
-	AttackPose.Evaluate(AttackContext);
-	Output = AttackContext;
-
-	const FBoneContainer& BoneContainer = Output.Pose.GetBoneContainer();
+	FPoseContext attackContext(output);
+	AttackPose.Evaluate(attackContext);
 	
-	const UKMChainAnimInstance* animInstance = Cast<UKMChainAnimInstance>(AttackContext.GetAnimInstanceObject());
+	output = attackContext;
 
-	FPoseSnapshot Snapshot = animInstance->Snapshot;
+	const FBoneContainer& boneContainer = output.Pose.GetBoneContainer();
+	const UKMChainAnimInstance* animInstance = Cast<UKMChainAnimInstance>(attackContext.GetAnimInstanceObject());
 
+	FPoseSnapshot snapshot = animInstance->Snapshot;
 	if (animInstance->GetWorld()->IsGameWorld() == true)
 	{
-		if (Snapshot.bIsValid == false)
-		{
-			Output = AttackContext;
-			return;
-		}
-
 		if (!ChainRootIndex.IsValid() || !animInstance->EnableAttack)
 		{
 			return;
 		}
 	}
 	
-    const float ClampedAlpha = FMath::Clamp(animInstance->GetWorld()->IsGameWorld() == true ? animInstance->BlendAlpha : Alpha, 0.f, 1.f);
+    const float clampedAlpha = animInstance->EnableAttack ? animInstance->BlendAlpha : Alpha;
 
-    int32 RootIndex = ChainRootIndex.GetInt();
-    int32 BoneCount = Output.Pose.GetNumBones();
+	int32 rootIndex = ChainRootIndex.GetInt();
+    int32 boneCount = output.Pose.GetNumBones();
 
-	float PrevAngle = 0;
-	int32 ChainLength = BoneCount - RootIndex;
-    for (int32 i = RootIndex; i < BoneCount; i++)
+	float prevAngle = 0;
+	int32 chainLength = boneCount - rootIndex;
+    for (int32 i = rootIndex; i < boneCount; i++)
     {
-        FCompactPoseBoneIndex BoneIndex(i);
-
-        if (!BoneContainer.BoneIsChildOf(BoneIndex, ChainRootIndex))
+        FCompactPoseBoneIndex boneIndex(i);
+        if (!boneContainer.BoneIsChildOf(boneIndex, ChainRootIndex))
             continue;
 
-    	FTransform BoneTM = Output.Pose[BoneIndex];
-    	if (BoneIndex == ChainRootIndex)
+    	FTransform boneTM = output.Pose[boneIndex];
+    	if (boneIndex == ChainRootIndex)
     	{
-    		// 위치는 따라가되 rotation은 고정
-    		BoneTM.SetRotation(FQuat::Identity);
-
-    		Output.Pose[BoneIndex] = BoneTM;
+    		boneTM.SetRotation(FQuat::Identity);
+    		output.Pose[boneIndex] = boneTM;
     		continue;
     	}
+    	
+        FVector refLoc = boneTM.GetTranslation();
+    	FVector newLoc = refLoc * clampedAlpha;
 
-        
+    	boneTM.SetTranslation(newLoc);
 
-        FVector RefLoc = BoneTM.GetTranslation();
-    	FVector NewLoc = RefLoc * ClampedAlpha;
+	   	const int32 chainIndex = i - rootIndex;
 
-    	BoneTM.SetTranslation(NewLoc);
+    	const float t = static_cast<float>(chainIndex) / static_cast<float>(chainLength);
+    	const float envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
+    	const float finalAmplitude = WaveAmplitude * envelope * (1.0f - clampedAlpha);
+    	const float phase = chainIndex * WaveFrequency + Time * WaveSpeed - chainIndex;
+    	const float angle = FMath::Sin(phase) * finalAmplitude;
 
-	   	const int32 ChainIndex = i - RootIndex;
+    	const float localAngle = angle - prevAngle;
+    	prevAngle = angle;
 
-    	const float t = (float)ChainIndex / (float)ChainLength;
-    	const float Envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
-    	const float FinalAmplitude =
-			WaveAmplitude * Envelope * (1.0f - ClampedAlpha);
+    	const FQuat WaveRot(FVector::UpVector,FMath::DegreesToRadians(localAngle));
+    	const FQuat WaveRot2(FVector::RightVector,FMath::DegreesToRadians(localAngle));
 
-    	const float Phase =
-			ChainIndex * WaveFrequency +
-			Time * WaveSpeed -
-			ChainIndex;
-
-    	const float Angle =
-			FMath::Sin(Phase) * FinalAmplitude;
-
-    	const float LocalAngle = Angle - PrevAngle;
-    	PrevAngle = Angle;
-
-    	const FQuat WaveRot(
-			FVector::UpVector,
-			FMath::DegreesToRadians(LocalAngle)
-		);
-    	const FQuat WaveRot2(FVector::RightVector,
-	FMath::DegreesToRadians(LocalAngle)
-		);
-
-    	BoneTM.SetRotation(WaveRot);
-
-    	Output.Pose[BoneIndex] = BoneTM;
+    	boneTM.SetRotation(WaveRot);
+    	output.Pose[boneIndex] = boneTM;
     }
-
-/*	if (animInstance->GetWorld()->IsGameWorld() == true)
-	{
-		FCompactPose SnapshotPose;
-		FBlendedCurve SnapshotCurve;
-
-		SnapshotPose.SetBoneContainer(&BoneContainer);
-		SnapshotPose.ResetToRefPose();
-
-		for (int32 i = 0; i < Snapshot.BoneNames.Num(); ++i)
-		{
-			const FName BoneName = Snapshot.BoneNames[i];
-
-			const int32 MeshBoneIndex =
-				BoneContainer.GetReferenceSkeleton().FindBoneIndex(BoneName);
-
-			if (MeshBoneIndex == INDEX_NONE)
-				continue;
-
-			FCompactPoseBoneIndex CompactIndex =
-				BoneContainer.MakeCompactPoseIndex(FMeshPoseBoneIndex(MeshBoneIndex));
-
-			if (CompactIndex != INDEX_NONE)
-			{
-				SnapshotPose[CompactIndex] =
-					Snapshot.LocalTransforms[i];
-			}
-		}
-
-		float snapShotBlendAlpha = FMath::Clamp(ClampedAlpha * 5.f, 0.f, 1.f);
-		
-		for (int32 i = RootIndex; i < BoneCount; ++i)
-		{
-			FCompactPoseBoneIndex BoneIndex(i);
-
-			if (!BoneContainer.BoneIsChildOf(BoneIndex, ChainRootIndex))
-				continue;
-
-			FTransform& PoseTM = Output.Pose[BoneIndex];
-			const FTransform& SnapTM = SnapshotPose[BoneIndex];
-
-			PoseTM.SetTranslation(
-				FMath::Lerp(
-				SnapTM.GetTranslation(),
-					PoseTM.GetTranslation(),
-					snapShotBlendAlpha
-				)
-			);
-
-			PoseTM.SetRotation(
-				FQuat::Slerp(
-				SnapTM.GetRotation(),
-					PoseTM.GetRotation(),
-					snapShotBlendAlpha
-				)
-			);
-		}
-	}*/
 }

@@ -25,9 +25,9 @@ FString UKMAnimNotifyState_Hit::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	AActor* ownerActor = MeshComp->GetOwner();
+	AActor* ownerActor = meshComp->GetOwner();
 	if(!IsValid(ownerActor))
 	{
 		return;
@@ -41,118 +41,50 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnim
 	}
 #endif
 
-	HitCheckPair.FindOrAdd(MeshComp) = FKMHitCheckData();
+	HitCheckPair.FindOrAdd(meshComp) = FKMHitCheckData();
 }
 
-void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	AActor* ownerActor = MeshComp->GetOwner();
+	AActor* ownerActor = meshComp->GetOwner();
 	if(!IsValid(ownerActor))
 	{
 		return;
 	}
 
-	UKMSkillHandler* ownerCharacterSkillHandler = nullptr;
-	UKMCharacterInstance* ownerCharacterInstance = nullptr;
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
-	if (IsValid(ownerCharacter))
-	{
-		ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
-		check(IsValid(ownerCharacterInstance));
-		
-		ownerCharacterSkillHandler = ownerCharacterInstance->GetSkillHandler();
-	}
-	
-	if (!IsValid(ownerCharacterSkillHandler))
+	if (!IsValid(ownerCharacter))
 	{
 		return;
 	}
 
-	if (!ownerCharacterSkillHandler->GetLatestActiveSkillInstance().IsValid())
+	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacter))
 	{
 		return;
 	}
 	
-	FTransform socketTransform = MeshComp->GetSocketTransform(SocketName);
+	FTransform socketTransform = meshComp->GetSocketTransform(SocketName);
 	if (!FollowSocketRotation)
 	{
 		socketTransform.SetRotation(ownerActor->GetActorTransform().GetRotation());
 	}
 	socketTransform.SetRotation(socketTransform.GetRotation() * HitTransform.GetRotation());
 	socketTransform.SetLocation(socketTransform.GetLocation() + (socketTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
-
-	FKMHitCheckData* hitCheckSet = HitCheckPair.Find(MeshComp);
-	check(hitCheckSet);
-	
-	TArray<AActor*> overlapActors;
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Emplace(ownerCharacter);
-	if (UKismetSystemLibrary::BoxOverlapActorsWithOrientation(MeshComp, socketTransform.GetLocation(),
-		HitTransform.GetScale3D(), socketTransform.GetRotation().Rotator(), ObjectTypeQuery, ActorClassFilter, ActorsToIgnore, overlapActors))
-	{
-		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
-		{
-			if (ownerActor == *actorItr)
-			{
-				continue;
-			}
-			if (hitCheckSet->Actors.Contains(*actorItr))
-			{
-				continue;
-			}
-
-			AKMCharacter* hitharacter = Cast<AKMCharacter>(*actorItr);
-			if (!IsValid(hitharacter))
-			{
-				continue;
-			}
-
-			UKMCharacterInstance* hitCharacterInstance = hitharacter->GetCharacterInstance();
-			check(IsValid(hitCharacterInstance));
-
-			if (hitCharacterInstance->IsDead() ||
-				hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag) ||
-				hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
-			{
-				continue;
-			}
-
-			hitCheckSet->Actors.FindOrAdd(*actorItr);
-
-			ownerCharacterInstance->Inflict(hitCharacterInstance);
-			if (!ownerCharacterSkillHandler->GetLatestActiveSkillInstance().IsValid())
-			{
-				continue;
-			}
-			TSharedPtr<FKMSkillInstance> latestSkillInstance = MakeShared<FKMSkillInstance>(*ownerCharacterSkillHandler->GetLatestActiveSkillInstance().Get());
-			UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitharacter->GetRootComponent());
-			FVector closestPoint;
-			rootComp->GetClosestPointOnCollision(socketTransform.GetLocation(), closestPoint);
-
-			if (latestSkillInstance.IsValid())
-			{
-				latestSkillInstance->Target = MakeShared<FKMLockOnCluster>(ownerCharacterInstance);
-				latestSkillInstance->Target->Targets.Emplace(hitharacter->GetCharacterInstance()->GetId());
-				
-				UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
-				check(IsValid(hitCharacterSkillHandler));
-
-				hitCharacterInstance->Hit(ownerCharacterInstance, latestSkillInstance, closestPoint);
-			}
-		}
-	}
+	socketTransform.SetScale3D(HitTransform.GetScale3D());
+	ownerCharacterInstance->BoxHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
 }
 
 #if WITH_EDITOR
-void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* PDI, USkeletalMeshComponent* MeshComp, const UAnimSequenceBase* Animation, const FAnimNotifyEvent& NotifyEvent) const
+void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* pDI, USkeletalMeshComponent* meshComp, const UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const
 {
-	AActor* ownerActor = MeshComp->GetOwner();
+	AActor* ownerActor = meshComp->GetOwner();
 	if(!IsValid(ownerActor))
 	{
 		return;
 	}
 	
-	FTransform socketTransform = MeshComp->GetSocketTransform(SocketName);
+	FTransform socketTransform = meshComp->GetSocketTransform(SocketName);
 	if (!FollowSocketRotation)
 	{
 		socketTransform.SetRotation(ownerActor->GetActorTransform().GetRotation());
@@ -160,12 +92,7 @@ void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* PDI, USkeleta
 	socketTransform.SetRotation(socketTransform.GetRotation() * HitTransform.GetRotation());
 	socketTransform.SetLocation(socketTransform.GetLocation() + (socketTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
 
-	DrawWireBox(
-		PDI,
-		socketTransform.ToMatrixWithScale(),
-		FBox(HitTransform.GetScale3D() * -1.f, HitTransform.GetScale3D()),
-		FColor::Red,
-		SDPG_World);
+	DrawWireBox(pDI, socketTransform.ToMatrixWithScale(), FBox(HitTransform.GetScale3D() * -1.f, HitTransform.GetScale3D()), FColor::Red,SDPG_World);
 }
 #endif
 
@@ -184,5 +111,13 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSe
 		EditorDrawDebugComponent->DestroyComponent();
 	}
 #endif
-	HitCheckPair.Remove(MeshComp);
+
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
+	if (IsValid(ownerCharacter))
+	{
+		if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
+		{
+			ownerCharacterInstance->HitCheckClear();
+		}
+	}
 }

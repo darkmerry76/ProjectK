@@ -14,6 +14,7 @@ public:
 	static const FGameplayTag Event_Hit_Normal_Tag;
 	static const FGameplayTag Event_Hit_Projectile_Tag;
 	static const FGameplayTag Event_Throw_Tag;
+	static const FGameplayTag Event_Item_Launch;
 	static const FGameplayTag Event_Grab_Tag;
 	static const FGameplayTag Event_Bound_Wall_Tag;
 	static const FGameplayTag Event_Trigger_Tag;

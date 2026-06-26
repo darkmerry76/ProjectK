@@ -43,8 +43,8 @@ public:
 	float DeltaTime = 1.f / 60.f;
 
 public:
-	virtual void CacheBones_AnyThread(const FAnimationCacheBonesContext& Context) override;
-	virtual void Initialize_AnyThread(const FAnimationInitializeContext& Context) override;
-	virtual void Update_AnyThread(const FAnimationUpdateContext& Context) override;
-	virtual void Evaluate_AnyThread(FPoseContext& Output) override;
+	virtual void CacheBones_AnyThread(const FAnimationCacheBonesContext& context) override;
+	virtual void Initialize_AnyThread(const FAnimationInitializeContext& context) override;
+	virtual void Update_AnyThread(const FAnimationUpdateContext& context) override;
+	virtual void Evaluate_AnyThread(FPoseContext& output) override;
 };

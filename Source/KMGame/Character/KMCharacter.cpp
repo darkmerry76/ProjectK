@@ -47,7 +47,7 @@ void AKMCharacter::BeginPlay()
 		AKMItemAppearanceActor* itemActorCDO = itemPDA->ItemClass->GetDefaultObject<AKMItemAppearanceActor>();
 		check(IsValid(itemActorCDO));
 
-		WeaponInstance = itemActorCDO->CreateInstance(this);
+		WeaponInstance = itemActorCDO->CreateInstance(this, itemPDA->InstanceClass);
 		WeaponInstance->Spawn();
 
 		WeaponInstance->Equip(GetMesh(), TEXT("Bip001-L-Hand"));
@@ -57,6 +57,11 @@ void AKMCharacter::BeginPlay()
 void AKMCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
 	Super::EndPlay(endPlayReason);
+
+	if (IsValid(WeaponInstance))
+	{
+		WeaponInstance->Despawn();
+	}
 }
 
 UEMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const

@@ -1,9 +1,16 @@
 ﻿#include "KMPlayerCameraManager.h"
 #include "KMCameraActorBase.h"
+#include "Kismet/GameplayStatics.h"
 
 AKMPlayerCameraManager::AKMPlayerCameraManager(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
+	
+}
+
+AKMPlayerCameraManager* AKMPlayerCameraManager::GetActiveCameraManager(const UObject* worldContextObject)
+{
+	return Cast<AKMPlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(worldContextObject, 0));
 }
 
 void AKMPlayerCameraManager::BeginPlay()
@@ -57,8 +64,8 @@ void AKMPlayerCameraManager::UpdateViewTarget(FTViewTarget& outVT, float deltaTi
 {
 	Super::UpdateViewTarget(outVT, deltaTime);
 
-/*	outVT.POV.FOV = CurrentCamera->GetFieldOfView();
-	outVT.POV.Location = CurrentCamera->GetCameraLocation();
+	outVT.POV.FOV = 30.f;
+/*	outVT.POV.Location = CurrentCamera->GetCameraLocation();
 	outVT.POV.Rotation = CurrentCamera->GetCameraRotation();
 	outVT.POV.ProjectionMode = CurrentCamera->GetCameraProjectionMode();
 	outVT.POV.OrthoWidth = CurrentCamera->GetCameraOrthoWidth();*/

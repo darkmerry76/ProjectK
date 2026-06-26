@@ -312,7 +312,6 @@ FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, flo
 	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
 }
 
-
 void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation)
 {
 	AKMCharacter* character = GetOwnerCharacter();

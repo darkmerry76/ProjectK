@@ -256,8 +256,18 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	newCharacterInstance->SetTable(characterTable);
 	newCharacterInstance->SetTransform(transform);
 
+
+	newCharacter->bIsEditorPreviewActor = false;
 	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(transform, false);
+
+#if WITH_EDITOR
+	if (!newCharacter->HasActorBegunPlay())
+	{
+		newCharacter->DispatchBeginPlay();
+	}
+#endif
+	
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	return newCharacterInstance;

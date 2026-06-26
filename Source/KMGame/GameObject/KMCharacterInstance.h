@@ -4,6 +4,7 @@
 #include "Core/KMDefine.h"
 #include "Stat/KMSecondaryBaseStat.h"
 #include "KMGameObjectInstance.h"
+#include "Notify/KMAnimNotifyState_Hit.h"
 #include "Skill/KMSkillTypes.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/EMTickerSubsystem.h"
@@ -120,9 +121,18 @@ public:
 	void OnSensorResult(const TArray<AActor*>& resultActors);
 	
 	static TArray<FKMSkillKey> DefaultPassiveSkills;
+	
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
+	UFUNCTION(BlueprintCallable)
+	void HitCheckClear();
+
+	UFUNCTION(BlueprintCallable)
+	void BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter);
+
 protected:
+	void HitCollection(class AActor* hitActor,const FTransform& orientationTransform);
+	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;
 
@@ -221,4 +231,6 @@ protected:
 	FEMTickerHandle GreatCancelTimerHandle;
 	FEMTickerHandle PerfectCancelTimerHandle;
 	int32 ComboCount = 0;
+
+	FKMHitCheckData HitCheckData;
 };

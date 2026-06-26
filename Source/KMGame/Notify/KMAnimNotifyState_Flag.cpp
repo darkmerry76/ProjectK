@@ -11,7 +11,7 @@ void UKMAnimNotifyState_Flag::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
 	{
-		ownerCharacter->GetCharacterInstance()->GetSkillHandler()->SetAbilityFlag(AbilityFlag);
+		//ownerCharacter->GetCharacterInstance()->GetSkillHandler()->SetAbilityFlag(AbilityFlag);
 	}
 }
 
@@ -19,6 +19,6 @@ void UKMAnimNotifyState_Flag::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
 	{
-		ownerCharacter->GetCharacterInstance()->GetSkillHandler()->ClearAbilityFlag(AbilityFlag);
+		//ownerCharacter->GetCharacterInstance()->GetSkillHandler()->ClearAbilityFlag(AbilityFlag);
 	}
 }

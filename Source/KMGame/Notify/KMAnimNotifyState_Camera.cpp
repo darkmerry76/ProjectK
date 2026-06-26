@@ -2,6 +2,8 @@
 
 #include "CameraAnimationSequence.h"
 #include "EMMartialArtsModule.h"
+#include "Camera/KMPlayerCameraManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Sequencer/EMCameraCacheManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,9 +46,13 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 {
 	if (CameraCache.IsValid())
 	{
+		AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
+		if(IsValid(playerCameraManager))
+		{
 		if (float* alphaTime = AnimationTimes.Find(meshComp))
 		{
-			CameraCache->Evaluate(*alphaTime);
+			FEMCameraOutput cameraOutput;
+			CameraCache->Evaluate(*alphaTime, cameraOutput);
 
 			(*alphaTime) += frameDeltaTime;
 		}
