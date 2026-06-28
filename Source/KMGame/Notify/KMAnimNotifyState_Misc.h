@@ -19,6 +19,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(EditCondition=bIsOverride_GlobalTimedilation, AllowPrivateAccess=true, DisplayAfter="GlobalTimeDilationScale"))
 	TObjectPtr<UCurveFloat> GlobalTimeDilationCurve;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="GlobalTimeDilationCurve"))
+	bool bIsOverride_ShowOwnerCharacter = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="bIsOverride_ShowOwnerCharacter"))
+	bool bIsOverride_ShowTargetCharacter = false;
+
 	float ElapsedTime = 0.f;
 	float TotalDuration = 0.f;
 	
@@ -28,4 +34,5 @@ protected:
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 
 	void SetTimeDilation(USkeletalMeshComponent* meshComp, float newTimeDilation);
+	void CollectionShowActor(AActor* newActor, TArray<AActor*>& showActors);
 };

@@ -30,7 +30,7 @@ public class KMGame : ModuleRules
 			"MotionWarping",
 			"Niagara",
 			"EMMartialArts",
-			"TemplateSequence"
+			"TemplateSequence",
 		});
 
 		if (Target.bBuildEditor == true)

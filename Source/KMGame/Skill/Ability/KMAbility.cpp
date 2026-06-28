@@ -2,6 +2,7 @@
 #include "EMCurveWarpingComponent.h"
 #include "EMMartialArtsComponent.h"
 #include "Character/KMCharacter.h"
+#include "Component/KMMartialArtsComponent.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "System/KMTargetSubsystem.h"
 
@@ -113,6 +114,12 @@ void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContex
 	if (!IsValid(martialArts))
 	{
 		return;
+	}
+
+	if (!newContextData.IsValid())
+	{
+		TSharedPtr<FKMMartialArtsSkillContextData> newSkillContextData = MakeShared<FKMMartialArtsSkillContextData>(this);
+		newContextData = newSkillContextData;
 	}
 
 	MartialArtsHandle = martialArtsComponent->Play(martialArts, newContextData, newRate, bLooping);

@@ -14,11 +14,6 @@ UKMAnimNotifyState_Camera::UKMAnimNotifyState_Camera(const FObjectInitializer& o
 #if WITH_EDITOR
 	SetGroupType(EEMNotifyGroupType::Animation);
 #endif
-
-	if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
-	{
-		CameraCacheManager = martialArtsModule->GetCameraCacheManager();
-	}
 }
 
 FString UKMAnimNotifyState_Camera::GetNotifyName_Implementation() const
@@ -35,6 +30,10 @@ FString UKMAnimNotifyState_Camera::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
+	if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
+	{
+		CameraCacheManager = martialArtsModule->GetCameraCacheManager();
+	}
 	if (CameraCacheManager.IsValid())
 	{
 		CameraCache = CameraCacheManager.Pin()->GetCameraCacheData(CameraSequence);
@@ -47,7 +46,7 @@ void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UA
 		if (AKMCameraActorBase* currentCamera = playerCameraManager->GetCurrentCamera())
 		{
 			CameraOverlayLayer = Cast<UKMCameralayerOverlaySequence>(currentCamera->GetCameraLayer(EKMCameralayerType::OverlaySequence));
-			CameraOverlayLayer->SetAlpha(0.f);
+			CameraOverlayLayer->SetAlpha(1.f);
 		}
 	}
 }
@@ -74,7 +73,7 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 
 				float alpha = FMath::Min(blendInAlpha, blendOutAlpha);
 				
-				CameraOverlayLayer->SetAlpha(alpha);
+				//CameraOverlayLayer->SetAlpha(1.f);
 				
 				FEMCameraOutput cameraOutput;
 				CameraCache->Evaluate(*alphaTime, cameraOutput);
@@ -93,5 +92,11 @@ void UKMAnimNotifyState_Camera::NotifyEnd(USkeletalMeshComponent* meshComp, UAni
 	if (CameraOverlayLayer.IsValid())
 	{
 		CameraOverlayLayer->SetAlpha(0.f);
+	}
+
+	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
+	if(IsValid(playerCameraManager))
+	{
+		playerCameraManager->StartCameraFade(1.f, 0.f, 2.f, FLinearColor::Black, false, false);
 	}
 }

@@ -28,6 +28,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendOut"))
 	float BlendOutTime = 0.2f;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
+	float FadeInTime = 0.2f;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
+	float FadeOutTime = 0.2f;
     	
 	UPROPERTY(Transient)
 	TMap<class USkeletalMeshComponent*, float> AnimationTimes;

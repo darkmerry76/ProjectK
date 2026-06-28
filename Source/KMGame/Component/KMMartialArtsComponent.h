@@ -10,10 +10,16 @@
 class KMGAME_API  FKMMartialArtsSkillContextData : public FEMMartialArtsContextData
 {
 public:
+	FKMMartialArtsSkillContextData(class UEMAbility* ability);
 	virtual ~FKMMartialArtsSkillContextData() override { };
 	
 	virtual FName GetTypeName() const override { return FKMMartialArtsSkillContextData::GetStaticTypeName(); };
-	inline static FName GetStaticTypeName() { return TEXT("KMMartialArtsSkillContextData"); }; 
+	inline static FName GetStaticTypeName() { return TEXT("KMMartialArtsSkillContextData"); };
+
+	class UEMAbility* GetAbility() const;
+	
+protected:
+	TWeakObjectPtr<class UEMAbility> Ability;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

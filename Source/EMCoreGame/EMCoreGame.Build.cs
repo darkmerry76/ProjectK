@@ -17,6 +17,7 @@ public class EMCoreGame : ModuleRules
 			"AIModule",
 			"GameplayTasks",
 			"EMTableCore",
+			"Landscape"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

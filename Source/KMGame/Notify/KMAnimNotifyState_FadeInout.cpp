@@ -1,5 +1,7 @@
 #include "KMAnimNotifyState_FadeInout.h"
 
+#include "Camera/KMPlayerCameraManager.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_FadeInout
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,12 +25,18 @@ void UKMAnimNotifyState_FadeInout::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 void UKMAnimNotifyState_FadeInout::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (float* alphaTime = AnimationTimes.Find(meshComp))
+	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
+	if(IsValid(playerCameraManager))
 	{
-		float fadeInAlpha = FadeInTime > 0.f ? FMath::Clamp((*alphaTime) / FadeInTime, 0.0f, 1.0f) : 1.f;
-		float fadeOutAlpha = FadeOutTime > 0.f ? FMath::Clamp((eventReference.GetNotify()->Duration - (*alphaTime)) / FadeOutTime, 0.0f, 1.0f) : 1.f;
+		if (float* alphaTime = AnimationTimes.Find(meshComp))
+		{
+			float fadeInAlpha = FadeInTime > 0.f ? FMath::Clamp((*alphaTime) / FadeInTime, 0.0f, 1.0f) : 1.f;
+			float fadeOutAlpha = FadeOutTime > 0.f ? FMath::Clamp((eventReference.GetNotify()->Duration - (*alphaTime)) / FadeOutTime, 0.0f, 1.0f) : 1.f;
 
-		float alpha = FMath::Min(fadeInAlpha, fadeOutAlpha);
+			float alpha = FMath::Min(fadeInAlpha, fadeOutAlpha);
+			playerCameraManager->SetManualCameraFade(1.f - alpha, FLinearColor::Black, false);
+			(*alphaTime) += frameDeltaTime;
+		}
 	}
 }
 
