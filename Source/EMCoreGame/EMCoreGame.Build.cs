@@ -19,8 +19,7 @@ public class EMCoreGame : ModuleRules
 			"EMTableCore",
 			"Landscape"
 		});
-
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		
 		PublicIncludePaths.Add("EMCoreGame");
 	}
 }

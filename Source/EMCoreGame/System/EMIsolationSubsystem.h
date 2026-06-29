@@ -29,6 +29,11 @@ protected:
 	void OnActorSpawned(AActor* newActor);
 	void ActorPrimitveRenderPassHidden(AActor* actor);
 	void ComponentRenderPassHidden(class UPrimitiveComponent* primitiveComponent);
+	void OnLevelAdded(ULevel* level, UWorld* world);
+	
+protected:
+	virtual void Initialize(FSubsystemCollectionBase& collection) override;
+	virtual void Deinitialize() override;
 	virtual bool DoesSupportWorldType(const EWorldType::Type worldType) const override;
 
 protected:

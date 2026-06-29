@@ -2,7 +2,6 @@
 #include "EngineUtils.h"
 #include "LandscapeProxy.h"
 #include "Engine/DirectionalLight.h"
-#include "Engine/ExponentialHeightFog.h"
 #include "Engine/SkyLight.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,6 +19,38 @@ UEMIsolationSubsystem* UEMIsolationSubsystem::GetIsolationSubsystem(UObject* wor
 		return nullptr;
 	}
 	return world->GetSubsystem<UEMIsolationSubsystem>();
+}
+
+void UEMIsolationSubsystem::Initialize(FSubsystemCollectionBase& collection)
+{
+	Super::Initialize(collection);
+
+	FWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);
+}
+
+void UEMIsolationSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+
+	FWorldDelegates::LevelAddedToWorld.RemoveAll(this);
+}
+
+void UEMIsolationSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
+{
+	if (world != GetWorld())
+	{
+		return;
+	}
+	
+	if (!bIsActiveIsolation)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Level=%s Actors=%d"), *GetPathNameSafe(level), level->Actors.Num());
+	for (AActor* actor : level->Actors)
+	{
+		ActorPrimitveRenderPassHidden(actor);
+	}
 }
 
 void UEMIsolationSubsystem::ComponentRenderPassHidden(UPrimitiveComponent* primitiveComponent)
@@ -44,6 +75,7 @@ void UEMIsolationSubsystem::ActorPrimitveRenderPassHidden(AActor* actor)
 	}
 
 	bool bIsActorHidden = true;
+	
 	if (!actor->IsA<ALandscapeProxy>())
 	{
 		TArray<UMeshComponent*> meshes;
@@ -98,6 +130,10 @@ void UEMIsolationSubsystem::EnterIsolation(const TArray<AActor*>& visibleActors)
 		for (TObjectIterator<UPrimitiveComponent> primtiveItr; primtiveItr; ++primtiveItr)
 		{
 			if (visibleActors.Contains(primtiveItr->GetOwner()))
+			{
+				continue;
+			}
+			if (primtiveItr->GetWorld() != GetWorld())
 			{
 				continue;
 			}
