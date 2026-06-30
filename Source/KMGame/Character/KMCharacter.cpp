@@ -95,7 +95,7 @@ void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharac
 
 	if (UKMCharacterInstance* characterInstance = Cast<UKMCharacterInstance>(newCharacterInstance))
 	{
-		characterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(GetActorForwardVector())), true);
 		characterInstance->SetCharacter(this);
+		characterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(GetActorForwardVector())), true);
 	}
 }

@@ -31,6 +31,7 @@ public class KMGame : ModuleRules
 			"Niagara",
 			"EMMartialArts",
 			"TemplateSequence",
+			"MediaAssets"
 		});
 
 		if (Target.bBuildEditor == true)

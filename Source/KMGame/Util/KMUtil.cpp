@@ -11,7 +11,7 @@
 
 UKMCharacterInstance* UKMUtil::GetCharacterInstance(const AKMCharacter* character)
 {
-	check(IsValid(character) == true);
+	check(IsValid(character));
 
 	return character->GetCharacterInstance();
 }
@@ -107,7 +107,7 @@ FVector2D UKMUtil::GetCameraToDirection2D(const FVector2D direction, const ACont
 	}
 	
 	const FRotator controlRotation = controller->GetControlRotation();
-	const FRotator yawRotation(0.f, controlRotation.Yaw, 0.f);
+	const FRotator yawRotation(0.f, -90.f, 0.f);
 
 	const FVector forward = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
 	const FVector right = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);

@@ -36,4 +36,5 @@ protected:
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
+	void SetFadeValue(class USkeletalMeshComponent* meshComp, float elipsedTime, const FAnimNotifyEventReference& eventReference);
 };

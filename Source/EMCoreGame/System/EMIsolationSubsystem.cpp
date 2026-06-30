@@ -59,11 +59,22 @@ void UEMIsolationSubsystem::ComponentRenderPassHidden(UPrimitiveComponent* primi
 	{
 		return;
 	}
-	if (primitiveComponent->bRenderInMainPass && !primitiveComponent->ComponentHasTag(IsolationTag))
+	if (USkeletalMeshComponent* skeletalMeshComponent = Cast<USkeletalMeshComponent>(primitiveComponent))
 	{
-		primitiveComponent->SetRenderInMainPass(false);
-		primitiveComponent->SetRenderInDepthPass(false);
-		primitiveComponent->ComponentTags.AddUnique(IsolationTag);
+		if (skeletalMeshComponent->bRenderInMainPass && !skeletalMeshComponent->ComponentHasTag(IsolationTag))
+		{
+			skeletalMeshComponent->SetRenderInMainPass(false);
+			skeletalMeshComponent->SetRenderInDepthPass(false);
+			skeletalMeshComponent->ComponentTags.AddUnique(IsolationTag);
+		}
+	}
+	else
+	{
+		if (primitiveComponent->IsVisible())
+		{
+			primitiveComponent->SetVisibility(false);
+			primitiveComponent->ComponentTags.AddUnique(IsolationTag);
+		}
 	}
 }
 
@@ -75,7 +86,7 @@ void UEMIsolationSubsystem::ActorPrimitveRenderPassHidden(AActor* actor)
 	}
 
 	bool bIsActorHidden = true;
-	
+
 	if (!actor->IsA<ALandscapeProxy>())
 	{
 		TArray<UMeshComponent*> meshes;
@@ -117,7 +128,6 @@ void UEMIsolationSubsystem::EnterIsolation(const TArray<AActor*>& visibleActors)
 		for (TActorIterator<AActor> actorItr(GetWorld()); actorItr; ++actorItr)
 		{
 			AActor* actor = *actorItr;
-
 			if (visibleActors.Contains(actor))
 			{
 				continue;
@@ -164,8 +174,15 @@ void UEMIsolationSubsystem::LeaveIsolation()
 			{
 				if (primitive->ComponentHasTag(IsolationTag))
 				{
-					primitive->SetRenderInMainPass(true);
-					primitive->SetRenderInDepthPass(true);
+					if (USkeletalMeshComponent* skeletalMeshComponent = Cast<USkeletalMeshComponent>(primitive))
+					{
+						skeletalMeshComponent->SetRenderInMainPass(true);
+						skeletalMeshComponent->SetRenderInDepthPass(true);
+					}
+					else
+					{
+						primitive->SetVisibility(true);
+					}
 					primitive->ComponentTags.Remove(IsolationTag);
 				}
 			}
@@ -181,12 +198,21 @@ void UEMIsolationSubsystem::LeaveIsolation()
 	{
 		for (TObjectIterator<UPrimitiveComponent> primtiveItr; primtiveItr; ++primtiveItr)
 		{
-			UPrimitiveComponent* primtive = *primtiveItr;
-			if (primtive->ComponentHasTag(IsolationTag))
+			if ((*primtiveItr)->ComponentHasTag(IsolationTag))
 			{
-				primtive->SetRenderInMainPass(true);
-				primtive->SetRenderInDepthPass(true);
-				primtive->ComponentTags.Remove(IsolationTag);
+				if (USkeletalMeshComponent* skeletalMeshComponent = Cast<USkeletalMeshComponent>(*primtiveItr))
+				{
+					if (skeletalMeshComponent->ComponentHasTag(IsolationTag))
+					{
+						skeletalMeshComponent->SetRenderInMainPass(true);
+						skeletalMeshComponent->SetRenderInDepthPass(true);
+					}
+				}
+				else
+				{
+					(*primtiveItr)->SetVisibility(true);
+				}
+				(*primtiveItr)->ComponentTags.Remove(IsolationTag);
 			}
 		}
 	}

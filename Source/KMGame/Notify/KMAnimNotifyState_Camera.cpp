@@ -73,7 +73,7 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 
 				float alpha = FMath::Min(blendInAlpha, blendOutAlpha);
 				
-				//CameraOverlayLayer->SetAlpha(1.f);
+				CameraOverlayLayer->SetAlpha(alpha);
 				
 				FEMCameraOutput cameraOutput;
 				CameraCache->Evaluate(*alphaTime, cameraOutput);
@@ -92,11 +92,5 @@ void UKMAnimNotifyState_Camera::NotifyEnd(USkeletalMeshComponent* meshComp, UAni
 	if (CameraOverlayLayer.IsValid())
 	{
 		CameraOverlayLayer->SetAlpha(0.f);
-	}
-
-	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
-	if(IsValid(playerCameraManager))
-	{
-		playerCameraManager->StartCameraFade(1.f, 0.f, 2.f, FLinearColor::Black, false, false);
 	}
 }

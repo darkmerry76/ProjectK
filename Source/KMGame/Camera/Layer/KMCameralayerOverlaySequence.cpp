@@ -12,12 +12,17 @@ void UKMCameralayerOverlaySequence::SetRelativeCameraData(const FEMCameraOutput&
 
 void UKMCameralayerOverlaySequence::Evaluate(float deltaTime, FEMCameraOutput& output)
 {
+	if (Alpha == 0.f)
+	{
+		return;
+	}
+	
 	AActor* targetActor = GetTargetActor();
 	FTransform targetTransform = FTransform::Identity;
 	if (ACharacter* character = Cast<ACharacter>(targetActor))
 	{
 		targetTransform = character->GetMesh()->GetComponentTransform();
-		targetTransform.SetRotation(targetTransform.GetRotation() * FRotator(0.f, 180.f, 0.f).Quaternion());
+		targetTransform.SetRotation(targetTransform.GetRotation() * FRotator(0.f, 90.f, 0.f).Quaternion());
 	}
 	else
 	{

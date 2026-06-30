@@ -425,6 +425,10 @@ bool UKMCharacterInstance::IsDead() const
 
 void UKMCharacterInstance::Tick(float deltaSeconds)
 {
+	if (!IsValid(GetCharacter()))
+	{
+		return;
+	}
 	deltaSeconds *= GetCharacter()->CustomTimeDilation;
 	
 	Super::Tick(deltaSeconds);
