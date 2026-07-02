@@ -44,8 +44,8 @@ void UKMTitleMenuWidget::Refresh()
 			newTitleMenuItem->bIsMenualCreated = true;
 			verticalBoxSlot->SetPadding(ItemPadding); 
 			verticalBoxSlot->SetSize(FSlateChildSize(SizeRule));
-			verticalBoxSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
-			verticalBoxSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
+			verticalBoxSlot->SetHorizontalAlignment(HorizontalAlignment);
+			verticalBoxSlot->SetVerticalAlignment(VerticalAlignment);
 		}
 		for(int32 itemIndex = 0; itemIndex < MenuVerticalBox->GetChildrenCount(); ++itemIndex)
 		{

@@ -35,11 +35,18 @@ void AKMGameModeBase::RestartPlayer(AController* newPlayer)
 {
 	Super::RestartPlayer(newPlayer);
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(gameObjectSubsystem);
+	if (HeroId != NAME_None)
+	{
+		UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
+		check(gameObjectSubsystem);
 
-	UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, HeroSpwnTransform));
-	check(heroInstance);
-	
-	newPlayer->Possess(heroInstance->GetCharacter());
+		UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, HeroSpwnTransform));
+		check(IsValid(heroInstance));
+		newPlayer->Possess(heroInstance->GetCharacter());
+		OnSpawnCharacterInstance(heroInstance);
+	}
+}
+
+void AKMGameModeBase::OnSpawnCharacterInstance_Implementation(UKMHeroInstance* newHeroInstance)
+{
 }

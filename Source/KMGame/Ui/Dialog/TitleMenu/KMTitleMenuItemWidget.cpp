@@ -33,6 +33,7 @@ void UKMTitleMenuItemWidget::SetText(const FString& newText)
 	if (IsValid(MenuText))
 	{
 		MenuText->SetText(FText::FromString(newText));
+		SetFontSizeByAlpha(0.f);
 	}
 }
 

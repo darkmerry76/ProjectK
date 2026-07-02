@@ -18,6 +18,10 @@ void UKMCameralayerOverlaySequence::Evaluate(float deltaTime, FEMCameraOutput& o
 	}
 	
 	AActor* targetActor = GetTargetActor();
+	if (!IsValid(targetActor))
+	{
+		return;
+	}
 	FTransform targetTransform = FTransform::Identity;
 	if (ACharacter* character = Cast<ACharacter>(targetActor))
 	{

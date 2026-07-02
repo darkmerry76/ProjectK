@@ -66,7 +66,7 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 				}
 
 				float blendOutAlpha = 1.0f;
-				if (BlendOutTime > 0.0f)
+				if (BlendOutTime > 0.0f && !bIsImmadiate)
 				{
 					blendOutAlpha = FMath::Clamp((eventReference.GetNotify()->Duration - (*alphaTime)) / BlendOutTime, 0.0f, 1.0f);
 				}
@@ -91,6 +91,13 @@ void UKMAnimNotifyState_Camera::NotifyEnd(USkeletalMeshComponent* meshComp, UAni
 
 	if (CameraOverlayLayer.IsValid())
 	{
-		CameraOverlayLayer->SetAlpha(0.f);
+		if (bIsImmadiate)
+		{
+			CameraOverlayLayer->SetAlpha(1.f);
+		}
+		else
+		{
+			CameraOverlayLayer->SetAlpha(0.f);
+		}
 	}
 }

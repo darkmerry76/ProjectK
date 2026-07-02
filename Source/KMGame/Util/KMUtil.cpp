@@ -2,6 +2,8 @@
 #include <Tables/Generated/KMTable_Chapter.h>
 #include "AIController.h"
 #include "Character/KMCharacter.h"
+#include "Core/KMGameInstance.h"
+#include "Core/KMGameViewportClient.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMCharacterPDA.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -115,7 +117,6 @@ FVector2D UKMUtil::GetCameraToDirection2D(const FVector2D direction, const ACont
 	return FVector2D(moveDirection.GetSafeNormal2D());
 }
 
-
 float UKMUtil::GetCircularAngle2D(const FVector2D direction)
 {
 	float angle = FMath::Atan2(direction.Y, direction.X);
@@ -184,7 +185,6 @@ EKM8WayDirection UKMUtil::ConvertDegreesTo8WayDirection(float baseCircularDirect
 	case -4: return EKM8WayDirection::Angle_180;
 		default:break;
 	}
-	
 	return EKM8WayDirection::Angle_0;
 }
 
@@ -271,4 +271,49 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	return newCharacterInstance;
+}
+
+FString UKMUtil::GetBuildInfo()
+{
+	FString buildType;
+
+#if UE_BUILD_DEBUG
+	buildType = TEXT("Debug");
+#elif UE_BUILD_DEVELOPMENT
+	buildType = TEXT("Dev");
+#elif UE_BUILD_TEST
+	buildType = TEXT("Test");
+#elif UE_BUILD_SHIPPING
+	buildType = TEXT("Shipping");
+#else
+	buildType = TEXT("Unknown");
+#endif
+
+	const FString runType =
+#if WITH_EDITOR
+	TEXT("Editor");
+#else
+	TEXT("Game");
+#endif
+
+	FString projectVersion;
+	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), projectVersion, GGameIni);
+
+	return FString::Printf(TEXT("v%s %s %s %s %s"), *projectVersion, *runType, *buildType, TEXT(__DATE__), TEXT(__TIME__));
+}
+
+void UKMUtil::PlaySlateFade(const UObject* worldContextObject, float startAlpha, float endAlpha, float duration, FLinearColor fadeColor)
+{
+	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
+	if (!IsValid(gameInstance))
+	{
+		return;
+	}
+	
+	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
+	if (!IsValid(gameViewportClient))
+	{
+		return;
+	}
+	gameViewportClient->PlayFade(startAlpha, endAlpha, duration, fadeColor);
 }

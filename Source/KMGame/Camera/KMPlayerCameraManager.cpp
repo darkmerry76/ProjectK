@@ -37,6 +37,7 @@ UCameraShakeBase* AKMPlayerCameraManager::StartCameraShake(TSubclassOf<UCameraSh
 
 void AKMPlayerCameraManager::SetCamera(FName cameraName, AActor* newTargetActor)
 {
+	check(IsValid(GetWorld()));
 	TSubclassOf<AKMCameraActorBase>* resultCameraClass = Cameras.Find(cameraName);
 	if (resultCameraClass)
 	{
@@ -45,17 +46,14 @@ void AKMPlayerCameraManager::SetCamera(FName cameraName, AActor* newTargetActor)
 			CurrentCamera->Destroy();
 		}
 
-		if (IsValid(GetWorld()))
-		{
-			FActorSpawnParameters spawnParameters = FActorSpawnParameters();
-			spawnParameters.bNoFail = true;
+		FActorSpawnParameters spawnParameters = FActorSpawnParameters();
+		spawnParameters.bNoFail = true;
 			
-			CurrentCamera = GetWorld()->SpawnActor<AKMCameraActorBase>(*resultCameraClass, spawnParameters);
-			if (IsValid(CurrentCamera))
-			{
-				CurrentCamera->SetTargetActor(newTargetActor);
-				SetViewTarget(CurrentCamera);
-			}
+		CurrentCamera = GetWorld()->SpawnActor<AKMCameraActorBase>(*resultCameraClass, spawnParameters);
+		if (IsValid(CurrentCamera))
+		{
+			CurrentCamera->SetTargetActor(newTargetActor);
+			SetViewTarget(CurrentCamera);
 		}
 	}
 }

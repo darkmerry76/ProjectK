@@ -9,7 +9,7 @@ class KMGAME_API AKMGameModeBase : public AEMGameModeBase
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
 	FSoftObjectPath InitMap;
 
@@ -20,6 +20,9 @@ private:
 	FTransform HeroSpwnTransform;
 
 	virtual void RestartPlayer(AController* NewPlayer) override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSpawnCharacterInstance(class UKMHeroInstance* newHeroInstance);
 	
 public:
 	virtual void BeginPlay() override;

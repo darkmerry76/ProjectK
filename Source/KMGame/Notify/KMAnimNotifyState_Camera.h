@@ -26,7 +26,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
     FKMParameterSimpleScalar BlendOut;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendOut"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
+	bool bIsImmadiate = false;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(EditCondition="!bIsImmadiate", AllowPrivateAccess=true, DisplayAfter="BlendOut"))
 	float BlendOutTime = 0.2f;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
