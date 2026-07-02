@@ -4,6 +4,7 @@
 #include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
 #include "Camera/Layer/KMCameralayerOverlaySequence.h"
+#include "Core/KMGameInstance.h"
 #include "Sequencer/EMCameraCacheManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,13 +31,23 @@ FString UKMAnimNotifyState_Camera::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
+	if (meshComp->GetWorld()->IsGameWorld())
 	{
-		CameraCacheManager = martialArtsModule->GetCameraCacheManager();
+		if (UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(meshComp))
+		{
+			CameraCacheManager = gameInstance->GetCameraCacheManager();
+		}
+	}
+	else
+	{
+		if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
+		{
+			CameraCacheManager = martialArtsModule->GetCameraCacheManager();
+		}
 	}
 	if (CameraCacheManager.IsValid())
 	{
-		CameraCache = CameraCacheManager.Pin()->GetCameraCacheData(CameraSequence);
+		CameraCacheInstance = CameraCacheManager.Pin()->CreateCameraCacheInstance(CameraSequence);
 	}
 	AnimationTimes.Emplace(meshComp, 0.f);
 
@@ -53,7 +64,7 @@ void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UA
 
 void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (CameraCache.IsValid())
+	if (CameraCacheInstance.IsValid())
 	{
 		if (CameraOverlayLayer.IsValid())
 		{
@@ -76,7 +87,7 @@ void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAn
 				CameraOverlayLayer->SetAlpha(alpha);
 				
 				FEMCameraOutput cameraOutput;
-				CameraCache->Evaluate(*alphaTime, cameraOutput);
+				CameraCacheInstance->Evaluate(*alphaTime, cameraOutput);
 
 				CameraOverlayLayer->SetRelativeCameraData(cameraOutput);
 				(*alphaTime) += frameDeltaTime;

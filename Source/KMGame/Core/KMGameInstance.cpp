@@ -1,4 +1,6 @@
 ﻿#include "KMGameInstance.h"
+
+#include "EMMartialArtsModule.h"
 #include "Actor/KMCameraActor.h"
 #include "Components/Viewport.h"
 #include "Engine/Engine.h"

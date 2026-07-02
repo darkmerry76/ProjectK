@@ -45,7 +45,7 @@ protected:
 	TWeakObjectPtr<class UKMCameralayerOverlaySequence> CameraOverlayLayer;
 
 protected:
-	TSharedPtr<struct FEMCameraCache> CameraCache;
+	TSharedPtr<struct FEMCameraCacheInstance> CameraCacheInstance;
 	TWeakPtr<class FEMCameraCacheManager> CameraCacheManager;
 
 protected:

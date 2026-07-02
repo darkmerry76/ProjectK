@@ -90,6 +90,13 @@ UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTabl
 		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::SpawnCharacter spwnCharacterInstance == nullptr"));
 		return nullptr;
 	}
+
+	FActorSpawnParameters spawnParameters;
+	APlayerController* newPlayerController = world->SpawnActor<APlayerController>(APlayerController::StaticClass(), spawnedTransform, spawnParameters);
+	if (IsValid(newPlayerController))
+	{
+		newPlayerController->Possess(spwnCharacterInstance->GetCharacter());
+	}
 	
 	return spwnCharacterInstance;
 }
@@ -105,6 +112,13 @@ bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* charac
 
 	if (OwnerCharacterInstance == characterInstance)
 	{
+		if (ACharacter* character = OwnerCharacterInstance->GetCharacter())
+		{
+			if (AController* controller = character->GetController())
+			{
+				controller->Destroy();
+			}
+		}
 		OwnerCharacterInstance->EndPlay();
 		OwnerCharacterInstance = nullptr;
 	}
