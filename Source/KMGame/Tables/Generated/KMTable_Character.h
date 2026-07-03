@@ -23,6 +23,9 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	FString              Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              FullName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterType     Type = { EKMCharacterType::Hero };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -29,10 +29,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	float HoveredAnimatinTime = 0.2f;
 
+	float NextRenderScale = 1.f;
+	
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	FName CharacterId;
-
-	float NextRenderScale = 1.f;
 
 public:
 	bool bIsSelected = false;

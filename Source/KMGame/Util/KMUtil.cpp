@@ -11,6 +11,8 @@
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 
+double UKMUtil::GameElipsedStartTime = 0.f;
+
 UKMCharacterInstance* UKMUtil::GetCharacterInstance(const AKMCharacter* character)
 {
 	check(IsValid(character));
@@ -273,7 +275,7 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	return newCharacterInstance;
 }
 
-FString UKMUtil::GetBuildInfo()
+FString UKMUtil::GetBuildInfo(const UObject* worldContextObject)
 {
 	FString buildType;
 
@@ -299,7 +301,30 @@ FString UKMUtil::GetBuildInfo()
 	FString projectVersion;
 	GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), projectVersion, GGameIni);
 
-	return FString::Printf(TEXT("v%s %s %s %s %s"), *projectVersion, *runType, *buildType, TEXT(__DATE__), TEXT(__TIME__));
+	FString viewportSizeString;
+	FString GameElipsedTimeString;
+	if (IsValid(worldContextObject))
+	{
+		if (UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject))
+		{
+			if (UGameViewportClient* gameViewportClient = gameInstance->GetGameViewportClient())
+			{
+				FVector2D resolution;
+				gameViewportClient->GetViewportSize(resolution);
+
+				viewportSizeString = FString::Printf(TEXT("%dwx%dh"), static_cast<int32>(resolution.X), static_cast<int32>(resolution.Y));
+			}
+		}
+		if (IsValid(worldContextObject->GetWorld()))
+		{
+			double finalGameElipsedTime = worldContextObject->GetWorld()->GetTimeSeconds() - GameElipsedStartTime;
+			
+			FTimespan timeSpan = FTimespan::FromSeconds(finalGameElipsedTime);
+			GameElipsedTimeString = timeSpan.ToString(TEXT("%h:%m:%s"));
+		}
+	}
+	
+	return FString::Printf(TEXT("%s %s v%s %s %s %s %s"), *viewportSizeString, *GameElipsedTimeString, *projectVersion, *runType, *buildType, TEXT(__DATE__), TEXT(__TIME__));
 }
 
 void UKMUtil::PlaySlateFade(const UObject* worldContextObject, float startAlpha, float endAlpha, float duration, FLinearColor fadeColor)

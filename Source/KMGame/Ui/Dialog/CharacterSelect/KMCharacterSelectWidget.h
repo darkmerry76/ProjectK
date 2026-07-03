@@ -9,9 +9,12 @@ class KMGAME_API UKMCharacterSelectWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
-	class UEMHorizontalBox* CharacterHorizontalBox;
+	TObjectPtr<class UEMHorizontalBox> CharacterHorizontalBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
+	TObjectPtr<class UEMButton> EnterButton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	TSubclassOf<class UKMCharacterSelectItemWidget> CharacterItemClass;
@@ -39,5 +42,8 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnUnhovered(class UKMCharacterSelectItemWidget* charactrerSelectItem);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEnterPressed();
 
 };

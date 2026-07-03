@@ -27,7 +27,7 @@ void UKMGameViewportClient::Tick(float deltaTime)
 	{
 		VersionText =
 			SNew(STextBlock)
-			.Text(FText::FromString(UKMUtil::GetBuildInfo()));
+			.Text_UObject(this, &UKMGameViewportClient::GetBuildInfo);
 
 		FSlateFontInfo fontInfo = VersionText->GetFont();
 		fontInfo.Size = 24.f;
@@ -52,6 +52,11 @@ void UKMGameViewportClient::Tick(float deltaTime)
 		
 		AddViewportWidgetContent(FadeColorBlock.ToSharedRef(),90000);
 	}
+}
+
+FText UKMGameViewportClient::GetBuildInfo() const
+{
+	return FText::FromString(UKMUtil::GetBuildInfo(this));
 }
 
 FLinearColor UKMGameViewportClient::GetFadeColor() const

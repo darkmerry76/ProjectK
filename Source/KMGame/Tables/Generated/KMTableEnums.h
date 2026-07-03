@@ -347,3 +347,19 @@ enum class EKMLocomotionState : uint8
 	Air = 2 , 
 	Falling = 3 , 
 };
+
+UENUM(BlueprintType)
+enum class EKMFightStyleType : uint8
+{
+	None = 0 , // 없음
+	Berserker = 1 , 
+	Assassin = 2 , 
+};
+
+UENUM(BlueprintType)
+enum class EKMCoreArmamentType : uint8
+{
+	None = 0 , 
+	Chain = 1 , 
+	Kunai = 2 , 
+};

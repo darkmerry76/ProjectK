@@ -25,6 +25,12 @@ struct FKMTable_Character_HeroRow : public FKMTable_CharacterRow
 	FString              AwakeDescription;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMFightStyleType    FightStyle = { EKMFightStyleType::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMCoreArmamentType  CoreArmament = { EKMCoreArmamentType::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterBattleRole role = { EKMCharacterBattleRole::None };
 
 	// 등급

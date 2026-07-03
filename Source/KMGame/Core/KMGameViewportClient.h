@@ -21,6 +21,7 @@ public:
 protected:
 	FLinearColor GetFadeColor() const;
 	EVisibility GetFadeVisibiltiy() const;
+	FText GetBuildInfo() const;
 
 protected:
 	TSharedPtr<class STextBlock> VersionText;

@@ -8,9 +8,14 @@ void AKMGameModeCharacterSelect::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const FName& newCharacterId)
+void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const FName& newCharacterId, bool bForce)
 {
 	if (newCharacterId == NAME_None)
+	{
+		return;
+	}
+
+	if (!bForce && newCharacterId == LatestHeroTableId)
 	{
 		return;
 	}
@@ -22,6 +27,10 @@ void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const F
 	
 	HeroId = newCharacterId;
 	RestartPlayer(newPlayer);
+
+	LatestHeroTableId = newCharacterId;
+
+	HeroSelectDelegate.Broadcast(newCharacterId);
 }
 
 void AKMGameModeCharacterSelect::RestartPlayer(AController* newPlayer)
