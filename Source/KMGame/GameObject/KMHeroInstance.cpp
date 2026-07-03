@@ -1,5 +1,6 @@
 #include "KMHeroInstance.h"
 
+#include "Character/KMCharacterHero.h"
 #include "Engine/GameInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
@@ -42,4 +43,20 @@ void UKMHeroInstance::ApplyPlayerSkill(const FName& skillId, int32 skillLevel)
 	if (SkillHandler == nullptr) return;
 	
 	SkillHandler->RegisterSkill(FKMSkillKey::CreateKey(skillId, skillLevel));
+}
+
+void UKMHeroInstance::OnHeroSelected_Implementation()
+{
+	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(Character))
+	{
+		hero->OnHeroSelected();
+	}
+}
+
+void UKMHeroInstance::OnEnterGame_Implementation()
+{
+	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(Character))
+	{
+		hero->OnEnterGame();
+	}
 }

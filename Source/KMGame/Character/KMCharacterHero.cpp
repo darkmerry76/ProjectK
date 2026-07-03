@@ -258,3 +258,12 @@ void AKMCharacterHero::OnSkillDebug0_Release()
 {
 	GetCharacterInstance()->UseSkillGuard_Release();
 }
+
+void AKMCharacterHero::OnEnterGame_Implementation()
+{
+}
+
+void AKMCharacterHero::OnHeroSelected_Implementation()
+{
+	
+}

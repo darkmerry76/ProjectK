@@ -49,10 +49,7 @@ public:
 
 	void SetTransform(const FTransform& newTransform);
 	const FTransform& GetTransform() const;
-
-	UFUNCTION(BlueprintNativeEvent)
-	void OnCharacterSelected();
-
+	
 	UFUNCTION(BlueprintCallable)
 	bool UseSkill(const FName skillName, int32 skillLevel);
 

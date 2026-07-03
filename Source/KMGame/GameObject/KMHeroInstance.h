@@ -8,6 +8,13 @@ UCLASS(Blueprintable, BlueprintType, Abstract)
 class KMGAME_API UKMHeroInstance : public UKMCharacterInstance
 {
 	GENERATED_UCLASS_BODY()
+	
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void OnHeroSelected();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEnterGame();
 
 protected:
 	virtual void BeginPlay() override;

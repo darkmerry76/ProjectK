@@ -101,4 +101,13 @@ protected:
 	void ExecuteSkill1();
 
 	void ExecuteSkillCombo();
+	
+public:
+	friend class UKMHeroInstance;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEnterGame();
+
+	friend class UKMHeroInstance;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnHeroSelected();
 };

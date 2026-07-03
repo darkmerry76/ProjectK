@@ -13,12 +13,15 @@ class KMGAME_API AKMGameModeCharacterSelect : public AKMGameModeBase
 public:
 	FKMHeroSelectDelegate HeroSelectDelegate;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName LatestHeroTableId = TEXT("H_RyuX");
+	UPROPERTY()
+	TWeakObjectPtr<class UKMHeroInstance> LatestHeroInstance;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	void SelectCharacter(class AController* newPlayer, const FName& newCharacterId, bool bForce = false);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEnterGame();
 
 protected:
 	virtual void RestartPlayer(class AController* NewPlayer) override;

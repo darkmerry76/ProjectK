@@ -1,7 +1,9 @@
 #include "KMCharacterSelectWidget.h"
 #include "KMCharacterSelectItemWidget.h"
 #include "GameMode/KMGameModeCharacterSelect.h"
+#include "GameObject/KMHeroInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Tables/Generated/KMTable_Character.h"
 #include "UI/Component/EMButton.h"
 #include "UI/Component/EMHorizontalBox.h"
 
@@ -38,7 +40,10 @@ void UKMCharacterSelectWidget::Refresh()
 		FName latestSelectHeroId = NAME_None;
 		if (AKMGameModeCharacterSelect* heroSelectGameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
 		{
-			latestSelectHeroId = heroSelectGameMode->LatestHeroTableId;
+			if (heroSelectGameMode->LatestHeroInstance.IsValid())
+			{
+				latestSelectHeroId = heroSelectGameMode->LatestHeroInstance->GetTable()->Id;
+			}
 		}
 		
 		for(int32 itemIndex = 0; itemIndex < CharacterHorizontalBox->GetChildrenCount(); ++itemIndex)
@@ -117,5 +122,8 @@ void UKMCharacterSelectWidget::OnUnhovered_Implementation(UKMCharacterSelectItem
 
 void UKMCharacterSelectWidget::OnEnterPressed_Implementation()
 {
-	
+	if (AKMGameModeCharacterSelect* heroSelectGameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
+	{
+		heroSelectGameMode->OnEnterGame();
+	}	
 }

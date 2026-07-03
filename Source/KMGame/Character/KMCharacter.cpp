@@ -99,8 +99,3 @@ void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharac
 		characterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(GetActorForwardVector())), true);
 	}
 }
-
-void AKMCharacter::OnCharacterSelected_Implementation()
-{
-	
-}

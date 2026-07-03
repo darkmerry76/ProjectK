@@ -90,14 +90,6 @@ void UKMCharacterInstance::EndPlay()
 	}
 }
 
-void UKMCharacterInstance::OnCharacterSelected_Implementation()
-{
-	if (AKMCharacter* character = Cast<AKMCharacter>(Character))
-	{
-		character->OnCharacterSelected();
-	}
-}
-
 void UKMCharacterInstance::SetCharacter(AKMCharacter* newCharacter)
 {
 	Character = newCharacter;

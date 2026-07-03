@@ -1,7 +1,11 @@
 #include "KMGameModeCharacterSelect.h"
 
+#include "Character/KMCharacter.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"
+#include "Tables/Generated/KMTable_Character.h"
 
 void AKMGameModeCharacterSelect::BeginPlay()
 {
@@ -15,7 +19,7 @@ void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const F
 		return;
 	}
 
-	if (!bForce && newCharacterId == LatestHeroTableId)
+	if (!bForce && (LatestHeroInstance.IsValid() && LatestHeroInstance->GetTable()->Id == newCharacterId))
 	{
 		return;
 	}
@@ -27,8 +31,6 @@ void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const F
 	
 	HeroId = newCharacterId;
 	RestartPlayer(newPlayer);
-
-	LatestHeroTableId = newCharacterId;
 
 	HeroSelectDelegate.Broadcast(newCharacterId);
 }
@@ -44,6 +46,21 @@ void AKMGameModeCharacterSelect::OnSpawnCharacterInstance_Implementation(UKMHero
 
 	if (IsValid(newHeroInstance))
 	{
-		newHeroInstance->OnCharacterSelected();
+		if (AKMCharacter* character = newHeroInstance->GetCharacter())
+		{
+			character->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+			character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		}
+		newHeroInstance->OnHeroSelected();
+	}
+
+	LatestHeroInstance = newHeroInstance;
+}
+
+void AKMGameModeCharacterSelect::OnEnterGame_Implementation()
+{
+	if (LatestHeroInstance.IsValid())
+	{
+		LatestHeroInstance->OnEnterGame();
 	}
 }

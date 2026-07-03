@@ -56,10 +56,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
-	friend class UKMCharacterInstance;
-	UFUNCTION(BlueprintNativeEvent)
-	void OnCharacterSelected();
-
 protected:
 	bool bIsMirror = false;
 };
