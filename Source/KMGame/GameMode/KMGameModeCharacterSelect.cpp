@@ -58,6 +58,7 @@ void AKMGameModeCharacterSelect::OnSpawnCharacterInstance_Implementation(UKMHero
 
 void AKMGameModeCharacterSelect::OnWorldLoadingComplete_Implementation()
 {
+	Super::OnWorldLoadingComplete_Implementation();
 	SelectCharacter(GetWorld()->GetFirstPlayerController(), DefaultSelectTableId, true);
 }
 

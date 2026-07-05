@@ -1,13 +1,16 @@
 #include "KMTitleMenuItemWidget.h"
-
-#include "Blueprint/WidgetLayoutLibrary.h"
-#include "System/EMTickerSubsystem.h"
 #include "UI/Component/EMButton.h"
 #include "UI/Component/EMImage.h"
 #include "UI/Component/EMTextBlock.h"
 
 UKMTitleMenuItemWidget::UKMTitleMenuItemWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+}
+
+void UKMTitleMenuItemWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	SetText(Text);
 }
 
 void UKMTitleMenuItemWidget::NativeConstruct()
@@ -20,7 +23,7 @@ void UKMTitleMenuItemWidget::NativeConstruct()
 		MenuButton->OnHovered.AddDynamic(this, &ThisClass::OnHovered);
 		MenuButton->OnUnhovered.AddDynamic(this, &ThisClass::OnUnhovered);
 
-		DefaultTextWidgetTransform = MenuText->GetRenderTransform();
+		DefaultTextWidgetTransform = MenuTextBlock->GetRenderTransform();
 	}
 }
 
@@ -31,9 +34,9 @@ void UKMTitleMenuItemWidget::NativeDestruct()
 
 void UKMTitleMenuItemWidget::SetText(const FString& newText)
 {
-	if (IsValid(MenuText))
+	if (IsValid(MenuTextBlock))
 	{
-		MenuText->SetText(FText::FromString(newText));
+		MenuTextBlock->SetText(FText::FromString(newText));
 		SetFontSizeByAlpha(0.f);
 	}
 }
@@ -55,72 +58,37 @@ void UKMTitleMenuItemWidget::OnUnhovered()
 
 void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha)
 {
-	if (IsValid(MenuText))
+	if (IsValid(MenuTextBlock))
 	{
-		FSlateFontInfo textFont = MenuText->GetFont();
+		FSlateFontInfo textFont = MenuTextBlock->GetFont();
 		textFont.Size = FMath::Lerp(NormalFontSize, HoveredFontSize, alpha);
-		MenuText->SetFont(textFont);
+		MenuTextBlock->SetFont(textFont);
 
 		float DpiScale = 1.f;//UWidgetLayoutLibrary::GetViewportScale(this);
 		
 		FWidgetTransform widgetTransform = DefaultTextWidgetTransform;
 		widgetTransform.Translation.Y -= ((textFont.Size - NormalFontSize) * 0.65f) / DpiScale;
-
-		MenuText->SetRenderTransform(widgetTransform);
+		
+		MenuTextBlock->SetRenderTransform(widgetTransform);
+		FLinearColor fontColor = FMath::Lerp(NormalTextColor, SelectTextColor, alpha);
+		MenuTextBlock->SetColorAndOpacity(fontColor);
 	}
 }
 
 void UKMTitleMenuItemWidget::HoveredAnimation()
 {
-	UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
-	if (!IsValid(tickerSubsystem))
-	{
-		return;
-	}
-	float elipsedSeconds = 0.f;
-	if (TickerHandle.IsValid())
-	{
-		elipsedSeconds = FMath::Max(0.f, HoveredAnimatinTime - TickerHandle.Data.Get()->GetElipsedSeconds(GetWorld()->GetTimeSeconds()));
-		tickerSubsystem->RemoveTicker(TickerHandle);
-	}
-	TickerHandle = tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &UKMTitleMenuItemWidget::OnHoveredAnimation), HoveredAnimatinTime, elipsedSeconds);
-}
-
-void UKMTitleMenuItemWidget::OnHoveredAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)
-{
-	switch (eventType)
-	{
-	case eTickerEventType::CREATED:
-	case eTickerEventType::UPDATED: SetFontSizeByAlpha(eplipseTime / duration); break;
-	case eTickerEventType::REMOVED: SetFontSizeByAlpha(1.f); break;
-	default: break;
-	}
+	NextAlpha = 1.f;
 }
 
 void UKMTitleMenuItemWidget::UnhoveredAnimation()
 {
-	UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
-	if (!IsValid(tickerSubsystem))
-	{
-		return;
-	}
-	float elipsedSeconds = 0.f;
-	if (TickerHandle.IsValid())
-	{
-		elipsedSeconds = FMath::Max(0.f, HoveredAnimatinTime - TickerHandle.Data.Get()->GetElipsedSeconds(GetWorld()->GetTimeSeconds()));
-		tickerSubsystem->RemoveTicker(TickerHandle);
-	}
-
-	TickerHandle = tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &UKMTitleMenuItemWidget::OnUnhoveredAnimation), HoveredAnimatinTime, elipsedSeconds);
+	NextAlpha = 0.f;
 }
 
-void UKMTitleMenuItemWidget::OnUnhoveredAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)
+void UKMTitleMenuItemWidget::NativeTick(const FGeometry& geometry, float deltaTime)
 {
-	switch (eventType)
-	{
-	case eTickerEventType::CREATED:
-	case eTickerEventType::UPDATED: SetFontSizeByAlpha(1.f - (eplipseTime / duration)); break;
-	case eTickerEventType::REMOVED: SetFontSizeByAlpha(0.f); break;
-	default: break;
-	}
+	Super::NativeTick(geometry, deltaTime);
+
+	CurrentAlpha = FMath::FInterpTo(CurrentAlpha, NextAlpha, deltaTime, HoveredAnimatinTime);
+	SetFontSizeByAlpha(CurrentAlpha);
 }

@@ -1,24 +1,20 @@
 #include "KMGameModeBase.h"
-
-#include "Character/KMCharacter.h"
-#include "Core/KMGameInstance.h"
+#include "Core/KMWorldSettings.h"
 #include "Engine/World.h"
-#include "GameObject/KMCharacterInstance.h"
-#include "GameObject/KMHeroInstance.h"
-#include "System/KMGameObjectSubsystem.h"
-#include "System/KMUiSubsystem.h"
+#include "Ui/Component/KMRootWidget.h"
 
 void AKMGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	UKMUiSubsystem::GetUiSubsystem(this)->Activate();
-	UKMGameInstance* gameInstance = Cast<UKMGameInstance>(GetWorld()->GetGameInstance());
-	check(IsValid(gameInstance) == true);
-	
-	if (gameInstance->IsInitLevel() == false && InitMap.IsValid() == true)
+void AKMGameModeBase::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+	Super::EndPlay(endPlayReason);
+
+	if (IsValid(RootWidget))
 	{
-		gameInstance->OpenInitLevel(InitMap);
+		RootWidget->RemoveFromParent();
 	}
 }
 
@@ -31,26 +27,17 @@ bool AKMGameModeBase::IsInitMap(const UWorld* otherWorld) const
 	return otherWorld->GetFName() == *InitMap.GetAssetName();
 }
 
-void AKMGameModeBase::RestartPlayer(AController* newPlayer)
-{
-	Super::RestartPlayer(newPlayer);
-
-	if (HeroId != NAME_None)
-	{
-		UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-		check(gameObjectSubsystem);
-
-		UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, HeroSpwnTransform));
-		check(IsValid(heroInstance));
-		newPlayer->Possess(heroInstance->GetCharacter());
-		OnSpawnCharacterInstance(heroInstance);
-	}
-}
-
-void AKMGameModeBase::OnSpawnCharacterInstance_Implementation(UKMHeroInstance* newHeroInstance)
-{
-}
-
 void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 {
+	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings()))
+	{
+		if (IsValid(worldSettings->RootWidgetClass))
+		{
+			RootWidget = CreateWidget<UKMUserWidget>(GetWorld(), worldSettings->RootWidgetClass);
+			if (IsValid(RootWidget))
+			{
+				RootWidget->AddToViewport(0);
+			}
+		}
+	}
 }

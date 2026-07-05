@@ -73,12 +73,12 @@ public:
 	static void PlaySlateFade(const UObject* worldContextObject, float startAlpha = 0, float endAlpha = 1.f, float duration = 1.f, FLinearColor fadeColor = FLinearColor::Black);
 	
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-   	static void PlayLoadingScreen(const UObject* worldContextObject);
+   	static bool PlayLoadingScreen(const UObject* worldContextObject);
 
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"), DisplayName="StopLoadingScreen")
-	static void StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds = 2.f);
+	static bool StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds = 2.f);
 	
-	static void StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds = 2.f);
+	static bool StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds = 2.f);
 
 	UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
 	static bool IsPlayingLoadingScreen(const UObject* worldContextObject);

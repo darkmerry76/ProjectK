@@ -32,21 +32,6 @@ void UKMTitleMenuWidget::Refresh()
 	
 	if (IsValid(MenuVerticalBox))
 	{
-		for (auto menuText : MenuItemText)
-		{
-			UKMTitleMenuItemWidget* newTitleMenuItem = CreateWidget<UKMTitleMenuItemWidget>(this, TitleMenuItemClass);
-			check(IsValid(newTitleMenuItem));
-			
-			UVerticalBoxSlot* verticalBoxSlot = MenuVerticalBox->AddChildToVerticalBox(newTitleMenuItem);
-			check(IsValid(verticalBoxSlot));
-			
-			newTitleMenuItem->SetText(menuText);
-			newTitleMenuItem->bIsMenualCreated = true;
-			verticalBoxSlot->SetPadding(ItemPadding); 
-			verticalBoxSlot->SetSize(FSlateChildSize(SizeRule));
-			verticalBoxSlot->SetHorizontalAlignment(HorizontalAlignment);
-			verticalBoxSlot->SetVerticalAlignment(VerticalAlignment);
-		}
 		for(int32 itemIndex = 0; itemIndex < MenuVerticalBox->GetChildrenCount(); ++itemIndex)
 		{
 			UKMTitleMenuItemWidget* titleMenuItem = Cast<UKMTitleMenuItemWidget>(MenuVerticalBox->GetChildAt(itemIndex));
@@ -54,6 +39,13 @@ void UKMTitleMenuWidget::Refresh()
 			{
 				continue;
 			}
+			
+			if (itemIndex == 0)
+			{
+				SelectedMenu(titleMenuItem);
+				titleMenuItem->CurrentAlpha = 1.f;
+			}
+			
 			if (titleMenuItem->ClickedDelegate.IsAlreadyBound(this, &UKMTitleMenuWidget::OnMenuClicked))
 			{
 				titleMenuItem->ClickedDelegate.RemoveAll(this);
@@ -77,7 +69,7 @@ void UKMTitleMenuWidget::Clear()
 {
 	if (IsValid(MenuVerticalBox))
 	{
-		for (int32 itemIndex = 0; itemIndex < MenuVerticalBox->GetChildrenCount(); )
+		for (int32 itemIndex = 0; itemIndex < MenuVerticalBox->GetChildrenCount(); ++itemIndex)
 		{
 			UKMTitleMenuItemWidget* titleMenuItem = Cast<UKMTitleMenuItemWidget>(MenuVerticalBox->GetChildAt(itemIndex));
 			if (!IsValid(titleMenuItem))
@@ -88,16 +80,6 @@ void UKMTitleMenuWidget::Clear()
 			titleMenuItem->ClickedDelegate.RemoveAll(this);
 			titleMenuItem->HoverDelegate.RemoveAll(this);
 			titleMenuItem->UnhoverDelegate.RemoveAll(this);
-			
-			if (titleMenuItem->bIsMenualCreated)
-			{
-				MenuVerticalBox->RemoveChild(titleMenuItem);
-				
-			}
-			else
-			{
-				++itemIndex;
-			}
 		}
 	}
 }
@@ -106,7 +88,7 @@ void UKMTitleMenuWidget::OnMenuClicked_Implementation(UKMTitleMenuItemWidget* ti
 {
 }
 
-void UKMTitleMenuWidget::OnMenuHovered_Implementation(UKMTitleMenuItemWidget* titleMenuItem)
+void UKMTitleMenuWidget::SelectedMenu(UKMTitleMenuItemWidget* titleMenuItem)
 {
 	if (IsValid(PrevSelectMenuItem))
 	{
@@ -114,6 +96,11 @@ void UKMTitleMenuWidget::OnMenuHovered_Implementation(UKMTitleMenuItemWidget* ti
 	}
 	titleMenuItem->HoveredAnimation();
 	PrevSelectMenuItem = titleMenuItem;
+}
+
+void UKMTitleMenuWidget::OnMenuHovered_Implementation(UKMTitleMenuItemWidget* titleMenuItem)
+{
+	SelectedMenu(titleMenuItem);
 }
 
 void UKMTitleMenuWidget::OnMenuUnhovered_Implementation(UKMTitleMenuItemWidget* titleMenuItem)
@@ -134,11 +121,11 @@ void UKMTitleMenuWidget::NativeTick(const FGeometry& myGeometry, float deltaTime
 	for(int32 itemIndex = 0; itemIndex < MenuVerticalBox->GetChildrenCount(); ++itemIndex)
 	{
 		UKMTitleMenuItemWidget* titleMenuItem = Cast<UKMTitleMenuItemWidget>(MenuVerticalBox->GetChildAt(itemIndex));
-		if (!IsValid(titleMenuItem) || !IsValid(titleMenuItem->MenuText))
+		if (!IsValid(titleMenuItem) || !IsValid(titleMenuItem->MenuTextBlock))
 		{
 			continue;
 		}
-		const FSlateFontInfo& font = titleMenuItem->MenuText->GetFont();
+		const FSlateFontInfo& font = titleMenuItem->MenuTextBlock->GetFont();
 		fontScaleResult += font.Size - 30.f;
 	}
 }

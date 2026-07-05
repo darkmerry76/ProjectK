@@ -27,18 +27,22 @@ void UKMWorldSubsystem::Deinitialize()
 void UKMWorldSubsystem::OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
 {
 	Super::OnPreWorldInitialization(newWorld, iVS);
-	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(newWorld->GetWorldSettings()))
-	{
-		if (worldSettings->bIsShowLoadingScreen)
-		{
-			UKMUtil::PlayLoadingScreen(this);
-		}
-	}
 }
 
 void UKMWorldSubsystem::OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
 {
 	Super::OnPostWorldInitialization(newWorld, iVS);
+
+	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(newWorld->GetWorldSettings()))
+	{
+		if (worldSettings->bIsShowLoadingScreen)
+		{
+			newWorld->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]()
+			{
+				UKMUtil::PlayLoadingScreen(this);	
+			}));
+		}
+	}
 }
 
 void UKMWorldSubsystem::OnLevelAdded(ULevel* level, UWorld* world)

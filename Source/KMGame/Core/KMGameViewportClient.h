@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Core/EMGameViewportClient.h"
 #include "System/EMTickerSubsystem.h"
 #include "UI/Component/KMUserWidget.h"
 #include "KMGameViewportClient.generated.h"
@@ -12,20 +13,22 @@ DECLARE_DELEGATE(FKMLoadingScreenCompleteDelegate)
 DECLARE_DYNAMIC_DELEGATE(FKMLoadingScreenCompleteDynamicDelegate);
 
 UCLASS(Blueprintable, BlueprintType)
-class KMGAME_API UKMGameViewportClient : public UGameViewportClient
+class KMGAME_API UKMGameViewportClient : public UEMGameViewportClient
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UKMUserWidget> LoadingScreenWidgetClass;
+	TSubclassOf<class UKMLoadingWidget> LoadingScreenWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<class UKMUserWidget> LoadingScreenWidgetUMG;
+	TObjectPtr<class UKMLoadingWidget> LoadingScreenWidgetUMG;
 
 public:
 	virtual void Init(struct FWorldContext& worldContext, UGameInstance* owningGameInstance, bool bCreateNewAudioDevice = true) override;
 	virtual void Tick(float deltaTime) override;
+
+	virtual void InitComplete() override; 
 
 	UFUNCTION(BlueprintCallable)
 	void PlayFade(float startAlpha, float endAlpha, float duration,  FLinearColor fadeColor = FLinearColor::Black);
@@ -47,6 +50,9 @@ public:
 	TSharedPtr<class SWidget> GetLoadingScreenWidget() const;
 
 protected:
+	void StopLoadingInternal();
+
+protected:
 	FLinearColor GetFadeColor() const;
 	EVisibility GetFadeVisibiltiy() const;
 	FText GetBuildInfo() const;
@@ -64,4 +70,7 @@ protected:
 	float LoadingScreenStartTime = 0.f;
 
 	FTimerHandle LoadingScreenTimerHandle;
+
+	float FadeStartAlpha = 0.f;
+	float FadeEndAlpha = 0.f;
 };

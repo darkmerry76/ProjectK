@@ -19,9 +19,18 @@ public:
 	TObjectPtr<class UEMButton> MenuButton;
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
-	TObjectPtr<class UEMTextBlock> MenuText;
+	TObjectPtr<class UEMTextBlock> MenuTextBlock;
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	FString Text;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	FLinearColor NormalTextColor = FLinearColor::White;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	FLinearColor SelectTextColor = FLinearColor::White;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	float NormalFontSize = 30.f;
 
@@ -32,7 +41,11 @@ protected:
 	float HoveredAnimatinTime = 0.2f;
 
 	FWidgetTransform DefaultTextWidgetTransform;
-	FEMTickerHandle TickerHandle;
+
+	float NextAlpha = 0.f;
+	
+public:
+	float CurrentAlpha = 0.f;
 	
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -58,9 +71,11 @@ public:
 	void UnhoveredAnimation();
 
 protected:
+	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-
+	virtual void NativeTick(const FGeometry& geometry, float deltaTime) override;
+	
 	UFUNCTION()
 	void OnClicked();
 
@@ -69,9 +84,6 @@ protected:
 
 	UFUNCTION()
 	void OnUnhovered();
-
-	void OnHoveredAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration);
-	void OnUnhoveredAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration);
 
 	void SetFontSizeByAlpha(float alpha);
 };

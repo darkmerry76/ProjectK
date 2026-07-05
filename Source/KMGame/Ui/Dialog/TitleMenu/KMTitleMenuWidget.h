@@ -55,4 +55,6 @@ protected:
 	void Clear();
 
 	virtual void NativeTick(const FGeometry& myGeometry, float deltaTime) override;
+
+	void SelectedMenu(class UKMTitleMenuItemWidget* titleMenuItem);
 };

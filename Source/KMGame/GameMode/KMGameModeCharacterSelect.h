@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "KMGameModeBase.h"
+#include "KMGameModeStage.h"
 #include "KMGameModeCharacterSelect.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMHeroSelectDelegate, const FName& heroTableId);
 
 UCLASS(Blueprintable, BlueprintType, abstract)
-class KMGAME_API AKMGameModeCharacterSelect : public AKMGameModeBase
+class KMGAME_API AKMGameModeCharacterSelect : public AKMGameModeStage
 {
 	GENERATED_BODY()
 public:

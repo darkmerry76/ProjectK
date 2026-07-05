@@ -1,4 +1,6 @@
 ﻿#include "EMGameInstance.h"
+
+#include "EMGameViewportClient.h"
 #include "AssetRegistry/AssetData.h"
 #include "AssetRegistry/IAssetRegistry.h"
 #include "System/EMGameInstanceSubsystem.h"
@@ -10,6 +12,8 @@ UEMGameInstance::UEMGameInstance() : Super()
 
 void UEMGameInstance::Init()
 {
+	UGameViewportClient::OnViewportCreated().AddUObject(this, &ThisClass::OnViewportCreated);
+	
 	LoadBlueprintSubsystem();
 	
 	Super::Init();
@@ -25,6 +29,14 @@ void UEMGameInstance::Init()
 	}
 
 	OnPostInitalize();
+}
+
+void UEMGameInstance::OnViewportCreated()
+{
+	if (UEMGameViewportClient* gameViewportClient = Cast<UEMGameViewportClient>(GetGameViewportClient()))
+	{
+		gameViewportClient->InitComplete();
+	}
 }
 
 void UEMGameInstance::LoadBlueprintSubsystem()

@@ -1,6 +1,6 @@
 ﻿#include "KMGameViewportClient.h"
-
 #include "System/EMTickerSubsystem.h"
+#include "Ui/Component/KMLoadingWidget.h"
 #include "Util/KMUtil.h"
 #include "Widgets/Colors/SColorBlock.h"
 
@@ -19,9 +19,9 @@ void UKMGameViewportClient::Init(FWorldContext& worldContext, UGameInstance* own
 	SetMouseCaptureMode(EMouseCaptureMode::CapturePermanently);
 }
 
-void UKMGameViewportClient::Tick(float deltaTime)
+void UKMGameViewportClient::InitComplete()
 {
-	Super::Tick(deltaTime);
+	Super::InitComplete();
 
 	if (!VersionTextBlock.IsValid())
 	{
@@ -53,16 +53,16 @@ void UKMGameViewportClient::Tick(float deltaTime)
 
 	if (!FadeColorBlock.IsValid())
 	{
-		 SAssignNew(FadeColorBlock, SColorBlock)
-			.Color_UObject(this, &ThisClass::GetFadeColor)
-			.Visibility_UObject(this, &ThisClass::GetFadeVisibiltiy);
+		SAssignNew(FadeColorBlock, SColorBlock)
+		   .Color_UObject(this, &ThisClass::GetFadeColor)
+		   .Visibility_UObject(this, &ThisClass::GetFadeVisibiltiy);
 		
 		AddViewportWidgetContent(FadeColorBlock.ToSharedRef(),90000);
 	}
 	
 	if (!LoadingScreenWidget.IsValid() && IsValid(LoadingScreenWidgetClass))
 	{
-		LoadingScreenWidgetUMG = CreateWidget<UKMUserWidget>(GetGameInstance(), LoadingScreenWidgetClass);
+		LoadingScreenWidgetUMG = CreateWidget<UKMLoadingWidget>(GetGameInstance(), LoadingScreenWidgetClass);
 		if (IsValid(LoadingScreenWidgetUMG))
 		{
 			LoadingScreenWidget = LoadingScreenWidgetUMG->TakeWidget();
@@ -70,6 +70,11 @@ void UKMGameViewportClient::Tick(float deltaTime)
 			AddViewportWidgetContent(LoadingScreenWidget.ToSharedRef(),80000);
 		}
 	}
+}
+
+void UKMGameViewportClient::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
 }
 
 FText UKMGameViewportClient::GetBuildInfo() const
@@ -88,7 +93,14 @@ EVisibility UKMGameViewportClient::GetFadeVisibiltiy() const
 	{
 		return EVisibility::Hidden;
 	}
-	return EVisibility::Visible;
+	if (FadeStartAlpha < FadeEndAlpha)
+	{
+		return EVisibility::Visible;
+	}
+	else
+	{
+		return EVisibility::HitTestInvisible;
+	}
 }
 
 void UKMGameViewportClient::PlayFade(float startAlpha, float endAlpha, float duration, FLinearColor fadeColor)
@@ -102,6 +114,9 @@ void UKMGameViewportClient::PlayFade(float startAlpha, float endAlpha, float dur
 	{
 		tickerSubsystem->RemoveTicker(FadeTickerHandle);
 	}
+
+	FadeStartAlpha = startAlpha;
+	FadeEndAlpha = endAlpha;
 
 	FadeColor = fadeColor;
 	FadeTickerHandle = tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, startAlpha, endAlpha](eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)
@@ -124,6 +139,16 @@ void UKMGameViewportClient::PlayLoadingScreen()
 		LoadingScreenWidget->SetVisibility(EVisibility::Visible);
 		LoadingScreenWidget->SetRenderOpacity(1.f);
 		LoadingScreenStartTime = GetWorld()->GetTimeSeconds();
+
+		LoadingScreenWidgetUMG->Play();
+	}
+}
+void UKMGameViewportClient::StopLoadingInternal()
+{
+	if (LoadingScreenWidget.IsValid())
+	{
+		LoadingScreenWidgetUMG->Stop();
+		LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
 	}
 }
 
@@ -133,13 +158,14 @@ void UKMGameViewportClient::StopLoadingScreenDynamic(FKMLoadingScreenCompleteDyn
 	{
 		if (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime > minDelyedSeconds)
 		{
-			LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+			StopLoadingInternal();
+			completeDelegate.ExecuteIfBound();
 		}
 		else
 		{
 			GetWorld()->GetTimerManager().SetTimer(LoadingScreenTimerHandle, FTimerDelegate::CreateLambda([this, completeDelegate]()
 			{
-				LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+				StopLoadingInternal();
 				completeDelegate.ExecuteIfBound();
 			}), minDelyedSeconds - (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime), false);
 		}
@@ -152,13 +178,14 @@ void UKMGameViewportClient::StopLoadingScreen(FKMLoadingScreenCompleteDelegate c
 	{
 		if (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime > minDelyedSeconds)
 		{
-			LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+			StopLoadingInternal();
+			completeDelegate.ExecuteIfBound();
 		}
 		else
 		{
 			GetWorld()->GetTimerManager().SetTimer(LoadingScreenTimerHandle, FTimerDelegate::CreateLambda([this, completeDelegate]()
 			{
-				LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+				StopLoadingInternal();
 				completeDelegate.ExecuteIfBound();
 			}), minDelyedSeconds - (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime), false);
 		}
@@ -179,7 +206,6 @@ TSharedPtr<SWidget> UKMGameViewportClient::GetLoadingScreenWidget() const
 {
 	return LoadingScreenWidget;
 }
-
 
 void UKMGameViewportClient::DetachViewportClient()
 {

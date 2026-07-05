@@ -344,52 +344,55 @@ void UKMUtil::PlaySlateFade(const UObject* worldContextObject, float startAlpha,
 	gameViewportClient->PlayFade(startAlpha, endAlpha, duration, fadeColor);
 }
 
-void UKMUtil::PlayLoadingScreen(const UObject* worldContextObject)
+bool UKMUtil::PlayLoadingScreen(const UObject* worldContextObject)
 {
 	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
 	if (!IsValid(gameInstance))
 	{
-		return;
+		return false;
 	}
 	
 	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
 	if (!IsValid(gameViewportClient))
 	{
-		return;
+		return false;
 	}
 	gameViewportClient->PlayLoadingScreen();
+	return true;
 }
 
-void UKMUtil::StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds)
+bool UKMUtil::StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds)
 {
 	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
 	if (!IsValid(gameInstance))
 	{
-		return;
+		return false;
 	}
 	
 	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
 	if (!IsValid(gameViewportClient))
 	{
-		return;
+		return false;
 	}
 	gameViewportClient->StopLoadingScreenDynamic(completeDelegate, minDelyedSeconds);
+	return true;
 }
 
-void UKMUtil::StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds)
+bool UKMUtil::StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds)
 {
 	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
 	if (!IsValid(gameInstance))
 	{
-		return;
+		return false;
 	}
 	
 	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
 	if (!IsValid(gameViewportClient))
 	{
-		return;
+		return false;
 	}
 	gameViewportClient->StopLoadingScreen(completeDelegate, minDelyedSeconds);
+	return true;
 }
 
 bool UKMUtil::IsPlayingLoadingScreen(const UObject* worldContextObject)

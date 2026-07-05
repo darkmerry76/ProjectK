@@ -12,20 +12,14 @@ class KMGAME_API AKMGameModeBase : public AEMGameModeBase
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
 	FSoftObjectPath InitMap;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FName HeroId = NAME_None;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FTransform HeroSpwnTransform;
-
-	virtual void RestartPlayer(AController* NewPlayer) override;
-
-	UFUNCTION(BlueprintNativeEvent)
-	void OnSpawnCharacterInstance(class UKMHeroInstance* newHeroInstance);
+	
+	UPROPERTY()
+	TObjectPtr<class UKMUserWidget> RootWidget;
 
 public:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+	
 	bool IsInitMap(const UWorld* otherWorld) const;
 
 	UFUNCTION(BlueprintNativeEvent)

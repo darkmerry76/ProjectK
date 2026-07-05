@@ -23,4 +23,5 @@ public:
 	
 protected:
 	void LoadBlueprintSubsystem();
+	void OnViewportCreated();
 };

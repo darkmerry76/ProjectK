@@ -12,4 +12,7 @@ class KMGAME_API AKMWorldSettings : public AWorldSettings
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsShowLoadingScreen = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UKMUserWidget> RootWidgetClass;
 };
