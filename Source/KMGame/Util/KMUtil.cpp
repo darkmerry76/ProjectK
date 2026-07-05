@@ -10,6 +10,7 @@
 #include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 double UKMUtil::GameElipsedStartTime = 0.f;
 
@@ -341,4 +342,73 @@ void UKMUtil::PlaySlateFade(const UObject* worldContextObject, float startAlpha,
 		return;
 	}
 	gameViewportClient->PlayFade(startAlpha, endAlpha, duration, fadeColor);
+}
+
+void UKMUtil::PlayLoadingScreen(const UObject* worldContextObject)
+{
+	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
+	if (!IsValid(gameInstance))
+	{
+		return;
+	}
+	
+	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
+	if (!IsValid(gameViewportClient))
+	{
+		return;
+	}
+	gameViewportClient->PlayLoadingScreen();
+}
+
+void UKMUtil::StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds)
+{
+	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
+	if (!IsValid(gameInstance))
+	{
+		return;
+	}
+	
+	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
+	if (!IsValid(gameViewportClient))
+	{
+		return;
+	}
+	gameViewportClient->StopLoadingScreenDynamic(completeDelegate, minDelyedSeconds);
+}
+
+void UKMUtil::StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds)
+{
+	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
+	if (!IsValid(gameInstance))
+	{
+		return;
+	}
+	
+	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
+	if (!IsValid(gameViewportClient))
+	{
+		return;
+	}
+	gameViewportClient->StopLoadingScreen(completeDelegate, minDelyedSeconds);
+}
+
+bool UKMUtil::IsPlayingLoadingScreen(const UObject* worldContextObject)
+{
+	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(worldContextObject);
+	if (!IsValid(gameInstance))
+	{
+		return false;
+	}
+	
+	UKMGameViewportClient* gameViewportClient = Cast<UKMGameViewportClient>(gameInstance->GetGameViewportClient());
+	if (!IsValid(gameViewportClient))
+	{
+		return false;
+	}
+	return gameViewportClient->IsPlayingLoadingScreen();
+}
+
+void UKMUtil::OpenMap(const UObject* worldContextObject, FName levelName, bool bAbsolute, FString options)
+{
+	UGameplayStatics::OpenLevel(worldContextObject, levelName, bAbsolute, options);
 }

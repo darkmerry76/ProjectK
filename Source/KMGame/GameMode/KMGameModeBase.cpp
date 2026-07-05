@@ -50,3 +50,7 @@ void AKMGameModeBase::RestartPlayer(AController* newPlayer)
 void AKMGameModeBase::OnSpawnCharacterInstance_Implementation(UKMHeroInstance* newHeroInstance)
 {
 }
+
+void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
+{
+}

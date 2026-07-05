@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/KMDefine.h"
 #include "Account/KMPlayerAccount.h"
+#include "Core/KMGameViewportClient.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "KMUtil.generated.h"
 
@@ -70,9 +71,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
 	static void PlaySlateFade(const UObject* worldContextObject, float startAlpha = 0, float endAlpha = 1.f, float duration = 1.f, FLinearColor fadeColor = FLinearColor::Black);
+	
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+   	static void PlayLoadingScreen(const UObject* worldContextObject);
+
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"), DisplayName="StopLoadingScreen")
+	static void StopLoadingScreenDynamic(const UObject* worldContextObject, FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds = 2.f);
+	
+	static void StopLoadingScreen(const UObject* worldContextObject, FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds = 2.f);
+
+	UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
+	static bool IsPlayingLoadingScreen(const UObject* worldContextObject);
 
 	UFUNCTION(BlueprintPure, meta=(WorldContext="worldContextObject"))
 	static FString GetBuildInfo(const UObject* worldContextObject);
+
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="worldContextObject"))
+	static void OpenMap(const UObject* worldContextObject, FName levelName, bool bAbsolute, FString options);
 
 protected:
 	static double GameElipsedStartTime;

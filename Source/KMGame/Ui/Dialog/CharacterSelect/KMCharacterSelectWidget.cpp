@@ -3,6 +3,7 @@
 #include "GameMode/KMGameModeCharacterSelect.h"
 #include "GameObject/KMHeroInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "System/KMWorldSubsystem.h"
 #include "Tables/Generated/KMTable_Character.h"
 #include "UI/Component/EMButton.h"
 #include "UI/Component/EMHorizontalBox.h"
@@ -19,6 +20,10 @@ void UKMCharacterSelectWidget::NativeConstruct()
 	{
 		EnterButton->OnPressed.AddDynamic(this, &ThisClass::OnEnterPressed);
 	}
+	if (UKMWorldSubsystem* worldSubsystem = UKMWorldSubsystem::GetWorldSubsystem(this))
+	{
+		worldSubsystem->LoadingCompleteDelegate.AddUObject(this, &ThisClass::OnWorldLoadingComplete);
+	}
 
 	Refresh();
 }
@@ -33,19 +38,19 @@ void UKMCharacterSelectWidget::NativeDestruct()
 	}
 }
 
+void UKMCharacterSelectWidget::OnWorldLoadingComplete()
+{
+}
+
 void UKMCharacterSelectWidget::Refresh()
 {
+	if (AKMGameModeCharacterSelect* gameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
+	{
+		DefaultHeroId = gameMode->DefaultSelectTableId;
+	}
+	
 	if (IsValid(CharacterHorizontalBox))
 	{
-		FName latestSelectHeroId = NAME_None;
-		if (AKMGameModeCharacterSelect* heroSelectGameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
-		{
-			if (heroSelectGameMode->LatestHeroInstance.IsValid())
-			{
-				latestSelectHeroId = heroSelectGameMode->LatestHeroInstance->GetTable()->Id;
-			}
-		}
-		
 		for(int32 itemIndex = 0; itemIndex < CharacterHorizontalBox->GetChildrenCount(); ++itemIndex)
 		{
 			UKMCharacterSelectItemWidget* charactrerSelectItem = Cast<UKMCharacterSelectItemWidget>(CharacterHorizontalBox->GetChildAt(itemIndex));
@@ -53,16 +58,10 @@ void UKMCharacterSelectWidget::Refresh()
 			{
 				continue;
 			}
-			if (charactrerSelectItem->CharacterId == latestSelectHeroId)
+			if (charactrerSelectItem->CharacterId == DefaultHeroId)
 			{
-				charactrerSelectItem->bIsSelected = true;
-				OnClicked(charactrerSelectItem);
+				SelectCharacter(charactrerSelectItem);
 			}
-			else
-			{
-				charactrerSelectItem->bIsSelected = false;
-			}
-			
 			if (charactrerSelectItem->ClickedDelegate.IsAlreadyBound(this, &ThisClass::OnClicked))
 			{
 				charactrerSelectItem->ClickedDelegate.RemoveAll(this);
@@ -83,6 +82,11 @@ void UKMCharacterSelectWidget::Refresh()
 }
 
 void UKMCharacterSelectWidget::OnClicked_Implementation(UKMCharacterSelectItemWidget* charactrerSelectItem)
+{
+	SelectCharacter(charactrerSelectItem);
+}
+
+void UKMCharacterSelectWidget::SelectCharacter(UKMCharacterSelectItemWidget* charactrerSelectItem)
 {
 	if (charactrerSelectItem == PrevSelectedItem)
 	{

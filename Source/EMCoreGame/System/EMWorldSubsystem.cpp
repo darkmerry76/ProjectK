@@ -7,7 +7,10 @@ void UEMWorldSubsystem::Initialize()
 {
 	Super::Initialize();
 
-	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &UEMWorldSubsystem::OnPostWorldInitialization);
+	FWorldDelegates::OnPreWorldInitialization.AddUObject(this, &ThisClass::OnPreWorldInitialization);
+	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &ThisClass::OnPostWorldInitialization);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnPostLoadMapWithWorld);
+
 	FWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);
 }
 
@@ -16,6 +19,8 @@ void UEMWorldSubsystem::Deinitialize()
 	Super::Deinitialize();
 
 	FWorldDelegates::OnPostWorldInitialization.RemoveAll(this);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
+
 	FWorldDelegates::LevelAddedToWorld.RemoveAll(this);
 }
 
@@ -30,19 +35,27 @@ void UEMWorldSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
 	{
 		return;
 	}
-	LoadingState = EEMWorldLoadingState::Loading;
+}
+
+void UEMWorldSubsystem::OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
+{
+	LoadingState = EEMWorldLoadingState::Ready;
 }
 
 void UEMWorldSubsystem::OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
 {
-	LoadingState = EEMWorldLoadingState::Ready;
+	LoadingState = EEMWorldLoadingState::Loading;
 
 	newWorld->OnAllLevelsChanged().AddUObject(this, &ThisClass::OnAllLevelsChanged);
 }
 
+void UEMWorldSubsystem::OnPostLoadMapWithWorld(UWorld* loadedWorld)
+{
+}
+
 void UEMWorldSubsystem::OnAllLevelsChanged()
 {
-	if (LoadingState != EEMWorldLoadingState::Loading)
+	if (LoadingState == EEMWorldLoadingState::Complete)
 	{
 		return;
 	}
@@ -50,6 +63,7 @@ void UEMWorldSubsystem::OnAllLevelsChanged()
 	if (IsAllStreamingLevelLoaded())
 	{
 		LoadingState = EEMWorldLoadingState::Complete;
+		OnLoadingComplete();
 	}
 }
 
@@ -87,5 +101,5 @@ bool UEMWorldSubsystem::IsAllStreamingLevelLoaded() const
 
 void UEMWorldSubsystem::OnLoadingComplete()
 {
-	
+	LoadingCompleteDelegate.Broadcast();
 }

@@ -24,6 +24,8 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	TObjectPtr<class UKMCharacterSelectItemWidget> PrevHoveredItem;
+
+	FName DefaultHeroId = TEXT("H_RyuX");
 	
 public:
 	UKMCharacterSelectWidget(const FObjectInitializer& objectInitializer);
@@ -31,6 +33,8 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	void OnWorldLoadingComplete();
 
 	void Refresh();
 
@@ -46,4 +50,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEnterPressed();
 
+protected:
+	void SelectCharacter(class UKMCharacterSelectItemWidget* charactrerSelectItem);
 };

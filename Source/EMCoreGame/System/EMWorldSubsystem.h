@@ -16,11 +16,14 @@ enum class EEMWorldLoadingState : uint8
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UEMWorldSubsystem
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DECLARE_MULTICAST_DELEGATE(FEMWorldLoadingCompleteDelegate);
 UCLASS(Blueprintable, BlueprintType, Abstract)
 class EMCOREGAME_API UEMWorldSubsystem : public UEMGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
+	FEMWorldLoadingCompleteDelegate LoadingCompleteDelegate;
+	
 	EEMWorldLoadingState GetLoadingState() const;
 	
 protected:
@@ -28,8 +31,9 @@ protected:
 	virtual void Deinitialize() override;
 
 	virtual void OnLevelAdded(ULevel* level, UWorld* world);
-	void OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS);
-
+	virtual void OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS);
+	virtual void OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS);
+	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld);
 	virtual void OnLoadingComplete();
 
 protected:

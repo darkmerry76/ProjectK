@@ -1,5 +1,4 @@
 #include "KMGameModeCharacterSelect.h"
-
 #include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -55,6 +54,11 @@ void AKMGameModeCharacterSelect::OnSpawnCharacterInstance_Implementation(UKMHero
 	}
 
 	LatestHeroInstance = newHeroInstance;
+}
+
+void AKMGameModeCharacterSelect::OnWorldLoadingComplete_Implementation()
+{
+	SelectCharacter(GetWorld()->GetFirstPlayerController(), DefaultSelectTableId, true);
 }
 
 void AKMGameModeCharacterSelect::OnEnterGame_Implementation()

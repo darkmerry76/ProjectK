@@ -23,8 +23,11 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnSpawnCharacterInstance(class UKMHeroInstance* newHeroInstance);
-	
+
 public:
 	virtual void BeginPlay() override;
 	bool IsInitMap(const UWorld* otherWorld) const;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnWorldLoadingComplete();
 };

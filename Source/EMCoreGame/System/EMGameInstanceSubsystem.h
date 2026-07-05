@@ -22,8 +22,4 @@ public:
 
 private:
 	virtual void Initialize(FSubsystemCollectionBase& collection) override;
-	
-protected:
-	virtual void OnPostWorldInitialization(UWorld* loadedWorld, const UWorld::InitializationValues iVS);
-	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld);
 };

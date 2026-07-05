@@ -39,10 +39,6 @@ void UKMBattleSubsystem::Deinitialize()
 	}
 }
 
-void UKMBattleSubsystem::OnPostLoadMapWithWorld(UWorld* loadedWorld)
-{
-}
-
 void UKMBattleSubsystem::OnRemoveGameObject(UEMGameObjectInstance* gameObjectInstance)
 {
 	UKMMonsterInstance* monsterInstance = Cast<UKMMonsterInstance>(gameObjectInstance);

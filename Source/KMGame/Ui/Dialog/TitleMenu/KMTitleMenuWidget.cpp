@@ -120,8 +120,8 @@ void UKMTitleMenuWidget::OnMenuUnhovered_Implementation(UKMTitleMenuItemWidget* 
 {
 	if (IsValid(PrevSelectMenuItem))
 	{
-		PrevSelectMenuItem->UnhoveredAnimation();
-		PrevSelectMenuItem = nullptr;
+		//PrevSelectMenuItem->UnhoveredAnimation();
+		//PrevSelectMenuItem = nullptr;
 	}
 }
 

@@ -3,6 +3,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "System/EMTickerSubsystem.h"
 #include "UI/Component/EMButton.h"
+#include "UI/Component/EMImage.h"
 #include "UI/Component/EMTextBlock.h"
 
 UKMTitleMenuItemWidget::UKMTitleMenuItemWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -64,6 +65,7 @@ void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha)
 		
 		FWidgetTransform widgetTransform = DefaultTextWidgetTransform;
 		widgetTransform.Translation.Y -= ((textFont.Size - NormalFontSize) * 0.65f) / DpiScale;
+
 		MenuText->SetRenderTransform(widgetTransform);
 	}
 }

@@ -8,4 +8,8 @@ UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API AKMWorldSettings : public AWorldSettings
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsShowLoadingScreen = false;
 };

@@ -61,10 +61,6 @@ protected:
 	int32 NumGameObject(bool bExcludeDead = true) const;
 	
 	void OnPreWorldFinishDestroy(UWorld* world);
-	
-	virtual void OnPostWorldInitialization(UWorld* loadedWorld, const UWorld::InitializationValues iVS) override;
-	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld) override;
-
 	virtual int32 AddGameObject(class UEMGameObjectInstance* newGameObjectInstance) override;
 
 protected:

@@ -23,27 +23,34 @@ void UKMGameViewportClient::Tick(float deltaTime)
 {
 	Super::Tick(deltaTime);
 
-	if (!VersionText.IsValid())
+	if (!VersionTextBlock.IsValid())
 	{
-		VersionText =
-			SNew(STextBlock)
+		SAssignNew(VersionTextBlock, STextBlock)
 			.Text_UObject(this, &UKMGameViewportClient::GetBuildInfo);
 
-		FSlateFontInfo fontInfo = VersionText->GetFont();
+		SAssignNew(FadeColorBlock, SColorBlock)
+			.Color_UObject(this, &ThisClass::GetFadeColor)
+			.Visibility_UObject(this, &ThisClass::GetFadeVisibiltiy);
+
+		FSlateFontInfo fontInfo = VersionTextBlock->GetFont();
 		fontInfo.Size = 24.f;
-		VersionText->SetFont(fontInfo);
+		VersionTextBlock->SetFont(fontInfo);
 		
 		AddViewportWidgetContent(
 			SNew(SOverlay)
+			+ SOverlay::Slot()
+			[
+				FadeColorBlock.ToSharedRef()
+			]
 			+ SOverlay::Slot()
 			.HAlign(HAlign_Right)
 			.VAlign(VAlign_Bottom)
 			.Padding(FMargin(20))
 			[
-				VersionText.ToSharedRef()
-			], 100000
-		);
+				VersionTextBlock.ToSharedRef()
+			],100000);
 	}
+
 	if (!FadeColorBlock.IsValid())
 	{
 		 SAssignNew(FadeColorBlock, SColorBlock)
@@ -51,6 +58,17 @@ void UKMGameViewportClient::Tick(float deltaTime)
 			.Visibility_UObject(this, &ThisClass::GetFadeVisibiltiy);
 		
 		AddViewportWidgetContent(FadeColorBlock.ToSharedRef(),90000);
+	}
+	
+	if (!LoadingScreenWidget.IsValid() && IsValid(LoadingScreenWidgetClass))
+	{
+		LoadingScreenWidgetUMG = CreateWidget<UKMUserWidget>(GetGameInstance(), LoadingScreenWidgetClass);
+		if (IsValid(LoadingScreenWidgetUMG))
+		{
+			LoadingScreenWidget = LoadingScreenWidgetUMG->TakeWidget();
+			LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+			AddViewportWidgetContent(LoadingScreenWidget.ToSharedRef(),80000);
+		}
 	}
 }
 
@@ -90,10 +108,88 @@ void UKMGameViewportClient::PlayFade(float startAlpha, float endAlpha, float dur
 	{
 		switch (eventType)
 		{
-		case eTickerEventType::CREATED: FadeColor.A = startAlpha;
+		case eTickerEventType::CREATED:
 		case eTickerEventType::UPDATED: FadeColor.A = FMath::Lerp(startAlpha, endAlpha, eplipseTime / duration); break;
 		case eTickerEventType::REMOVED: FadeColor.A = endAlpha; break;
 		default: break;
 		}
 	}), duration, 0.f);
+}
+
+void UKMGameViewportClient::PlayLoadingScreen()
+{
+	if (LoadingScreenWidget.IsValid())
+	{
+		FadeColor.A = 0.f;
+		LoadingScreenWidget->SetVisibility(EVisibility::Visible);
+		LoadingScreenWidget->SetRenderOpacity(1.f);
+		LoadingScreenStartTime = GetWorld()->GetTimeSeconds();
+	}
+}
+
+void UKMGameViewportClient::StopLoadingScreenDynamic(FKMLoadingScreenCompleteDynamicDelegate completeDelegate, float minDelyedSeconds)
+{
+	if (LoadingScreenWidget.IsValid())
+	{
+		if (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime > minDelyedSeconds)
+		{
+			LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().SetTimer(LoadingScreenTimerHandle, FTimerDelegate::CreateLambda([this, completeDelegate]()
+			{
+				LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+				completeDelegate.ExecuteIfBound();
+			}), minDelyedSeconds - (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime), false);
+		}
+	}
+}
+
+void UKMGameViewportClient::StopLoadingScreen(FKMLoadingScreenCompleteDelegate completeDelegate, float minDelyedSeconds)
+{
+	if (LoadingScreenWidget.IsValid())
+	{
+		if (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime > minDelyedSeconds)
+		{
+			LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().SetTimer(LoadingScreenTimerHandle, FTimerDelegate::CreateLambda([this, completeDelegate]()
+			{
+				LoadingScreenWidget->SetVisibility(EVisibility::Hidden);
+				completeDelegate.ExecuteIfBound();
+			}), minDelyedSeconds - (GetWorld()->GetTimeSeconds() - LoadingScreenStartTime), false);
+		}
+	}
+}
+
+bool UKMGameViewportClient::IsPlayingLoadingScreen() const
+{
+	return LoadingScreenWidget.IsValid();
+}
+
+UKMUserWidget* UKMGameViewportClient::GetLoadingScreenWidgetUMG() const
+{
+	return LoadingScreenWidgetUMG;
+}
+
+TSharedPtr<SWidget> UKMGameViewportClient::GetLoadingScreenWidget() const
+{
+	return LoadingScreenWidget;
+}
+
+
+void UKMGameViewportClient::DetachViewportClient()
+{
+	RemoveViewportWidgetContent(LoadingScreenWidget.ToSharedRef());
+	
+	VersionTextBlock.Reset();
+	FadeColorBlock.Reset();
+	LoadingScreenWidget.Reset();
+	
+	LoadingScreenWidgetUMG = nullptr;
+	
+	Super::DetachViewportClient();
 }

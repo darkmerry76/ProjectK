@@ -21,4 +21,7 @@ protected:
 	virtual void Deinitialize() override;
 
 	virtual void OnLevelAdded(ULevel* level, UWorld* world) override;
+	virtual void OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS) override;
+	virtual void OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS) override;
+	virtual void OnLoadingComplete() override;
 };

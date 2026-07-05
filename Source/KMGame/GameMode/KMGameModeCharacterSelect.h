@@ -16,6 +16,9 @@ public:
 	UPROPERTY()
 	TWeakObjectPtr<class UKMHeroInstance> LatestHeroInstance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName DefaultSelectTableId;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void SelectCharacter(class AController* newPlayer, const FName& newCharacterId, bool bForce = false);
@@ -28,4 +31,5 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnSpawnCharacterInstance_Implementation(class UKMHeroInstance* newHeroInstance) override;
+	virtual void OnWorldLoadingComplete_Implementation() override;
 };

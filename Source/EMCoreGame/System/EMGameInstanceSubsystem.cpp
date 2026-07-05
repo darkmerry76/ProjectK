@@ -20,24 +20,9 @@ void UEMGameInstanceSubsystem::Initialize()
 void UEMGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &ThisClass::OnPostWorldInitialization);
-	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnPostLoadMapWithWorld);
 }
 
 void UEMGameInstanceSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
-	
-	FWorldDelegates::OnPostWorldInitialization.RemoveAll(this);
-	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
-}
-
-void UEMGameInstanceSubsystem::OnPostWorldInitialization(UWorld* loadedWorld, const UWorld::InitializationValues iVS)
-{
-	
-}
-
-void UEMGameInstanceSubsystem::OnPostLoadMapWithWorld(UWorld* loadedWorld)
-{
-	
 }

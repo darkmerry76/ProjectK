@@ -45,8 +45,6 @@ public:
 
 private:
 	void ChangeBattleState(EKMBattleState currentState);
-	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld) override;
-	
 	void OnRemoveGameObject(class UEMGameObjectInstance* gameObjectInstance);
 
 	UFUNCTION()
