@@ -43,7 +43,10 @@ void UKMTitleMenuWidget::Refresh()
 			if (itemIndex == 0)
 			{
 				SelectedMenu(titleMenuItem);
-				titleMenuItem->CurrentAlpha = 1.f;
+				titleMenuItem->StartAlpha = 0.f;
+				titleMenuItem->NextAlpha = 1.f;
+				titleMenuItem->CurrentAnimTime = titleMenuItem->CurrentHoveredAnimationTime;
+				titleMenuItem->SetFontSizeByAlpha(1.f, false);
 			}
 			
 			if (titleMenuItem->ClickedDelegate.IsAlreadyBound(this, &UKMTitleMenuWidget::OnMenuClicked))

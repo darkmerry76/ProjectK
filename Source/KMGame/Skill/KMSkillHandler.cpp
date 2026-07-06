@@ -624,7 +624,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 	if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(skillTable))
 	{
 		AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter();
-		check(IsValid(ownerCharacter) == true);
+		check(IsValid(ownerCharacter));
 
 		UKMAbility* newAbility = nullptr;
 		UObject* assetObject = assetManager->GetAsset(normalSkillTable->Ability);

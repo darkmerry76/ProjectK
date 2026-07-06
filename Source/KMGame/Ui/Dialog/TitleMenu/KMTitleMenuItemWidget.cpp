@@ -25,6 +25,8 @@ void UKMTitleMenuItemWidget::NativeConstruct()
 
 		DefaultTextWidgetTransform = MenuTextBlock->GetRenderTransform();
 	}
+
+	CurrentHoveredAnimationTime = HoveredAnimatinTime;
 }
 
 void UKMTitleMenuItemWidget::NativeDestruct()
@@ -56,12 +58,27 @@ void UKMTitleMenuItemWidget::OnUnhovered()
 	UnhoverDelegate.Broadcast(this);
 }
 
-void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha)
+void UKMTitleMenuItemWidget::OnHoverSelected_Implementation()
+{
+	
+}
+
+void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha, bool bEvent)
 {
 	if (IsValid(MenuTextBlock))
 	{
 		FSlateFontInfo textFont = MenuTextBlock->GetFont();
-		textFont.Size = FMath::Lerp(NormalFontSize, HoveredFontSize, alpha);
+		float newFontSize = FMath::Lerp(NormalFontSize, HoveredFontSize, alpha);
+
+		float halfFontSize = (NormalFontSize + HoveredFontSize) * 0.5f;
+		if (bEvent)
+		{
+			if (textFont.Size < halfFontSize && halfFontSize < newFontSize)
+			{
+				OnHoverSelected();
+			}
+		}
+		textFont.Size = newFontSize;
 		MenuTextBlock->SetFont(textFont);
 
 		float DpiScale = 1.f;//UWidgetLayoutLibrary::GetViewportScale(this);
@@ -78,17 +95,34 @@ void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha)
 void UKMTitleMenuItemWidget::HoveredAnimation()
 {
 	NextAlpha = 1.f;
+	StartAlpha = CurrentAlpha;
+	CurrentAnimTime = 0.f;
+
+	CurrentHoveredAnimationTime = (NextAlpha - StartAlpha) * HoveredAnimatinTime;
 }
 
 void UKMTitleMenuItemWidget::UnhoveredAnimation()
 {
 	NextAlpha = 0.f;
+	StartAlpha = CurrentAlpha;
+	CurrentAnimTime = 0.f;
+
+	CurrentHoveredAnimationTime = (StartAlpha - NextAlpha) * HoveredAnimatinTime;
 }
 
 void UKMTitleMenuItemWidget::NativeTick(const FGeometry& geometry, float deltaTime)
 {
 	Super::NativeTick(geometry, deltaTime);
 
-	CurrentAlpha = FMath::FInterpTo(CurrentAlpha, NextAlpha, deltaTime, HoveredAnimatinTime);
-	SetFontSizeByAlpha(CurrentAlpha);
+	if (!FMath::IsNearlyEqual(NextAlpha, StartAlpha))
+	{
+		float finalHoveredAnimationTime = CurrentAnimTime / CurrentHoveredAnimationTime;
+		CurrentAlpha = FMath::Lerp(StartAlpha, NextAlpha, FMath::Clamp(finalHoveredAnimationTime, 0.f, 1.f));
+		SetFontSizeByAlpha(CurrentAlpha);
+	}
+	else
+	{
+		SetFontSizeByAlpha(StartAlpha);
+	}
+	CurrentAnimTime += deltaTime;
 }

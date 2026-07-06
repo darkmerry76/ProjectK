@@ -42,9 +42,11 @@ protected:
 
 	FWidgetTransform DefaultTextWidgetTransform;
 
-	float NextAlpha = 0.f;
-	
 public:
+	float StartAlpha = 0.f;
+	float NextAlpha = 0.f;
+	float CurrentAnimTime = 0.f;
+	float CurrentHoveredAnimationTime = 0.2f;
 	float CurrentAlpha = 0.f;
 	
 public:
@@ -70,11 +72,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnhoveredAnimation();
 
+	void SetFontSizeByAlpha(float alpha, bool bEvent = true);
+
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void NativeTick(const FGeometry& geometry, float deltaTime) override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnHoverSelected();
 	
 	UFUNCTION()
 	void OnClicked();
@@ -84,6 +91,4 @@ protected:
 
 	UFUNCTION()
 	void OnUnhovered();
-
-	void SetFontSizeByAlpha(float alpha);
 };
