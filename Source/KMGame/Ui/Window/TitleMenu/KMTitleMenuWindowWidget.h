@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "UI/Component/KMUserWidget.h"
-#include "KMTitleMenuDialogWidget.generated.h"
+#include "KMTitleMenuWindowWidget.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMTitleMenuDialogWidget : public UKMUserWidget
+class KMGAME_API UKMTitleMenuWindowWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
@@ -17,7 +17,7 @@ protected:
 	TObjectPtr<class UMediaPlayer> MediaPlayer;
 
 public:
-	UKMTitleMenuDialogWidget(const FObjectInitializer& objectInitializer);
+	UKMTitleMenuWindowWidget(const FObjectInitializer& objectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;

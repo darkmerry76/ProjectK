@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "UI/Component/KMUserWidget.h"
-#include "KMHeroSelectDialogWidget.generated.h"
+#include "KMHeroSelectWindowWidget.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMHeroSelectDialogWidget : public UKMUserWidget
+class KMGAME_API UKMHeroSelectWindowWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
@@ -17,7 +17,7 @@ protected:
 	TObjectPtr<class UKMHeroSelectInfoWidget> HeroSelectInfoWidget;
 	
 public:
-	UKMHeroSelectDialogWidget(const FObjectInitializer& objectInitializer);
+	UKMHeroSelectWindowWidget(const FObjectInitializer& objectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
