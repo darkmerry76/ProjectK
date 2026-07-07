@@ -313,7 +313,7 @@ FString UKMUtil::GetBuildInfo(const UObject* worldContextObject)
 				FVector2D resolution;
 				gameViewportClient->GetViewportSize(resolution);
 
-				viewportSizeString = FString::Printf(TEXT("%dwx%dh"), static_cast<int32>(resolution.X), static_cast<int32>(resolution.Y));
+				viewportSizeString = FString::Printf(TEXT("%dw%dh"), static_cast<int32>(resolution.X), static_cast<int32>(resolution.Y));
 			}
 		}
 		if (IsValid(worldContextObject->GetWorld()))
