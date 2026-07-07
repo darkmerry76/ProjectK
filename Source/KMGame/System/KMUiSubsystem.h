@@ -14,7 +14,7 @@ protected:
 	TSubclassOf<class UKMRootWidget> RootClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UKMNarrativeWidget> NarrativeWidgetClass;
+	TSubclassOf<class UKMPrologueWindowWidget> PrologueWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UKMRootWidget> RootWidget;
@@ -24,13 +24,16 @@ public:
 	UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
 	static UKMUiSubsystem* GetUiSubsystem(const UObject* worldContextObject);
 
-	void Activate();
+	void CreateRoot();
 	
 	UFUNCTION(BlueprintCallable)
 	void PrintNarrativeMessage(const FString message, const FLinearColor color = FLinearColor::White, bool messageClear = false);
 
 	UFUNCTION(BlueprintCallable)
 	void ClearNarrativeMessage();
+
+	UFUNCTION(BlueprintCallable)
+	class UKMPrologueWindowWidget* CreatePrologue() const;
 
 	UFUNCTION(BlueprintCallable)
 	class UKMCinematicWidget* DrawCienmaticImage(TSubclassOf<UKMCinematicWidget> cienmaticWidgetClass);

@@ -6,13 +6,13 @@
 #include "KMTableEnums.h"
 #include "KMTableStructures.h"
 #include "KMTable_Narrative.h"
-#include "KMTable_Narrative_Task.generated.h"
+#include "KMTable_Narrative_Dialog.generated.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FKMTable_Narrative_TaskRow
+// FKMTable_Narrative_DialogRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USTRUCT(BlueprintType)
-struct FKMTable_Narrative_TaskRow : public FKMTable_NarrativeRow
+struct FKMTable_Narrative_DialogRow : public FKMTable_NarrativeRow
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -59,32 +59,32 @@ struct FKMTable_Narrative_TaskRow : public FKMTable_NarrativeRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 
-	inline static const FKMTable_Narrative_TaskRow* FindRowPtr(FName IdKey, int32 subIdKey);
-	inline static const FKMTable_Narrative_TaskRow& FindRow(FName IdKey, int32 subIdKey);
+	inline static const FKMTable_Narrative_DialogRow* FindRowPtr(FName IdKey, int32 subIdKey);
+	inline static const FKMTable_Narrative_DialogRow& FindRow(FName IdKey, int32 subIdKey);
 	inline static FString MakeTableKeyToString(FName IdKey, int32 subIdKey);
 
-	static const int32   RefTableIndex = 29;
+	static const int32   RefTableIndex = 27;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// KMTable_Narrative_Task Inline
+// KMTable_Narrative_Dialog Inline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void FKMTable_Narrative_TaskRow::PostLoadRowTable()
+inline void FKMTable_Narrative_DialogRow::PostLoadRowTable()
 {
 	BaseScriptStruct = this->StaticStruct();
 }
 
-inline FString FKMTable_Narrative_TaskRow::MakeTableKeyToString(FName IdKey, int32 subIdKey)
+inline FString FKMTable_Narrative_DialogRow::MakeTableKeyToString(FName IdKey, int32 subIdKey)
 {
 	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey, subIdKey);
 }
 
-inline const FKMTable_Narrative_TaskRow* FKMTable_Narrative_TaskRow::FindRowPtr(FName IdKey, int32 subIdKey)
+inline const FKMTable_Narrative_DialogRow* FKMTable_Narrative_DialogRow::FindRowPtr(FName IdKey, int32 subIdKey)
 {
-	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Narrative_TaskRow>(*MakeTableKeyToString(IdKey, subIdKey));
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Narrative_DialogRow>(*MakeTableKeyToString(IdKey, subIdKey));
 }
 
-inline const FKMTable_Narrative_TaskRow& FKMTable_Narrative_TaskRow::FindRow(FName IdKey, int32 subIdKey)
+inline const FKMTable_Narrative_DialogRow& FKMTable_Narrative_DialogRow::FindRow(FName IdKey, int32 subIdKey)
 {
 	return *FindRowPtr(IdKey, subIdKey);
 }

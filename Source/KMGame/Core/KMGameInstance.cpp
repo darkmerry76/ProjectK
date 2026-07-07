@@ -8,6 +8,7 @@
 #include "GameObject/KMCharacterInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sequencer/EMCameraCacheManager.h"
+#include "System/KMUiSubsystem.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMGameInstance
@@ -86,4 +87,14 @@ void UKMGameInstance::OnViewportResized(FViewport* viewport, uint32 Unused)
 UKMPlayerAccount* UKMGameInstance::GetPlayerAccount() const
 {
 	return PlayerAccount;
+}
+
+void UKMGameInstance::OnViewportCreated()
+{
+	Super::OnViewportCreated();
+
+	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+	{
+		uiSubsystem->CreateRoot();
+	}
 }

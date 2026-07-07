@@ -1,13 +1,12 @@
 #include "KMNarrativeNodeDialog.h"
-
+#include <Tables/Generated/KMTable_Narrative_Dialog.h>
 #include "DataAsset/KMAssetManager.h"
 #include "System/KMNarrativeSubsystem.h"
 #include "System/KMUiSubsystem.h"
-#include "Tables/Generated/KMTable_Narrative_Task_Dialog.h"
 #include "Ui/Component/KMCinematicWidget.h"
 #include "Ui/Component/KMNarrativeWidget.h"
 
-FKMNarrativeDialogSchedule::FKMNarrativeDialogSchedule(const FKMTable_Narrative_Task_DialogRow* tableRow) :
+FKMNarrativeDialogSchedule::FKMNarrativeDialogSchedule(const FKMTable_Narrative_DialogRow* tableRow) :
 	TableRow(tableRow)
 {
 }
@@ -106,7 +105,7 @@ void UKMNarrativeNodeDialog::Activate()
 	for (auto narrativeDialogItr = TableGroup.CreateConstIterator(); narrativeDialogItr; ++narrativeDialogItr)
 	{
 		TSharedPtr<FKMNarrativeDialogSchedule> newDialogSchedule =
-			MakeShared<FKMNarrativeDialogSchedule>(CastRow<FKMTable_Narrative_Task_DialogRow>(*narrativeDialogItr));
+			MakeShared<FKMNarrativeDialogSchedule>(CastRow<FKMTable_Narrative_DialogRow>(*narrativeDialogItr));
 
 		if (USoundWave* voiceWav = narrativeSubsystem->GetVoice(newDialogSchedule->TableRow->VoiceId))
 		{
@@ -148,7 +147,7 @@ void UKMNarrativeNodeDialog::Tick(float deltaTime)
 	
 		for (auto tableItr = TableGroup.CreateConstIterator(); tableItr; ++tableItr)
 		{
-			const FKMTable_Narrative_Task_DialogRow* narrativeDialogTable = CastRow<FKMTable_Narrative_Task_DialogRow>(*tableItr);
+			const FKMTable_Narrative_DialogRow* narrativeDialogTable = CastRow<FKMTable_Narrative_DialogRow>(*tableItr);
 			check(narrativeDialogTable);
 
 			BranchDelegate.Execute(this, narrativeDialogTable->Branch);

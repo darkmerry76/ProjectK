@@ -40,6 +40,9 @@ public:
 	TSharedPtr<class FEMCameraCacheManager> GetCameraCacheManager() const;
 
 protected:
+	virtual void OnViewportCreated() override;
+
+protected:
 	UPROPERTY()
 	TWeakObjectPtr<class AKMCameraActor> CameraActor = nullptr;
 

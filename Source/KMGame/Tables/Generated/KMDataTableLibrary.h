@@ -31,10 +31,10 @@
 #include "KMTable_LocalizeText_Message.h"
 #include "KMTable_LocalizeText_UI.h"
 #include "KMTable_Narrative.h"
+#include "KMTable_Narrative_Dialog.h"
 #include "KMTable_Narrative_Director.h"
+#include "KMTable_Narrative_Prologue.h"
 #include "KMTable_Narrative_Sequence.h"
-#include "KMTable_Narrative_Task.h"
-#include "KMTable_Narrative_Task_Dialog.h"
 #include "KMTable_OutLevelupCost.h"
 #include "KMTable_PlayerGrowth.h"
 #include "KMTable_PlayerLevel.h"
@@ -327,6 +327,20 @@ public:
 		return *GetTableEM<FKMTable_NarrativeRow>(*FKMTable_NarrativeRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
+	// KMTable_Narrative_Dialog FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_DialogRow& GetTableKMTable_Narrative_Dialog(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_DialogRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Narrative_Dialog Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_DialogRow& GetTableKMTable_Narrative_DialogByKey(FName IdKey, int32 subIdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_DialogRow>(*FKMTable_Narrative_DialogRow::MakeTableKeyToString(IdKey, subIdKey), IsFind);
+	}
+
 	// KMTable_Narrative_Director FName으로 검색되는 블루프린트 노출함수
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static const FKMTable_Narrative_DirectorRow& GetTableKMTable_Narrative_Director(FName IndexName, bool& IsFind)
@@ -341,6 +355,20 @@ public:
 		return *GetTableEM<FKMTable_Narrative_DirectorRow>(*FKMTable_Narrative_DirectorRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
+	// KMTable_Narrative_Prologue FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_PrologueRow& GetTableKMTable_Narrative_Prologue(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_PrologueRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Narrative_Prologue Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_PrologueRow& GetTableKMTable_Narrative_PrologueByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_PrologueRow>(*FKMTable_Narrative_PrologueRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
 	// KMTable_Narrative_Sequence FName으로 검색되는 블루프린트 노출함수
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static const FKMTable_Narrative_SequenceRow& GetTableKMTable_Narrative_Sequence(FName IndexName, bool& IsFind)
@@ -353,20 +381,6 @@ public:
 	static const FKMTable_Narrative_SequenceRow& GetTableKMTable_Narrative_SequenceByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_Narrative_SequenceRow>(*FKMTable_Narrative_SequenceRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
-	// KMTable_Narrative_Task FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Narrative_TaskRow& GetTableKMTable_Narrative_Task(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Narrative_TaskRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Narrative_Task Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Narrative_TaskRow& GetTableKMTable_Narrative_TaskByKey(FName IdKey, int32 subIdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Narrative_TaskRow>(*FKMTable_Narrative_TaskRow::MakeTableKeyToString(IdKey, subIdKey), IsFind);
 	}
 
 	// KMTable_OutLevelupCost FName으로 검색되는 블루프린트 노출함수

@@ -2,9 +2,9 @@
 #include "Components/CanvasPanel.h"
 #include "UI/Component//KMNarrativeWidget.h"
 #include "Ui/Component/KMRootWidget.h"
-#include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Ui/Component/KMCinematicWidget.h"
+#include "Ui/Window/Prologue/KMPrologueWindow.h"
 
 UKMUiSubsystem* UKMUiSubsystem::GetUiSubsystem(const UObject* worldContextObject)
 {
@@ -19,9 +19,6 @@ UKMUiSubsystem::UKMUiSubsystem() : Super()
 void UKMUiSubsystem::Initialize()
 {
 	Super::Initialize();
-	
-	RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
-	RootWidget->AddToViewport();
 }
 
 void UKMUiSubsystem::Deinitialize()
@@ -29,8 +26,13 @@ void UKMUiSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-void UKMUiSubsystem::Activate()
+void UKMUiSubsystem::CreateRoot()
 {
+	if (!IsValid(RootWidget))
+	{
+		RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
+		RootWidget->AddToViewport();
+	}
 }
 
 void UKMUiSubsystem::PrintNarrativeMessage(const FString message, const FLinearColor color, bool messageClear)
@@ -41,6 +43,11 @@ void UKMUiSubsystem::PrintNarrativeMessage(const FString message, const FLinearC
 void UKMUiSubsystem::ClearNarrativeMessage()
 {
 	RootWidget->NarrativeWidget->ClearText();
+}
+
+UKMPrologueWindowWidget* UKMUiSubsystem::CreatePrologue() const
+{
+	return CreateWidget<UKMPrologueWindowWidget>(GetWorld(), PrologueWidgetClass);	
 }
 
 UKMCinematicWidget* UKMUiSubsystem::DrawCienmaticImage(TSubclassOf<UKMCinematicWidget> cienmaticWidgetClass)

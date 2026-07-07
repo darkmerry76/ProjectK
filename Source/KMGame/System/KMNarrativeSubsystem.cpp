@@ -1,5 +1,4 @@
 #include "KMNarrativeSubsystem.h"
-
 #include "Character/KMCharacter.h"
 #include "Components/AudioComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -7,11 +6,13 @@
 #include "Nerrative/KMNarrativeNode.h"
 #include "Nerrative/KMNarrativeNodeDialog.h"
 #include "Nerrative/KMNarrativeNodeDirector.h"
+#include "Nerrative/KMNarrativeNodePrologue.h"
 #include "Nerrative/KMNarrativeNodeSequence.h"
 #include "Sound/SoundCue.h"
 #include "Tables/Generated/KMTable_Narrative_Director.h"
 #include "Tables/Generated/KMTable_Narrative_Sequence.h"
-#include "Tables/Generated/KMTable_Narrative_Task_Dialog.h"
+#include "Tables/Generated/KMTable_Narrative_Dialog.h"
+#include "Tables/Generated/KMTable_Narrative_Prologue.h"
 
 UKMNarrativeSubsystem* UKMNarrativeSubsystem::GetNarrativeSubsystem(const UObject* worldContextObject)
 {
@@ -114,11 +115,16 @@ void UKMNarrativeSubsystem::BranchNode(UKMNarrativeNode* fromNode, FName toNodeI
 		{
 			newNarrativeNode = NewObject<UKMNarrativeNodeSequence>(this);
 		}
-		else if (const FKMTable_Narrative_Task_DialogRow* taskDialogTableRow = CastRow<FKMTable_Narrative_Task_DialogRow>(narrativeRow))
+		else if (const FKMTable_Narrative_DialogRow* dialogTableRow = CastRow<FKMTable_Narrative_DialogRow>(narrativeRow))
 		{
 			newNarrativeNode = NewObject<UKMNarrativeNodeDialog>(this);
 		}
+		else if (const FKMTable_Narrative_PrologueRow* prologueTableRow = CastRow<FKMTable_Narrative_PrologueRow>(narrativeRow))
+		{
+			newNarrativeNode = NewObject<UKMNarrativeNodePrologue>(this);
+		}
 	}
+	check(newNarrativeNode);
 
 	for (auto narrativeItr = narrativeTableGroup->CreateConstIterator(); narrativeItr; ++narrativeItr)
 	{

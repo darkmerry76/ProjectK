@@ -17,7 +17,7 @@ DECLARE_DELEGATE_TwoParams(FKMNarrativeDialogStatusChangedDelegate, struct FKMNa
 
 struct FKMNarrativeDialogSchedule : public TSharedFromThis<FKMNarrativeDialogSchedule>
 {
-	FKMNarrativeDialogSchedule(const struct FKMTable_Narrative_Task_DialogRow* tableRow);
+	FKMNarrativeDialogSchedule(const struct FKMTable_Narrative_DialogRow* tableRow);
 	
 	void Start();
 	void Stop();
@@ -30,7 +30,7 @@ struct FKMNarrativeDialogSchedule : public TSharedFromThis<FKMNarrativeDialogSch
 	EKMNarrativeDialogStatus Status = EKMNarrativeDialogStatus::FadeIn;
 	FKMNarrativeDialogStatusChangedDelegate StatusChangedDelegate;
 	
-	const struct FKMTable_Narrative_Task_DialogRow* TableRow = nullptr;
+	const struct FKMTable_Narrative_DialogRow* TableRow = nullptr;
 };
 
 UCLASS(Blueprintable, BlueprintType)
