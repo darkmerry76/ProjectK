@@ -92,9 +92,4 @@ UKMPlayerAccount* UKMGameInstance::GetPlayerAccount() const
 void UKMGameInstance::OnViewportCreated()
 {
 	Super::OnViewportCreated();
-
-	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
-	{
-		uiSubsystem->CreateRoot();
-	}
 }

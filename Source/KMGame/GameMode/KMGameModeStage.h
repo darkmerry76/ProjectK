@@ -24,4 +24,6 @@ protected:
 public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+
+	virtual void OnWorldLoadingComplete_Implementation() override;
 };

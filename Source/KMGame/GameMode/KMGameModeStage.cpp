@@ -2,6 +2,7 @@
 #include "Character/KMCharacter.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"
+#include "System/KMUiSubsystem.h"
 
 void AKMGameModeStage::BeginPlay()
 {
@@ -31,4 +32,14 @@ void AKMGameModeStage::RestartPlayer(AController* newPlayer)
 
 void AKMGameModeStage::OnSpawnHeroInstance_Implementation(UKMHeroInstance* newHeroInstance)
 {
+}
+
+void AKMGameModeStage::OnWorldLoadingComplete_Implementation()
+{
+	Super::OnWorldLoadingComplete_Implementation();
+
+	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+	{
+		uiSubsystem->CreateRoot();
+	}
 }

@@ -28,11 +28,8 @@ void UKMUiSubsystem::Deinitialize()
 
 void UKMUiSubsystem::CreateRoot()
 {
-	if (!IsValid(RootWidget))
-	{
-		RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
-		RootWidget->AddToViewport();
-	}
+	RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
+	RootWidget->AddToViewport();
 }
 
 void UKMUiSubsystem::PrintNarrativeMessage(const FString message, const FLinearColor color, bool messageClear)
