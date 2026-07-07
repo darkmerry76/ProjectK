@@ -1,20 +1,20 @@
-#include "KMCharacterSelectInfoWidget.h"
-#include "KMCharacterSelectInfoItemWidget.h"
-#include "GameMode/KMGameModeCharacterSelect.h"
+#include "KMHeroSelectInfoWidget.h"
+#include "KMHeroSelectInfoItemWidget.h"
+#include "GameMode/KMGameModeHeroSelect.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tables/Generated/KMTable_Character_Hero.h"
 #include "UI/Component/EMTextBlock.h"
 #include "UI/Component/EMVerticalBox.h"
 
-UKMCharacterSelectInfoWidget::UKMCharacterSelectInfoWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+UKMHeroSelectInfoWidget::UKMHeroSelectInfoWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 }
 
-void UKMCharacterSelectInfoWidget::NativeConstruct()
+void UKMHeroSelectInfoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (AKMGameModeCharacterSelect* heroSelectGameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
+	if (AKMGameModeHeroSelect* heroSelectGameMode = Cast<AKMGameModeHeroSelect>(UGameplayStatics::GetGameMode(this)))
 	{
 		heroSelectGameMode->HeroSelectDelegate.AddUObject(this, &ThisClass::SelectHero);
 	}
@@ -22,22 +22,22 @@ void UKMCharacterSelectInfoWidget::NativeConstruct()
 	Refresh();
 }
 
-void UKMCharacterSelectInfoWidget::NativeDestruct()
+void UKMHeroSelectInfoWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	if (AKMGameModeCharacterSelect* heroSelectGameMode = Cast<AKMGameModeCharacterSelect>(UGameplayStatics::GetGameMode(this)))
+	if (AKMGameModeHeroSelect* heroSelectGameMode = Cast<AKMGameModeHeroSelect>(UGameplayStatics::GetGameMode(this)))
 	{
 		heroSelectGameMode->HeroSelectDelegate.RemoveAll(this);
 	}
 }
 
-void UKMCharacterSelectInfoWidget::Refresh()
+void UKMHeroSelectInfoWidget::Refresh()
 {
 	SelectHero(CurrentHeroTableId);
 }
 
-void UKMCharacterSelectInfoWidget::SelectHero(const FName& heroTableId)
+void UKMHeroSelectInfoWidget::SelectHero(const FName& heroTableId)
 {
 	const FKMTable_Character_HeroRow* heroTableRow = FKMTable_Character_HeroRow::FindRowPtr(heroTableId);
 	if (!heroTableRow)
@@ -53,7 +53,7 @@ void UKMCharacterSelectInfoWidget::SelectHero(const FName& heroTableId)
 	{
 		for(int32 itemIndex = 0; itemIndex < HeroInfoVerticalBox->GetChildrenCount(); ++itemIndex)
 		{
-			UKMCharacterSelectInfoItemWidget* heroSelectInfoItem = Cast<UKMCharacterSelectInfoItemWidget>(HeroInfoVerticalBox->GetChildAt(itemIndex));
+			UKMHeroSelectInfoItemWidget* heroSelectInfoItem = Cast<UKMHeroSelectInfoItemWidget>(HeroInfoVerticalBox->GetChildAt(itemIndex));
 			if (!IsValid(heroSelectInfoItem))
 			{
 				continue;

@@ -15,8 +15,6 @@ UKMGameViewportClient::UKMGameViewportClient(const FObjectInitializer& objectIni
 void UKMGameViewportClient::Init(FWorldContext& worldContext, UGameInstance* owningGameInstance, bool bCreateNewAudioDevice)
 {
 	Super::Init(worldContext, owningGameInstance, bCreateNewAudioDevice);
-
-	SetMouseCaptureMode(EMouseCaptureMode::CapturePermanently);
 }
 
 void UKMGameViewportClient::InitComplete()

@@ -2,25 +2,25 @@
 
 #include "CoreMinimal.h"
 #include "UI/Component/KMUserWidget.h"
-#include "KMCharacterSelectInfoItemWidget.generated.h"
+#include "KMHeroSelectInfoItemWidget.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMCharacterSelectInfoItemWidget : public UKMUserWidget
+class KMGAME_API UKMHeroSelectInfoItemWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
 	TObjectPtr<class UEMHorizontalBox> InfoHorizontalBox;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
 	TObjectPtr<class UEMTextBlock> TitleTextBlock;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
 	TObjectPtr<class UEMTextBlock> ContentTextBlock;
 
 public:
-	UKMCharacterSelectInfoItemWidget(const FObjectInitializer& objectInitializer);
+	UKMHeroSelectInfoItemWidget(const FObjectInitializer& objectInitializer);
 
 	void SetTitleText(const FString& newTitleText);
 	void SetContentText(const FString& newContentText);

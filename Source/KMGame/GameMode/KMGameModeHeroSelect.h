@@ -2,14 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "KMGameModeStage.h"
-#include "KMGameModeCharacterSelect.generated.h"
+#include "KMGameModeHeroSelect.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMHeroSelectDelegate, const FName& heroTableId);
 
 UCLASS(Blueprintable, BlueprintType, abstract)
-class KMGAME_API AKMGameModeCharacterSelect : public AKMGameModeStage
+class KMGAME_API AKMGameModeHeroSelect : public AKMGameModeStage
 {
 	GENERATED_BODY()
+	
 public:
 	FKMHeroSelectDelegate HeroSelectDelegate;
 
@@ -21,7 +22,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SelectCharacter(class AController* newPlayer, const FName& newCharacterId, bool bForce = false);
+	void SelectHero(class AController* newPlayer, const FName& newHeroId, bool bForce = false);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEnterGame();
@@ -30,6 +31,6 @@ protected:
 	virtual void RestartPlayer(class AController* NewPlayer) override;
 	virtual void BeginPlay() override;
 
-	virtual void OnSpawnCharacterInstance_Implementation(class UKMHeroInstance* newHeroInstance) override;
+	virtual void OnSpawnHeroInstance_Implementation(class UKMHeroInstance* newHeroInstance) override;
 	virtual void OnWorldLoadingComplete_Implementation() override;
 };

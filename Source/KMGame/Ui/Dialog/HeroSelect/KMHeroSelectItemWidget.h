@@ -3,20 +3,20 @@
 #include "CoreMinimal.h"
 #include "System/EMTickerSubsystem.h"
 #include "UI/Component/KMUserWidget.h"
-#include "KMCharacterSelectItemWidget.generated.h"
+#include "KMHeroSelectItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMCharacterSelectItemClickedDelegate, class UKMCharacterSelectItemWidget*, characterSelectItemWidget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMCharacterSelectItemHoverDelegate, class UKMCharacterSelectItemWidget*, characterSelectItemWidget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMCharacterSelectItemUnhoverDelegate, class UKMCharacterSelectItemWidget*, characterSelectItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMHeroSelectItemClickedDelegate, class UKMHeroSelectItemWidget*, heroSelectItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMHeroSelectItemHoverDelegate, class UKMHeroSelectItemWidget*, heroSelectItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMHeroSelectItemUnhoverDelegate, class UKMHeroSelectItemWidget*, heroSelectItemWidget);
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMCharacterSelectItemWidget : public UKMUserWidget
+class KMGAME_API UKMHeroSelectItemWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
-	class UEMButton* CharacterButton;
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
+	class UEMButton* HeroButton;
 	
 	FEMTickerHandle TickerHandle;
 
@@ -33,22 +33,22 @@ protected:
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
-	FName CharacterId;
+	FName HeroId;
 
 public:
 	bool bIsSelected = false;
 	
 	UPROPERTY(BlueprintAssignable)
-	FEMCharacterSelectItemClickedDelegate ClickedDelegate;
+	FEMHeroSelectItemClickedDelegate ClickedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FEMCharacterSelectItemHoverDelegate HoverDelegate;
+	FEMHeroSelectItemHoverDelegate HoverDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FEMCharacterSelectItemUnhoverDelegate UnhoverDelegate;
+	FEMHeroSelectItemUnhoverDelegate UnhoverDelegate;
 	
 public:
-	UKMCharacterSelectItemWidget(const FObjectInitializer& objectInitializer);
+	UKMHeroSelectItemWidget(const FObjectInitializer& objectInitializer);
 
 	UFUNCTION(BlueprintCallable)
 	void HoveredAnimation();
@@ -69,5 +69,5 @@ protected:
 	UFUNCTION()
 	void OnUnhovered();
 
-	virtual void NativeTick(const FGeometry& Geometry, float DeltaTime) override;
+	virtual void NativeTick(const FGeometry& geometry, float deltaTime) override;
 };

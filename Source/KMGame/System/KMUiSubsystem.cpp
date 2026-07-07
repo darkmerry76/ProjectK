@@ -19,6 +19,9 @@ UKMUiSubsystem::UKMUiSubsystem() : Super()
 void UKMUiSubsystem::Initialize()
 {
 	Super::Initialize();
+	
+	RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
+	RootWidget->AddToViewport();
 }
 
 void UKMUiSubsystem::Deinitialize()
@@ -28,8 +31,6 @@ void UKMUiSubsystem::Deinitialize()
 
 void UKMUiSubsystem::Activate()
 {
-	RootWidget = CreateWidget<UKMRootWidget>(GetWorld(), RootClass);
-	RootWidget->AddToViewport();
 }
 
 void UKMUiSubsystem::PrintNarrativeMessage(const FString message, const FLinearColor color, bool messageClear)

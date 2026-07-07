@@ -40,8 +40,8 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AKMCharacterHero::RunPressed);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AKMCharacterHero::RunReleased);
 		
-		EnhancedInputComponent->BindAction(SkillAction0, ETriggerEvent::Triggered, this, &AKMCharacterHero::OnSkillAction0);
-		EnhancedInputComponent->BindAction(SkillAction1, ETriggerEvent::Triggered, this, &AKMCharacterHero::OnSkillAction1);
+		EnhancedInputComponent->BindAction(SkillAction0, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillAction0);
+		EnhancedInputComponent->BindAction(SkillAction1, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillAction1);
 
 		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillDebug0);
 		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Completed, this, &AKMCharacterHero::OnSkillDebug0_Release);

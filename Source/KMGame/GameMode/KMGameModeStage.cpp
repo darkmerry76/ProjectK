@@ -25,10 +25,10 @@ void AKMGameModeStage::RestartPlayer(AController* newPlayer)
 		UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, HeroSpwnTransform));
 		check(IsValid(heroInstance));
 		newPlayer->Possess(heroInstance->GetCharacter());
-		OnSpawnCharacterInstance(heroInstance);
+		OnSpawnHeroInstance(heroInstance);
 	}
 }
 
-void AKMGameModeStage::OnSpawnCharacterInstance_Implementation(UKMHeroInstance* newHeroInstance)
+void AKMGameModeStage::OnSpawnHeroInstance_Implementation(UKMHeroInstance* newHeroInstance)
 {
 }

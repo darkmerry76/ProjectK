@@ -29,6 +29,11 @@ bool AKMGameModeBase::IsInitMap(const UWorld* otherWorld) const
 
 void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 {
+	if (APlayerController* playerController = GetWorld()->GetFirstPlayerController())
+	{
+		playerController->SetInputMode(FInputModeGameAndUI());
+	}
+
 	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings()))
 	{
 		if (IsValid(worldSettings->RootWidgetClass))

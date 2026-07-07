@@ -1,4 +1,4 @@
-#include "KMGameModeCharacterSelect.h"
+#include "KMGameModeHeroSelect.h"
 #include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -6,12 +6,12 @@
 #include "System/KMGameObjectSubsystem.h"
 #include "Tables/Generated/KMTable_Character.h"
 
-void AKMGameModeCharacterSelect::BeginPlay()
+void AKMGameModeHeroSelect::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const FName& newCharacterId, bool bForce)
+void AKMGameModeHeroSelect::SelectHero(AController* newPlayer, const FName& newCharacterId, bool bForce)
 {
 	if (newCharacterId == NAME_None)
 	{
@@ -34,14 +34,14 @@ void AKMGameModeCharacterSelect::SelectCharacter(AController* newPlayer, const F
 	HeroSelectDelegate.Broadcast(newCharacterId);
 }
 
-void AKMGameModeCharacterSelect::RestartPlayer(AController* newPlayer)
+void AKMGameModeHeroSelect::RestartPlayer(AController* newPlayer)
 {
 	Super::RestartPlayer(newPlayer);
 }
 
-void AKMGameModeCharacterSelect::OnSpawnCharacterInstance_Implementation(UKMHeroInstance* newHeroInstance)
+void AKMGameModeHeroSelect::OnSpawnHeroInstance_Implementation(UKMHeroInstance* newHeroInstance)
 {
-	Super::OnSpawnCharacterInstance_Implementation(newHeroInstance);
+	Super::OnSpawnHeroInstance_Implementation(newHeroInstance);
 
 	if (IsValid(newHeroInstance))
 	{
@@ -56,13 +56,16 @@ void AKMGameModeCharacterSelect::OnSpawnCharacterInstance_Implementation(UKMHero
 	LatestHeroInstance = newHeroInstance;
 }
 
-void AKMGameModeCharacterSelect::OnWorldLoadingComplete_Implementation()
+void AKMGameModeHeroSelect::OnWorldLoadingComplete_Implementation()
 {
 	Super::OnWorldLoadingComplete_Implementation();
-	SelectCharacter(GetWorld()->GetFirstPlayerController(), DefaultSelectTableId, true);
+	if (APlayerController* playerController = GetWorld()->GetFirstPlayerController())
+	{
+		SelectHero(playerController, DefaultSelectTableId, true);
+	}
 }
 
-void AKMGameModeCharacterSelect::OnEnterGame_Implementation()
+void AKMGameModeHeroSelect::OnEnterGame_Implementation()
 {
 	if (LatestHeroInstance.IsValid())
 	{

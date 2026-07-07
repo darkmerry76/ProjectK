@@ -19,7 +19,7 @@ protected:
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnSpawnCharacterInstance(class UKMHeroInstance* newHeroInstance);
+	void OnSpawnHeroInstance(class UKMHeroInstance* newHeroInstance);
 
 public:
 	virtual void BeginPlay() override;

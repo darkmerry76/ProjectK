@@ -1,12 +1,12 @@
-#include "KMCharacterSelectDialogWidget.h"
-#include "KMCharacterSelectWidget.h"
+#include "KMHeroSelectDialogWidget.h"
+#include "KMHeroSelectWidget.h"
 #include "UI/Component/EMButton.h"
 
-UKMCharacterSelectDialogWidget::UKMCharacterSelectDialogWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+UKMHeroSelectDialogWidget::UKMHeroSelectDialogWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 }
 
-void UKMCharacterSelectDialogWidget::NativeConstruct()
+void UKMHeroSelectDialogWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -19,7 +19,7 @@ void UKMCharacterSelectDialogWidget::NativeConstruct()
 	}
 }
 
-void UKMCharacterSelectDialogWidget::NativeDestruct()
+void UKMHeroSelectDialogWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
@@ -32,6 +32,6 @@ void UKMCharacterSelectDialogWidget::NativeDestruct()
 	}
 }
 
-void UKMCharacterSelectDialogWidget::OnEnterGame_Implementation()
+void UKMHeroSelectDialogWidget::OnEnterGame_Implementation()
 {
 }
