@@ -1,6 +1,8 @@
 #include "KMTitleMenuWidget.h"
 #include "KMTitleMenuItemWidget.h"
 #include "Components/VerticalBoxSlot.h"
+#include "GameMode/KMGameModeBase.h"
+#include "System/KMUiSubsystem.h"
 #include "UI/Component/EMTextBlock.h"
 #include "UI/Component/EMVerticalBox.h"
 
@@ -49,9 +51,9 @@ void UKMTitleMenuWidget::Refresh()
 				titleMenuItem->SetFontSizeByAlpha(1.f, false);
 			}
 			
-			if (titleMenuItem->ClickedDelegate.IsAlreadyBound(this, &UKMTitleMenuWidget::OnMenuClicked))
+			if (titleMenuItem->PressedDelegate.IsAlreadyBound(this, &UKMTitleMenuWidget::OnMenuPressed))
 			{
-				titleMenuItem->ClickedDelegate.RemoveAll(this);
+				titleMenuItem->PressedDelegate.RemoveAll(this);
 			}
 			if (titleMenuItem->HoverDelegate.IsAlreadyBound(this, &UKMTitleMenuWidget::OnMenuHovered))
 			{
@@ -61,7 +63,7 @@ void UKMTitleMenuWidget::Refresh()
 			{
 				titleMenuItem->UnhoverDelegate.RemoveAll(this);
 			}
-			titleMenuItem->ClickedDelegate.AddDynamic(this, &UKMTitleMenuWidget::OnMenuClicked);
+			titleMenuItem->PressedDelegate.AddDynamic(this, &UKMTitleMenuWidget::OnMenuPressed);
 			titleMenuItem->HoverDelegate.AddDynamic(this, &UKMTitleMenuWidget::OnMenuHovered);
 			titleMenuItem->UnhoverDelegate.AddDynamic(this, &UKMTitleMenuWidget::OnMenuUnhovered);
 		}
@@ -80,15 +82,19 @@ void UKMTitleMenuWidget::Clear()
 				continue;
 			}
 			
-			titleMenuItem->ClickedDelegate.RemoveAll(this);
+			titleMenuItem->PressedDelegate.RemoveAll(this);
 			titleMenuItem->HoverDelegate.RemoveAll(this);
 			titleMenuItem->UnhoverDelegate.RemoveAll(this);
 		}
 	}
 }
 
-void UKMTitleMenuWidget::OnMenuClicked_Implementation(UKMTitleMenuItemWidget* titleMenuItem)
+void UKMTitleMenuWidget::OnMenuPressed_Implementation(UKMTitleMenuItemWidget* titleMenuItem)
 {
+	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+	{
+		uiSubsystem->SelectedTitleMenu(titleMenuItem->MenuId);
+	}
 }
 
 void UKMTitleMenuWidget::SelectedMenu(UKMTitleMenuItemWidget* titleMenuItem)

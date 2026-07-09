@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/KMDefine.h"
 #include "System/EMGameObjectSubsystem.h"
+#include "Ui/Window/Dialog/KMPopupMenuWidget.h"
 #include "KMUiSubsystem.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, abstract)
@@ -15,6 +17,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UKMPrologueWindowWidget> PrologueWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UKMPopupMenuWidget> PopupWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UKMRootWidget> RootWidget;
@@ -37,6 +42,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	class UKMCinematicWidget* DrawCienmaticImage(TSubclassOf<UKMCinematicWidget> cienmaticWidgetClass);
+
+	UFUNCTION(BlueprintCallable)
+	void SelectedTitleMenu(FName menuId);
+
+	class UKMPopupMenuWidget* ShowPopup(const FString& titleText, const FString& messageText, EKMPopupType popupType, FKMPopupSelectDelegate selectDelegate);
 
 protected:
 	virtual void Initialize() override;

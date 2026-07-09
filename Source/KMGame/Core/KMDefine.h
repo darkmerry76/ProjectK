@@ -112,6 +112,26 @@ enum class EKMAbilityFlag : int32
 //	ComboAvailable,
 };
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMPopupType : uint8
+{
+	Ok,
+	Cancel,
+	OkCancel,
+	Yes,
+	No,
+	YesOrNo,
+};
+
+UENUM(Blueprintable, BlueprintType)
+enum class EKMPopupButtonType : uint8
+{
+	Ok,
+	Cancel,
+	Yes,
+	No
+};
+
 USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMProjectileEventData
 {

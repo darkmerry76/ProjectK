@@ -19,7 +19,7 @@ void UKMTitleMenuItemWidget::NativeConstruct()
 
 	if (IsValid(MenuButton))
 	{
-		MenuButton->OnClicked.AddDynamic(this, &ThisClass::OnClicked);
+		MenuButton->OnPressed.AddDynamic(this, &ThisClass::OnPressed);
 		MenuButton->OnHovered.AddDynamic(this, &ThisClass::OnHovered);
 		MenuButton->OnUnhovered.AddDynamic(this, &ThisClass::OnUnhovered);
 
@@ -43,9 +43,9 @@ void UKMTitleMenuItemWidget::SetText(const FString& newText)
 	}
 }
 
-void UKMTitleMenuItemWidget::OnClicked()
+void UKMTitleMenuItemWidget::OnPressed()
 {
-	ClickedDelegate.Broadcast(this);
+	PressedDelegate.Broadcast(this);
 }
 
 void UKMTitleMenuItemWidget::OnHovered()

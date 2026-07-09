@@ -5,7 +5,7 @@
 #include "UI/Component/KMUserWidget.h"
 #include "KMTitleMenuItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemClickedDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemPressedDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemHoverDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemUnhoverDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
 
@@ -20,6 +20,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
 	TObjectPtr<class UEMTextBlock> MenuTextBlock;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	FName MenuId = NAME_None;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
@@ -51,7 +54,7 @@ public:
 	
 public:
 	UPROPERTY(BlueprintAssignable)
-	FEMTitleMenuItemClickedDelegate ClickedDelegate;
+	FEMTitleMenuItemPressedDelegate PressedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FEMTitleMenuItemHoverDelegate HoverDelegate;
@@ -84,7 +87,7 @@ protected:
 	void OnHoverSelected();
 	
 	UFUNCTION()
-	void OnClicked();
+	void OnPressed();
 
 	UFUNCTION()
 	void OnHovered();

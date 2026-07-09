@@ -1,6 +1,7 @@
 #include "KMGameModeBase.h"
 #include "Core/KMWorldSettings.h"
 #include "Engine/World.h"
+#include "System/KMUiSubsystem.h"
 #include "Ui/Component/KMRootWidget.h"
 
 void AKMGameModeBase::BeginPlay()
@@ -44,5 +45,10 @@ void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 				RootWidget->AddToViewport(0);
 			}
 		}
+	}
+	
+	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+	{
+		uiSubsystem->CreateRoot();
 	}
 }

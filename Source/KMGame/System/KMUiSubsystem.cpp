@@ -4,6 +4,7 @@
 #include "Ui/Component/KMRootWidget.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Ui/Component/KMCinematicWidget.h"
+#include "Ui/Window/Dialog/KMPopupMenuWidget.h"
 #include "Ui/Window/Prologue/KMPrologueWindow.h"
 
 UKMUiSubsystem* UKMUiSubsystem::GetUiSubsystem(const UObject* worldContextObject)
@@ -57,6 +58,43 @@ UKMCinematicWidget* UKMUiSubsystem::DrawCienmaticImage(TSubclassOf<UKMCinematicW
 		cinematicWidgetSlot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
 		cinematicWidgetSlot->SetOffsets(FMargin(0.f, 0.f, 0.f, 0.f));
 	}
-
 	return cinematicWidget;
+}
+
+UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FString& messageText, EKMPopupType popupType, FKMPopupSelectDelegate selectDelegate)
+{
+	if (!IsValid(RootWidget))
+	{
+		return nullptr;;
+	}
+	
+	UKMPopupMenuWidget* newPopupMenuWidget = CreateWidget<UKMPopupMenuWidget>(GetWorld(), PopupWidgetClass);
+	if (!IsValid(newPopupMenuWidget))
+	{
+		return nullptr;
+	}
+
+	newPopupMenuWidget->SetTitleText(titleText);
+	newPopupMenuWidget->SetMessageText(messageText);
+	newPopupMenuWidget->SetPopupType(popupType);
+	newPopupMenuWidget->PopupSelectDelegate = selectDelegate;
+
+	if (IsValid(RootWidget->RootPanel))
+	{
+		RootWidget->RootPanel->AddChild(newPopupMenuWidget);
+	}
+	
+	return newPopupMenuWidget;
+}
+
+void UKMUiSubsystem::SelectedTitleMenu(FName menuId)
+{
+	if (menuId == "Quit")
+	{
+		ShowPopup(TEXT("Quit"), TEXT("Are sure Quit?"), EKMPopupType::YesOrNo,
+			FKMPopupSelectDelegate::CreateLambda([this](const EKMPopupButtonType& buttonType)
+			{
+			
+			}));
+	}
 }

@@ -38,7 +38,7 @@ public:
 	UKMTitleMenuWidget(const FObjectInitializer& objectInitializer);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnMenuClicked(class UKMTitleMenuItemWidget* titleMenuItem);
+	void OnMenuPressed(class UKMTitleMenuItemWidget* titleMenuItem);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnMenuHovered(class UKMTitleMenuItemWidget* titleMenuItem);
