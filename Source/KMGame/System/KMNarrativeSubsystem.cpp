@@ -60,6 +60,11 @@ void UKMNarrativeSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+void UKMNarrativeSubsystem::OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources)
+{
+	NodeInstances.Empty();
+}
+
 bool UKMNarrativeSubsystem::StartDirector(const FName directorId)
 {
 	BranchNode(nullptr, directorId);

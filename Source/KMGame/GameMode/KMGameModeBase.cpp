@@ -13,9 +13,9 @@ void AKMGameModeBase::EndPlay(const EEndPlayReason::Type endPlayReason)
 {
 	Super::EndPlay(endPlayReason);
 
-	if (IsValid(RootWidget))
+	if (IsValid(StateWidget))
 	{
-		RootWidget->RemoveFromParent();
+		StateWidget->RemoveFromParent();
 	}
 }
 
@@ -35,20 +35,20 @@ void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 		playerController->SetInputMode(FInputModeGameAndUI());
 	}
 
-	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings()))
-	{
-		if (IsValid(worldSettings->RootWidgetClass))
-		{
-			RootWidget = CreateWidget<UKMUserWidget>(GetWorld(), worldSettings->RootWidgetClass);
-			if (IsValid(RootWidget))
-			{
-				RootWidget->AddToViewport(0);
-			}
-		}
-	}
-	
 	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
 	{
 		uiSubsystem->CreateRoot();
+	}
+	
+	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings()))
+	{
+		if (IsValid(worldSettings->StateWidgetClass))
+		{
+			if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+			{
+				StateWidget = CreateWidget<UKMUserWidget>(GetWorld(), worldSettings->StateWidgetClass);
+				uiSubsystem->AttachStateWidget(StateWidget);
+			}
+		}
 	}
 }

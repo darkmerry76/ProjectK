@@ -14,7 +14,7 @@ protected:
 	FSoftObjectPath InitMap;
 	
 	UPROPERTY()
-	TObjectPtr<class UKMUserWidget> RootWidget;
+	TObjectPtr<class UKMUserWidget> StateWidget;
 
 public:
 	virtual void BeginPlay() override;

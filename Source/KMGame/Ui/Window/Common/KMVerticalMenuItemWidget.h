@@ -1,16 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "System/EMTickerSubsystem.h"
 #include "UI/Component/KMUserWidget.h"
-#include "KMTitleMenuItemWidget.generated.h"
+#include "KMVerticalMenuItemWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemPressedDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemHoverDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMTitleMenuItemUnhoverDelegate, class UKMTitleMenuItemWidget*, menuItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMVerticalMenuItemPressedDelegate, class UKMVerticalMenuItemWidget*, menuItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMVerticalMenuItemHoverDelegate, class UKMVerticalMenuItemWidget*, menuItemWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEMVerticalMenuItemUnhoverDelegate, class UKMVerticalMenuItemWidget*, menuItemWidget);
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMTitleMenuItemWidget : public UKMUserWidget
+class KMGAME_API UKMVerticalMenuItemWidget : public UKMUserWidget
 {
 	GENERATED_BODY()
 
@@ -54,18 +53,18 @@ public:
 	
 public:
 	UPROPERTY(BlueprintAssignable)
-	FEMTitleMenuItemPressedDelegate PressedDelegate;
+	FEMVerticalMenuItemPressedDelegate PressedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FEMTitleMenuItemHoverDelegate HoverDelegate;
+	FEMVerticalMenuItemHoverDelegate HoverDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FEMTitleMenuItemUnhoverDelegate UnhoverDelegate;
+	FEMVerticalMenuItemUnhoverDelegate UnhoverDelegate;
 
 	bool bIsMenualCreated = false;
 
 public:
-	UKMTitleMenuItemWidget(const FObjectInitializer& objectInitializer);
+	UKMVerticalMenuItemWidget(const FObjectInitializer& objectInitializer);
 
 	void SetText(const FString& newText);
 

@@ -11,12 +11,15 @@ class KMGAME_API UKMGameMenuWindowWidget : public UKMUserWidget
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
-	TObjectPtr<class UEMVerticalBox> MenuVerticalBox;
-
+	TObjectPtr<class UKMVerticalMenuWidget> GameMenu;
+	
 public:
 	UKMGameMenuWindowWidget(const FObjectInitializer& objectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSelectedMenu(class UKMVerticalMenuItemWidget* verticalMenuItem);
 };

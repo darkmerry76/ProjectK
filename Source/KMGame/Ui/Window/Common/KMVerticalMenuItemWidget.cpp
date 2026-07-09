@@ -1,19 +1,19 @@
-#include "KMTitleMenuItemWidget.h"
+#include "KMVerticalMenuItemWidget.h"
 #include "UI/Component/EMButton.h"
 #include "UI/Component/EMImage.h"
 #include "UI/Component/EMTextBlock.h"
 
-UKMTitleMenuItemWidget::UKMTitleMenuItemWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+UKMVerticalMenuItemWidget::UKMVerticalMenuItemWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 }
 
-void UKMTitleMenuItemWidget::NativePreConstruct()
+void UKMVerticalMenuItemWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 	SetText(Text);
 }
 
-void UKMTitleMenuItemWidget::NativeConstruct()
+void UKMVerticalMenuItemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -29,12 +29,12 @@ void UKMTitleMenuItemWidget::NativeConstruct()
 	CurrentHoveredAnimationTime = HoveredAnimatinTime;
 }
 
-void UKMTitleMenuItemWidget::NativeDestruct()
+void UKMVerticalMenuItemWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 }
 
-void UKMTitleMenuItemWidget::SetText(const FString& newText)
+void UKMVerticalMenuItemWidget::SetText(const FString& newText)
 {
 	if (IsValid(MenuTextBlock))
 	{
@@ -43,27 +43,27 @@ void UKMTitleMenuItemWidget::SetText(const FString& newText)
 	}
 }
 
-void UKMTitleMenuItemWidget::OnPressed()
+void UKMVerticalMenuItemWidget::OnPressed()
 {
 	PressedDelegate.Broadcast(this);
 }
 
-void UKMTitleMenuItemWidget::OnHovered()
+void UKMVerticalMenuItemWidget::OnHovered()
 {
 	HoverDelegate.Broadcast(this);
 }
 
-void UKMTitleMenuItemWidget::OnUnhovered()
+void UKMVerticalMenuItemWidget::OnUnhovered()
 {
 	UnhoverDelegate.Broadcast(this);
 }
 
-void UKMTitleMenuItemWidget::OnHoverSelected_Implementation()
+void UKMVerticalMenuItemWidget::OnHoverSelected_Implementation()
 {
 	
 }
 
-void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha, bool bEvent)
+void UKMVerticalMenuItemWidget::SetFontSizeByAlpha(float alpha, bool bEvent)
 {
 	if (IsValid(MenuTextBlock))
 	{
@@ -92,7 +92,7 @@ void UKMTitleMenuItemWidget::SetFontSizeByAlpha(float alpha, bool bEvent)
 	}
 }
 
-void UKMTitleMenuItemWidget::HoveredAnimation()
+void UKMVerticalMenuItemWidget::HoveredAnimation()
 {
 	NextAlpha = 1.f;
 	StartAlpha = CurrentAlpha;
@@ -101,7 +101,7 @@ void UKMTitleMenuItemWidget::HoveredAnimation()
 	CurrentHoveredAnimationTime = (NextAlpha - StartAlpha) * HoveredAnimatinTime;
 }
 
-void UKMTitleMenuItemWidget::UnhoveredAnimation()
+void UKMVerticalMenuItemWidget::UnhoveredAnimation()
 {
 	NextAlpha = 0.f;
 	StartAlpha = CurrentAlpha;
@@ -110,7 +110,7 @@ void UKMTitleMenuItemWidget::UnhoveredAnimation()
 	CurrentHoveredAnimationTime = (StartAlpha - NextAlpha) * HoveredAnimatinTime;
 }
 
-void UKMTitleMenuItemWidget::NativeTick(const FGeometry& geometry, float deltaTime)
+void UKMVerticalMenuItemWidget::NativeTick(const FGeometry& geometry, float deltaTime)
 {
 	Super::NativeTick(geometry, deltaTime);
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Component/KMUserWidget.h"
+#include "Ui/Window/Common/KMVerticalMenuWidget.h"
 #include "KMTitleMenuWindowWidget.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
@@ -11,7 +12,7 @@ class KMGAME_API UKMTitleMenuWindowWidget : public UKMUserWidget
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, AllowPrivateAccess = true))
-	TObjectPtr<class UKMTitleMenuWidget> TitleMenu;
+	TObjectPtr<class UKMVerticalMenuWidget> TitleMenu;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	TObjectPtr<class UMediaPlayer> MediaPlayer;
@@ -22,4 +23,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSelectedMenu(class UKMVerticalMenuItemWidget* verticalMenuItem);
 };

@@ -30,10 +30,11 @@ protected:
 	virtual void Initialize() override;
 	virtual void Deinitialize() override;
 
-	virtual void OnLevelAdded(ULevel* level, UWorld* world);
-	virtual void OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS);
-	virtual void OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS);
-	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld);
+	virtual void OnLevelAdded(ULevel* level, UWorld* world) override;
+	virtual void OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS) override;
+	virtual void OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS) override;
+	virtual void OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources) override;
+	virtual void OnPostLoadMapWithWorld(UWorld* loadedWorld) override;
 	virtual void OnLoadingComplete();
 
 protected:

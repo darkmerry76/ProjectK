@@ -15,6 +15,13 @@ UEMGameInstanceSubsystem* UEMGameInstanceSubsystem::GetSubsystem(const UObject* 
 
 void UEMGameInstanceSubsystem::Initialize()
 {
+	FWorldDelegates::OnPreWorldInitialization.AddUObject(this, &ThisClass::OnPreWorldInitialization);
+	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &ThisClass::OnPostWorldInitialization);
+	FWorldDelegates::OnWorldCleanup.AddUObject(this, &ThisClass::OnWorldCleanup);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnPostLoadMapWithWorld);
+
+	FWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);
+
 }
 
 void UEMGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -25,4 +32,25 @@ void UEMGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UEMGameInstanceSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
+}
+
+void UEMGameInstanceSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
+{
+}
+
+void UEMGameInstanceSubsystem::OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
+{
+}
+
+void UEMGameInstanceSubsystem::OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
+{
+}
+
+void UEMGameInstanceSubsystem::OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources)
+{
+
+}
+
+void UEMGameInstanceSubsystem::OnPostLoadMapWithWorld(UWorld* loadedWorld)
+{
 }

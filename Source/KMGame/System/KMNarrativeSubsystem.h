@@ -42,6 +42,8 @@ protected:
 	virtual void Initialize() override;
 	virtual void Deinitialize() override;
 
+	virtual void OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources) override;
+
 	template<typename _TL>
 	_TL* CastNode(UKMNarrativeNode* node) const;
 

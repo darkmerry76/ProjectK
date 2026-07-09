@@ -41,6 +41,9 @@ public:
 	void CreateRoot();
 	
 	UFUNCTION(BlueprintCallable)
+	void AttachStateWidget(class UKMUserWidget* newStateWidget);
+	
+	UFUNCTION(BlueprintCallable)
 	void PrintNarrativeMessage(const FString message, const FLinearColor color = FLinearColor::White, bool messageClear = false);
 
 	UFUNCTION(BlueprintCallable)
@@ -55,6 +58,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SelectedTitleMenu(FName menuId);
 
+	UFUNCTION(BlueprintCallable)
+	void SelectedGameMenu(FName menuId);
+
 	class UKMPopupMenuWidget* ShowPopup(const FString& titleText, const FString& messageText, EKMPopupType popupType, FKMPopupSelectDelegate selectDelegate);
 
 	UFUNCTION(BlueprintCallable)
@@ -66,6 +72,7 @@ public:
 protected:
 	void ShowQuitPopup();
 	void CloseQuitPopup();
+	void CloseGameMenu();
 
 protected:
 	virtual void Initialize() override;

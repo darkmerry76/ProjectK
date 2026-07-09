@@ -14,5 +14,5 @@ public:
 	bool bIsShowLoadingScreen = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UKMUserWidget> RootWidgetClass;
+	TSubclassOf<class UKMUserWidget> StateWidgetClass;
 };

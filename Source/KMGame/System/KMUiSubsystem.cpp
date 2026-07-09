@@ -38,6 +38,22 @@ void UKMUiSubsystem::CreateRoot()
 	RootWidget->AddToViewport();
 }
 
+void UKMUiSubsystem::AttachStateWidget(UKMUserWidget* newStateWidget)
+{
+	if (!IsValid(newStateWidget))
+	{
+		return;
+	}
+	if (IsValid(RootWidget) && IsValid(RootWidget->RootPanel))
+	{
+		if (UCanvasPanelSlot* stateWidgetSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newStateWidget)))
+		{
+			stateWidgetSlot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+			stateWidgetSlot->SetOffsets(FMargin(0.f, 0.f, 0.f, 0.f));
+		}
+	}
+}
+
 void UKMUiSubsystem::PrintNarrativeMessage(const FString message, const FLinearColor color, bool messageClear)
 {
 	RootWidget->NarrativeWidget->SetMessageText(FText::FromString(message), color, messageClear);
@@ -91,6 +107,7 @@ UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FS
 			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
 			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
 			canvasSlot->SetSize(FVector2D(0.f, 0.f));
+			canvasSlot->SetZOrder(10000.f);
 		}
 	}
 	
@@ -99,11 +116,27 @@ UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FS
 
 void UKMUiSubsystem::SelectedTitleMenu(FName menuId)
 {
-	if (menuId == "NewGame")
+	if (menuId == TEXT("NewGame"))
 	{
 		UGameplayStatics::OpenLevel(this, TEXT("HeroSelect_p"));
 	}
-	else if (menuId == "Quit")
+	else if (menuId == TEXT("QuitGame"))
+	{
+		ShowQuitPopup();
+	}
+}
+
+void UKMUiSubsystem::SelectedGameMenu(FName menuId)
+{
+	if (menuId == TEXT("Resume"))
+	{
+		CloseGameMenu();
+	}
+	else if (menuId == TEXT("ReturnToTitle"))
+	{
+		UGameplayStatics::OpenLevel(this, TEXT("Title_p"));
+	}
+	else if (menuId == TEXT("QuitGame"))
 	{
 		ShowQuitPopup();
 	}
@@ -156,12 +189,20 @@ void UKMUiSubsystem::HandleEscape()
 	}
 }
 
-void UKMUiSubsystem::ShowGameMenu()
+void UKMUiSubsystem::CloseGameMenu()
 {
 	if (GameMenuWidget.IsValid())
 	{
 		GameMenuWidget->RemoveFromParent();
 		GameMenuWidget = nullptr;
+	}
+}
+
+void UKMUiSubsystem::ShowGameMenu()
+{
+	if (GameMenuWidget.IsValid())
+	{
+		CloseGameMenu();
 		return;
 	}
 	
@@ -178,6 +219,7 @@ void UKMUiSubsystem::ShowGameMenu()
 			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
 			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
 			canvasSlot->SetSize(FVector2D(0.f, 0.f));
+			canvasSlot->SetZOrder(10000.f);
 		}
 	}
 }

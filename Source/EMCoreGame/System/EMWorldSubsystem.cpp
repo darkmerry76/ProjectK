@@ -6,12 +6,6 @@
 void UEMWorldSubsystem::Initialize()
 {
 	Super::Initialize();
-
-	FWorldDelegates::OnPreWorldInitialization.AddUObject(this, &ThisClass::OnPreWorldInitialization);
-	FWorldDelegates::OnPostWorldInitialization.AddUObject(this, &ThisClass::OnPostWorldInitialization);
-	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnPostLoadMapWithWorld);
-
-	FWorldDelegates::LevelAddedToWorld.AddUObject(this, &ThisClass::OnLevelAdded);
 }
 
 void UEMWorldSubsystem::Deinitialize()
@@ -47,6 +41,11 @@ void UEMWorldSubsystem::OnPostWorldInitialization(UWorld* newWorld, const UWorld
 	LoadingState = EEMWorldLoadingState::Loading;
 
 	newWorld->OnAllLevelsChanged().AddUObject(this, &ThisClass::OnAllLevelsChanged);
+}
+
+void UEMWorldSubsystem::OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources)
+{
+	
 }
 
 void UEMWorldSubsystem::OnPostLoadMapWithWorld(UWorld* loadedWorld)
