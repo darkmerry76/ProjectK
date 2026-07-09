@@ -418,5 +418,5 @@ void UKMUtil::OpenMap(const UObject* worldContextObject, FName levelName, bool b
 
 void UKMUtil::Shutdown(const UObject* worldContextObject)
 {
-	UKismetSystemLibrary::QuitGame(worldContextObject, nullptr, EQuitPreference::Quit, false);	
+	UKismetSystemLibrary::QuitGame(worldContextObject, nullptr, EQuitPreference::Quit, false);
 }

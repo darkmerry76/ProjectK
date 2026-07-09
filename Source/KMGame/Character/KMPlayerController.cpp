@@ -20,19 +20,10 @@ void AKMPlayerController::SetupInputComponent()
 				Subsystem->AddMappingContext(CurrentContext, 0);
 			}
 		}
-
-		InputComponent->BindKey(
-			EKeys::Escape,
-			IE_Pressed,
-			this,
-			&ThisClass::OnEscapePressed);
 	}
 }
 
 void AKMPlayerController::OnEscapePressed()
 {
-	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
-	{
-		uiSubsystem->HandleEscape();
-	}
+	Super::OnEscapePressed();
 }

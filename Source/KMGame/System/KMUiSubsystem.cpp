@@ -131,19 +131,19 @@ UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FS
 
 void UKMUiSubsystem::SelectedTitleMenu(FName menuId)
 {
-	FTimerHandle timerHandle;
-	
-	GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([this, menuId]()
+	if (menuId == TEXT("NewGame"))
 	{
-		if (menuId == TEXT("NewGame"))
+		UKMUtil::PlaySlateFade(this, 0.f, 1.f, 1.f);
+		FTimerHandle timerHandle;
+		GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([this, menuId]()
 		{
 			UGameplayStatics::OpenLevel(this, TEXT("HeroSelect_p"));
-		}
-		else if (menuId == TEXT("QuitGame"))
-		{
-			ShowQuitPopup();
-		}
-	}), 1.f, false);
+		}), 1.f, false);
+	}
+	else if (menuId == TEXT("QuitGame"))
+	{
+		ShowQuitPopup();
+	}
 }
 
 void UKMUiSubsystem::SelectedGameMenu(FName menuId)
@@ -183,7 +183,7 @@ void UKMUiSubsystem::ShowQuitPopup()
 			}
 		}));
 
-	OpenedMenu(EKMMenuType::GameMenu, newPopupMenuWidget);
+	OpenedMenu(EKMMenuType::QuitPopup, newPopupMenuWidget);
 }
 
 void UKMUiSubsystem::HandleEscape()
