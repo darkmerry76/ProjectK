@@ -23,6 +23,9 @@ struct FKMTable_Narrative_PrologueRow : public FKMTable_NarrativeRow
 	float                StartDelay = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float                EndDelay = { 0.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                Duration = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

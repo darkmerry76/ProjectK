@@ -21,9 +21,7 @@ void UKMNarrativeNodePrologue::Activate()
 	UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this);
 	check(IsValid(uiSubsystem));
 
-	PrologueWidget = uiSubsystem->CreatePrologue();
-	PrologueWidget->PrologueTableId = PrologueTableRow->Id;
-	PrologueWidget->AddToViewport(10000);
+	PrologueWidget = uiSubsystem->CreatePrologue(PrologueTableRow->Id);
 }
 
 void UKMNarrativeNodePrologue::Deactivate()
@@ -41,7 +39,7 @@ void UKMNarrativeNodePrologue::CopyFrom(class UKMNarrativeNode* source)
 
 bool UKMNarrativeNodePrologue::IsEnd() const
 {
-	if (GetWorld()->GetTimeSeconds() - BeginTime >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->FadeOutTime)
+	if (GetWorld()->GetTimeSeconds() - BeginTime >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->FadeOutTime + PrologueTableRow->EndDelay)
 	{
 		return true;
 	}

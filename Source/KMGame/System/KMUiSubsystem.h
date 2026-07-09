@@ -6,6 +6,25 @@
 #include "Ui/Window/Dialog/KMPopupMenuWidget.h"
 #include "KMUiSubsystem.generated.h"
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMMenuType : uint8
+{
+	QuitPopup = 0,
+	GameMenu = 1,
+};
+
+USTRUCT()
+struct KMGAME_API FKMMenuEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EKMMenuType Type = EKMMenuType::QuitPopup;
+	
+	UPROPERTY()
+	TObjectPtr<UKMUserWidget> UserWidget;
+};
+
 UCLASS(Blueprintable, BlueprintType, abstract)
 class KMGAME_API UKMUiSubsystem : public UEMGameInstanceSubsystem
 {
@@ -27,11 +46,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UKMRootWidget> RootWidget;
 
-	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<class UKMPopupMenuWidget> PopupMenuWidget;
-
-	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<class UKMGameMenuWindowWidget> GameMenuWidget;
+	UPROPERTY()
+	TArray<FKMMenuEntry> ShowWidgetStack;
 	
 public:
 	UKMUiSubsystem();
@@ -50,7 +66,7 @@ public:
 	void ClearNarrativeMessage();
 
 	UFUNCTION(BlueprintCallable)
-	class UKMPrologueWindowWidget* CreatePrologue() const;
+	class UKMPrologueWindowWidget* CreatePrologue(FName prologueTableId) const;
 
 	UFUNCTION(BlueprintCallable)
 	class UKMCinematicWidget* DrawCienmaticImage(TSubclassOf<UKMCinematicWidget> cienmaticWidgetClass);
@@ -69,10 +85,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowGameMenu();
 
+	UFUNCTION(BlueprintPure)
+	bool IsOpenedMenu(EKMMenuType menuType) const;
+
+	UFUNCTION(BlueprintPure)
+	bool HasMenu() const;
+
+	UFUNCTION(BlueprintCallable)
+	void OpenedMenu(EKMMenuType menuType, class UKMUserWidget* openedWidget);
+
+	UFUNCTION(BlueprintCallable)
+	void ClosedMenu(EKMMenuType menuType);
+
+	UFUNCTION(BlueprintCallable)
+	void ClosedMenuByIndex(int32 index);
+
+	UFUNCTION(BlueprintCallable)
+	void PopClosedMenu();
+
 protected:
 	void ShowQuitPopup();
-	void CloseQuitPopup();
-	void CloseGameMenu();
 
 protected:
 	virtual void Initialize() override;

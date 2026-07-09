@@ -64,9 +64,24 @@ void UKMUiSubsystem::ClearNarrativeMessage()
 	RootWidget->NarrativeWidget->ClearText();
 }
 
-UKMPrologueWindowWidget* UKMUiSubsystem::CreatePrologue() const
+UKMPrologueWindowWidget* UKMUiSubsystem::CreatePrologue(FName prologueTableId) const
 {
-	return CreateWidget<UKMPrologueWindowWidget>(GetWorld(), PrologueWidgetClass);	
+	UKMPrologueWindowWidget* newPrologueWidget = CreateWidget<UKMPrologueWindowWidget>(GetWorld(), PrologueWidgetClass);
+	if (IsValid(RootWidget) && IsValid(newPrologueWidget))
+	{
+		newPrologueWidget->PrologueTableId = prologueTableId;
+		if (IsValid(RootWidget->RootPanel))
+		{
+			if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newPrologueWidget)))
+			{
+				canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
+				canvasSlot->SetPosition(FVector2D(0.f, 0.f));
+				canvasSlot->SetSize(FVector2D(0.f, 0.f));
+				canvasSlot->SetZOrder(1000.f);
+			}
+		}
+	}
+	return newPrologueWidget;
 }
 
 UKMCinematicWidget* UKMUiSubsystem::DrawCienmaticImage(TSubclassOf<UKMCinematicWidget> cienmaticWidgetClass)
@@ -130,7 +145,7 @@ void UKMUiSubsystem::SelectedGameMenu(FName menuId)
 {
 	if (menuId == TEXT("Resume"))
 	{
-		CloseGameMenu();
+		ClosedMenu(EKMMenuType::GameMenu);
 	}
 	else if (menuId == TEXT("ReturnToTitle"))
 	{
@@ -142,24 +157,15 @@ void UKMUiSubsystem::SelectedGameMenu(FName menuId)
 	}
 }
 
-void UKMUiSubsystem::CloseQuitPopup()
-{
-	if (PopupMenuWidget.IsValid())
-	{
-		PopupMenuWidget->RemoveFromParent();
-		PopupMenuWidget = nullptr;
-	}
-}
-
 void UKMUiSubsystem::ShowQuitPopup()
 {
-	if (PopupMenuWidget.IsValid())
+	if (IsOpenedMenu(EKMMenuType::QuitPopup))
 	{
-		CloseQuitPopup();
+		ClosedMenu(EKMMenuType::QuitPopup);
 		return;
 	}
 	
-	PopupMenuWidget = ShowPopup(TEXT("Quit Game"), TEXT("Are you sure you want to quit?"), EKMPopupType::YesOrNo,
+	UKMPopupMenuWidget* newPopupMenuWidget = ShowPopup(TEXT("Quit Game"), TEXT("Are you sure you want to quit?"), EKMPopupType::YesOrNo,
 		FKMPopupSelectDelegate::CreateLambda([this](const EKMPopupButtonType& buttonType)
 		{
 			if (buttonType == EKMPopupButtonType::Yes)
@@ -168,13 +174,21 @@ void UKMUiSubsystem::ShowQuitPopup()
 			}
 			else if (buttonType == EKMPopupButtonType::Cancel || buttonType == EKMPopupButtonType::No)
 			{
-				CloseQuitPopup();
+				ClosedMenu(EKMMenuType::QuitPopup);
 			}
 		}));
+
+	OpenedMenu(EKMMenuType::GameMenu, newPopupMenuWidget);
 }
 
 void UKMUiSubsystem::HandleEscape()
 {
+	if (HasMenu())
+	{
+		PopClosedMenu();
+		return;
+	}
+
 	if (AKMGameModeHeroSelect* heroGameMode = Cast<AKMGameModeHeroSelect>(UGameplayStatics::GetGameMode(this)))
 	{
 		ShowQuitPopup();
@@ -189,32 +203,23 @@ void UKMUiSubsystem::HandleEscape()
 	}
 }
 
-void UKMUiSubsystem::CloseGameMenu()
-{
-	if (GameMenuWidget.IsValid())
-	{
-		GameMenuWidget->RemoveFromParent();
-		GameMenuWidget = nullptr;
-	}
-}
-
 void UKMUiSubsystem::ShowGameMenu()
 {
-	if (GameMenuWidget.IsValid())
+	if (IsOpenedMenu(EKMMenuType::GameMenu))
 	{
-		CloseGameMenu();
+		ClosedMenu(EKMMenuType::GameMenu);
 		return;
 	}
 	
-	GameMenuWidget = CreateWidget<UKMGameMenuWindowWidget>(GetWorld(), GameMenuWidgetClass);
-	if (!GameMenuWidget.IsValid())
+	UKMGameMenuWindowWidget* newGameMenuWidget = CreateWidget<UKMGameMenuWindowWidget>(GetWorld(), GameMenuWidgetClass);
+	if (!IsValid(newGameMenuWidget))
 	{
 		return;
 	}
 
 	if (IsValid(RootWidget->RootPanel))
 	{
-		if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(GameMenuWidget.Get())))
+		if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newGameMenuWidget)))
 		{
 			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
 			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
@@ -222,4 +227,63 @@ void UKMUiSubsystem::ShowGameMenu()
 			canvasSlot->SetZOrder(10000.f);
 		}
 	}
+	
+	OpenedMenu(EKMMenuType::GameMenu, newGameMenuWidget);
+}
+
+void UKMUiSubsystem::OpenedMenu(EKMMenuType menuType, UKMUserWidget* openedWidget)
+{
+	if (!IsValid(openedWidget))
+	{
+		return;
+	}
+	FKMMenuEntry newMenuEntry;
+	newMenuEntry.Type = menuType;
+	newMenuEntry.UserWidget = openedWidget;
+	ShowWidgetStack.Emplace(newMenuEntry);
+}
+
+void UKMUiSubsystem::ClosedMenuByIndex(int32 index)
+{
+	if (index != INDEX_NONE)
+	{
+		if (IsValid(ShowWidgetStack[index].UserWidget))
+		{
+			ShowWidgetStack[index].UserWidget->RemoveFromParent();
+		}
+		ShowWidgetStack.RemoveAt(index);
+	}
+}
+
+void UKMUiSubsystem::ClosedMenu(EKMMenuType menuType)
+{
+	int32 menuIndex = ShowWidgetStack.IndexOfByPredicate([&menuType](const FKMMenuEntry& entry)
+	{
+		return entry.Type == menuType;
+	});
+	ClosedMenuByIndex(menuIndex);
+}
+
+void UKMUiSubsystem::PopClosedMenu()
+{
+	if (ShowWidgetStack.IsEmpty())
+	{
+		return;
+	}
+	
+	int32 latestIndex = ShowWidgetStack.Num() - 1;
+	ClosedMenuByIndex(latestIndex);
+}
+
+bool UKMUiSubsystem::IsOpenedMenu(EKMMenuType menuType) const
+{
+	return ShowWidgetStack.ContainsByPredicate([&menuType](const FKMMenuEntry& menuEntry)
+	{
+		return menuEntry.Type == menuType;
+	});
+}
+
+bool UKMUiSubsystem::HasMenu() const
+{
+	return !ShowWidgetStack.IsEmpty();
 }

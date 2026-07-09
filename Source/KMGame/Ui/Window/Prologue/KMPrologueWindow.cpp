@@ -59,21 +59,27 @@ void UKMPrologueWindowWidget::OnScrollAnimation(eTickerEventType eventType, floa
 			UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
 			check(IsValid(tickerSubsystem));
 
-			tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &ThisClass::OnFadeoutAnimation), PrologueTableRow->FadeOutTime, 0.f);
+			tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &ThisClass::OnFadeoutAnimation), PrologueTableRow->FadeOutTime, PrologueTableRow->EndDelay * -1.f);
 		}
 	}
 }
 
 void UKMPrologueWindowWidget::OnFadeinAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)
 {
-	Border->SetRenderOpacity(eplipseTime / duration);
+	if (eplipseTime > 0.f)
+	{
+		Border->SetRenderOpacity(eplipseTime / duration);
+	}
 }
 
 void UKMPrologueWindowWidget::OnFadeoutAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)
 {
-	Border->SetRenderOpacity(1.f - (eplipseTime / duration));
-	if(eventType == eTickerEventType::REMOVED)
+	if (eplipseTime >= 0.f)
 	{
-		RemoveFromParent();
+		Border->SetRenderOpacity(1.f - (eplipseTime / duration));
+		if(eventType == eTickerEventType::REMOVED)
+		{
+			RemoveFromParent();
+		}
 	}
 }
