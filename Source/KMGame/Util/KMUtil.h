@@ -89,6 +89,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="worldContextObject"))
 	static void OpenMap(const UObject* worldContextObject, FName levelName, bool bAbsolute, FString options);
 
+	UFUNCTION(BlueprintCallable, meta=(WorldContext="worldContextObject"))
+	static void Shutdown(const UObject* worldContextObject);
+
 protected:
 	static double GameElipsedStartTime;
 };

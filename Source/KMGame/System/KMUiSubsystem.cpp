@@ -3,9 +3,14 @@
 #include "UI/Component//KMNarrativeWidget.h"
 #include "Ui/Component/KMRootWidget.h"
 #include "Components/CanvasPanelSlot.h"
+#include "GameMode/KMGameModeHeroSelect.h"
+#include "GameMode/KMGameModeStage.h"
+#include "Kismet/GameplayStatics.h"
 #include "Ui/Component/KMCinematicWidget.h"
 #include "Ui/Window/Dialog/KMPopupMenuWidget.h"
+#include "Ui/Window/GameMenu/KMGameMenuWindowWidget.h"
 #include "Ui/Window/Prologue/KMPrologueWindow.h"
+#include "Util/KMUtil.h"
 
 UKMUiSubsystem* UKMUiSubsystem::GetUiSubsystem(const UObject* worldContextObject)
 {
@@ -81,7 +86,12 @@ UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FS
 
 	if (IsValid(RootWidget->RootPanel))
 	{
-		RootWidget->RootPanel->AddChild(newPopupMenuWidget);
+		if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newPopupMenuWidget)))
+		{
+			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
+			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
+			canvasSlot->SetSize(FVector2D(0.f, 0.f));
+		}
 	}
 	
 	return newPopupMenuWidget;
@@ -89,12 +99,85 @@ UKMPopupMenuWidget* UKMUiSubsystem::ShowPopup(const FString& titleText, const FS
 
 void UKMUiSubsystem::SelectedTitleMenu(FName menuId)
 {
-	if (menuId == "Quit")
+	if (menuId == "NewGame")
 	{
-		ShowPopup(TEXT("Quit"), TEXT("Are sure Quit?"), EKMPopupType::YesOrNo,
-			FKMPopupSelectDelegate::CreateLambda([this](const EKMPopupButtonType& buttonType)
+		UGameplayStatics::OpenLevel(this, TEXT("HeroSelect_p"));
+	}
+	else if (menuId == "Quit")
+	{
+		ShowQuitPopup();
+	}
+}
+
+void UKMUiSubsystem::CloseQuitPopup()
+{
+	if (PopupMenuWidget.IsValid())
+	{
+		PopupMenuWidget->RemoveFromParent();
+		PopupMenuWidget = nullptr;
+	}
+}
+
+void UKMUiSubsystem::ShowQuitPopup()
+{
+	if (PopupMenuWidget.IsValid())
+	{
+		CloseQuitPopup();
+		return;
+	}
+	
+	PopupMenuWidget = ShowPopup(TEXT("Quit Game"), TEXT("Are you sure you want to quit?"), EKMPopupType::YesOrNo,
+		FKMPopupSelectDelegate::CreateLambda([this](const EKMPopupButtonType& buttonType)
+		{
+			if (buttonType == EKMPopupButtonType::Yes)
 			{
-			
-			}));
+				UKMUtil::Shutdown(this);
+			}
+			else if (buttonType == EKMPopupButtonType::Cancel || buttonType == EKMPopupButtonType::No)
+			{
+				CloseQuitPopup();
+			}
+		}));
+}
+
+void UKMUiSubsystem::HandleEscape()
+{
+	if (AKMGameModeHeroSelect* heroGameMode = Cast<AKMGameModeHeroSelect>(UGameplayStatics::GetGameMode(this)))
+	{
+		ShowQuitPopup();
+	}
+	else if (AKMGameModeStage* stageGameMode = Cast<AKMGameModeStage>(UGameplayStatics::GetGameMode(this)))
+	{
+		ShowGameMenu();
+	}
+	else
+	{
+		ShowQuitPopup();
+	}
+}
+
+void UKMUiSubsystem::ShowGameMenu()
+{
+	if (GameMenuWidget.IsValid())
+	{
+		GameMenuWidget->RemoveFromParent();
+		GameMenuWidget = nullptr;
+		return;
+	}
+	
+	GameMenuWidget = CreateWidget<UKMGameMenuWindowWidget>(GetWorld(), GameMenuWidgetClass);
+	if (!GameMenuWidget.IsValid())
+	{
+		return;
+	}
+
+	if (IsValid(RootWidget->RootPanel))
+	{
+		if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(GameMenuWidget.Get())))
+		{
+			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
+			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
+			canvasSlot->SetSize(FVector2D(0.f, 0.f));
+		}
 	}
 }

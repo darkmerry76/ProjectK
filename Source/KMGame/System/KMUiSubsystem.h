@@ -21,8 +21,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UKMPopupMenuWidget> PopupWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UKMGameMenuWindowWidget> GameMenuWidgetClass;
+
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UKMRootWidget> RootWidget;
+
+	UPROPERTY(BlueprintReadOnly)
+	TWeakObjectPtr<class UKMPopupMenuWidget> PopupMenuWidget;
+
+	UPROPERTY(BlueprintReadOnly)
+	TWeakObjectPtr<class UKMGameMenuWindowWidget> GameMenuWidget;
 	
 public:
 	UKMUiSubsystem();
@@ -47,6 +56,16 @@ public:
 	void SelectedTitleMenu(FName menuId);
 
 	class UKMPopupMenuWidget* ShowPopup(const FString& titleText, const FString& messageText, EKMPopupType popupType, FKMPopupSelectDelegate selectDelegate);
+
+	UFUNCTION(BlueprintCallable)
+	void HandleEscape();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowGameMenu();
+
+protected:
+	void ShowQuitPopup();
+	void CloseQuitPopup();
 
 protected:
 	virtual void Initialize() override;

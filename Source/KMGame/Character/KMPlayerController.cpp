@@ -1,5 +1,6 @@
 #include "KMPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "System/KMUiSubsystem.h"
 
 void AKMPlayerController::BeginPlay()
 {
@@ -19,5 +20,19 @@ void AKMPlayerController::SetupInputComponent()
 				Subsystem->AddMappingContext(CurrentContext, 0);
 			}
 		}
+
+		InputComponent->BindKey(
+			EKeys::Escape,
+			IE_Pressed,
+			this,
+			&ThisClass::OnEscapePressed);
+	}
+}
+
+void AKMPlayerController::OnEscapePressed()
+{
+	if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
+	{
+		uiSubsystem->HandleEscape();
 	}
 }

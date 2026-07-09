@@ -415,3 +415,8 @@ void UKMUtil::OpenMap(const UObject* worldContextObject, FName levelName, bool b
 {
 	UGameplayStatics::OpenLevel(worldContextObject, levelName, bAbsolute, options);
 }
+
+void UKMUtil::Shutdown(const UObject* worldContextObject)
+{
+	UKismetSystemLibrary::QuitGame(worldContextObject, nullptr, EQuitPreference::Quit, false);	
+}
