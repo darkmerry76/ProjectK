@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "KMGameModeBase.h"
+#include "GameplayTagContainer.h"
 #include "KMGameModeStage.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, abstract)
@@ -22,8 +23,11 @@ protected:
 	void OnSpawnHeroInstance(class UKMHeroInstance* newHeroInstance);
 
 public:
+	AKMGameModeStage();
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
 	virtual void OnWorldLoadingComplete_Implementation() override;
+
+	void OnNarrativeEventListening(FGameplayTag newTag);
 };

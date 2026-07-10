@@ -23,7 +23,7 @@ struct FKMTable_Reward_StageRow : public FKMTable_RewardRow
 	inline static const FKMTable_Reward_StageRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 38;
+	static const int32   RefTableIndex = 39;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

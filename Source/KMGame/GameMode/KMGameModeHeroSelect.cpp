@@ -37,12 +37,21 @@ void AKMGameModeHeroSelect::SelectHero(AController* newPlayer, const FName& newC
 void AKMGameModeHeroSelect::RestartPlayer(AController* newPlayer)
 {
 	Super::RestartPlayer(newPlayer);
+
+	if (HeroId != NAME_None)
+	{
+		UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
+		check(gameObjectSubsystem);
+
+		UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, FTransform::Identity));
+		check(IsValid(heroInstance));
+		newPlayer->Possess(heroInstance->GetCharacter());
+		OnSpawnHeroInstance(heroInstance);
+	}
 }
 
 void AKMGameModeHeroSelect::OnSpawnHeroInstance_Implementation(UKMHeroInstance* newHeroInstance)
 {
-	Super::OnSpawnHeroInstance_Implementation(newHeroInstance);
-
 	if (IsValid(newHeroInstance))
 	{
 		if (AKMCharacter* character = newHeroInstance->GetCharacter())

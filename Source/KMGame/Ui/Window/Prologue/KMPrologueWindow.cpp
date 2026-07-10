@@ -25,12 +25,12 @@ void UKMPrologueWindowWidget::NativeConstruct()
 		
 	if (IsValid(ScrollBox) && PrologueTableRow)
 	{
-		if (PrologueTableRow->FadeInTime> 0.f)
+		if (PrologueTableRow->FadeInTime > 0.f)
 		{
 			tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &ThisClass::OnFadeinAnimation), PrologueTableRow->FadeInTime , 0.f);
 		}
 		
-		if (PrologueTableRow->Duration + PrologueTableRow->StartDelay  > 0.f)
+		if (PrologueTableRow->Duration + PrologueTableRow->StartDelay > 0.f)
 		{
 			ScrollTickerHandle = tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(
 				this, &ThisClass::OnScrollAnimation), PrologueTableRow->Duration, PrologueTableRow->StartDelay * -1.f);

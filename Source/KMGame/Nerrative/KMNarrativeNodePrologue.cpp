@@ -43,7 +43,7 @@ void UKMNarrativeNodePrologue::CopyFrom(class UKMNarrativeNode* source)
 
 bool UKMNarrativeNodePrologue::IsEnd() const
 {
-	if (GetWorld()->GetTimeSeconds() >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay + PrologueTableRow->FadeOutTime)
+	if (GetWorld()->GetTimeSeconds() - BeginTime >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay + PrologueTableRow->FadeOutTime)
 	{
 		return true;
 	}
@@ -57,7 +57,7 @@ void UKMNarrativeNodePrologue::Tick(float deltaTime)
 
 	if (!bIsFadeOut)
 	{
-		if (GetWorld()->GetTimeSeconds() >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay)
+		if (GetWorld()->GetTimeSeconds() - BeginTime >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay)
 		{
 			UKMUtil::PlaySlateFade(this, 0.f, 1.f,PrologueTableRow->FadeOutTime);
 			bIsFadeOut = true;

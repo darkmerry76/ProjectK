@@ -1,22 +1,22 @@
 #include "KMNarrativeSubsystem.h"
-
-#include <Tables/Generated/KMTable_Narrative_Movie.h>
-
 #include "Character/KMCharacter.h"
 #include "Components/AudioComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMVoicePDA.h"
+#include "Sound/SoundCue.h"
+#include "Tables/Generated/KMTable_Narrative_Director.h"
+#include "Tables/Generated/KMTable_Narrative_Sequence.h"
+#include "Tables/Generated/KMTable_Narrative_Dialog.h"
+#include "Tables/Generated/KMTable_Narrative_Prologue.h"
+#include <Tables/Generated/KMTable_Narrative_Movie.h>
+#include "Tables/Generated/KMTable_Narrative_Event.h"
 #include "Nerrative/KMNarrativeNode.h"
 #include "Nerrative/KMNarrativeNodeDialog.h"
 #include "Nerrative/KMNarrativeNodeDirector.h"
 #include "Nerrative/KMNarrativeNodeMovie.h"
 #include "Nerrative/KMNarrativeNodePrologue.h"
 #include "Nerrative/KMNarrativeNodeSequence.h"
-#include "Sound/SoundCue.h"
-#include "Tables/Generated/KMTable_Narrative_Director.h"
-#include "Tables/Generated/KMTable_Narrative_Sequence.h"
-#include "Tables/Generated/KMTable_Narrative_Dialog.h"
-#include "Tables/Generated/KMTable_Narrative_Prologue.h"
+#include "Nerrative/KMNarrativeNodeEvent.h"
 
 UKMNarrativeSubsystem* UKMNarrativeSubsystem::GetNarrativeSubsystem(const UObject* worldContextObject)
 {
@@ -136,6 +136,10 @@ void UKMNarrativeSubsystem::BranchNode(UKMNarrativeNode* fromNode, FName toNodeI
 		{
 			newNarrativeNode = NewObject<UKMNarrativeNodeMovie>(this);
 		}
+		else if (const FKMTable_Narrative_EventRow* eventTableRow = CastRow<FKMTable_Narrative_EventRow>(narrativeRow))
+		{
+			newNarrativeNode = NewObject<UKMNarrativeNodeEvent>(this);
+		}
 	}
 	check(newNarrativeNode);
 
@@ -232,4 +236,9 @@ void UKMNarrativeSubsystem::PlayVoice(FName speakerUniqueId, FName voiceName)
 	audioComponent->SetSound(VoicePDA->NarrativeSoundCue);
 	audioComponent->SetWaveParameter("VoiceWave", soundWav);
 	audioComponent->Play();
+}
+
+void UKMNarrativeSubsystem::BroadcastEvent(FGameplayTag newTag)
+{
+	EventDelegate.Broadcast(newTag);
 }

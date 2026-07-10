@@ -28,6 +28,27 @@ bool AKMGameModeBase::IsInitMap(const UWorld* otherWorld) const
 	return otherWorld->GetFName() == *InitMap.GetAssetName();
 }
 
+void AKMGameModeBase::SpawnStateWidget()
+{
+	UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this);
+	if (!IsValid(uiSubsystem))
+	{
+		return;
+	}
+
+	AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings());
+	if (!IsValid(worldSettings))
+	{
+		return;
+	}
+		
+	if (IsValid(worldSettings->StateWidgetClass))
+	{
+		StateWidget = CreateWidget<UKMUserWidget>(GetWorld(), worldSettings->StateWidgetClass);
+		uiSubsystem->AttachStateWidget(StateWidget);
+	}
+}
+
 void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 {
 	if (APlayerController* playerController = GetWorld()->GetFirstPlayerController())
@@ -40,15 +61,8 @@ void AKMGameModeBase::OnWorldLoadingComplete_Implementation()
 		uiSubsystem->CreateRoot();
 	}
 	
-	if (AKMWorldSettings* worldSettings = Cast<AKMWorldSettings>(GetWorld()->GetWorldSettings()))
+	if (bIsAutoAttachStateWidget)
 	{
-		if (IsValid(worldSettings->StateWidgetClass))
-		{
-			if (UKMUiSubsystem* uiSubsystem = UKMUiSubsystem::GetUiSubsystem(this))
-			{
-				StateWidget = CreateWidget<UKMUserWidget>(GetWorld(), worldSettings->StateWidgetClass);
-				uiSubsystem->AttachStateWidget(StateWidget);
-			}
-		}
+		SpawnStateWidget();
 	}
 }

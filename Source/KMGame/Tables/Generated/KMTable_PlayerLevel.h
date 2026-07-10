@@ -106,7 +106,7 @@ struct FKMTable_PlayerLevelRow : public FEM_TableBaseRow
 	inline static const FKMTable_PlayerLevelRow& FindRow(int32 IdKey);
 	inline static FString MakeTableKeyToString(int32 IdKey);
 
-	static const int32   RefTableIndex = 34;
+	static const int32   RefTableIndex = 35;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

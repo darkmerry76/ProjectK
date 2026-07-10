@@ -5,61 +5,58 @@
 #include "EMDataTable.h"
 #include "KMTableEnums.h"
 #include "KMTableStructures.h"
-#include "KMTable_Reward.generated.h"
+#include "KMTable_Narrative.h"
+#include "KMTable_Narrative_Event.generated.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FKMTable_RewardRow
+// FKMTable_Narrative_EventRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USTRUCT(BlueprintType)
-struct FKMTable_RewardRow : public FEM_TableBaseRow
+struct FKMTable_Narrative_EventRow : public FKMTable_NarrativeRow
 {
 	GENERATED_USTRUCT_BODY()
 
-	// Reward ID
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName                Id = { NAME_None };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              Text;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32                Exp = { 0 };
+	FEMPrimaryAssetRef   Asset = { };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMOperatorType      ExpOperator = { EKMOperatorType::None };
+	FName                EventTag = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32                Gold = { 0 };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMOperatorType      GoldOperator = { EKMOperatorType::None };
+	FName                Branch = { NAME_None };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 
-	inline static const FKMTable_RewardRow* FindRowPtr(FName IdKey);
-	inline static const FKMTable_RewardRow& FindRow(FName IdKey);
+	inline static const FKMTable_Narrative_EventRow* FindRowPtr(FName IdKey);
+	inline static const FKMTable_Narrative_EventRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 37;
+	static const int32   RefTableIndex = 29;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// KMTable_Reward Inline
+// KMTable_Narrative_Event Inline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void FKMTable_RewardRow::PostLoadRowTable()
+inline void FKMTable_Narrative_EventRow::PostLoadRowTable()
 {
 	BaseScriptStruct = this->StaticStruct();
 }
 
-inline FString FKMTable_RewardRow::MakeTableKeyToString(FName IdKey)
+inline FString FKMTable_Narrative_EventRow::MakeTableKeyToString(FName IdKey)
 {
 	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey);
 }
 
-inline const FKMTable_RewardRow* FKMTable_RewardRow::FindRowPtr(FName IdKey)
+inline const FKMTable_Narrative_EventRow* FKMTable_Narrative_EventRow::FindRowPtr(FName IdKey)
 {
-	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_RewardRow>(*MakeTableKeyToString(IdKey));
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Narrative_EventRow>(*MakeTableKeyToString(IdKey));
 }
 
-inline const FKMTable_RewardRow& FKMTable_RewardRow::FindRow(FName IdKey)
+inline const FKMTable_Narrative_EventRow& FKMTable_Narrative_EventRow::FindRow(FName IdKey)
 {
 	return *FindRowPtr(IdKey);
 }

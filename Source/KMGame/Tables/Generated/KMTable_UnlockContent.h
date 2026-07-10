@@ -41,7 +41,7 @@ struct FKMTable_UnlockContentRow : public FEM_TableBaseRow
 	inline static const FKMTable_UnlockContentRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 57;
+	static const int32   RefTableIndex = 58;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

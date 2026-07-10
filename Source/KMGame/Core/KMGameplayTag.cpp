@@ -1,5 +1,7 @@
 #include "KMGameplayTag.h"
 
+const FGameplayTag FKMGameplayTagName::Game_Event_Stage_Begin = FGameplayTag::RequestGameplayTag(TEXT("Game.Event.Stage.Begin"));
+
 const FGameplayTag FKMGameplayTagName::Block_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block"));
 const FGameplayTag FKMGameplayTagName::Block_Control_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block.Control"));
 const FGameplayTag FKMGameplayTagName::Block_Control_Move_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block.Control.Move"));

@@ -4,6 +4,7 @@
 #include "System/EMGameObjectSubsystem.h"
 #include "KMNarrativeSubsystem.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FKMNarrativeEventDelegate, FGameplayTag newTag);
 UCLASS(Blueprintable, BlueprintType, abstract)
 class KMGAME_API UKMNarrativeSubsystem : public UEMGameInstanceSubsystem, public FTickableGameObject
 {
@@ -18,6 +19,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FName, TObjectPtr<class USoundWave>> VoiceWaves;
+
+	FKMNarrativeEventDelegate EventDelegate;
 
 protected:
 	UPROPERTY()
@@ -37,6 +40,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class USoundWave* GetVoice(FName voiceName) const;
+
+	UFUNCTION(BlueprintCallable)
+	void BroadcastEvent(FGameplayTag newTag);
 
 protected:
 	virtual void Initialize() override;

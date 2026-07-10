@@ -7,7 +7,7 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMHeroSelectDelegate, const FName& heroTableId);
 
 UCLASS(Blueprintable, BlueprintType, abstract)
-class KMGAME_API AKMGameModeHeroSelect : public AKMGameModeStage
+class KMGAME_API AKMGameModeHeroSelect : public AKMGameModeBase
 {
 	GENERATED_BODY()
 	
@@ -16,6 +16,9 @@ public:
 
 	UPROPERTY()
 	TWeakObjectPtr<class UKMHeroInstance> LatestHeroInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FName HeroId = NAME_None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName DefaultSelectTableId;
@@ -31,6 +34,8 @@ protected:
 	virtual void RestartPlayer(class AController* NewPlayer) override;
 	virtual void BeginPlay() override;
 
-	virtual void OnSpawnHeroInstance_Implementation(class UKMHeroInstance* newHeroInstance) override;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSpawnHeroInstance(class UKMHeroInstance* newHeroInstance);
+	
 	virtual void OnWorldLoadingComplete_Implementation() override;
 };

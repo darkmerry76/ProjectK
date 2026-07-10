@@ -12,6 +12,9 @@ class KMGAME_API AKMGameModeBase : public AEMGameModeBase
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
 	FSoftObjectPath InitMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
+	bool bIsAutoAttachStateWidget = true;
 	
 	UPROPERTY()
 	TObjectPtr<class UKMUserWidget> StateWidget;
@@ -24,4 +27,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnWorldLoadingComplete();
+
+	void SpawnStateWidget();
 };

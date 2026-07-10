@@ -120,7 +120,7 @@ struct FKMTable_Stat_OutLevelUpRow : public FEM_TableBaseRow
 	inline static const FKMTable_Stat_OutLevelUpRow& FindRow(FName IdKey, int32 LevelKey);
 	inline static FString MakeTableKeyToString(FName IdKey, int32 LevelKey);
 
-	static const int32   RefTableIndex = 55;
+	static const int32   RefTableIndex = 56;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@
 class KMGAME_API FKMGameplayTagName 
 {
 public:
+	static const FGameplayTag Game_Event_Stage_Begin;
+	
 	static const FGameplayTag Block_Tag;
 	static const FGameplayTag Block_Control_Tag;
 	static const FGameplayTag Block_Control_Move_Tag;

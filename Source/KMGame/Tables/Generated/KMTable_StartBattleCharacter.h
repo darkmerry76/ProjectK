@@ -29,7 +29,7 @@ struct FKMTable_StartBattleCharacterRow : public FEM_TableBaseRow
 	inline static const FKMTable_StartBattleCharacterRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 53;
+	static const int32   RefTableIndex = 54;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
