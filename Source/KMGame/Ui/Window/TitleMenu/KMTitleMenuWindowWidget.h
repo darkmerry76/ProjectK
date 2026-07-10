@@ -17,6 +17,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
 	TObjectPtr<class UMediaPlayer> MediaPlayer;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	TObjectPtr<class UMediaSource> MediaSource;
+
 public:
 	UKMTitleMenuWindowWidget(const FObjectInitializer& objectInitializer);
 
@@ -26,4 +29,10 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnSelectedMenu(class UKMVerticalMenuItemWidget* verticalMenuItem);
+
+	UFUNCTION()
+	void OnMediaOpened(FString openedUrl);
+
+	UFUNCTION()
+	void OnEndReached();
 };

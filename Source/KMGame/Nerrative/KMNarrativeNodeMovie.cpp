@@ -7,6 +7,8 @@
 #include "System/KMGameObjectSubsystem.h"
 #include <Tables/Generated/KMTable_Narrative_Movie.h>
 
+#include "Util/KMUtil.h"
+
 UKMNarrativeNodeMovie::UKMNarrativeNodeMovie(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 }
@@ -48,6 +50,11 @@ void UKMNarrativeNodeMovie::Activate()
 				}
 			}
 		}
+	}
+	
+	if (MovieTableRow->FadeInTime > 0.f)
+	{
+		UKMUtil::PlaySlateFade(this, 1.f, 0.f, MovieTableRow->FadeInTime);
 	}
 }
 

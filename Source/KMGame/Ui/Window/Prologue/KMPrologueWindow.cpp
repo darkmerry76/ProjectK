@@ -52,16 +52,14 @@ void UKMPrologueWindowWidget::OnScrollAnimation(eTickerEventType eventType, floa
 	float alpha = FMath::Clamp(eplipseTime / duration,0.0f,1.0f);
 	float maxOffset = ScrollBox->GetScrollOffsetOfEnd();
 	ScrollBox->SetScrollOffset(maxOffset * alpha);
-	if (eventType == eTickerEventType::REMOVED)
-	{
-		if (IsValid(Border) && PrologueTableRow && PrologueTableRow->FadeOutTime > 0.f)
-		{
-			UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
-			check(IsValid(tickerSubsystem));
+}
 
-			tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &ThisClass::OnFadeoutAnimation), PrologueTableRow->FadeOutTime, PrologueTableRow->EndDelay * -1.f);
-		}
-	}
+void UKMPrologueWindowWidget::FadeOut()
+{
+	UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
+	check(IsValid(tickerSubsystem));
+
+	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateUObject(this, &ThisClass::OnFadeoutAnimation), PrologueTableRow->FadeOutTime, 0.f);
 }
 
 void UKMPrologueWindowWidget::OnFadeinAnimation(eTickerEventType eventType, float deltaTime, float eplipseTime, float duration)

@@ -16,6 +16,8 @@ protected:
 	float BeginTime = 0.f;
 
 	const struct FKMTable_Narrative_PrologueRow* PrologueTableRow = nullptr;
+
+	bool bIsFadeOut = false;
 	
 public:
 	virtual void CopyFrom(class UKMNarrativeNode* source) override;

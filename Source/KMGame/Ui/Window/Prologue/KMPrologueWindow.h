@@ -27,6 +27,9 @@ protected:
 public:
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	FName PrologueTableId = NAME_None;
+	
+public:
+	void FadeOut();
 
 protected:
 	virtual void NativePreConstruct() override;

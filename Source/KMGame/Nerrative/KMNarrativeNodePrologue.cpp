@@ -2,6 +2,7 @@
 #include "System/KMUiSubsystem.h"
 #include "Tables/Generated/KMTable_Narrative_Prologue.h"
 #include "Ui/Window/Prologue/KMPrologueWindow.h"
+#include "Util/KMUtil.h"
 
 UKMNarrativeNodePrologue::UKMNarrativeNodePrologue(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -28,7 +29,10 @@ void UKMNarrativeNodePrologue::Deactivate()
 {
 	Super::Deactivate();
 
-	PrologueWidget->RemoveFromParent();
+	if (IsValid(PrologueWidget))
+	{
+		PrologueWidget->RemoveFromParent();
+	}
 }
 
 void UKMNarrativeNodePrologue::CopyFrom(class UKMNarrativeNode* source)
@@ -39,7 +43,7 @@ void UKMNarrativeNodePrologue::CopyFrom(class UKMNarrativeNode* source)
 
 bool UKMNarrativeNodePrologue::IsEnd() const
 {
-	if (GetWorld()->GetTimeSeconds() - BeginTime >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->FadeOutTime + PrologueTableRow->EndDelay)
+	if (GetWorld()->GetTimeSeconds() >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay + PrologueTableRow->FadeOutTime)
 	{
 		return true;
 	}
@@ -51,6 +55,15 @@ void UKMNarrativeNodePrologue::Tick(float deltaTime)
 {
 	Super::Tick(deltaTime);
 
+	if (!bIsFadeOut)
+	{
+		if (GetWorld()->GetTimeSeconds() >= PrologueTableRow->Duration + PrologueTableRow->StartDelay + PrologueTableRow->EndDelay)
+		{
+			UKMUtil::PlaySlateFade(this, 0.f, 1.f,PrologueTableRow->FadeOutTime);
+			bIsFadeOut = true;
+		}
+	}
+	
 	if (IsEnd())
 	{
 		BranchDelegate.Execute(this, PrologueTableRow->Branch);
