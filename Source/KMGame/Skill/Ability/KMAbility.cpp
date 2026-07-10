@@ -122,7 +122,7 @@ void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContex
 		newContextData = newSkillContextData;
 	}
 
-	MartialArtsHandle = martialArtsComponent->Play(martialArts, newContextData, newRate, bLooping);
+	MartialArtsHandle = martialArtsComponent->PlayEx(martialArts, newContextData, newRate, bLooping);
 }
 
 void UKMAbility::MontageJump(FName sectionName)

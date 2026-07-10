@@ -23,7 +23,7 @@ struct FKMTable_Stage_FieldRow : public FKMTable_StageRow
 	inline static const FKMTable_Stage_FieldRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 50;
+	static const int32   RefTableIndex = 51;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

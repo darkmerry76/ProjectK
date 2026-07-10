@@ -38,7 +38,7 @@ struct FKMTable_StatPerLevelRow : public FEM_TableBaseRow
 	inline static const FKMTable_StatPerLevelRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 55;
+	static const int32   RefTableIndex = 56;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

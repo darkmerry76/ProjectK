@@ -33,6 +33,7 @@
 #include "KMTable_Narrative.h"
 #include "KMTable_Narrative_Dialog.h"
 #include "KMTable_Narrative_Director.h"
+#include "KMTable_Narrative_Movie.h"
 #include "KMTable_Narrative_Prologue.h"
 #include "KMTable_Narrative_Sequence.h"
 #include "KMTable_OutLevelupCost.h"
@@ -353,6 +354,20 @@ public:
 	static const FKMTable_Narrative_DirectorRow& GetTableKMTable_Narrative_DirectorByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_Narrative_DirectorRow>(*FKMTable_Narrative_DirectorRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Narrative_Movie FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_MovieRow& GetTableKMTable_Narrative_Movie(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_MovieRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Narrative_Movie Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Narrative_MovieRow& GetTableKMTable_Narrative_MovieByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Narrative_MovieRow>(*FKMTable_Narrative_MovieRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_Narrative_Prologue FName으로 검색되는 블루프린트 노출함수

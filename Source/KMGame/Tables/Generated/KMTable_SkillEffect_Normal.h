@@ -23,7 +23,7 @@ struct FKMTable_SkillEffect_NormalRow : public FKMTable_SkillEffectRow
 	inline static const FKMTable_SkillEffect_NormalRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 44;
+	static const int32   RefTableIndex = 45;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

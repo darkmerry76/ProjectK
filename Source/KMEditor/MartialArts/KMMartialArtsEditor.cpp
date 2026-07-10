@@ -190,7 +190,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 
 		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(AnimationAsset))
 		{
-			martialArtsComponent->Play(martialArts, nullptr, 1.f, true);
+			martialArtsComponent->PlayEx(martialArts, nullptr, 1.f, true);
 		}
 		martialArtsComponent->SetPause(true);
 		SkeletonTree->SetSkeletalMesh(character->GetMesh()->GetSkeletalMeshAsset());

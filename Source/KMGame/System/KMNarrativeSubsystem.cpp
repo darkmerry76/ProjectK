@@ -1,4 +1,7 @@
 #include "KMNarrativeSubsystem.h"
+
+#include <Tables/Generated/KMTable_Narrative_Movie.h>
+
 #include "Character/KMCharacter.h"
 #include "Components/AudioComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -6,6 +9,7 @@
 #include "Nerrative/KMNarrativeNode.h"
 #include "Nerrative/KMNarrativeNodeDialog.h"
 #include "Nerrative/KMNarrativeNodeDirector.h"
+#include "Nerrative/KMNarrativeNodeMovie.h"
 #include "Nerrative/KMNarrativeNodePrologue.h"
 #include "Nerrative/KMNarrativeNodeSequence.h"
 #include "Sound/SoundCue.h"
@@ -127,6 +131,10 @@ void UKMNarrativeSubsystem::BranchNode(UKMNarrativeNode* fromNode, FName toNodeI
 		else if (const FKMTable_Narrative_PrologueRow* prologueTableRow = CastRow<FKMTable_Narrative_PrologueRow>(narrativeRow))
 		{
 			newNarrativeNode = NewObject<UKMNarrativeNodePrologue>(this);
+		}
+		else if (const FKMTable_Narrative_MovieRow* movieTableRow = CastRow<FKMTable_Narrative_MovieRow>(narrativeRow))
+		{
+			newNarrativeNode = NewObject<UKMNarrativeNodeMovie>(this);
 		}
 	}
 	check(newNarrativeNode);
