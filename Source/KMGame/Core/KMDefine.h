@@ -132,6 +132,15 @@ enum class EKMPopupButtonType : uint8
 	No
 };
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMInputActionType : uint8
+{
+	Combat,
+	Technique,
+	Gaurd,
+	Ultimate,
+};
+
 USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMProjectileEventData
 {

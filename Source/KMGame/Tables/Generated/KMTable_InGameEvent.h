@@ -36,7 +36,7 @@ struct FKMTable_InGameEventRow : public FEM_TableBaseRow
 	inline static const FKMTable_InGameEventRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 19;
+	static const int32   RefTableIndex = 20;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

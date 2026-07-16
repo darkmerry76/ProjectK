@@ -70,9 +70,9 @@ public:
 	void ClearActiveSkills();
 
 	TSharedPtr<FKMSkillInstance> UseAssistSkill(const FKMSkillKey& skillKey);
-	TSharedPtr<FKMSkillInstance> UseSkillSpecial();
-	TSharedPtr<FKMSkillInstance> UseSkillNormal(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
-	TSharedPtr<FKMSkillInstance> UseSkillGrab(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
+	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
+	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
+	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
 	
 	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);
 

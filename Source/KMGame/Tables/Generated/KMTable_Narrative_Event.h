@@ -35,7 +35,7 @@ struct FKMTable_Narrative_EventRow : public FKMTable_NarrativeRow
 	inline static const FKMTable_Narrative_EventRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 29;
+	static const int32   RefTableIndex = 30;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

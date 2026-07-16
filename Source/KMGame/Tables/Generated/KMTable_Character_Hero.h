@@ -47,7 +47,7 @@ struct FKMTable_Character_HeroRow : public FKMTable_CharacterRow
 	inline static const FKMTable_Character_HeroRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 11;
+	static const int32   RefTableIndex = 12;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

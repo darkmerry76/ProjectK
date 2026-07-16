@@ -28,10 +28,13 @@ struct FKMTable_SkillSetRow : public FEM_TableBaseRow
 	bool                 Default = { false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool                 Grab = { false };
+	bool                 Combat = { false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool                 Special = { false };
+	bool                 Technique = { false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 Ultimate = { false };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
@@ -40,7 +43,7 @@ struct FKMTable_SkillSetRow : public FEM_TableBaseRow
 	inline static const FKMTable_SkillSetRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 48;
+	static const int32   RefTableIndex = 49;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

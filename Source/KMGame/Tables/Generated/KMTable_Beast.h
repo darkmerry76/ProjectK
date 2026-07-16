@@ -5,13 +5,13 @@
 #include "EMDataTable.h"
 #include "KMTableEnums.h"
 #include "KMTableStructures.h"
-#include "KMTable_Character.generated.h"
+#include "KMTable_Beast.generated.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FKMTable_CharacterRow
+// FKMTable_BeastRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USTRUCT(BlueprintType)
-struct FKMTable_CharacterRow : public FEM_TableBaseRow
+struct FKMTable_BeastRow : public FEM_TableBaseRow
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -25,6 +25,14 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString              FullName;
 
+	// 캐릭터 전체 컨셉이나 스토리
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              Description;
+
+	// 각성 설명
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString              AwakeDescription;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterType     Type = { EKMCharacterType::Hero };
 
@@ -32,43 +40,53 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	FEMPrimaryAssetRef   pdaKey = { };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMCharacterBattleRole role = { EKMCharacterBattleRole::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterLocationType LocationType = { EKMCharacterLocationType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                scale = { 0.f };
 
+	// 등급
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMHeroGrade         Grade = { EKMHeroGrade::None };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName                StatId = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                IconPdaKey = { NAME_None };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 
-	inline static const FKMTable_CharacterRow* FindRowPtr(FName IdKey);
-	inline static const FKMTable_CharacterRow& FindRow(FName IdKey);
+	inline static const FKMTable_BeastRow* FindRowPtr(FName IdKey);
+	inline static const FKMTable_BeastRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 10;
+	static const int32   RefTableIndex = 6;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// KMTable_Character Inline
+// KMTable_Beast Inline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void FKMTable_CharacterRow::PostLoadRowTable()
+inline void FKMTable_BeastRow::PostLoadRowTable()
 {
 	BaseScriptStruct = this->StaticStruct();
 }
 
-inline FString FKMTable_CharacterRow::MakeTableKeyToString(FName IdKey)
+inline FString FKMTable_BeastRow::MakeTableKeyToString(FName IdKey)
 {
 	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey);
 }
 
-inline const FKMTable_CharacterRow* FKMTable_CharacterRow::FindRowPtr(FName IdKey)
+inline const FKMTable_BeastRow* FKMTable_BeastRow::FindRowPtr(FName IdKey)
 {
-	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_CharacterRow>(*MakeTableKeyToString(IdKey));
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_BeastRow>(*MakeTableKeyToString(IdKey));
 }
 
-inline const FKMTable_CharacterRow& FKMTable_CharacterRow::FindRow(FName IdKey)
+inline const FKMTable_BeastRow& FKMTable_BeastRow::FindRow(FName IdKey)
 {
 	return *FindRowPtr(IdKey);
 }

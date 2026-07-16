@@ -74,13 +74,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData);
 
-	void UseSkillNormal();
-	void UseSkillSpecial();
-	void UseSkillGrab();
-	bool UseSkillParry();
+	void UseCombatSkill();
+	void UseUltimateSkill();
+	void UseTechniqueSkill();
+	bool UseParrySkill();
 
-	bool UseSkillGuard();
-	bool UseSkillGuard_Release();
+	bool UseGuardSkill();
+	bool UseGuardSkill_Release();
 
 	UFUNCTION(BlueprintCallable)
 	void AddAggroTarget(class UKMCharacterInstance* attacker);

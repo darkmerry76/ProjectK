@@ -23,7 +23,7 @@ struct FKMTable_Chapter_RaidRow : public FKMTable_ChapterRow
 	inline static const FKMTable_Chapter_RaidRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 8;
+	static const int32   RefTableIndex = 9;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

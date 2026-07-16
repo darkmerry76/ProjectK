@@ -38,7 +38,7 @@ struct FKMTable_ChapterRow : public FEM_TableBaseRow
 	inline static const FKMTable_ChapterRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 6;
+	static const int32   RefTableIndex = 7;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

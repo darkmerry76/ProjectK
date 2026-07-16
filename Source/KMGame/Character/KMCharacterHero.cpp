@@ -40,8 +40,8 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AKMCharacterHero::RunPressed);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AKMCharacterHero::RunReleased);
 		
-		EnhancedInputComponent->BindAction(SkillAction0, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillAction0);
-		EnhancedInputComponent->BindAction(SkillAction1, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillAction1);
+		EnhancedInputComponent->BindAction(CombatSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnCombatSkillAction);
+		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnTachniqueSkillAction);
 
 		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillDebug0);
 		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Completed, this, &AKMCharacterHero::OnSkillDebug0_Release);
@@ -154,109 +154,91 @@ void AKMCharacterHero::PendingJump()
 void AKMCharacterHero::StopJumping()
 {
 	Super::StopJumping();
-	//PressedJumpReady = false;
 }
 
 void AKMCharacterHero::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-/*	if (PressedJumpReady == true && ReadyJump == true)
-	{
-		Jump();
-		PressedJumpReady = false;
-		ReadyJump = false;
-	}*/
 }
 
-void AKMCharacterHero::OnSkillAction0()
+void AKMCharacterHero::OnCombatSkillAction()
 {
-	if (bSkill1Triggered == true)
+	if (bTechniqueTriggered)
 	{
-		GetWorldTimerManager().ClearTimer(Skill1TimerHandle);
+		GetWorldTimerManager().ClearTimer(TechniqueSkillTimerHandle);
 
-		bSkill0Triggered = false;
-		bSkill1Triggered = false;
+		bCombatTriggered = false;
+		bTechniqueTriggered = false;
 
-		ExecuteSkillCombo();
+		ExecuteUltimate();
 		return;
 	}
 
-	bSkill0Triggered = true;
-
-	GetWorldTimerManager().SetTimer(
-		Skill0TimerHandle,
-		this,
-		&AKMCharacterHero::ExecuteSkill0,
-		ComboInputWindow,
-		false);
+	bCombatTriggered = true;
+	GetWorldTimerManager().SetTimer(CombatSkillTimerHandle,this,
+		&AKMCharacterHero::ExecuteCombatSkill,ComboInputWindow,false);
 }
 
-void AKMCharacterHero::OnSkillAction1()
+void AKMCharacterHero::OnTachniqueSkillAction()
 {
-	if (bSkill0Triggered == true)
+	if (bCombatTriggered)
 	{
-		GetWorldTimerManager().ClearTimer(Skill0TimerHandle);
+		GetWorldTimerManager().ClearTimer(CombatSkillTimerHandle);
 
-		bSkill0Triggered = false;
-		bSkill1Triggered = false;
+		bCombatTriggered = false;
+		bTechniqueTriggered = false;
 
-		ExecuteSkillCombo();
+		ExecuteUltimate();
 		return;
 	}
 
-	bSkill1Triggered = true;
-
-	GetWorldTimerManager().SetTimer(
-		Skill1TimerHandle,
-		this,
-		&AKMCharacterHero::ExecuteSkill1,
-		ComboInputWindow,
-		false);
+	bTechniqueTriggered = true;
+	GetWorldTimerManager().SetTimer(TechniqueSkillTimerHandle,this,
+		&AKMCharacterHero::ExecuteTechniqueSkill,ComboInputWindow,false);
 }
 
-void AKMCharacterHero::ExecuteSkill0()
+void AKMCharacterHero::ExecuteCombatSkill()
 {
-	bSkill0Triggered = false;
+	bCombatTriggered = false;
 
 	UKMTargetSubsystem* targetSystem =
 		UKMTargetSubsystem::GetTargetSubsystem(this);
 
 	check(IsValid(targetSystem));
 
-	GetCharacterInstance()->UseSkillNormal();
+	GetCharacterInstance()->UseCombatSkill();
 }
 
-void AKMCharacterHero::ExecuteSkill1()
+void AKMCharacterHero::ExecuteTechniqueSkill()
 {
-	bSkill1Triggered = false;
+	bTechniqueTriggered = false;
 
 	UKMTargetSubsystem* targetSystem =
 		UKMTargetSubsystem::GetTargetSubsystem(this);
 
 	check(IsValid(targetSystem));
 
-	GetCharacterInstance()->UseSkillGrab();
+	GetCharacterInstance()->UseTechniqueSkill();
 }
 
-void AKMCharacterHero::ExecuteSkillCombo()
+void AKMCharacterHero::ExecuteUltimate()
 {
 	UKMTargetSubsystem* targetSystem =
 		UKMTargetSubsystem::GetTargetSubsystem(this);
 
 	check(IsValid(targetSystem));
 
-	GetCharacterInstance()->UseSkillSpecial();
+	GetCharacterInstance()->UseUltimateSkill();
 }
 
 void AKMCharacterHero::OnSkillDebug0()
 {
-	GetCharacterInstance()->UseSkillGuard();
+	GetCharacterInstance()->UseGuardSkill();
 }
 
 void AKMCharacterHero::OnSkillDebug0_Release()
 {
-	GetCharacterInstance()->UseSkillGuard_Release();
+	GetCharacterInstance()->UseGuardSkill_Release();
 }
 
 void AKMCharacterHero::OnEnterGame_Implementation()

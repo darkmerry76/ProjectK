@@ -29,7 +29,7 @@ struct FKMTable_Drop_InGameEventRow : public FKMTable_DropRow
 	inline static const FKMTable_Drop_InGameEventRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 14;
+	static const int32   RefTableIndex = 15;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

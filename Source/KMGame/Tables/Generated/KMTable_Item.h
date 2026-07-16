@@ -31,7 +31,7 @@ struct FKMTable_ItemRow : public FEM_TableBaseRow
 	inline static const FKMTable_ItemRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 20;
+	static const int32   RefTableIndex = 21;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@ enum class EKMCharacterType : uint8
 	Hero = 0 , // 플레이어
 	Npc = 1 , // NPC
 	Monster = 2 , // 몬스터
+	Beast = 3 , // 비스트
 };
 
 // 역할

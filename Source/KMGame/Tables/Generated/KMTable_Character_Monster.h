@@ -42,7 +42,7 @@ struct FKMTable_Character_MonsterRow : public FKMTable_CharacterRow
 	inline static const FKMTable_Character_MonsterRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 12;
+	static const int32   RefTableIndex = 13;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

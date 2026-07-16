@@ -23,7 +23,7 @@ struct FKMTable_Wave_DungeonRow : public FKMTable_WaveRow
 	inline static const FKMTable_Wave_DungeonRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 61;
+	static const int32   RefTableIndex = 62;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

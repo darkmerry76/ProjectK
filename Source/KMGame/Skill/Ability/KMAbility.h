@@ -59,6 +59,8 @@ public:
 
 	void PlayMartialArts(TSharedPtr<class FEMMartialArtsContextData> newContextData, float newRate = 1.f, bool bLooping = false);
 
+	void StopMartialArts();
+
 	UFUNCTION(BlueprintCallable)
 	void MontageJump(FName sectionName);
 

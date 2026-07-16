@@ -369,7 +369,7 @@ void UKMSkillHandler::ActivatedNextComboSkill()
 	ComboData.SkillInstance = newSkillInstance;
 }
 
-TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillSpecial()
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 {
 	if (ComboData.SkillInstance.IsValid())
 	{
@@ -392,7 +392,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillSpecial()
 	{
 		const FKMTable_SkillSetRow* skillSetRow = *skillsetItr;
 
-		if (!skillSetRow->Special)
+		if (!skillSetRow->Ultimate)
 		{
 			continue;
 		}
@@ -417,7 +417,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillSpecial()
 	return newSkillInstance;
 }
 
-TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillNormal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
 {
 	if (!lockOnCluster.IsValid() || !lockOnCluster->IsBestTargetAvailable())
 	{
@@ -494,7 +494,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillNormal(const TSharedPtr<FK
 	return ComboData.SkillInstance.Pin();
 }
 
-TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillGrab(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
 {
 	if (ComboData.SkillInstance.IsValid())
 	{
@@ -509,7 +509,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillGrab(const TSharedPtr<FKML
 	{
 		const FKMTable_SkillSetRow* skillSetRow = *skillsetItr;
 
-		if (!skillSetRow->Grab)
+		if (!skillSetRow->Technique)
 		{
 			continue;
 		}
@@ -553,7 +553,7 @@ const FKMTable_SkillSetRow* UKMSkillHandler::EvalurateSkillSet(const UKMCharacte
 	for (auto skillsetItr = OwnenSkillSets.CreateConstIterator(); skillsetItr; ++skillsetItr)
 	{
 		const FKMTable_SkillSetRow* skillSetTableRow = *skillsetItr;
-		if (skillSetTableRow->Grab)
+		if (skillSetTableRow->Technique)
 		{
 			continue;
 		}

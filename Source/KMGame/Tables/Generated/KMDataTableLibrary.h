@@ -7,9 +7,10 @@
 #include "KMTable_Actor.h"
 #include "KMTable_Actor_VFX.h"
 #include "KMTable_BaseStat.h"
-#include "KMTable_BaseStat_Ghost.h"
+#include "KMTable_BaseStat_Beast.h"
 #include "KMTable_BaseStat_Hero.h"
 #include "KMTable_BaseStat_Monster.h"
+#include "KMTable_Beast.h"
 #include "KMTable_Chapter.h"
 #include "KMTable_Chapter_Dungeon.h"
 #include "KMTable_Chapter_Raid.h"
@@ -117,6 +118,20 @@ public:
 	static const FKMTable_BaseStatRow& GetTableKMTable_BaseStatByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_BaseStatRow>(*FKMTable_BaseStatRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Beast FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_BeastRow& GetTableKMTable_Beast(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_BeastRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Beast Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_BeastRow& GetTableKMTable_BeastByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_BeastRow>(*FKMTable_BeastRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_Chapter FName으로 검색되는 블루프린트 노출함수

@@ -32,7 +32,7 @@ struct FKMTable_LocalizeTextRow : public FEM_TableBaseRow
 	inline static const FKMTable_LocalizeTextRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 21;
+	static const int32   RefTableIndex = 22;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

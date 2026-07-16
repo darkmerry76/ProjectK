@@ -26,7 +26,7 @@ struct FKMTable_Narrative_SequenceRow : public FKMTable_NarrativeRow
 	inline static const FKMTable_Narrative_SequenceRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 32;
+	static const int32   RefTableIndex = 33;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

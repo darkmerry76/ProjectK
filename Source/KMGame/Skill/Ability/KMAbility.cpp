@@ -125,6 +125,29 @@ void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContex
 	MartialArtsHandle = martialArtsComponent->PlayEx(martialArts, newContextData, newRate, bLooping);
 }
 
+void UKMAbility::StopMartialArts()
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	UEMMartialArtsComponent* martialArtsComponent = ownerCharacter->GetMartialArtsComponent();
+	if (!IsValid(martialArtsComponent))
+	{
+		return;
+	}
+	UEMMartialArts* martialArts = GetMartialArts();
+	if (!IsValid(martialArts))
+	{
+		return;
+	}
+	
+	martialArtsComponent->StopByInstanceId(MartialArtsHandle);
+	
+	MartialArtsHandle = INDEX_NONE;
+}
+
 void UKMAbility::MontageJump(FName sectionName)
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();

@@ -27,7 +27,7 @@ struct FKMTable_BaseStatRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere)
 	double               HpRps = { 0.f };
 
-	// 체력초당회복
+	// 시작체력비율
 	UPROPERTY(EditAnywhere)
 	double               HpCurr = { 0.f };
 
@@ -43,7 +43,7 @@ struct FKMTable_BaseStatRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere)
 	double               Sp = { 0.f };
 
-	// 마차초당회복
+	// 마나초당회복
 	UPROPERTY(EditAnywhere)
 	double               SpRps = { 0.f };
 
@@ -55,7 +55,7 @@ struct FKMTable_BaseStatRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere)
 	double               Mp = { 0.f };
 
-	// 마차초당회복
+	// 마나초당회복
 	UPROPERTY(EditAnywhere)
 	double               MpRps = { 0.f };
 
@@ -79,7 +79,7 @@ struct FKMTable_BaseStatRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere)
 	double               CriChance = { 0.f };
 
-	// 달리기 속도
+	// 기본 속도
 	UPROPERTY(EditAnywhere)
 	double               Mov = { 0.f };
 

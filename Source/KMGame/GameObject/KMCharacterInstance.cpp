@@ -278,7 +278,7 @@ void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
 
 void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint)
 {
-	if (UseSkillParry())
+	if (UseParrySkill())
 	{
 		return;
 	}
@@ -532,22 +532,22 @@ bool UKMCharacterInstance::UseSkillParam(const FName skillName, int32 skillLevel
 	return false;
 }
 
-void UKMCharacterInstance::UseSkillNormal()
+void UKMCharacterInstance::UseCombatSkill()
 {
-	GetSkillHandler()->UseSkillNormal(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseCombatSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
 }
 
-void UKMCharacterInstance::UseSkillSpecial()
+void UKMCharacterInstance::UseUltimateSkill()
 {
-	GetSkillHandler()->UseSkillSpecial();
+	GetSkillHandler()->UseUltimateSkill();
 }
 
-void UKMCharacterInstance::UseSkillGrab()
+void UKMCharacterInstance::UseTechniqueSkill()
 {
-	GetSkillHandler()->UseSkillGrab(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseTechniqueSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
 }
 
-bool UKMCharacterInstance::UseSkillParry()
+bool UKMCharacterInstance::UseParrySkill()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	if (SkillHandler->IsSkillActivated(guardSkillKey))
@@ -587,7 +587,7 @@ bool UKMCharacterInstance::UseSkillParry()
 	return false;
 }
 
-bool UKMCharacterInstance::UseSkillGuard()
+bool UKMCharacterInstance::UseGuardSkill()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) || SkillHandler->CanUseSkill(guardSkillKey, LockonTarget))
@@ -603,7 +603,7 @@ bool UKMCharacterInstance::UseSkillGuard()
 	return true;
 }
 
-bool UKMCharacterInstance::UseSkillGuard_Release()
+bool UKMCharacterInstance::UseGuardSkill_Release()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->GetSkillInstance(guardSkillKey);

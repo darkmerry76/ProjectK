@@ -23,7 +23,7 @@ struct FKMTable_SkillEffect_GrabRow : public FKMTable_SkillEffectRow
 	inline static const FKMTable_SkillEffect_GrabRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 45;
+	static const int32   RefTableIndex = 46;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

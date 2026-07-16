@@ -30,10 +30,10 @@ public:
 	class UInputAction* LookAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
-	class UInputAction* SkillAction0;
+	class UInputAction* CombatSkillAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
-	class UInputAction* SkillAction1;
+	class UInputAction* TechniqueSkillAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	class UInputAction* SkillDebug0;
@@ -70,8 +70,8 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void StopJumping() override;
 
-	void OnSkillAction0();
-	void OnSkillAction1();
+	void OnCombatSkillAction();
+	void OnTachniqueSkillAction();
 	
 	void StartCustomJump();
 	
@@ -88,19 +88,18 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void PendingJump();
 
-	bool bSkill0Triggered = false;
-	bool bSkill1Triggered = false;
+	bool bCombatTriggered = false;
+	bool bTechniqueTriggered = false;
 
-	FTimerHandle Skill0TimerHandle;
-	FTimerHandle Skill1TimerHandle;
+	FTimerHandle CombatSkillTimerHandle;
+	FTimerHandle TechniqueSkillTimerHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ComboInputWindow = 0.1f;
 
-	void ExecuteSkill0();
-	void ExecuteSkill1();
-
-	void ExecuteSkillCombo();
+	void ExecuteCombatSkill();
+	void ExecuteTechniqueSkill();
+	void ExecuteUltimate();
 	
 public:
 	friend class UKMHeroInstance;

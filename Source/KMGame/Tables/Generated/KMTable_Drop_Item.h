@@ -30,7 +30,7 @@ struct FKMTable_Drop_ItemRow : public FKMTable_DropRow
 	inline static const FKMTable_Drop_ItemRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 16;
+	static const int32   RefTableIndex = 17;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

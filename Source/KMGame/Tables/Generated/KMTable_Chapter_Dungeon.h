@@ -23,7 +23,7 @@ struct FKMTable_Chapter_DungeonRow : public FKMTable_ChapterRow
 	inline static const FKMTable_Chapter_DungeonRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 7;
+	static const int32   RefTableIndex = 8;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
