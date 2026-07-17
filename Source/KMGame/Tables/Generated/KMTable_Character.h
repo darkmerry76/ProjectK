@@ -29,6 +29,9 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	EKMCharacterType     Type = { EKMCharacterType::Hero };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                DefaultBeast = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FEMPrimaryAssetRef   pdaKey = { };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

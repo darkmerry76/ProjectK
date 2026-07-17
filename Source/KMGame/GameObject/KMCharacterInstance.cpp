@@ -16,6 +16,7 @@
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMTargetSubsystem.h"
+#include "Tables/Generated/KMTable_BaseStat_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
@@ -72,6 +73,8 @@ void UKMCharacterInstance::BeginPlay()
 	SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
 	SensorInstance->Init();
 	LockonTarget = MakeShared<FKMLockOnCluster>(this);
+
+	BeastId = GetTable()->DefaultBeast;
 }
 
 void UKMCharacterInstance::EndPlay()
@@ -103,6 +106,31 @@ AKMCharacter* UKMCharacterInstance::GetCharacter() const
 	}
 	
 	return Character.Get();
+}
+
+void UKMCharacterInstance::SetBeastTableId(FName newBeatId)
+{
+	BeastId = newBeatId;
+}
+
+FName UKMCharacterInstance::GetBeatId() const
+{
+	return BeastId;
+}
+
+void UKMCharacterInstance::SpawnBeast()
+{
+}
+
+void UKMCharacterInstance::TransformBeast()
+{
+	if (BeastId == NAME_None)
+	{
+		return;
+	}
+	
+	const FKMTable_BaseStat_BeastRow* beastTableRow = FKMTable_BaseStat_BeastRow::FindRowPtr(BeastId);
+	check(beastTableRow);
 }
 
 void UKMCharacterInstance::SetTable(const FKMTable_CharacterRow* newTable)

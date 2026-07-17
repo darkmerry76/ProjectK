@@ -31,6 +31,18 @@ public:
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetCharacter() const;
 
+	UFUNCTION(BlueprintCallable)
+	void SetBeastTableId(FName beatId);
+
+	UFUNCTION(BlueprintPure)
+	FName GetBeatId() const;
+
+	UFUNCTION(BlueprintCallable)
+	void TransformBeast();
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnBeast();
+
 	virtual void BeginPlay() override;
 	virtual void EndPlay() override;
 
@@ -184,6 +196,9 @@ protected:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<class AKMCharacter> Character = nullptr;
 
+	UPROPERTY(Transient)
+	TWeakObjectPtr<class AKMCharacterBeast> Beast = nullptr;
+
 	const struct FKMTable_CharacterRow* Table = nullptr;
 
 	TSharedPtr<class FKMTimingParry> TimingParry;
@@ -218,6 +233,8 @@ protected:
 	TSet<AActor*> ThrowOverlapActors;
 	
 	FTransform Transform;
+
+	FName BeastId = NAME_None;
 	
 	float DepthSort = 0.f;
 	bool bIsRun = false;
