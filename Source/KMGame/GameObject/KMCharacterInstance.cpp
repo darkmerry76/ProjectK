@@ -1,10 +1,15 @@
 #include "KMCharacterInstance.h"
 
+#include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
+#include "Animation/BlendSpace1D.h"
 #include "Animation/KMAnimInstance.h"
+#include "Animation/AnimSet/KMAnimationSetEffect.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "DataAsset/KMAssetManager.h"
+#include "DataAsset/KMBeastPDA.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Skill/KMSkillHandler.h"
@@ -17,6 +22,7 @@
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
+#include "Tables/Generated/KMTable_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
@@ -122,15 +128,103 @@ void UKMCharacterInstance::SpawnBeast()
 {
 }
 
-void UKMCharacterInstance::TransformBeast()
+void UKMCharacterInstance::ToggleBeast()
 {
+	if (IsBeast())
+	{
+		RevertFromBest();
+	}
+	else
+	{
+		TransformToBeast();
+	}
+}
+
+void UKMCharacterInstance::RevertFromBest()
+{
+	if (!IsBeast())
+	{
+		return;
+	}
+
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	AKMCharacter* ownerCharacterCDO = GetCharacter()->GetClass()->GetDefaultObject<AKMCharacter>();
+	if (!IsValid(ownerCharacterCDO))
+	{
+		return;
+	}
+
+	const FKMTable_CharacterRow* characterTablrRow = GetTable();
+	if (!characterTablrRow)
+	{
+		return;
+	}
+
+	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
+	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
+	ownerCharacter->GetMesh()->SetAnimInstanceClass(ownerCharacterCDO->GetMesh()->GetAnimClass());
+	ownerCharacter->SetActorScale3D(FVector(characterTablrRow->scale));
+	GetCharacter()->GetMesh()->InitAnim(true);
+	
+	SetCharacterDirection(GetCharacterDirection(), true);
+
+	bIsBeast = false;
+
+	OnRevertFromBest();
+}
+
+void UKMCharacterInstance::OnRevertFromBest_Implementation()
+{
+}
+
+void UKMCharacterInstance::TransformToBeast()
+{
+	if (IsBeast())
+	{
+		return;
+	}
+	
 	if (BeastId == NAME_None)
 	{
 		return;
 	}
 	
-	const FKMTable_BaseStat_BeastRow* beastTableRow = FKMTable_BaseStat_BeastRow::FindRowPtr(BeastId);
+	const FKMTable_BeastRow* beastTableRow = FKMTable_BeastRow::FindRowPtr(BeastId);
 	check(beastTableRow);
+
+	const FKMTable_BaseStat_BeastRow* beastStatTableRow = FKMTable_BaseStat_BeastRow::FindRowPtr(beastTableRow->StatId);
+	check(beastStatTableRow);
+
+	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
+	check(IsValid(assetManager));
+
+	UKMBeastPDA* beastPDA = Cast<UKMBeastPDA>(assetManager->GetAsset(beastTableRow->AssetPda));
+	if (!ensure(IsValid(beastPDA)))
+	{
+		return;
+	}
+
+	GetCharacter()->GetMesh()->EmptyOverrideMaterials();
+	GetCharacter()->GetMesh()->SetSkeletalMesh(beastPDA->Mesh);
+	GetCharacter()->GetMesh()->SetAnimInstanceClass(beastPDA->AnimInstanceClass);
+	GetCharacter()->GetMesh()->InitAnim(true);
+	GetCharacter()->SetActorScale3D(FVector(beastTableRow->scale));
+
+	SetCharacterDirection(GetCharacterDirection(), true);
+	
+	bIsBeast = true;
+
+	OnTransformToBeast();
+}
+
+void UKMCharacterInstance::OnTransformToBeast_Implementation()
+{
+	
 }
 
 void UKMCharacterInstance::SetTable(const FKMTable_CharacterRow* newTable)
@@ -453,30 +547,62 @@ bool UKMCharacterInstance::IsDead() const
 
 void UKMCharacterInstance::Tick(float deltaSeconds)
 {
-	if (!IsValid(GetCharacter()))
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter());
+	if (!IsValid(ownerCharacter))
 	{
 		return;
 	}
-	deltaSeconds *= GetCharacter()->CustomTimeDilation;
+
+	UEMCurveWarpingComponent* curveWarping =  ownerCharacter->GetCurveWarping();
+	if (!IsValid(curveWarping))
+	{
+		return;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+	
+	deltaSeconds *= ownerCharacter->CustomTimeDilation;
 	
 	Super::Tick(deltaSeconds);
 	
 	if (IsValid(GetCharacter()))
 	{
-		if (bIsRun)
+		if (IsRun())
 		{
-			GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
+			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
+			if (IsBeast())
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 2.f , FColor::Red, ownerCharacter->GetCharacterMovement()->GetLastInputVector().ToString());
+				
+				if (!curveWarping->IsCustomRun() && !ownerCharacter->GetCharacterMovement()->GetLastInputVector().IsNearlyZero())
+				{
+					float minRange = 0.f;
+					float maxRange = 0.f;
+					
+					UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
+					UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
+					curveWarping->StartCustomRun(animSequence);
+				}
+				else if (curveWarping->IsCustomRun() && ownerCharacter->GetCharacterMovement()->GetLastInputVector().IsNearlyZero())
+				{
+					curveWarping->StopCustomRun();
+				}
+			}
 		}
 		else
 		{
-			GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
+			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
 		}
 	}
 
 	StatModifier->ComputePreEffectStat();
 	SkillHandler->Tick(deltaSeconds);
 	StatModifier->ComputePostEffectStat();
-	SensorInstance->SetCenterTransform(GetCharacter()->GetActorTransform());
+	SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
 }
 
 bool UKMCharacterInstance::UseSkill(const FName skillName, int32 skillLevel)
@@ -672,14 +798,37 @@ const UKMCharacterInstance* UKMCharacterInstance::GetBestAggroTarget() const
 	return AggroTarget.begin()->Get();
 }
 
+bool UKMCharacterInstance::IsBeast() const
+{
+	return bIsBeast;
+}
+
 void UKMCharacterInstance::Run()
 {
 	bIsRun = true;
 }
 
+bool UKMCharacterInstance::IsRun() const
+{
+	if (bIsBeast)
+	{
+		return true;
+	}
+	return bIsRun;
+}
+
 void UKMCharacterInstance::Walk()
 {
 	bIsRun = false;
+}
+
+bool UKMCharacterInstance::IsWalk() const
+{
+	if (bIsBeast)
+	{
+		return false;
+	}
+	return !bIsRun;
 }
 
 void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bForceRotate)

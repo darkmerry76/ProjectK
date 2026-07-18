@@ -1,12 +1,14 @@
 ﻿#include "SKMCharacterOutliner.h"
 
 #include "EMOutlinerTextInfoColumn.h"
+#include "KMCharacterOutlinerBeastTreeItem.h"
 #include "KMCharacterOutlinerGroupTreeItem.h"
 #include "KMCharacterOutlinerItemColumn.h"
 #include "KMCharacterOutlinerMode.h"
 #include "KMCharacterOutlinerTreeItem.h"
 #include "SKMCharacterOutlinerTreeView.h"
 #include "Core/KMDefine.h"
+#include "Tables/Generated/KMTable_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
 
 SKMCharacterOutliner::SKMCharacterOutliner() : SEMOutliner()
@@ -35,20 +37,33 @@ FString SKMCharacterOutliner::GetNameRowText(const IEMOutlinerTreeItem& treeItem
 			return characterItem->GetCharacterTable()->Name;
 		}
 	}
+	else if (treeItem.IsA<FKMCharacterOutlinerBeastTreeItem>())
+	{
+		const FKMCharacterOutlinerBeastTreeItem* beastItem = reinterpret_cast<const FKMCharacterOutlinerBeastTreeItem*>(&treeItem);
+		if (beastItem->GetBeastTable())
+		{
+			return beastItem->GetBeastTable()->Name;
+		}
+	}
 	return TEXT("");
 }
 
 FString SKMCharacterOutliner::GetTypeRowText(const IEMOutlinerTreeItem& treeItem) const
 {
+	static UEnum* characterTypeEnum = KMGame::GetCharacterTypeEnum();
+	check(IsValid(characterTypeEnum));
+
 	if (treeItem.IsA<FKMCharacterOutlinerTreeItem>())
 	{
-		static UEnum* characterTypeEnum = KMGame::GetCharacterTypeEnum();
-		check(IsValid(characterTypeEnum));
 		const FKMCharacterOutlinerTreeItem* characterItem = reinterpret_cast<const FKMCharacterOutlinerTreeItem*>(&treeItem);
 		if (characterItem->GetCharacterTable())
 		{
 			return characterTypeEnum->GetNameStringByValue(static_cast<int64>(characterItem->GetCharacterTable()->Type));
 		}
+	}
+	else if (treeItem.IsA<FKMCharacterOutlinerBeastTreeItem>())
+	{
+		return characterTypeEnum->GetNameStringByValue(static_cast<int64>(EKMCharacterType::Beast));
 	}
 	return TEXT("");
 }

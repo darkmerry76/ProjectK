@@ -1,6 +1,10 @@
 #include "KMUtil.h"
 #include <Tables/Generated/KMTable_Chapter.h>
+#include <ThirdParty/msdfgen/msdfgen.h>
+
 #include "AIController.h"
+#include "VectorVM.h"
+#include "Animation/BlendSpace1D.h"
 #include "Character/KMCharacter.h"
 #include "Core/KMGameInstance.h"
 #include "Core/KMGameViewportClient.h"
@@ -419,4 +423,51 @@ void UKMUtil::OpenMap(const UObject* worldContextObject, FName levelName, bool b
 void UKMUtil::Shutdown(const UObject* worldContextObject)
 {
 	UKismetSystemLibrary::QuitGame(worldContextObject, nullptr, EQuitPreference::Quit, false);
+}
+
+void UKMUtil::GetMinMaxValueBlendSpace1D(const UBlendSpace1D* blendSpace1D, float& outMin, float& outMax)
+{
+	if (!IsValid(blendSpace1D))
+	{
+		return;
+	}
+
+	outMax = -FLT_MAX;
+	outMin = FLT_MAX;
+
+	for (const FBlendSample& blendSample : blendSpace1D->GetBlendSamples())
+	{
+		if (outMax < blendSample.SampleValue.X)
+		{
+			outMax = blendSample.SampleValue.X;
+		}
+		if (outMin > blendSample.SampleValue.X)
+		{
+			outMin = blendSample.SampleValue.X;
+		}
+	}
+}
+
+UAnimSequence* UKMUtil::GetAnimSequenceWithBlendSpace1D(const UBlendSpace1D* blendSpace1D, float nearDistance)
+{
+	if (!IsValid(blendSpace1D))
+	{
+		return nullptr;
+	}
+	
+	UAnimSequence* resultAnimSequence = nullptr;
+
+	float nearOffset = FLT_MAX;
+	for (const FBlendSample& blendSample : blendSpace1D->GetBlendSamples())
+	{
+		float offset = FMath::Abs(nearDistance - blendSample.SampleValue.X);
+		
+		if (nearOffset > offset)
+		{
+			nearOffset = offset;
+			resultAnimSequence = blendSample.Animation;
+		}
+	}
+	
+	return resultAnimSequence;
 }

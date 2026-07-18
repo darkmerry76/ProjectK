@@ -43,8 +43,17 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(CombatSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnCombatSkillAction);
 		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnTachniqueSkillAction);
 
-		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Started, this, &AKMCharacterHero::OnSkillDebug0);
-		EnhancedInputComponent->BindAction(SkillDebug0, ETriggerEvent::Completed, this, &AKMCharacterHero::OnSkillDebug0_Release);
+		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnGuardSkillAction);
+		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnGuardSkillAction_Release);
+
+		EnhancedInputComponent->BindAction(Debug1Action, ETriggerEvent::Started, this, &AKMCharacterHero::OnDebug1Action);
+		EnhancedInputComponent->BindAction(Debug1Action, ETriggerEvent::Completed, this, &AKMCharacterHero::OnDebug1Action_Release);
+
+		EnhancedInputComponent->BindAction(Debug2Action, ETriggerEvent::Started, this, &AKMCharacterHero::OnDebug2Action);
+		EnhancedInputComponent->BindAction(Debug2Action, ETriggerEvent::Completed, this, &AKMCharacterHero::OnDebug2Action_Release);
+
+		EnhancedInputComponent->BindAction(Debug3Action, ETriggerEvent::Started, this, &AKMCharacterHero::OnDebug3Action);
+		EnhancedInputComponent->BindAction(Debug3Action, ETriggerEvent::Completed, this, &AKMCharacterHero::OnDebug3Action_Release);
 	}
 }
 
@@ -69,9 +78,9 @@ void AKMCharacterHero::Move(const FInputActionValue& Value)
 		return;
 	}
 
-	if (GetCharacterMovement()->MovementMode != MOVE_Walking)
+	//if (GetCharacterMovement()->MovementMode != MOVE_Walking)
 	{
-		return;
+	//	return;
 	}
 
 	FVector2D moveDirection = UKMUtil::GetCameraToDirection2D(Value.Get<FVector2D>(), GetController());
@@ -197,6 +206,41 @@ void AKMCharacterHero::OnTachniqueSkillAction()
 		&AKMCharacterHero::ExecuteTechniqueSkill,ComboInputWindow,false);
 }
 
+void AKMCharacterHero::OnGuardSkillAction()
+{
+	GetCharacterInstance()->UseGuardSkill();
+}
+
+void AKMCharacterHero::OnGuardSkillAction_Release()
+{
+	GetCharacterInstance()->UseGuardSkill_Release();
+}
+
+void AKMCharacterHero::OnDebug1Action()
+{
+	GetCharacterInstance()->ToggleBeast();
+}
+
+void AKMCharacterHero::OnDebug1Action_Release()
+{
+}
+
+void AKMCharacterHero::OnDebug2Action()
+{
+}
+
+void AKMCharacterHero::OnDebug2Action_Release()
+{
+}
+
+void AKMCharacterHero::OnDebug3Action()
+{
+}
+
+void AKMCharacterHero::OnDebug3Action_Release()
+{
+}
+
 void AKMCharacterHero::ExecuteCombatSkill()
 {
 	bCombatTriggered = false;
@@ -229,16 +273,6 @@ void AKMCharacterHero::ExecuteUltimate()
 	check(IsValid(targetSystem));
 
 	GetCharacterInstance()->UseUltimateSkill();
-}
-
-void AKMCharacterHero::OnSkillDebug0()
-{
-	GetCharacterInstance()->UseGuardSkill();
-}
-
-void AKMCharacterHero::OnSkillDebug0_Release()
-{
-	GetCharacterInstance()->UseGuardSkill_Release();
 }
 
 void AKMCharacterHero::OnEnterGame_Implementation()

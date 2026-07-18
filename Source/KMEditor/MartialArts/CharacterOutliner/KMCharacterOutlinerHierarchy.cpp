@@ -1,10 +1,12 @@
 ﻿#include "KMCharacterOutlinerHierarchy.h"
 #include "EMDataTable.h"
 #include "EMOutlinerMode.h"
+#include "KMCharacterOutlinerBeastTreeItem.h"
 #include "KMCharacterOutlinerGroupTreeItem.h"
 #include "KMCharacterOutlinerTreeItem.h"
 #include "Core/KMDefine.h"
 #include "Tables/Generated/KMTableEnums.h"
+#include "Tables/Generated/KMTable_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
 
 TArray<FEMOutlinerTreeItemPtr> FKMCharacterOutlinerHierarchy::RememberAllItems;
@@ -152,6 +154,29 @@ void FKMCharacterOutlinerHierarchy::Init()
 		if (characterItem.IsValid())
 		{
 			characterItem->SetCharacterTable(characterTable);
+		}
+	}
+
+	const TMap<FName, FKMTable_BeastRow*> beastRows = FEMDataTableHelper::Get().GetRowMap<FKMTable_BeastRow>();
+	CharacterCount += beastRows.Num();
+	for (auto beastItr = beastRows.CreateConstIterator(); beastItr; ++beastItr)
+	{
+		const FKMTable_BeastRow* beastTableRow = beastItr.Value();
+		if (!beastTableRow)
+		{
+			continue;;
+		}
+
+		const TSharedPtr<FKMCharacterOutlinerGroupTreeItem>* characterGroupItem = CharacterTypeItems.Find(beastTableRow->Type);
+		if (!characterGroupItem || !characterGroupItem->IsValid())
+		{
+			continue;
+		}
+		
+		TSharedPtr<FKMCharacterOutlinerBeastTreeItem> beastItem = AddItem<FKMCharacterOutlinerBeastTreeItem>(FText::FromName(beastTableRow->Id), *characterGroupItem);
+		if (beastItem.IsValid())
+		{
+			beastItem->SetBeastTable(beastTableRow);
 		}
 	}
 	

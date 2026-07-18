@@ -38,7 +38,19 @@ public:
 	FName GetBeatId() const;
 
 	UFUNCTION(BlueprintCallable)
-	void TransformBeast();
+	void ToggleBeast();
+	
+	UFUNCTION(BlueprintCallable)
+	void RevertFromBest();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnRevertFromBest();
+	
+	UFUNCTION(BlueprintCallable)
+	void TransformToBeast();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnTransformToBeast();
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnBeast();
@@ -77,11 +89,20 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetCharacterDirection() const;
 
+	UFUNCTION(BlueprintPure)
+	bool IsBeast() const;
+	
 	UFUNCTION(Blueprintable)
 	void Run();
 
+	UFUNCTION(BlueprintPure)
+	bool IsRun() const;
+
 	UFUNCTION(Blueprintable)
 	void Walk();
+
+	UFUNCTION(BlueprintPure)
+	bool IsWalk() const;
 	
 	UFUNCTION(BlueprintCallable)
 	bool UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData);
@@ -250,4 +271,6 @@ protected:
 	int32 ComboCount = 0;
 
 	FKMHitCheckData HitCheckData;
+
+	bool bIsBeast = false;
 };

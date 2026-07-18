@@ -37,7 +37,7 @@ struct FKMTable_BeastRow : public FEM_TableBaseRow
 	EKMCharacterType     Type = { EKMCharacterType::Hero };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FEMPrimaryAssetRef   pdaKey = { };
+	FEMPrimaryAssetRef   AssetPda = { };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterBattleRole role = { EKMCharacterBattleRole::None };

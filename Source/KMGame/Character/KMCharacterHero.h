@@ -36,7 +36,16 @@ public:
 	class UInputAction* TechniqueSkillAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
-	class UInputAction* SkillDebug0;
+	class UInputAction* GuardAction;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	class UInputAction* Debug1Action;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	class UInputAction* Debug2Action;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	class UInputAction* Debug3Action;
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	class UInputAction* MouseLookAction;
@@ -69,9 +78,6 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* playerInputComponent) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void StopJumping() override;
-
-	void OnCombatSkillAction();
-	void OnTachniqueSkillAction();
 	
 	void StartCustomJump();
 	
@@ -82,8 +88,20 @@ protected:
 	void RunPressed();
 	void RunReleased();
 
-	void OnSkillDebug0();
-	void OnSkillDebug0_Release();
+	void OnCombatSkillAction();
+	void OnTachniqueSkillAction();
+
+	void OnGuardSkillAction();
+	void OnGuardSkillAction_Release();
+
+	void OnDebug1Action();
+	void OnDebug1Action_Release();
+
+	void OnDebug2Action();
+	void OnDebug2Action_Release();
+
+	void OnDebug3Action();
+	void OnDebug3Action_Release();
 	
 	UFUNCTION(BlueprintCallable)
 	void PendingJump();

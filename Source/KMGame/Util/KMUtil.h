@@ -92,6 +92,12 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="worldContextObject"))
 	static void Shutdown(const UObject* worldContextObject);
 
+	UFUNCTION(BlueprintPure)
+	static void GetMinMaxValueBlendSpace1D(const class UBlendSpace1D* blendSpace1D, float& outMin, float& outMax);
+
+	UFUNCTION(BlueprintPure)
+	static class UAnimSequence* GetAnimSequenceWithBlendSpace1D(const class UBlendSpace1D* blendSpace1D, float nearDistance);
+
 protected:
 	static double GameElipsedStartTime;
 };

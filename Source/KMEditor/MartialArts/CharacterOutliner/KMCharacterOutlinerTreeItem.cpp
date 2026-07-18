@@ -31,8 +31,8 @@ FKMCharacterLabelCommttedDelgate& FKMCharacterOutlinerTreeItem::GetCharacterLabe
 
 FKMCharacterVerifyItemLabelChangedDelgate& FKMCharacterOutlinerTreeItem::GetCharacterVerifyItemLabelChangedDelgate()
 {
-	static FKMCharacterVerifyItemLabelChangedDelgate cameraVerifyItemLabelChangedDelgate;
-	return cameraVerifyItemLabelChangedDelgate;
+	static FKMCharacterVerifyItemLabelChangedDelgate characterVerifyItemLabelChangedDelgate;
+	return characterVerifyItemLabelChangedDelgate;
 }
 
 bool SKMCharacterOutlinerTreeItem::OnVerifyItemLabelChanged(const FText& label, FText& outErrorMessage)
@@ -49,7 +49,7 @@ bool SKMCharacterOutlinerTreeItem::OnVerifyItemLabelChanged(const FText& label, 
 	bIsValidLabel &= !label.IsEmpty();
 	if (!bIsValidLabel)
 	{
-		outErrorMessage = FText::FromString(TEXT("Invalid Camera Name"));
+		outErrorMessage = FText::FromString(TEXT("Invalid Character Name"));
 	}
 	return bIsValidLabel;
 }
@@ -75,8 +75,8 @@ FText SKMCharacterOutlinerTreeItem::GetDisplayText() const
 
 	if (TreeItemPtr.IsValid())
 	{
-		TSharedPtr<FKMCharacterOutlinerTreeItem> cameraItem =StaticCastSharedPtr<FKMCharacterOutlinerTreeItem>(TreeItemPtr.Pin());
-		if (cameraItem->GetAsset() && cameraItem->GetAsset()->GetOutermost()->IsDirty())
+		TSharedPtr<FKMCharacterOutlinerTreeItem> characterItem =StaticCastSharedPtr<FKMCharacterOutlinerTreeItem>(TreeItemPtr.Pin());
+		if (characterItem->GetAsset() && characterItem->GetAsset()->GetOutermost()->IsDirty())
 		{
 			displayText = FText::Format(FText::FromString(TEXT("{0}*")),displayText);
 		}

@@ -7,7 +7,11 @@ UCLASS(Abstract)
 class KMGAME_API UKMAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UBlendSpace1D> MoveBlend;
+	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
 	float CurrentDirection = 1.f;
