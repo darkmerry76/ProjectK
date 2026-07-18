@@ -20,6 +20,10 @@ FKMMartialArtsEditor::~FKMMartialArtsEditor()
 	{
 		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.RemoveAll(this);
 	}
+	if (FKMCharacterOutlinerHierarchy::BeastSelectedDelegate.IsBoundToObject(this))
+	{
+		FKMCharacterOutlinerHierarchy::BeastSelectedDelegate.RemoveAll(this);
+	}
 	if (!FCoreUObjectDelegates::OnObjectPropertyChanged.IsBoundToObject(this))
 	{
 		FCoreUObjectDelegates::OnObjectPropertyChanged.RemoveAll(this);
@@ -32,7 +36,11 @@ void FKMMartialArtsEditor::InitEditor(const EToolkitMode::Type mode, const TShar
 
 	if (!FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.IsBoundToObject(this))
 	{
-		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnOwnerCharacterelected);
+		FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnOwnerCharacterSelected);
+	}
+	if (!FKMCharacterOutlinerHierarchy::BeastSelectedDelegate.IsBoundToObject(this))
+	{
+		FKMCharacterOutlinerHierarchy::BeastSelectedDelegate.AddSP(this, &FKMMartialArtsEditor::OnOwnerBeastSelected);
 	}
 	if (!FCoreUObjectDelegates::OnObjectPropertyChanged.IsBoundToObject(this))
 	{
@@ -136,9 +144,13 @@ bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* charac
 	return true;
 }
 
-void FKMMartialArtsEditor::OnOwnerCharacterelected(const FKMTable_CharacterRow* newCharacterTable)
+void FKMMartialArtsEditor::OnOwnerCharacterSelected(const FKMTable_CharacterRow* newCharacterTable)
 {
 	SpawnOwnerCharacterInstance(newCharacterTable);	
+}
+
+void FKMMartialArtsEditor::OnOwnerBeastSelected(const FKMTable_BeastRow* newBeastTable)
+{
 }
 
 FSphere FKMMartialArtsEditor::GetCameraTargetSphere() const

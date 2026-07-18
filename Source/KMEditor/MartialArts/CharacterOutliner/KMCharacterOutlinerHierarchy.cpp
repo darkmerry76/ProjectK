@@ -12,6 +12,7 @@
 TArray<FEMOutlinerTreeItemPtr> FKMCharacterOutlinerHierarchy::RememberAllItems;
 TMap<TSharedPtr<IEMOutlinerTreeItem>, TSharedPtr<IEMOutlinerTreeItem>> FKMCharacterOutlinerHierarchy::RememberParentItems;
 FEMCharacterOutlinerSelectedDelegate FKMCharacterOutlinerHierarchy::CharacterSelectedDelegate;
+FEMBeastOutlinerSelectedDelegate FKMCharacterOutlinerHierarchy::BeastSelectedDelegate;
 
 TUniquePtr<FEMOutlinerHierarchy> FKMCharacterOutlinerHierarchy::CreateHierarchy(IEMOutlinerMode* mode)
 {
@@ -206,21 +207,38 @@ void FKMCharacterOutlinerHierarchy::SelectItem(FEMOutlinerTreeItemPtr treeItem)
 		return;
 	}
 
-	if (!treeItem->IsA<FKMCharacterOutlinerTreeItem>())
+	if (treeItem->IsA<FKMCharacterOutlinerTreeItem>())
 	{
-		return;
+		TSharedPtr<FKMCharacterOutlinerTreeItem> characterTeeItem = StaticCastSharedPtr<FKMCharacterOutlinerTreeItem>(treeItem);
+		if (characterTeeItem.IsValid())
+		{
+			TSharedPtr<FKMCharacterOutlinerGroupTreeItem> parentTreeItem = StaticCastSharedPtr<FKMCharacterOutlinerGroupTreeItem>(GetParentItem(characterTeeItem));
+			if (!parentTreeItem.IsValid())
+			{
+				return;
+			}
+			if (!parentTreeItem->IsA<FKMCharacterOutlinerGroupTreeItem>())
+			{
+				return;
+			}
+			CharacterSelectedDelegate.Broadcast(characterTeeItem->GetCharacterTable());
+		}
 	}
-
-	TSharedPtr<FKMCharacterOutlinerTreeItem> cameraTeeItem = StaticCastSharedPtr<FKMCharacterOutlinerTreeItem>(treeItem);
-	TSharedPtr<FKMCharacterOutlinerGroupTreeItem> parentTreeItem = StaticCastSharedPtr<FKMCharacterOutlinerGroupTreeItem>(GetParentItem(cameraTeeItem));
-	if (!parentTreeItem.IsValid())
+	else if (treeItem->IsA<FKMCharacterOutlinerBeastTreeItem>())
 	{
-		return;
+		TSharedPtr<FKMCharacterOutlinerBeastTreeItem> beastTeeItem = StaticCastSharedPtr<FKMCharacterOutlinerBeastTreeItem>(treeItem);
+		if (beastTeeItem.IsValid())
+		{
+			TSharedPtr<FKMCharacterOutlinerGroupTreeItem> parentTreeItem = StaticCastSharedPtr<FKMCharacterOutlinerGroupTreeItem>(GetParentItem(beastTeeItem));
+			if (!parentTreeItem.IsValid())
+			{
+				return;
+			}
+			if (!parentTreeItem->IsA<FKMCharacterOutlinerGroupTreeItem>())
+			{
+				return;
+			}
+			BeastSelectedDelegate.Broadcast(beastTeeItem->GetBeastTable());
+		}
 	}
-	if (!parentTreeItem->IsA<FKMCharacterOutlinerGroupTreeItem>())
-	{
-		return;
-	}
-
-	CharacterSelectedDelegate.Broadcast(cameraTeeItem->GetCharacterTable());
 }

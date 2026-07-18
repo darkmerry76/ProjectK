@@ -5,6 +5,7 @@
 #include "Tables/Generated/KMTableEnums.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEMCharacterOutlinerSelectedDelegate, const struct FKMTable_CharacterRow* newCharacterTable)
+DECLARE_MULTICAST_DELEGATE_OneParam(FEMBeastOutlinerSelectedDelegate, const struct FKMTable_BeastRow* newBeastTable)
 
 class FKMCharacterOutlinerHierarchy : public FEMOutlinerHierarchy
 {
@@ -23,6 +24,7 @@ public:
 	static TArray<FEMOutlinerTreeItemPtr> RememberAllItems;
 	static TMap<TSharedPtr<IEMOutlinerTreeItem>, TSharedPtr<IEMOutlinerTreeItem>> RememberParentItems;
 	static FEMCharacterOutlinerSelectedDelegate CharacterSelectedDelegate;
+	static FEMBeastOutlinerSelectedDelegate BeastSelectedDelegate;
 	
 protected:
 	virtual void Init() override;

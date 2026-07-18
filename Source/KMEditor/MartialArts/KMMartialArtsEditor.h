@@ -18,7 +18,9 @@ protected:
 	virtual void AddReferencedObjects(FReferenceCollector& collector) override;
 	virtual FSphere GetCameraTargetSphere() const override;
 
-	void OnOwnerCharacterelected(const struct FKMTable_CharacterRow* newCharacterTable);
+	void OnOwnerCharacterSelected(const struct FKMTable_CharacterRow* newCharacterTable);
+	void OnOwnerBeastSelected(const struct FKMTable_BeastRow* newBeastTable);
+	
 	void AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable);
 
 	void SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable);
