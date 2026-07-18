@@ -23,7 +23,7 @@ protected:
 	
 	void AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable);
 
-	void SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable);
+	void SpawnOwnerCharacterInstance(const struct FEM_TableBaseRow* characterTableBase);
 
 	virtual FName GetEditorName() const override
 	{
@@ -31,7 +31,10 @@ protected:
 	}
 
 protected:
-	class UKMCharacterInstance* SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
+	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
+	
+	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_BeastRow* beastTable, const FTransform& spawnedTransform = FTransform::Identity);
+	
 	bool DestroyCharacterInstance(class UKMCharacterInstance* characterInstance);
 
 	void OnObjectPropertyChanged(UObject* object, FPropertyChangedEvent& propertyChangedEvent);

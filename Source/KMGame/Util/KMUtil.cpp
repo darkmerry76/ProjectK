@@ -15,6 +15,7 @@
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Tables/Generated/KMTable_Beast.h"
 
 double UKMUtil::GameElipsedStartTime = 0.f;
 
@@ -262,8 +263,7 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	newCharacterInstance->SetDepthSort(transform.GetLocation().X);
 	newCharacterInstance->SetTable(characterTable);
 	newCharacterInstance->SetTransform(transform);
-
-
+	
 	newCharacter->bIsEditorPreviewActor = false;
 	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(transform, false);
@@ -276,6 +276,24 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 #endif
 	
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	
+	return newCharacterInstance;
+}
+
+UKMCharacterInstance* UKMUtil::SpawnBeastObjectByTable(UObject* worldContextObject, const FKMTable_CharacterRow* characterTable, const FKMTable_BeastRow* beastTable, const FTransform& transform)
+{
+	if (!characterTable || !beastTable)
+	{
+		return nullptr;
+	}
+	
+	UKMCharacterInstance* newCharacterInstance = SpawnCharacterObjectByTable(worldContextObject, characterTable, transform);
+	if (!IsValid(newCharacterInstance))
+	{
+		return nullptr;
+	}
+	newCharacterInstance->SetBeastTableId(beastTable->Id);
+	newCharacterInstance->TransformToBeast();
 	
 	return newCharacterInstance;
 }

@@ -164,18 +164,17 @@ void UKMCharacterInstance::RevertFromBest()
 	{
 		return;
 	}
-
 	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
-	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
 	ownerCharacter->GetMesh()->SetAnimInstanceClass(ownerCharacterCDO->GetMesh()->GetAnimClass());
+	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
 	ownerCharacter->SetActorScale3D(FVector(characterTablrRow->scale));
-	GetCharacter()->GetMesh()->InitAnim(true);
-	
 	SetCharacterDirection(GetCharacterDirection(), true);
 
 	bIsBeast = false;
-
-	OnRevertFromBest();
+	if (GetWorld()->IsGameWorld())
+	{
+		OnRevertFromBest();
+	}
 }
 
 void UKMCharacterInstance::OnRevertFromBest_Implementation()
@@ -190,6 +189,12 @@ void UKMCharacterInstance::TransformToBeast()
 	}
 	
 	if (BeastId == NAME_None)
+	{
+		return;
+	}
+
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (!IsValid(ownerCharacter))
 	{
 		return;
 	}
@@ -208,18 +213,17 @@ void UKMCharacterInstance::TransformToBeast()
 	{
 		return;
 	}
-
 	GetCharacter()->GetMesh()->EmptyOverrideMaterials();
-	GetCharacter()->GetMesh()->SetSkeletalMesh(beastPDA->Mesh);
 	GetCharacter()->GetMesh()->SetAnimInstanceClass(beastPDA->AnimInstanceClass);
-	GetCharacter()->GetMesh()->InitAnim(true);
+	GetCharacter()->GetMesh()->SetSkeletalMesh(beastPDA->Mesh);
 	GetCharacter()->SetActorScale3D(FVector(beastTableRow->scale));
-
 	SetCharacterDirection(GetCharacterDirection(), true);
 	
 	bIsBeast = true;
-
-	OnTransformToBeast();
+	if (GetWorld()->IsGameWorld())
+	{
+		OnTransformToBeast();
+	}
 }
 
 void UKMCharacterInstance::OnTransformToBeast_Implementation()
@@ -854,7 +858,7 @@ void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRot
 		return;
 	}
 	
-	if (FMath::IsNearlyEqual(CharacterDirection, direction))
+	if (FMath::IsNearlyEqual(CharacterDirection, direction) && !bForceRotate)
 	{
 		return;
 	}

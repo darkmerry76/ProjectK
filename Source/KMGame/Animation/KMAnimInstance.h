@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Animation/AnimExecutionContext.h"
+#include "Animation/AnimNodeReference.h"
 #include "KMAnimInstance.generated.h"
 
 UCLASS(Abstract)
@@ -28,6 +30,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FName> HiddenBones;
 
+	float MovementElipsedTime = 0.f;
+
 protected:
 	float NextDirection = 0.f;
 
@@ -46,5 +50,14 @@ public:
 	void SetNextDirection(float newNextDirection);
 	float GetNextDirection() const;
 
-	const TArray<FName>& GetHiddenBones() const;	
+	const TArray<FName>& GetHiddenBones() const;
+
+	float GetElapsedTime() const;
+	
+protected:
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))
+	void InitOnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node);
+	
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))
+	void OnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node);
 };

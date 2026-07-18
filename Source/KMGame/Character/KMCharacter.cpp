@@ -1,7 +1,7 @@
 #include "KMCharacter.h"
-#include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -16,7 +16,7 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 	Super(objectInitializer.SetDefaultSubobjectClass<UKMSkeletalMeshComponent>(ACharacter::MeshComponentName).
 		SetDefaultSubobjectClass<UKMCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	CurveWarping  = CreateDefaultSubobject<UEMCurveWarpingComponent>(TEXT("CurveWarping"));
+	CurveWarping  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{

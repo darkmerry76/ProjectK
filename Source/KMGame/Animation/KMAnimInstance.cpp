@@ -1,4 +1,7 @@
 #include "KMAnimInstance.h"
+
+#include "BlendSpacePlayerLibrary.h"
+#include "Animation/AnimNode_AssetPlayerBase.h"
 #include "Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
@@ -60,6 +63,24 @@ float UKMAnimInstance::GetNextDirection() const
 const TArray<FName>& UKMAnimInstance::GetHiddenBones() const
 {
 	return HiddenBones;
+}
+
+float UKMAnimInstance::GetElapsedTime() const
+{
+	return MovementElipsedTime;
+}
+
+void UKMAnimInstance::InitOnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node)
+{
+	MovementElipsedTime = 0.f;
+}
+
+void UKMAnimInstance::OnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node)
+{
+//	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green,
+//		FString::Printf(TEXT("OnMoveBlendSpace::ElipsedTime %.3f"), MovementElipsedTime));
+
+	MovementElipsedTime += context.GetContext()->GetDeltaTime();
 }
 
 #endif

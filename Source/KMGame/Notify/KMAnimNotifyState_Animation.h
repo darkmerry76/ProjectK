@@ -36,6 +36,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
 	TObjectPtr<class UAnimMontage> Montage;
 
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	bool bIsImmediate = true;
+
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 
 	float CustomDuration = 0.f;

@@ -99,9 +99,9 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 {
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(meshComp);
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
-	if (currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
+	if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 	{
-		//ownerCharacter->StopAnimMontage((*currContext)->ActivatedMontage);
+		ownerCharacter->StopAnimMontage((*currContext)->ActivatedMontage);
 	}
 	Context.Remove(meshComp);
 }

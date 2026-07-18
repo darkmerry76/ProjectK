@@ -10,6 +10,7 @@
 #include "Character/KMCharacter.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
+#include "Tables/Generated/KMTable_Beast.h"
 #include "Util/KMUtil.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
@@ -109,6 +110,38 @@ UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTabl
 	return spwnCharacterInstance;
 }
 
+UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_BeastRow* beastTable, const FTransform& spawnedTransform)
+{
+	UWorld* world = GetWorld();
+	if (!IsValid(world))
+	{
+		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::SpawnCharacter world == nullptr"));
+		return nullptr;
+	}
+
+	const FKMTable_CharacterRow* characterTable = FKMTable_CharacterRow::FindRowPtr(TEXT("H_RyuX"));
+	if (!characterTable)
+	{
+		return nullptr;
+	}
+
+	UKMCharacterInstance* spwnCharacterInstance = UKMUtil::SpawnBeastObjectByTable(world, characterTable, beastTable, spawnedTransform);
+	if (!IsValid(spwnCharacterInstance))
+	{
+		UE_LOG(LogEMMartialArtsEditor, Warning, TEXT("FKMMartialArtsEditor::SpawnCharacter spwnCharacterInstance == nullptr"));
+		return nullptr;
+	}
+
+	FActorSpawnParameters spawnParameters;
+	APlayerController* newPlayerController = world->SpawnActor<APlayerController>(APlayerController::StaticClass(), spawnedTransform, spawnParameters);
+	if (IsValid(newPlayerController))
+	{
+		newPlayerController->Possess(spwnCharacterInstance->GetCharacter());
+	}
+	
+	return spwnCharacterInstance;
+}
+
 bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* characterInstance)
 {
 	UWorld* world = GetWorld();
@@ -151,6 +184,7 @@ void FKMMartialArtsEditor::OnOwnerCharacterSelected(const FKMTable_CharacterRow*
 
 void FKMMartialArtsEditor::OnOwnerBeastSelected(const FKMTable_BeastRow* newBeastTable)
 {
+	SpawnOwnerCharacterInstance(newBeastTable);
 }
 
 FSphere FKMMartialArtsEditor::GetCameraTargetSphere() const
@@ -168,7 +202,7 @@ FSphere FKMMartialArtsEditor::GetCameraTargetSphere() const
 	return character->GetMesh()->CalcBounds(FTransform::Identity).GetSphere();
 }
 
-void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterRow* characterTable)
+void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* characterTableBase)
 {
 	AEMAnimationEditorPreviewActor* previewActor = Cast<AEMAnimationEditorPreviewActor>(GetPreviewScene()->GetActor());
 	if (IsValid(OwnerCharacterInstance))
@@ -182,20 +216,37 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_CharacterR
 			OwnerCharacterInstance = nullptr;
 		}
 	}
+
+	if (const FKMTable_CharacterRow* characterTable = CastRow<FKMTable_CharacterRow>(characterTableBase))
+	{
+		UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(characterTable);
+		if (!IsValid(spawnCharacterInstance))
+		{
+			return;
+		}
+		OwnerCharacterInstance = spawnCharacterInstance;
+	}
+	else if (const FKMTable_BeastRow* beastTable = CastRow<FKMTable_BeastRow>(characterTableBase))
+	{
+		UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(beastTable);
+		if (!IsValid(spawnCharacterInstance))
+		{
+			return;
+		}
+		OwnerCharacterInstance = spawnCharacterInstance;
+	}
 	
-	UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(characterTable);
-	if (!IsValid(spawnCharacterInstance))
+	if (!IsValid(OwnerCharacterInstance))
 	{
 		return;
 	}
-	OwnerCharacterInstance = spawnCharacterInstance;
 
 	if (IsValid(previewActor))
 	{
 		previewActor->SetAdjustCharacter(OwnerCharacterInstance->GetCharacter());
 	}
 
-	if (AKMCharacter* character = Cast<AKMCharacter>(spawnCharacterInstance->GetCharacter()))
+	if (AKMCharacter* character = Cast<AKMCharacter>(OwnerCharacterInstance->GetCharacter()))
 	{
 		UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
 		check(IsValid(martialArtsComponent));
