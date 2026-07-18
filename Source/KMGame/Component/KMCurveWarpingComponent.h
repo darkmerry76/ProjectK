@@ -8,5 +8,7 @@ UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API UKMCurveWarpingComponent : public UEMCurveWarpingComponent
 {
 	GENERATED_UCLASS_BODY()
-public:
+	
+protected:
+	virtual float GetSyncMoveRunElipsedTime() const override;
 };

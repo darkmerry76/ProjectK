@@ -52,7 +52,7 @@ public:
 
 	const TArray<FName>& GetHiddenBones() const;
 
-	float GetElapsedTime() const;
+	float GetMovementElapsedTime() const;
 	
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))

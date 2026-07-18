@@ -65,7 +65,7 @@ const TArray<FName>& UKMAnimInstance::GetHiddenBones() const
 	return HiddenBones;
 }
 
-float UKMAnimInstance::GetElapsedTime() const
+float UKMAnimInstance::GetMovementElapsedTime() const
 {
 	return MovementElipsedTime;
 }
