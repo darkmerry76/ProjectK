@@ -14,4 +14,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UKMAnimInstance> AnimInstanceClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMAnimationSetTag> AnimSet;
 };

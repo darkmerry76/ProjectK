@@ -55,7 +55,31 @@ public:
 	static const FGameplayTag State_Immune_Abnormal_Nuckdown_Tag;
 	static const FGameplayTag State_Immune_Abnormal_Grabed_Tag;
 	static const FGameplayTag State_Immune_Damage_Tag;
-	
+
+	static const FGameplayTag Anim_Guard_Stand_Front_0;
+	static const FGameplayTag Anim_Guard_Stand_Front_1;
+	static const FGameplayTag Anim_Guard_Stand_Front_2;
+	static const FGameplayTag Anim_Guard_Stand_Back_0;
+    static const FGameplayTag Anim_Guard_Stand_Back_1;
+    static const FGameplayTag Anim_Guard_Stand_Back_2;
+	static const FGameplayTag Anim_Jump_0;
+	static const FGameplayTag Anim_Jump_1;
+	static const FGameplayTag Anim_Jump_2;
+	static const FGameplayTag Anim_Jump_Front_0;
+	static const FGameplayTag Anim_Jump_Front_1;
+	static const FGameplayTag Anim_Jump_Front_2;
+	static const FGameplayTag Anim_Jump_Back_0;
+	static const FGameplayTag Anim_Jump_Back_1;
+	static const FGameplayTag Anim_Jump_Back_2;
+	static const FGameplayTag Anim_Landing_0;
+	static const FGameplayTag Anim_Landing_1;
+	static const FGameplayTag Anim_Landing_2;
+	static const FGameplayTag Anim_Landing_Front_0;
+	static const FGameplayTag Anim_Landing_Front_1;
+	static const FGameplayTag Anim_Landing_Front_2;
+	static const FGameplayTag Anim_Landing_Back_0;
+	static const FGameplayTag Anim_Landing_Back_1;
+	static const FGameplayTag Anim_Landing_Back_2;
 };
 
 class KMGAME_API FKMGameplayTagContainer

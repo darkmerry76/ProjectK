@@ -13,9 +13,6 @@ class UKMAbilitySkill : public UKMAbility
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsUseAnimSet = false;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="bIsUseAnimSet"))
-	EKMAnimSetSkillType AnimSkillType = EKMAnimSetSkillType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsDirectionFallow = true;

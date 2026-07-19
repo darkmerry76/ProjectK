@@ -1,7 +1,5 @@
 #include "KMAbilitySkill.h"
-
 #include "EMMartialArtsComponent.h"
-#include "Animation/AnimSet/KMAnimationSetSkill.h"
 #include "Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
@@ -16,20 +14,7 @@ void UKMAbilitySkill::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	if (AnimSkillType != EKMAnimSetSkillType::None || IsValid(Montage))
-	{
-		UKMAnimationSetSkill* animSetSkill = character->SkillAnimset;
-		check(IsValid(animSetSkill));
-
-		TObjectPtr<UAnimMontage>* existMontage = animSetSkill->AnimMontageMap.Find(AnimSkillType);
-		if (existMontage && IsValid(*existMontage))
-		{
-			Montage = *existMontage;
-		}
-		
-		MontageInstance = PlayerMontage(Montage, Rate);
-	}
-	else
+	if (!IsValid(Montage))
 	{
 		PlayMartialArts(nullptr, Rate, false);
 	}

@@ -52,11 +52,6 @@ void UKMGameInstance::OpenInitLevel(FSoftObjectPath mapPath)
 	bIsInitLevel = true;
 }
 
-const UKMAbilityEffectSet* UKMGameInstance::GetAnormalAbilitySet() const
-{
-	return AnormalAbilitySet;
-}
-
 TSharedPtr<FEMCameraCacheManager> UKMGameInstance::GetCameraCacheManager() const
 {
 	return CameraCacheManager;

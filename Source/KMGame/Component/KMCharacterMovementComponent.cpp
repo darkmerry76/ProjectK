@@ -1,6 +1,6 @@
 #include "KMCharacterMovementComponent.h"
 #include "EMCurveWarpingComponent.h"
-#include "Animation/AnimSet/KMAnimationSetSkill.h"
+#include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
@@ -189,7 +189,7 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 		return;
 	}
 
-	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->SkillAnimset->AnimMontageMap.Find(EKMAnimSetSkillType::Jump_0);
+	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Jump_0);
 	if (!jumpAnimMontage || !IsValid(*jumpAnimMontage))
 	{
 		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
@@ -267,7 +267,7 @@ void UKMCharacterMovementComponent::CustomJump()
 		return;
 	}
 
-	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->SkillAnimset->AnimMontageMap.Find(EKMAnimSetSkillType::Jump_0);
+	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Jump_0);
 	if (!jumpAnimMontage || !IsValid(*jumpAnimMontage))
 	{
 		return;
@@ -351,7 +351,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 		{
 			if (IsValid(activeJumpAnimMontage))
 			{
-				TObjectPtr<UAnimMontage>* landingAnimMontage = ownerCharacter->SkillAnimset->AnimMontageMap.Find(EKMAnimSetSkillType::Landing_0);
+				TObjectPtr<UAnimMontage>* landingAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Landing_0);
 				if (landingAnimMontage && IsValid(*landingAnimMontage))
 				{
 					ownerCharacter->PlayAnimMontage(*landingAnimMontage);

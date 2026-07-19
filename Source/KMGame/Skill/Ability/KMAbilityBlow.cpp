@@ -1,15 +1,12 @@
 #include "KMAbilityBlow.h"
 #include "EMCurveWarpingComponent.h"
-#include "Animation/AnimSet/KMAnimationSetEffect.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Curves/CurveVector.h"
 #include "Skill/KMSkillHandler.h"
-#include "Util/KMUtil.h"
 
 UKMAbilityBlow::UKMAbilityBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	animEffectType = EKMAnimSetEffectType::Stand_Blow_Front_0;
 }
 
 void UKMAbilityBlow::Activate()

@@ -1,10 +1,7 @@
 #include "KMCharacterInstance.h"
-
 #include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
-#include "Animation/BlendSpace1D.h"
 #include "Animation/KMAnimInstance.h"
-#include "Animation/AnimSet/KMAnimationSetEffect.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,7 +12,6 @@
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityEffect.h"
-#include "Skill/Ability/KMAbilitySkillDirection.h"
 #include "Skill/Ability/KMAbilitySkillDirectionTag.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
@@ -24,6 +20,7 @@
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
 #include "Tables/Generated/KMTable_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
+#include "Tables/Generated/KMTable_SkillEffect_Normal.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
 
@@ -527,9 +524,12 @@ void UKMCharacterInstance::OnDeath()
 		GameplayTagContainer.AddTag(FKMGameplayTagName::Block_Control_Tag);
 		if (!GameplayTagContainer.HasTag(FKMGameplayTagName::State_Blow_Tag))
 		{
-			if (UKMAbility* deathAbility = Cast<UKMAbility>(GetStatModifier()->ApplyEffectiveAnimation(EKMAnimSetEffectType::Die_0)))
+			if (const FKMTable_SkillEffect_NormalRow* skillEffectDieTableRow = FKMTable_SkillEffect_NormalRow::FindRowPtr(TEXT("eff_die")))
 			{
-				deathAbility->Activate();
+				if (UKMAbility* deathAbility = Cast<UKMAbility>(GetStatModifier()->ApplyEffectiveAnimation(skillEffectDieTableRow->Ability.PdaKey)))
+				{
+					deathAbility->Activate();
+				}
 			}
 		}
 		ownerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
@@ -651,11 +651,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 				TSharedPtr<FKMSkillInstance> cancelSkillInstance = SkillHandler->UseSkill(dashSkillKey, nullptr);
 				if (cancelSkillInstance.IsValid())
 				{
-					if (UKMAbilitySkillDirection* abilitySkillDirection = Cast<UKMAbilitySkillDirection>(cancelSkillInstance->GetAbility()))
-					{
-						abilitySkillDirection->ApplyAngle(direction8way, 150.f, 0.35f);
-					}
-					else if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(cancelSkillInstance->GetAbility()))
+					if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(cancelSkillInstance->GetAbility()))
 					{
 						abilitySkillDirectionTag->ApplyAngle(direction8way, 150.f, 0.35f);
 					}

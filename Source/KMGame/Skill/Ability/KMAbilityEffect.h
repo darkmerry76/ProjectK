@@ -13,9 +13,6 @@ class UKMAbilityEffect : public UKMAbility
 	GENERATED_UCLASS_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EKMAnimSetEffectType animEffectType = EKMAnimSetEffectType::None;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag EndingTag;
 

@@ -33,10 +33,7 @@ public:
 	void OpenInitLevel(FSoftObjectPath mapPath);
 
 	bool IsInitLevel() const { return bIsInitLevel; }
-
-	UFUNCTION(BlueprintPure)
-	const class UKMAbilityEffectSet* GetAnormalAbilitySet() const;
-
+	
 	TSharedPtr<class FEMCameraCacheManager> GetCameraCacheManager() const;
 
 protected:
@@ -54,9 +51,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FKMSkillKeyBase> DefaultPassiveSkills;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UKMAbilityEffectSet> AnormalAbilitySet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UKMPlayerAccount> PlayerAccount;

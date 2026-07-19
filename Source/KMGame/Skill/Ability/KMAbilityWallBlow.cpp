@@ -1,12 +1,10 @@
 #include "KMAbilityWallBlow.h"
 #include "EMCurveWarpingComponent.h"
-#include "Animation/AnimSet/KMAnimationSetEffect.h"
 #include "Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMAbilityWallBlow::UKMAbilityWallBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	animEffectType = EKMAnimSetEffectType::Stand_WallBlow_Front_0;
 }
 
 void UKMAbilityWallBlow::Activate()

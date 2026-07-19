@@ -16,12 +16,6 @@ public:
 	FName DefaultWeaponItem = NAME_None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMAnimationSetSkill> SkillAnimset;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMAnimationSetEffect> EffectAnimset;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMAnimationSetTag> AnimsetTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

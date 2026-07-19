@@ -1,5 +1,4 @@
 #include "KMAbilityEffect.h"
-#include "Animation/AnimSet/KMAnimationSetEffect.h"
 #include "Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMGameObjectSubsystem.h"
@@ -18,19 +17,7 @@ void UKMAbilityEffect::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	if (animEffectType != EKMAnimSetEffectType::None || IsValid(Montage))
-	{
-		UKMAnimationSetEffect* animSetEffect = character->EffectAnimset;
-		check(IsValid(animSetEffect));
-
-		TObjectPtr<UAnimMontage>* existMontage = animSetEffect->AnimMontageMap.Find(animEffectType);
-		if (existMontage && IsValid(*existMontage))
-		{
-			Montage = *existMontage;
-		}
-		MontageInstance = PlayerMontage(Montage, Rate);
-	}
-	else
+	if (!IsValid(Montage))
 	{
 		PlayMartialArts(nullptr, Rate, false);
 	}

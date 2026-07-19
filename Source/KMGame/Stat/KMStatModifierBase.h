@@ -24,7 +24,6 @@ public:
 	
 	FKMSecondaryStat& GetEffectiveStat();
 
-	class UObject* ApplyEffectiveAnimation(EKMAnimSetEffectType effectType);
 	class UObject* ApplyEffectiveAnimation(const FName& pDAKey);
 	void RemoveEffectiveAnimation(class UObject* effectObject);
 

@@ -50,6 +50,31 @@ const FGameplayTag FKMGameplayTagName::State_Immune_Abnormal_Nuckdown_Tag = FGam
 const FGameplayTag FKMGameplayTagName::State_Immune_Abnormal_Grabed_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Immune.Abnormal.Grabed"));
 const FGameplayTag FKMGameplayTagName::State_Immune_Damage_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Immune.Damage"));
 
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Front_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Front.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Front_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Front.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Front_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Front.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Back_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Back.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Back_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Back.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Guard_Stand_Back_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Guard.Stand.Back.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Front_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Front.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Front_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Front.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Front_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Front.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Back_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Back.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Back_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Back.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Jump_Back_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Jump.Back.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Front_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Front.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Front_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Front.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Front_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Front.2"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Back_0 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Back.0"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Back_1 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Back.1"));
+const FGameplayTag FKMGameplayTagName::Anim_Landing_Back_2 = FGameplayTag::RequestGameplayTag(TEXT("Anim.Landing.Back.2"));
+
 void FKMGameplayTagContainer::AddTag(const FGameplayTag& tagToAdd)
 {
 	FGameplayTag currentTag = tagToAdd;

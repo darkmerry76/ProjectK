@@ -1,14 +1,8 @@
 #include "KMStatModifierBase.h"
-#include "Character/KMCharacter.h"
-#include "Core/KMGameInstance.h"
 #include "DataAsset/KMAssetManager.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMGameObjectInstance.h"
-#include "Skill/KMSkillTypes.h"
 #include "Skill/Ability/KMAbility.h"
-#include "Skill/Ability/KMAbilityBlow.h"
-#include "Skill/Ability/KMAbilitySet.h"
-#include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_BaseStat.h"
 
 UKMStatModifierBase::UKMStatModifierBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -83,33 +77,6 @@ void UKMStatModifierBase::ComputePostEffectStat()
 FKMSecondaryStat& UKMStatModifierBase::GetEffectiveStat()
 {
 	return EffectiveStat;
-}
-
-UObject* UKMStatModifierBase::ApplyEffectiveAnimation(EKMAnimSetEffectType effectType)
-{
-	UKMCharacterInstance* characterObjectInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(characterObjectInstance) == true);
-
-	AKMCharacter* character = characterObjectInstance->GetCharacter();
-	check(IsValid(character) == true);
-
-	UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(this);
-	const UKMAbilityEffectSet* abilityEffectSet = gameInstance->GetAnormalAbilitySet();
-	check(IsValid(abilityEffectSet));
-
-	const TSubclassOf<UKMAbility>* abilityClass = abilityEffectSet->AbilityMap.Find(effectType);
-	if (abilityClass && IsValid(*abilityClass))
-	{
-		UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-		check(IsValid(assetManager) == true);
-			
-		UKMAbility* newAbility = NewObject<UKMAbility>(this, *abilityClass);
-		AbnormalAbilities.Emplace(newAbility);
-
-		return newAbility;
-	}
-
-	return nullptr;
 }
 
 UObject* UKMStatModifierBase::ApplyEffectiveAnimation(const FName& pDAKey)
