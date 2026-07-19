@@ -30,7 +30,20 @@ FKMChooserPropertyCustomization::~FKMChooserPropertyCustomization()
 
 void FKMChooserPropertyCustomization::OnChooserAddItem(TSharedPtr<IEMOutlinerTreeItem> item)
 {
-	if (!IsValid(OwnerCharacter) || !IsValid(OwnerCharacter->AnimsetTag))
+	
+	if (!IsValid(OwnerCharacter))
+	{
+		return;
+	}
+
+	UKMCharacterInstance* ownerCharacterInstance = OwnerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return;
+	}
+
+	UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag();
+	if (!IsValid(animSetTag))
 	{
 		return;
 	}
@@ -41,12 +54,12 @@ void FKMChooserPropertyCustomization::OnChooserAddItem(TSharedPtr<IEMOutlinerTre
 	}
 
 	TSharedPtr<FKMTagChooserOutlinerTreeItem> treeItem = StaticCastSharedPtr<FKMTagChooserOutlinerTreeItem>(item);
-	TObjectPtr<UAnimMontage>* animMontage = OwnerCharacter->AnimsetTag->AnimMontageMap.Find(treeItem->GetTag());
-	if (!animMontage || !IsValid(*animMontage))
+	UAnimMontage* animMontage = animSetTag->GetAnimation(treeItem->GetTag());
+	if (!IsValid(animMontage))
 	{
 		return;
 	}
-	FAssetData assetData(*animMontage);
+	FAssetData assetData(animMontage);
 	treeItem->SetAssetData(assetData);
 }
 
@@ -70,6 +83,7 @@ void FKMChooserPropertyCustomization::CreateChooser()
 				if (FKMMartialArtsEditor* martialArtsEditor = static_cast<FKMMartialArtsEditor*>(assetEditor))
 				{
 					OwnerCharacter = martialArtsEditor->GetOwnerCharacter();
+					OwnerCharacterInstance = martialArtsEditor->GetOwnerCharacterInstance();
 					break;
 				}
 			}
@@ -182,13 +196,16 @@ void FKMChooserPropertyCustomization::OnTagSelected(TSharedPtr<IEMOutlinerTreeIt
 	}
 
 	FGameplayTag resultGameplayTag;
-	TObjectPtr<UAnimMontage>* animMontage = nullptr;
+	UAnimMontage* animMontage = nullptr;
 	if (treeItem->IsA<FKMTagChooserOutlinerTreeItem>())
 	{
 		resultGameplayTag = StaticCastSharedRef<FKMTagChooserOutlinerTreeItem>(treeItem.ToSharedRef())->GetTag();
-		if (IsValid(OwnerCharacter) && IsValid(OwnerCharacter->AnimsetTag))
+		if (IsValid(OwnerCharacterInstance))
 		{
-			animMontage = OwnerCharacter->AnimsetTag->AnimMontageMap.Find(resultGameplayTag);
+			if (UKMAnimationSetTag* animSetTag = OwnerCharacterInstance->GetAnimsetTag())
+			{
+				animMontage = animSetTag->GetAnimation(resultGameplayTag);
+			}
 		}
 	}
 	else if (treeItem->IsA<FKMTagChooserOutlinerGroupTreeItem>())
@@ -201,7 +218,7 @@ void FKMChooserPropertyCustomization::OnTagSelected(TSharedPtr<IEMOutlinerTreeIt
 	{
 		if (animMontage)
 		{
-			montageHandle->SetValue(*animMontage);
+			montageHandle->SetValue(animMontage);
 		}
 	}
 

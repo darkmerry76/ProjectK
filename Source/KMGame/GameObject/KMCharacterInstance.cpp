@@ -77,7 +77,7 @@ void UKMCharacterInstance::BeginPlay()
 	SensorInstance->Init();
 	LockonTarget = MakeShared<FKMLockOnCluster>(this);
 
-	BeastId = GetTable()->DefaultBeast;
+	SetBeastTableId(GetTable()->DefaultBeast);
 }
 
 void UKMCharacterInstance::EndPlay()
@@ -114,6 +114,26 @@ AKMCharacter* UKMCharacterInstance::GetCharacter() const
 void UKMCharacterInstance::SetBeastTableId(FName newBeatId)
 {
 	BeastId = newBeatId;
+
+	BeastTableRow = FKMTable_BeastRow::FindRowPtr(BeastId);
+	if (!BeastTableRow)
+	{
+		return;
+	}
+
+	BeastStatTableRow = FKMTable_BaseStat_BeastRow::FindRowPtr(BeastTableRow->StatId);
+	if(!BeastStatTableRow)
+	{
+		return;
+	}
+
+	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
+	if(!IsValid(assetManager))
+	{
+		return;
+	}
+
+	BeastPDA = Cast<UKMBeastPDA>(assetManager->GetAsset(BeastTableRow->AssetPda));
 }
 
 FName UKMCharacterInstance::GetBeatId() const
@@ -184,8 +204,8 @@ void UKMCharacterInstance::TransformToBeast()
 	{
 		return;
 	}
-	
-	if (BeastId == NAME_None)
+
+	if (!IsValid(BeastPDA))
 	{
 		return;
 	}
@@ -196,24 +216,10 @@ void UKMCharacterInstance::TransformToBeast()
 		return;
 	}
 	
-	const FKMTable_BeastRow* beastTableRow = FKMTable_BeastRow::FindRowPtr(BeastId);
-	check(beastTableRow);
-
-	const FKMTable_BaseStat_BeastRow* beastStatTableRow = FKMTable_BaseStat_BeastRow::FindRowPtr(beastTableRow->StatId);
-	check(beastStatTableRow);
-
-	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager));
-
-	UKMBeastPDA* beastPDA = Cast<UKMBeastPDA>(assetManager->GetAsset(beastTableRow->AssetPda));
-	if (!ensure(IsValid(beastPDA)))
-	{
-		return;
-	}
 	GetCharacter()->GetMesh()->EmptyOverrideMaterials();
-	GetCharacter()->GetMesh()->SetAnimInstanceClass(beastPDA->AnimInstanceClass);
-	GetCharacter()->GetMesh()->SetSkeletalMesh(beastPDA->Mesh);
-	GetCharacter()->SetActorScale3D(FVector(beastTableRow->scale));
+	GetCharacter()->GetMesh()->SetAnimInstanceClass(BeastPDA->AnimInstanceClass);
+	GetCharacter()->GetMesh()->SetSkeletalMesh(BeastPDA->Mesh);
+	GetCharacter()->SetActorScale3D(FVector(BeastTableRow->scale));
 	SetCharacterDirection(GetCharacterDirection(), true);
 	
 	bIsBeast = true;
@@ -236,6 +242,18 @@ void UKMCharacterInstance::SetTable(const FKMTable_CharacterRow* newTable)
 const FKMTable_CharacterRow* UKMCharacterInstance::GetTable() const
 {
 	return Table;
+}
+
+UKMAnimationSetTag* UKMCharacterInstance::GetAnimsetTag() const
+{
+	if (IsBeast())
+	{
+		if(IsValid(BeastPDA))
+		{
+			return BeastPDA->AnimSet;
+		}
+	}
+	return GetCharacter()->GetAnimsetTag();
 }
 
 void UKMCharacterInstance::SetDepthSort(float newDepthSort)

@@ -49,9 +49,9 @@ void UKMAnimNotifyState_Misc::CollectionShowActor(AActor* newActor, TArray<AActo
 
 	if (AKMCharacter* character = Cast<AKMCharacter>(newActor))
 	{
-		if (IsValid(character->WeaponInstance))
+		if (UKMItemAppearanceInstance* weaponInstance = character->GetWeaponInstance())
 		{
-			showActors.Emplace(character->WeaponInstance->GetSpawnedActor());
+			showActors.Emplace(weaponInstance->GetSpawnedActor());
 		}
 	}
 }

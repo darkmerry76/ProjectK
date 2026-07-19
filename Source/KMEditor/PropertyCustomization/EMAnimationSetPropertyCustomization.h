@@ -25,4 +25,5 @@ protected:
 	TSharedPtr<IPropertyUtilities> PropertyUtilities;
 
 	class AKMCharacter* OwnerCharacter = nullptr;
+	class UKMCharacterInstance* OwnerCharacterInstance = nullptr;
 };

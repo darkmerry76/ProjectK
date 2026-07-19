@@ -99,3 +99,13 @@ void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharac
 		characterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(GetActorForwardVector())), true);
 	}
 }
+
+UKMAnimationSetTag* AKMCharacter::GetAnimsetTag() const
+{
+	return AnimsetTag;
+}
+
+UKMItemAppearanceInstance* AKMCharacter::GetWeaponInstance() const
+{
+	return WeaponInstance;
+}

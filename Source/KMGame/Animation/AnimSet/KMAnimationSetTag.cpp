@@ -14,3 +14,13 @@ UKMAnimationSetTag::UKMAnimationSetTag(const FObjectInitializer& objectInitializ
 		}
 	}
 }
+
+UAnimMontage* UKMAnimationSetTag::GetAnimation(FGameplayTag tag) const
+{
+	const TObjectPtr<UAnimMontage>* existMontage = AnimMontageMap.Find(tag);
+	if (!existMontage)
+	{
+		return nullptr;
+	}
+	return *existMontage;
+}

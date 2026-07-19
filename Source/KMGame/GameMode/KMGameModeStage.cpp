@@ -38,6 +38,11 @@ void AKMGameModeStage::RestartPlayer(AController* newPlayer)
 		UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
 		check(gameObjectSubsystem);
 
+		if (UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance())
+		{
+			gameObjectSubsystem->RemoveGameObject(authCharacterInstance->GetId());
+		}
+
 		UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(HeroId, HeroSpwnTransform));
 		check(IsValid(heroInstance));
 		newPlayer->Possess(heroInstance->GetCharacter());

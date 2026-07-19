@@ -189,8 +189,20 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 		return;
 	}
 
-	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Jump_0);
-	if (!jumpAnimMontage || !IsValid(*jumpAnimMontage))
+	UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(characterInstance))
+	{
+		return;
+	}
+
+	UKMAnimationSetTag* animSetTag = characterInstance->GetAnimsetTag();
+	if (IsValid(animSetTag))
+	{
+		return;
+	}
+
+	UAnimMontage* jumpAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Jump_0);
+	if (!IsValid(jumpAnimMontage))
 	{
 		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
 		return;
@@ -200,7 +212,7 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 
 	StartCustomFalling(Velocity);
 
-	activeJumpAnimMontage = *jumpAnimMontage;
+	activeJumpAnimMontage = jumpAnimMontage;
 
 	ownerCharacter->PlayAnimMontage(activeJumpAnimMontage);
 }
@@ -251,8 +263,19 @@ void UKMCharacterMovementComponent::PlayCurveWarping(UCurveBase* newCurveAsset, 
 
 void UKMCharacterMovementComponent::CustomJump()
 {
+	if (!IsValid(JumpCurve))
+	{
+		return;
+	}
+
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
 	{
 		return;
 	}
@@ -262,20 +285,22 @@ void UKMCharacterMovementComponent::CustomJump()
 	{
 		return;
 	}
-	if (!IsValid(JumpCurve))
+
+	UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag();
+	if (!IsValid(animSetTag))
 	{
 		return;
 	}
 
-	TObjectPtr<UAnimMontage>* jumpAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Jump_0);
-	if (!jumpAnimMontage || !IsValid(*jumpAnimMontage))
+	UAnimMontage* jumpAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Jump_0);
+	if (!IsValid(jumpAnimMontage))
 	{
 		return;
 	}
 
 	SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
 	
-	activeJumpAnimMontage = *jumpAnimMontage;
+	activeJumpAnimMontage = jumpAnimMontage;
 
 	LatestJumpInputDir = ownerCharacter->GetLastMovementInputVector();
 	LatestJumpInputDir.Normalize();
@@ -337,7 +362,13 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 	{
 		return;
 	}
-	
+
+	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return;
+	}
+
 	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
@@ -351,14 +382,17 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 		{
 			if (IsValid(activeJumpAnimMontage))
 			{
-				TObjectPtr<UAnimMontage>* landingAnimMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(FKMGameplayTagName::Anim_Landing_0);
-				if (landingAnimMontage && IsValid(*landingAnimMontage))
+				if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
 				{
-					ownerCharacter->PlayAnimMontage(*landingAnimMontage);
-				}
-				else if (IsValid(activeJumpAnimMontage))
-				{
-					ownerCharacter->StopAnimMontage(activeJumpAnimMontage);
+					UAnimMontage* landingAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Landing_0);
+					if (IsValid(landingAnimMontage))
+					{
+						ownerCharacter->PlayAnimMontage(landingAnimMontage);
+					}
+					else if (IsValid(activeJumpAnimMontage))
+					{
+						ownerCharacter->StopAnimMontage(activeJumpAnimMontage);
+					}
 				}
 				activeJumpAnimMontage = nullptr;
 			}

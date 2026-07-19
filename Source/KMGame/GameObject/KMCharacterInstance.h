@@ -64,6 +64,8 @@ public:
 	void SetTable(const struct FKMTable_CharacterRow* newTable);
 	const struct FKMTable_CharacterRow* GetTable() const;
 
+	class UKMAnimationSetTag* GetAnimsetTag() const;
+
 	void SetDepthSort(float newDepthSort);
 	float GetDepthSort() const;
 
@@ -255,8 +257,6 @@ protected:
 	
 	FTransform Transform;
 
-	FName BeastId = NAME_None;
-	
 	float DepthSort = 0.f;
 	bool bIsRun = false;
 
@@ -272,5 +272,12 @@ protected:
 
 	FKMHitCheckData HitCheckData;
 
+	FName BeastId = NAME_None;
+	const struct FKMTable_BeastRow* BeastTableRow = nullptr;
+	const struct FKMTable_BaseStat_BeastRow* BeastStatTableRow = nullptr;
+	
+	UPROPERTY(Transient)
+	const class UKMBeastPDA* BeastPDA = nullptr;
+	
 	bool bIsBeast = false;
 };

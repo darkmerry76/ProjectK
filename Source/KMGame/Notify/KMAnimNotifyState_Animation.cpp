@@ -30,21 +30,18 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor)
 		{
 			return nullptr;
 		}
-		if (!IsValid(ownerCharacter))
+		UKMCharacterInstance* ownerCharacteInstancer = Cast<UKMCharacterInstance>(ownerCharacter->GetCharacterInstance());
+		if (!IsValid(ownerCharacteInstancer))
 		{
 			return nullptr;
 		}
-		if (!IsValid(ownerCharacter->AnimsetTag))
+		UKMAnimationSetTag* animSetTag = ownerCharacteInstancer->GetAnimsetTag();
+		if (!IsValid(animSetTag))
 		{
 			return nullptr;
 		}
 		
-		TObjectPtr<UAnimMontage>* existMontage = ownerCharacter->AnimsetTag->AnimMontageMap.Find(AnimationSetTag.Tag);
-		if (!existMontage)
-		{
-			return nullptr;
-		}
-		return *existMontage;
+		return animSetTag->GetAnimation(AnimationSetTag.Tag);
 	}
 	else
 	{
@@ -139,13 +136,14 @@ void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FP
 	{
 		if (bUseSkillSet)
 		{
-			if (AKMCharacter* character = Cast<AKMCharacter>(ownerActor))
+			if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 			{
-				if (character->AnimsetTag)
+				UKMCharacterInstance* ownerCharacteInstancer = Cast<UKMCharacterInstance>(ownerCharacter->GetCharacterInstance());
+				if (!IsValid(ownerCharacteInstancer))
 				{
-					if (TObjectPtr<UAnimMontage>* existMontage = character->AnimsetTag->AnimMontageMap.Find(AnimationSetTag.Tag))
+					if (UKMAnimationSetTag* animsetTag = ownerCharacteInstancer->GetAnimsetTag())
 					{
-						Montage = *existMontage;
+						Montage = animsetTag->GetAnimation(AnimationSetTag.Tag);
 						if (IsValid(Montage))
 						{
 							CustomDuration = Montage->GetPlayLength();

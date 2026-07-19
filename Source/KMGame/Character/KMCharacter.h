@@ -11,7 +11,7 @@ class KMGAME_API AKMCharacter : public AEMCharacterBase
 {
 	GENERATED_UCLASS_BODY()
 
-public:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName DefaultWeaponItem = NAME_None;
 
@@ -45,6 +45,12 @@ public:
 	bool GetMirror() const;
 
 	const FVector& GetInputVelocity() const;
+
+	class UKMItemAppearanceInstance* GetWeaponInstance() const;
+
+protected:
+	friend UKMCharacterInstance;
+	class UKMAnimationSetTag* GetAnimsetTag() const;
 
 protected:
 	virtual void BeginPlay() override;

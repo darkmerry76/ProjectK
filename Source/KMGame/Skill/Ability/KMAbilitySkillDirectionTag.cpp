@@ -71,10 +71,12 @@ void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float m
 	UKMCharacterInstance* ownerCharacterInstance = character->GetCharacterInstance();
 	check(IsValid(ownerCharacterInstance));
 
-	TObjectPtr<UAnimMontage>* existMontage = character->AnimsetTag->AnimMontageMap.Find(finalAnimTag);
-	if (existMontage && IsValid(*existMontage))
+	if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
 	{
-		Montage = *existMontage;
+		if (UAnimMontage* existMontage = animSetTag->GetAnimation(finalAnimTag))
+		{
+			Montage = existMontage;
+		}
 	}
 
 	MontageInstance = PlayerMontage(Montage, Rate);
