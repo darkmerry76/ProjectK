@@ -35,6 +35,9 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	FEMPrimaryAssetRef   pdaKey = { };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FName>        DefaultSkillSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMCharacterLocationType LocationType = { EKMCharacterLocationType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

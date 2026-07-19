@@ -38,12 +38,6 @@ void UKMGameInstance::Init()
 	CameraCacheManager->Initialize();
 
 	GEngine->GameViewport->Viewport->ViewportResizedEvent.AddUObject(this, &UKMGameInstance::OnViewportResized);
-
-	UKMCharacterInstance::DefaultPassiveSkills.Empty();
-	for (FKMSkillKeyBase skillKey : DefaultPassiveSkills)
-	{
-		UKMCharacterInstance::DefaultPassiveSkills.Emplace(FKMSkillKey(skillKey));
-	}
 }
 
 void UKMGameInstance::OpenInitLevel(FSoftObjectPath mapPath)

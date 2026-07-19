@@ -352,7 +352,6 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 	{
 		SetMovementMode(MOVE_Walking);
 	}
-
 }
 
 void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type)

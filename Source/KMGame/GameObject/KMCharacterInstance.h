@@ -155,8 +155,6 @@ public:
 	
 	void OnSensorResult(const TArray<AActor*>& resultActors);
 	
-	static TArray<FKMSkillKey> DefaultPassiveSkills;
-	
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -173,6 +171,8 @@ protected:
 
 	UFUNCTION()
 	void OnUpdatePawnThrowOverlapResults(const TArray<FHitResult>& hitResults);
+
+	void ChangeSkillSet(const FName& ownerId);
 	
 private:
 	void ShowDamage(EKMStatFactorType factorType, int32 damage);

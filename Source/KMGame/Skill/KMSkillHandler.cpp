@@ -49,6 +49,13 @@ bool UKMSkillHandler::HasAbilityFlag(EKMAbilityFlag flag) const
 	return AbilityMask & static_cast<int32>(flag);
 }
 
+void UKMSkillHandler::ClearResisterSkills()
+{
+	OwnedSkills.Empty();
+	OwnenSkillSets.Empty();
+	CooltimeInstances.Empty();
+}
+
 void UKMSkillHandler::ClearActiveSkills()
 {
 	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)

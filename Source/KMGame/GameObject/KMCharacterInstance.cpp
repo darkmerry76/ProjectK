@@ -24,7 +24,6 @@
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
 
-TArray<FKMSkillKey> UKMCharacterInstance::DefaultPassiveSkills;
 UKMCharacterInstance::UKMCharacterInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	SkillHandlerClass = UKMSkillHandler::StaticClass();
@@ -49,6 +48,27 @@ UKMStatModifierBase* UKMCharacterInstance::GetStatModifier() const
 	return StatModifier;
 }
 
+void UKMCharacterInstance::ChangeSkillSet(const FName& ownerId)
+{
+	if (!IsValid(StatModifier))
+	{
+		return;
+	}
+	
+	SkillHandler->ClearResisterSkills();
+	const TMap<FName, FKMTable_SkillSetRow*>& skillSetTable = FEMDataTableHelper::Get().GetRowMap<FKMTable_SkillSetRow>();
+	for (auto skillSetItr = skillSetTable.CreateConstIterator(); skillSetItr; ++skillSetItr)
+	{
+		const FKMTable_SkillSetRow* skillSetRow = skillSetItr->Value;
+		
+		if (!skillSetRow->OwnerCharacter.IsEmpty() && !skillSetRow->OwnerCharacter.Contains(ownerId))
+		{
+			continue;
+		}
+		SkillHandler->RegisterSkillSets(skillSetRow);
+	}
+}
+
 void UKMCharacterInstance::BeginPlay()
 {
 	Super::BeginPlay();
@@ -58,20 +78,9 @@ void UKMCharacterInstance::BeginPlay()
 	StatModifier->Init();
 
 	SkillHandler = NewObject<UKMSkillHandler>(this, SkillHandlerClass, TEXT("SkillHandler"));
-	SkillHandler->RegisterSkills(DefaultPassiveSkills);
 
-	const TMap<FName, FKMTable_SkillSetRow*>& skillSetTable = FEMDataTableHelper::Get().GetRowMap<FKMTable_SkillSetRow>();
-	for (auto skillSetItr = skillSetTable.CreateConstIterator(); skillSetItr; ++skillSetItr)
-	{
-		const FKMTable_SkillSetRow* skillSetRow = skillSetItr->Value;
-		
-		if (!skillSetRow->OwnerCharacter.IsEmpty() && !skillSetRow->OwnerCharacter.Contains(Table->Id))
-		{
-			continue;
-		}
-		SkillHandler->RegisterSkillSets(skillSetRow);
-	}
-
+	ChangeSkillSet(Table->Id);
+	
 	SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
 	SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
 	SensorInstance->Init();
@@ -159,6 +168,11 @@ void UKMCharacterInstance::ToggleBeast()
 
 void UKMCharacterInstance::RevertFromBest()
 {
+	if (IsValid(SkillHandler))
+	{
+		SkillHandler->ClearActiveSkills();
+	}
+
 	if (!IsBeast())
 	{
 		return;
@@ -181,6 +195,9 @@ void UKMCharacterInstance::RevertFromBest()
 	{
 		return;
 	}
+
+	ChangeSkillSet(Table->Id);
+	
 	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
 	ownerCharacter->GetMesh()->SetAnimInstanceClass(ownerCharacterCDO->GetMesh()->GetAnimClass());
 	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
@@ -200,6 +217,11 @@ void UKMCharacterInstance::OnRevertFromBest_Implementation()
 
 void UKMCharacterInstance::TransformToBeast()
 {
+	if (IsValid(SkillHandler))
+	{
+		SkillHandler->ClearActiveSkills();
+	}
+	
 	if (IsBeast())
 	{
 		return;
@@ -221,6 +243,8 @@ void UKMCharacterInstance::TransformToBeast()
 	GetCharacter()->GetMesh()->SetSkeletalMesh(BeastPDA->Mesh);
 	GetCharacter()->SetActorScale3D(FVector(BeastTableRow->scale));
 	SetCharacterDirection(GetCharacterDirection(), true);
+
+	ChangeSkillSet(BeastTableRow->Id);
 	
 	bIsBeast = true;
 	if (GetWorld()->IsGameWorld())

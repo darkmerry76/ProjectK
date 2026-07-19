@@ -68,6 +68,7 @@ public:
 	bool HasAbilityFlag(EKMAbilityFlag flag) const;
 	
 	void ClearActiveSkills();
+	void ClearResisterSkills();
 
 	TSharedPtr<FKMSkillInstance> UseAssistSkill(const FKMSkillKey& skillKey);
 	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
