@@ -1,9 +1,6 @@
 #include "KMUtil.h"
 #include <Tables/Generated/KMTable_Chapter.h>
-#include <ThirdParty/msdfgen/msdfgen.h>
-
 #include "AIController.h"
-#include "VectorVM.h"
 #include "Animation/BlendSpace1D.h"
 #include "Character/KMCharacter.h"
 #include "Core/KMGameInstance.h"
