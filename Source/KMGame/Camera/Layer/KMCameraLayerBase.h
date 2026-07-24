@@ -32,6 +32,8 @@ public:
 
 	class USceneComponent* GetCameraOffsetComponent() const;
 
+	virtual void SetRelativeCameraData(const FEMCameraOutput& newRelativeCameraData) { };
+
 protected:
 	UPROPERTY()
 	TWeakObjectPtr<class AActor> CamaeraActor;

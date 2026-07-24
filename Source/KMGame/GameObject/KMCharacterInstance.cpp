@@ -4,6 +4,7 @@
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
@@ -23,6 +24,8 @@
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
+
+const FName LeaveSkeletalMeshCompTag = TEXT("LeaveSkeletalMeshComp");
 
 UKMCharacterInstance::UKMCharacterInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -55,7 +58,9 @@ void UKMCharacterInstance::ChangeSkillSet(const FName& ownerId)
 		return;
 	}
 	
-	SkillHandler->ClearResisterSkills();
+	SkillHandler->ClearResisterSkillSet();
+	SkillHandler->ClearAllSkills();
+	
 	const TMap<FName, FKMTable_SkillSetRow*>& skillSetTable = FEMDataTableHelper::Get().GetRowMap<FKMTable_SkillSetRow>();
 	for (auto skillSetItr = skillSetTable.CreateConstIterator(); skillSetItr; ++skillSetItr)
 	{
@@ -168,14 +173,17 @@ void UKMCharacterInstance::ToggleBeast()
 
 void UKMCharacterInstance::RevertFromBest()
 {
-	if (IsValid(SkillHandler))
-	{
-		SkillHandler->ClearActiveSkills();
-	}
-
 	if (!IsBeast())
 	{
 		return;
+	}
+
+	if (BeastTableRow && IsValid(SkillHandler))
+	{
+		if (SkillHandler->IsSkillActivated(FKMSkillKey(BeastTableRow->TransformSkill, 0)))
+		{
+			return;
+		}
 	}
 
 	AKMCharacter* ownerCharacter = GetCharacter();
@@ -190,24 +198,47 @@ void UKMCharacterInstance::RevertFromBest()
 		return;
 	}
 
-	const FKMTable_CharacterRow* characterTablrRow = GetTable();
-	if (!characterTablrRow)
+	const FKMTable_CharacterRow* characterTableRow = GetTable();
+	if (!characterTableRow)
 	{
 		return;
 	}
 
 	ChangeSkillSet(Table->Id);
+
+	UKMSkeletalMeshComponent* leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(ownerCharacter->FindComponentByTag(UKMSkeletalMeshComponent::StaticClass(), LeaveSkeletalMeshCompTag));
+	if (!IsValid(leaveSkeletalMeshComponnent))
+	{
+		leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(
+			ownerCharacter->AddComponentByClass(UKMSkeletalMeshComponent::StaticClass(), false, FTransform::Identity, false));
+	}
+	if (IsValid(leaveSkeletalMeshComponnent))
+	{
+		leaveSkeletalMeshComponnent->SetSkeletalMeshAsset(ownerCharacter->GetMesh()->GetSkeletalMeshAsset());
+		leaveSkeletalMeshComponnent->SetAnimInstanceClass(ownerCharacter->GetMesh()->GetAnimClass());
+		leaveSkeletalMeshComponnent->SetRelativeTransform(ownerCharacter->GetMesh()->GetRelativeTransform());
+		SetCharacterDirectionVisual(GetCharacterDirection(), true, leaveSkeletalMeshComponnent);
+		leaveSkeletalMeshComponnent->SetReceivesDecals(false);
+		leaveSkeletalMeshComponnent->SetRenderCustomDepth(true);
+		leaveSkeletalMeshComponnent->SetCustomDepthStencilValue(1);
+		leaveSkeletalMeshComponnent->ComponentTags.Emplace(LeaveSkeletalMeshCompTag);
+	}
 	
 	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
 	ownerCharacter->GetMesh()->SetAnimInstanceClass(ownerCharacterCDO->GetMesh()->GetAnimClass());
 	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
-	ownerCharacter->SetActorScale3D(FVector(characterTablrRow->scale));
+	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(characterTableRow->scale));
 	SetCharacterDirection(GetCharacterDirection(), true);
 
 	bIsBeast = false;
 	if (GetWorld()->IsGameWorld())
 	{
 		OnRevertFromBest();
+
+		if (characterTableRow->TransformSkill != NAME_None)
+		{
+			SkillHandler->UseSkill(FKMSkillKey(characterTableRow->TransformSkill, 0), nullptr);
+		}
 	}
 }
 
@@ -217,14 +248,17 @@ void UKMCharacterInstance::OnRevertFromBest_Implementation()
 
 void UKMCharacterInstance::TransformToBeast()
 {
-	if (IsValid(SkillHandler))
-	{
-		SkillHandler->ClearActiveSkills();
-	}
-	
 	if (IsBeast())
 	{
 		return;
+	}
+
+	if (Table && IsValid(SkillHandler))
+	{
+		if (SkillHandler->IsSkillActivated(FKMSkillKey(Table->TransformSkill, 0)))
+		{
+			return;
+		}
 	}
 
 	if (!IsValid(BeastPDA))
@@ -237,11 +271,45 @@ void UKMCharacterInstance::TransformToBeast()
 	{
 		return;
 	}
-	
-	GetCharacter()->GetMesh()->EmptyOverrideMaterials();
-	GetCharacter()->GetMesh()->SetAnimInstanceClass(BeastPDA->AnimInstanceClass);
-	GetCharacter()->GetMesh()->SetSkeletalMesh(BeastPDA->Mesh);
-	GetCharacter()->SetActorScale3D(FVector(BeastTableRow->scale));
+
+	UKMSkeletalMeshComponent* leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(ownerCharacter->FindComponentByTag(UKMSkeletalMeshComponent::StaticClass(), LeaveSkeletalMeshCompTag));
+	if (!IsValid(leaveSkeletalMeshComponnent))
+	{
+		leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(
+			ownerCharacter->AddComponentByClass(UKMSkeletalMeshComponent::StaticClass(), false, FTransform::Identity, false));
+	}
+	if (IsValid(leaveSkeletalMeshComponnent))
+	{
+		leaveSkeletalMeshComponnent->SetSkeletalMeshAsset(ownerCharacter->GetMesh()->GetSkeletalMeshAsset());
+		leaveSkeletalMeshComponnent->SetAnimInstanceClass(ownerCharacter->GetMesh()->GetAnimClass());
+		leaveSkeletalMeshComponnent->SetRelativeTransform(ownerCharacter->GetMesh()->GetRelativeTransform());
+		leaveSkeletalMeshComponnent->SetReceivesDecals(false);
+		leaveSkeletalMeshComponnent->SetRenderCustomDepth(true);
+		leaveSkeletalMeshComponnent->SetCustomDepthStencilValue(1);
+		SetCharacterDirectionVisual(GetCharacterDirection(), true, leaveSkeletalMeshComponnent);
+
+		if (UKMAnimInstance* beforeAnimInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
+		{
+			FAnimMontageInstance* animMontageInstance = beforeAnimInstance->GetActiveMontageInstance();
+			if (animMontageInstance)
+			{
+				if (UKMAnimInstance* newAnimInstance = Cast<UKMAnimInstance>(leaveSkeletalMeshComponnent->GetAnimInstance()))
+				{
+					newAnimInstance->Montage_Play(animMontageInstance->Montage, animMontageInstance->GetPlayRate(), EMontagePlayReturnType::MontageLength, animMontageInstance->GetPosition());
+				}
+			}
+		}
+		
+		
+		leaveSkeletalMeshComponnent->ComponentTags.Emplace(LeaveSkeletalMeshCompTag);
+	}
+
+	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
+	ownerCharacter->GetMesh()->SetAnimInstanceClass(BeastPDA->AnimInstanceClass);
+	ownerCharacter->GetMesh()->SetSkeletalMesh(BeastPDA->Mesh);
+	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(BeastTableRow->scale));
+	ownerCharacter->GetMesh()->SetRenderInMainPass(false);
+	ownerCharacter->GetMesh()->SetRenderInDepthPass(false);
 	SetCharacterDirection(GetCharacterDirection(), true);
 
 	ChangeSkillSet(BeastTableRow->Id);
@@ -250,6 +318,10 @@ void UKMCharacterInstance::TransformToBeast()
 	if (GetWorld()->IsGameWorld())
 	{
 		OnTransformToBeast();
+		if (BeastTableRow->TransformSkill != NAME_None)
+		{
+			SkillHandler->UseSkill(FKMSkillKey(BeastTableRow->TransformSkill, 0), nullptr);
+		}
 	}
 }
 
@@ -873,11 +945,17 @@ bool UKMCharacterInstance::IsWalk() const
 	return !bIsRun;
 }
 
-void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bForceRotate)
+void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
-		if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
+		USkeletalMeshComponent* adjustSkeletalMeshComp = IsValid(otherSkeletalMeshComp) ? otherSkeletalMeshComp : ownerCharacter->GetMesh();
+		if (!IsValid(adjustSkeletalMeshComp))
+		{
+			return;
+		}
+		
+		if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(adjustSkeletalMeshComp->GetAnimInstance()))
 		{
 			animInstance->SetNextDirection(direction);
 			if (bForceRotate == true)

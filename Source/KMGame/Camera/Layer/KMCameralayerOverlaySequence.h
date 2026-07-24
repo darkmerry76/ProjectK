@@ -13,7 +13,7 @@ protected:
 	FEMCameraOutput RelativeCameraData;
 	
 public:
-	void SetRelativeCameraData(const FEMCameraOutput& newRelativeCameraData);
+	virtual void SetRelativeCameraData(const FEMCameraOutput& newRelativeCameraData) override;
 	
 protected:
 	virtual void Evaluate(float deltaTime, FEMCameraOutput& output) override;

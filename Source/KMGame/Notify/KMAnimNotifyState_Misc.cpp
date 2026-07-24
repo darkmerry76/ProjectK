@@ -8,10 +8,17 @@
 #include "Kismet/GameplayStatics.h"
 #include "Skill/Ability/KMAbility.h"
 #include "System/EMIsolationSubsystem.h"
+#include "System/KMGameObjectSubsystem.h"
 
 UKMAnimNotifyState_Misc::UKMAnimNotifyState_Misc(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	SetGroupType(EEMNotifyGroupType::Plan);
+}
+
+FString UKMAnimNotifyState_Misc::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	return notifyName;
 }
 
 void UKMAnimNotifyState_Misc::SetTimeDilation(USkeletalMeshComponent* meshComp, float newTimeDilation)
@@ -68,7 +75,7 @@ void UKMAnimNotifyState_Misc::NotifyBegin(USkeletalMeshComponent* meshComp, UAni
 		SetTimeDilation(meshComp, GlobalTimeDilationScale);
 	}
 
-	if (bIsOverride_ShowOwnerCharacter || bIsOverride_ShowTargetCharacter)
+	if (bIsOverride_ShowOwnerCharacter || bIsOverride_ShowOtherCharacter)
 	{
 		if (UEMIsolationSubsystem* isolationSubsystem = UEMIsolationSubsystem::GetIsolationSubsystem(meshComp))
 		{
@@ -77,13 +84,16 @@ void UKMAnimNotifyState_Misc::NotifyBegin(USkeletalMeshComponent* meshComp, UAni
 			{
 				CollectionShowActor(meshComp->GetOwner(), showActors);
 			}
-			if (bIsOverride_ShowTargetCharacter)
+			if (bIsOverride_ShowOtherCharacter && meshComp->GetWorld()->IsGameWorld())
 			{
-				if (const FKMMartialArtsSkillContextData* skillContextData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+				if (UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(meshComp))
 				{
-					if (UKMAbility* ability = Cast<UKMAbility>(skillContextData->GetAbility()))
+					for (auto objectItr : gameObjectSubsystem->GetGameObjectMap())
 					{
-						CollectionShowActor(ability->GetTargetCharacter(), showActors);
+						if (UKMCharacterInstance* characterInstance = Cast<UKMCharacterInstance>(objectItr.Value))
+						{
+							CollectionShowActor(characterInstance->GetCharacter(), showActors);
+						}
 					}
 				}
 			}
@@ -113,7 +123,7 @@ void UKMAnimNotifyState_Misc::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimS
 		UGameplayStatics::SetGlobalTimeDilation(meshComp, 1.f);
 	}
 
-	if (bIsOverride_ShowOwnerCharacter || bIsOverride_ShowTargetCharacter)
+	if (bIsOverride_ShowOwnerCharacter || bIsOverride_ShowOtherCharacter)
 	{
 		if (UEMIsolationSubsystem* isolationSubsystem = UEMIsolationSubsystem::GetIsolationSubsystem(meshComp))
 		{

@@ -49,7 +49,7 @@ bool UKMSkillHandler::HasAbilityFlag(EKMAbilityFlag flag) const
 	return AbilityMask & static_cast<int32>(flag);
 }
 
-void UKMSkillHandler::ClearResisterSkills()
+void UKMSkillHandler::ClearResisterSkillSet()
 {
 	OwnedSkills.Empty();
 	OwnenSkillSets.Empty();
@@ -67,6 +67,52 @@ void UKMSkillHandler::ClearActiveSkills()
 		}
 
 		if (skillInstance->SkillKey.TableRecord->Type != EKMSkillType::Active)
+		{
+			continue;
+		}
+		if (TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillInstance->SkillKey))
+		{
+			(*timerInstance)->ForceReady();
+		}
+		
+		skillInstance->Leave();
+		OnRemoveAbilityInstance(skillInstance);
+		skillInstanceItr.RemoveCurrent();
+	}
+	ComboData.Reset();
+}
+
+void UKMSkillHandler::ClearPassiveSkills()
+{
+	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
+	{
+		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
+		if (skillInstance.IsValid() == false)
+		{
+			continue;
+		}
+
+		if (skillInstance->SkillKey.TableRecord->Type != EKMSkillType::Passive)
+		{
+			continue;
+		}
+		if (TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillInstance->SkillKey))
+		{
+			(*timerInstance)->ForceReady();
+		}
+		
+		skillInstance->Leave();
+		OnRemoveAbilityInstance(skillInstance);
+		skillInstanceItr.RemoveCurrent();
+	}
+}
+
+void UKMSkillHandler::ClearAllSkills()
+{
+	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
+	{
+		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
+		if (!skillInstance.IsValid())
 		{
 			continue;
 		}
@@ -123,6 +169,7 @@ void UKMSkillHandler::RegisterSkill(const FKMSkillKey& newSkillKey)
 	
 	OwnedSkills.Emplace(newSkillKey);
 	TSharedPtr<FKMAbilityInstanceCooltime> newCooltime = MakeShared<FKMAbilityInstanceCooltime>(this, newSkillKey);
+	newCooltime->ForceReady();
 	CooltimeInstances.Emplace(newSkillKey, newCooltime);
 
 	if (newSkillKey.TableRecord->Type == EKMSkillType::Passive)
@@ -637,9 +684,10 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 		UObject* assetObject = assetManager->GetAsset(normalSkillTable->Ability);
 		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(assetObject))
 		{
-			if (IsValid(martialArts->GetAbilityBP()->GeneratedClass))
+			if (IsValid(martialArts->GetAbilityBP()) && IsValid(martialArts->GetAbilityBP()->GeneratedClass))
 			{
-				newAbility = NewObject<UKMAbility>(this, martialArts->GetAbilityBP()->GeneratedClass);
+				UClass* abilityGeneratedClass = martialArts->GetAbilityBP()->GeneratedClass;
+				newAbility = NewObject<UKMAbility>(this, abilityGeneratedClass);
 				newAbility->SetMartialArts(martialArts);
 			}
 		}

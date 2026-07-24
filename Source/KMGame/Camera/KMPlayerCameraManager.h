@@ -2,10 +2,35 @@
 
 #include "CoreMinimal.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Camera/Layer/KMCameralayerBase.h"
 #include "KMPlayerCameraManager.generated.h"
 
+USTRUCT()
+struct KMGAME_API FKMCameraLayerPlayInstance
+{
+	GENERATED_USTRUCT_BODY()
+
+	virtual ~FKMCameraLayerPlayInstance();
+	
+	TSharedPtr<struct FEMCameraCacheInstance> CameraCacheInstance;
+	
+	float Duration = 0.f;
+	float ElipsedTime = 0.f;
+	float Rate = 1.f;
+
+	float BlendInTime = 0.f;
+	float BlendOutTime = 0.f;
+
+	bool bIsImmediate = false;
+
+	UPROPERTY()
+	TObjectPtr<class UKMCameralayerBase> Cameralayer;
+
+	bool Update(float deltaTime);
+};
+
 UCLASS(Blueprintable, BlueprintType)
-class AKMPlayerCameraManager : public APlayerCameraManager
+class KMGAME_API AKMPlayerCameraManager : public APlayerCameraManager
 {
 	GENERATED_UCLASS_BODY()
 
@@ -15,6 +40,8 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class AKMCameraActorBase> CurrentCamera;
+
+	TArray<TSharedPtr<FKMCameraLayerPlayInstance>> CameraLayerPlayInstances; 
 
 protected:
 	virtual void Tick(float DeltaTime) override;
@@ -35,4 +62,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class AKMCameraActorBase* GetCurrentCamera() const;
+	
+	TSharedPtr<FKMCameraLayerPlayInstance> PlayCameraLayer(EKMCameralayerType layerType,
+		class UCameraAnimationSequence* cameraSequence, float duration, float blendInTime = 0.1f, float blendOutTime = 0.1f, float rate = 1.f, bool bImmediate = false);
+
+	void RemovePlayCameraLayer(const TSharedPtr<FKMCameraLayerPlayInstance>& cameraLayerPlayInstance);
 };

@@ -13,12 +13,13 @@ class EMCOREGAME_API UEMGameObjectSubsystem : public UEMGameInstanceSubsystem
 protected:
 	virtual void Initialize() override;
 	virtual void Deinitialize() override;
+	virtual void OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources) override;
 
 public:
 	virtual int32 AddGameObject(class UEMGameObjectInstance* newGameObjectInstance);
 	virtual bool RemoveGameObject(int32 gameObjectId);
 
-	virtual void RemoveAllGameObjects(TArray<TSubclassOf<UEMGameObjectInstance>>* ignoreInstanceClasses = nullptr);
+	virtual void RemoveAllGameObjects(const TArray<TSubclassOf<UEMGameObjectInstance>>& ignoreInstanceClasses = TArray<TSubclassOf<UEMGameObjectInstance>>());
 
 	UFUNCTION(BlueprintPure)
 	class UEMGameObjectInstance* GetGameObject(int32 gameObjectId);

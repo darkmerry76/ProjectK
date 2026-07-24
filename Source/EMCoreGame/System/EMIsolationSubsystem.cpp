@@ -1,6 +1,7 @@
 #include "EMIsolationSubsystem.h"
 #include "EngineUtils.h"
 #include "LandscapeProxy.h"
+#include "NiagaraComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 
@@ -35,6 +36,22 @@ void UEMIsolationSubsystem::Deinitialize()
 	FWorldDelegates::LevelAddedToWorld.RemoveAll(this);
 }
 
+bool UEMIsolationSubsystem::IsActivated() const
+{
+	return bIsActiveIsolation;
+}
+
+void UEMIsolationSubsystem::AddExtraComponent(AActor* ownerActor, UPrimitiveComponent* newPrimitiveComponent)
+{
+	for (auto visibleActor : VisibleActors)
+	{
+		if (visibleActor == ownerActor)
+		{
+			ComponentRenderPassHidden(newPrimitiveComponent);
+		}
+	}
+}
+
 void UEMIsolationSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
 {
 	if (world != GetWorld())
@@ -46,7 +63,6 @@ void UEMIsolationSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Level=%s Actors=%d"), *GetPathNameSafe(level), level->Actors.Num());
 	for (AActor* actor : level->Actors)
 	{
 		ActorPrimitveRenderPassHidden(actor);
@@ -89,15 +105,15 @@ void UEMIsolationSubsystem::ActorPrimitveRenderPassHidden(AActor* actor)
 
 	if (!actor->IsA<ALandscapeProxy>())
 	{
-		TArray<UMeshComponent*> meshes;
-		actor->GetComponents(meshes);
+		TArray<UMeshComponent*> meshComponents;
+		actor->GetComponents(meshComponents);
 
-		if (!meshes.IsEmpty())
+		if (!meshComponents.IsEmpty())
 		{
 			bIsActorHidden = false;
-			for (UMeshComponent* mesh : meshes)
+			for (UMeshComponent* primitiveComponent : meshComponents)
 			{
-				ComponentRenderPassHidden(mesh);
+				ComponentRenderPassHidden(primitiveComponent);
 			}
 		}
 	}
@@ -121,6 +137,11 @@ void UEMIsolationSubsystem::EnterIsolation(const TArray<AActor*>& visibleActors)
 	if (!ensure(!bIsActiveIsolation))
 	{
 		return;
+	}
+
+	for (auto visibleActorItr : visibleActors)
+	{
+		VisibleActors.Emplace(visibleActorItr);
 	}
 
 	if (GetWorld()->IsGameWorld())

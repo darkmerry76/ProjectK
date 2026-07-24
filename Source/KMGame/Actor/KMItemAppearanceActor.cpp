@@ -176,6 +176,9 @@ AKMItemAppearanceChainActor::AKMItemAppearanceChainActor(const FObjectInitialize
 	ChainMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChainMesh"));
 	ChainMesh->SetupAttachment(GetRootComponent());
 
+	ChainMesh->SetCustomDepthStencilValue(1);
+	ChainMesh->SetRenderCustomDepth(true);
+
 	PrimaryActorTick.bCanEverTick = true;
 }
 

@@ -9,7 +9,8 @@ UKMAnimNotifyState_NiagaraFX::UKMAnimNotifyState_NiagaraFX(const FObjectInitiali
 
 void UKMAnimNotifyState_NiagaraFX::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	SpawnedEffect = SpawnEffect(meshComp, animation);
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	SpawnedEffect = SpawnEffect(targetMeshComp, animation);
 }
 
 void UKMAnimNotifyState_NiagaraFX::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
@@ -18,7 +19,7 @@ void UKMAnimNotifyState_NiagaraFX::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(SpawnedEffect))
+	if (!bIsContinue && IsValid(SpawnedEffect))
 	{
 		SpawnedEffect->Deactivate();
 	}
@@ -26,6 +27,8 @@ void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, U
 
 UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation)
 {
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
 	UNiagaraComponent* returnComp = nullptr;
 	if (IsValid(Template))
 	{
@@ -36,14 +39,14 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshCompon
 
 		if (bIsAttached)
 		{
-			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, meshComp, SocketName, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
+			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, targetMeshComp, SocketName, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
 		}
 		else
 		{
-			const FTransform meshTransform = meshComp->GetSocketTransform(SocketName);
+			const FTransform meshTransform = targetMeshComp->GetSocketTransform(SocketName);
 			
-			returnComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(meshComp->GetWorld(), Template,
-				meshTransform.TransformPosition(LocationOffset), (meshTransform.GetRotation() * RotationOffsetQuat).Rotator(), FVector(1.0f),true);
+			returnComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(targetMeshComp->GetWorld(), Template,
+				meshTransform.TransformPosition(LocationOffset), (meshTransform.GetRotation() * RotationOffset.Quaternion()).Rotator(), FVector(1.0f),true);
 		}
 
 		if (IsValid(returnComp))
@@ -54,8 +57,6 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshCompon
 			returnComp->SetAutoDestroy(true);
 		}
 	}
-	
-
 	return returnComp;
 }
 

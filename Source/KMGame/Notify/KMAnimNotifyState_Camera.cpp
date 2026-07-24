@@ -31,84 +31,26 @@ FString UKMAnimNotifyState_Camera::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (meshComp->GetWorld()->IsGameWorld())
-	{
-		if (UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(meshComp))
-		{
-			CameraCacheManager = gameInstance->GetCameraCacheManager();
-		}
-	}
-	else
-	{
-		if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
-		{
-			CameraCacheManager = martialArtsModule->GetCameraCacheManager();
-		}
-	}
-	if (CameraCacheManager.IsValid())
-	{
-		CameraCacheInstance = CameraCacheManager.Pin()->CreateCameraCacheInstance(CameraSequence);
-	}
-	AnimationTimes.Emplace(meshComp, 0.f);
-
 	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
 	if(IsValid(playerCameraManager))
 	{
-		if (AKMCameraActorBase* currentCamera = playerCameraManager->GetCurrentCamera())
-		{
-			CameraOverlayLayer = Cast<UKMCameralayerOverlaySequence>(currentCamera->GetCameraLayer(EKMCameralayerType::OverlaySequence));
-			CameraOverlayLayer->SetAlpha(1.f);
-		}
+		CameraLayerPlayInstance = playerCameraManager->PlayCameraLayer(EKMCameralayerType::OverlaySequence,
+			CameraSequence, eventReference.GetNotify()->Duration, BlendInTime, BlendOutTime, PlayRate, bIsImmadiate);
 	}
 }
 
 void UKMAnimNotifyState_Camera::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (CameraCacheInstance.IsValid())
-	{
-		if (CameraOverlayLayer.IsValid())
-		{
-			if (float* alphaTime = AnimationTimes.Find(meshComp))
-			{
-				float blendInAlpha = 1.0f;
-				if (BlendInTime > 0.0f)
-				{
-					blendInAlpha = FMath::Clamp((*alphaTime) / BlendInTime, 0.0f, 1.0f);
-				}
-
-				float blendOutAlpha = 1.0f;
-				if (BlendOutTime > 0.0f && !bIsImmadiate)
-				{
-					blendOutAlpha = FMath::Clamp((eventReference.GetNotify()->Duration - (*alphaTime)) / BlendOutTime, 0.0f, 1.0f);
-				}
-
-				float alpha = FMath::Min(blendInAlpha, blendOutAlpha);
-				
-				CameraOverlayLayer->SetAlpha(alpha);
-				
-				FEMCameraOutput cameraOutput;
-				CameraCacheInstance->Evaluate(*alphaTime, cameraOutput);
-
-				CameraOverlayLayer->SetRelativeCameraData(cameraOutput);
-				(*alphaTime) += frameDeltaTime;
-			}
-		}
-	}
 }
 
 void UKMAnimNotifyState_Camera::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	AnimationTimes.Remove(meshComp);
-
-	if (CameraOverlayLayer.IsValid())
+	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
+	if(IsValid(playerCameraManager))
 	{
-		if (bIsImmadiate)
+		if (CameraLayerPlayInstance.IsValid())
 		{
-			CameraOverlayLayer->SetAlpha(1.f);
-		}
-		else
-		{
-			CameraOverlayLayer->SetAlpha(0.f);
+			playerCameraManager->RemovePlayCameraLayer(CameraLayerPlayInstance.Pin());
 		}
 	}
 }

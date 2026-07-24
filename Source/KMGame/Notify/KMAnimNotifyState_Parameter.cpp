@@ -14,9 +14,11 @@ FName UKMAnimNotifyState_Parameter::GetLayerName() const
 
 void UKMAnimNotifyState_Parameter::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(meshComp))
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{
-		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(meshComp);
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(targetMeshComp);
 		if (skeletalMeshComponentParameterLayer.IsValid())
 		{
 			for (auto paramItr : Parameters)
@@ -33,9 +35,11 @@ void UKMAnimNotifyState_Parameter::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 void UKMAnimNotifyState_Parameter::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(meshComp))
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{
-		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(meshComp);
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(targetMeshComp);
 		if (skeletalMeshComponentParameterLayer.IsValid() && !FMath::IsNearlyZero(eventReference.GetNotify()->Duration))
 		{
 			skeletalMeshComponentParameterLayer->AddMaterialParameterAlpha(GetLayerName(), frameDeltaTime / eventReference.GetNotify()->Duration);
@@ -45,9 +49,11 @@ void UKMAnimNotifyState_Parameter::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_Parameter::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(meshComp))
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
+	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{
-		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(meshComp);
+		TSharedPtr<FKMSkeletalMeshComponentParameterLayer> skeletalMeshComponentParameterLayer = parameterLayerSubsystem->GetSkeletalMeshComponentLayer(targetMeshComp);
 		if (skeletalMeshComponentParameterLayer.IsValid())
 		{
 			skeletalMeshComponentParameterLayer->RemoveMaterialParameterLayer(GetLayerName());

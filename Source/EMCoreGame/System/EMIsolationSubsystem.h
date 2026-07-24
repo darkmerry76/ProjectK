@@ -25,6 +25,10 @@ public:
 	void EnterIsolation(const TArray<AActor*>& visibleActors);
 	void LeaveIsolation();
 
+	bool IsActivated() const;
+
+	void AddExtraComponent(AActor* ownerActor, class UPrimitiveComponent* newPrimitiveComponent);
+
 protected:
 	void OnActorSpawned(AActor* newActor);
 	void ActorPrimitveRenderPassHidden(AActor* actor);
@@ -38,4 +42,7 @@ protected:
 
 protected:
 	bool bIsActiveIsolation = false;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AActor>> VisibleActors;
 };

@@ -17,7 +17,8 @@ public class EMCoreGame : ModuleRules
 			"AIModule",
 			"GameplayTasks",
 			"EMTableCore",
-			"Landscape"
+			"Landscape",
+			"Niagara",
 		});
 		
 		PublicIncludePaths.Add("EMCoreGame");

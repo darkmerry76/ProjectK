@@ -1,5 +1,4 @@
 #include "EMGameObjectSubsystem.h"
-
 #include "GameObject/EMGameObjectInstance.h"
 
 void UEMGameObjectSubsystem::Initialize()
@@ -10,6 +9,13 @@ void UEMGameObjectSubsystem::Initialize()
 void UEMGameObjectSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
+}
+
+void UEMGameObjectSubsystem::OnWorldCleanup(UWorld* cleaupWorld, bool bSessionEnded, bool bCleanupResources)
+{
+	Super::OnWorldCleanup(cleaupWorld, bSessionEnded, bCleanupResources);
+
+	RemoveAllGameObjects();
 }
 
 int32 UEMGameObjectSubsystem::AddGameObject(UEMGameObjectInstance* newGameObjectInstance)
@@ -55,14 +61,14 @@ bool UEMGameObjectSubsystem::RemoveGameObject(int32 gameObjectId)
 	return true;
 }
 
-void UEMGameObjectSubsystem::RemoveAllGameObjects(TArray<TSubclassOf<UEMGameObjectInstance>>* ignoreInstanceClasses)
+void UEMGameObjectSubsystem::RemoveAllGameObjects(const TArray<TSubclassOf<UEMGameObjectInstance>>& ignoreInstanceClasses)
 {
 	for (auto objectItr = GameObjectMap.CreateIterator(); objectItr; ++objectItr)
 	{
 		bool isIgnoreClass = false;
-		if (ignoreInstanceClasses != nullptr)
+		if (!ignoreInstanceClasses.IsEmpty())
 		{
-			for (auto classItr : *ignoreInstanceClasses)
+			for (auto classItr : ignoreInstanceClasses)
 			{
 				if (objectItr.Value()->IsA(classItr) == true)
 				{

@@ -22,6 +22,9 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 	{
 		characterMovement->CustomMovementDelegate.AddDynamic(CurveWarping, &UEMCurveWarpingComponent::OnCustomMovement);
 	}
+
+	GetMesh()->SetCustomDepthStencilValue(1);
+	GetMesh()->SetRenderCustomDepth(true);
 }
 
 void AKMCharacter::BeginPlay()

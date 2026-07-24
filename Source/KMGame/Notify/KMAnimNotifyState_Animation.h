@@ -39,6 +39,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
 	bool bIsImmediate = true;
 
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	bool bIsStartShowMeshComponent = false;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndRemoveTagMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	bool bIsEndRemoveTagMeshComponent = true;
+
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 
 	float CustomDuration = 0.f;

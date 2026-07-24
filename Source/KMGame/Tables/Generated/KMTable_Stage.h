@@ -32,7 +32,7 @@ struct FKMTable_StageRow : public FEM_TableBaseRow
 	inline static const FKMTable_StageRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 51;
+	static const int32   RefTableIndex = 52;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

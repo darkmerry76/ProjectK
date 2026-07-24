@@ -19,7 +19,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(DisplayName = "Attached", AllowPrivateAccess=true, DisplayAfter="TimeDilation"))
 	bool bIsAttached = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AnimNotifyBoneName = "true", AllowPrivateAccess=true, DisplayAfter="bIsAttached"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(DisplayName = "Continue", AllowPrivateAccess=true, DisplayAfter="TimeDilation"))
+	bool bIsContinue = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AnimNotifyBoneName = "true", AllowPrivateAccess=true, DisplayAfter="bIsContinue"))
 	FName SocketName = NAME_None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="SocketName"))

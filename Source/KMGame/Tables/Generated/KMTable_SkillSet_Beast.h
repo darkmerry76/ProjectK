@@ -5,46 +5,46 @@
 #include "EMDataTable.h"
 #include "KMTableEnums.h"
 #include "KMTableStructures.h"
-#include "KMTable_Stage.h"
-#include "KMTable_Stage_Dungeon.generated.h"
+#include "KMTable_SkillSet.h"
+#include "KMTable_SkillSet_Beast.generated.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FKMTable_Stage_DungeonRow
+// FKMTable_SkillSet_BeastRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USTRUCT(BlueprintType)
-struct FKMTable_Stage_DungeonRow : public FKMTable_StageRow
+struct FKMTable_SkillSet_BeastRow : public FKMTable_SkillSetRow
 {
 	GENERATED_USTRUCT_BODY()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 
-	inline static const FKMTable_Stage_DungeonRow* FindRowPtr(FName IdKey);
-	inline static const FKMTable_Stage_DungeonRow& FindRow(FName IdKey);
+	inline static const FKMTable_SkillSet_BeastRow* FindRowPtr(FName IdKey);
+	inline static const FKMTable_SkillSet_BeastRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 53;
+	static const int32   RefTableIndex = 50;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// KMTable_Stage_Dungeon Inline
+// KMTable_SkillSet_Beast Inline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void FKMTable_Stage_DungeonRow::PostLoadRowTable()
+inline void FKMTable_SkillSet_BeastRow::PostLoadRowTable()
 {
 	BaseScriptStruct = this->StaticStruct();
 }
 
-inline FString FKMTable_Stage_DungeonRow::MakeTableKeyToString(FName IdKey)
+inline FString FKMTable_SkillSet_BeastRow::MakeTableKeyToString(FName IdKey)
 {
 	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey);
 }
 
-inline const FKMTable_Stage_DungeonRow* FKMTable_Stage_DungeonRow::FindRowPtr(FName IdKey)
+inline const FKMTable_SkillSet_BeastRow* FKMTable_SkillSet_BeastRow::FindRowPtr(FName IdKey)
 {
-	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Stage_DungeonRow>(*MakeTableKeyToString(IdKey));
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_SkillSet_BeastRow>(*MakeTableKeyToString(IdKey));
 }
 
-inline const FKMTable_Stage_DungeonRow& FKMTable_Stage_DungeonRow::FindRow(FName IdKey)
+inline const FKMTable_SkillSet_BeastRow& FKMTable_SkillSet_BeastRow::FindRow(FName IdKey)
 {
 	return *FindRowPtr(IdKey);
 }

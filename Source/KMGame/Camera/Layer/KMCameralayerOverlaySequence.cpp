@@ -1,5 +1,5 @@
 #include "KMCameralayerOverlaySequence.h"
-
+#include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
 #include "GameFramework/Character.h"
 
@@ -26,22 +26,22 @@ void UKMCameralayerOverlaySequence::Evaluate(float deltaTime, FEMCameraOutput& o
 	}
 
 	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this);
-	if(IsValid(playerCameraManager))
+	check(IsValid(playerCameraManager));
+
+	for (auto cameraShakeItr : RelativeCameraData.CameraShakes)
 	{
-		for (auto cameraShakeItr : RelativeCameraData.CameraShakes)
+		if (!IsValid(cameraShakeItr.ShakeClass))
 		{
-			if (!IsValid(cameraShakeItr.ShakeClass))
-			{
-				continue;
-			}
-			playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeItr.ShakeClass, targetActor->GetActorLocation(), 1500.f, 1500.f, false);
+			continue;
 		}
+		playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeItr.ShakeClass, targetActor->GetActorLocation(), 1500.f, 1500.f, false);
 	}
 	
 	FTransform targetTransform = FTransform::Identity;
 	if (ACharacter* character = Cast<ACharacter>(targetActor))
 	{
 		targetTransform = character->GetMesh()->GetComponentTransform();
+
 		targetTransform.SetRotation(targetTransform.GetRotation() * FRotator(0.f, 90.f, 0.f).Quaternion());
 	}
 	else

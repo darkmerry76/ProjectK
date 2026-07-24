@@ -46,6 +46,9 @@ struct FKMTable_CharacterRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName                StatId = { NAME_None };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                TransformSkill = { NAME_None };
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 

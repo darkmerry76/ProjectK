@@ -56,6 +56,9 @@ struct FKMTable_BeastRow : public FEM_TableBaseRow
 	FName                StatId = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                TransformSkill = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName                IconPdaKey = { NAME_None };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

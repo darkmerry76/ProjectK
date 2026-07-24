@@ -221,18 +221,19 @@ void UKMUiSubsystem::ShowGameMenu()
 	{
 		return;
 	}
-
-	if (IsValid(RootWidget->RootPanel))
+	if (IsValid(RootWidget))
 	{
-		if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newGameMenuWidget)))
+		if (IsValid(RootWidget->RootPanel))
 		{
-			canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
-			canvasSlot->SetPosition(FVector2D(0.f, 0.f));
-			canvasSlot->SetSize(FVector2D(0.f, 0.f));
-			canvasSlot->SetZOrder(10000.f);
+			if (UCanvasPanelSlot* canvasSlot = Cast<UCanvasPanelSlot>(RootWidget->RootPanel->AddChild(newGameMenuWidget)))
+			{
+				canvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.f, 1.f));
+				canvasSlot->SetPosition(FVector2D(0.f, 0.f));
+				canvasSlot->SetSize(FVector2D(0.f, 0.f));
+				canvasSlot->SetZOrder(10000.f);
+			}
 		}
 	}
-	
 	OpenedMenu(EKMMenuType::GameMenu, newGameMenuWidget);
 }
 

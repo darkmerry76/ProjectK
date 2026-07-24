@@ -1,7 +1,59 @@
 ﻿#include "KMPlayerCameraManager.h"
+#include "EMMartialArtsModule.h"
 #include "KMCameraActorBase.h"
+#include "Core/KMGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Layer/KMCameraLayerBase.h"
+
+bool FKMCameraLayerPlayInstance::Update(float deltaTime)
+{
+	bool bResult = true;
+	if (ElipsedTime >= Duration)
+	{
+		ElipsedTime = Duration;
+		bResult = false;
+	}
+	
+	float blendInAlpha = 1.0f;
+	if (BlendInTime > 0.0f)
+	{
+		blendInAlpha = FMath::Clamp(ElipsedTime / BlendInTime, 0.0f, 1.0f);
+	}
+
+	float blendOutAlpha = 1.0f;
+	if (BlendOutTime > 0.0f && !bIsImmediate)
+	{
+		blendOutAlpha = FMath::Clamp((Duration - ElipsedTime) / BlendOutTime, 0.0f, 1.0f);
+	}
+
+	float alpha = FMath::Min(blendInAlpha, blendOutAlpha);
+				
+	Cameralayer->SetAlpha(alpha);
+				
+	FEMCameraOutput cameraOutput;
+	CameraCacheInstance->Evaluate(ElipsedTime, cameraOutput);
+
+	Cameralayer->SetRelativeCameraData(cameraOutput);
+
+	ElipsedTime += deltaTime * Rate;
+	
+	return bResult;
+}
+
+FKMCameraLayerPlayInstance::~FKMCameraLayerPlayInstance()
+{
+	if (IsValid(Cameralayer))
+	{
+		if (bIsImmediate)
+		{
+			Cameralayer->SetAlpha(1.f);
+		}
+		else
+		{
+			Cameralayer->SetAlpha(0.f);
+		}
+	}
+}
 
 AKMPlayerCameraManager::AKMPlayerCameraManager(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -74,6 +126,63 @@ void AKMPlayerCameraManager::UpdateViewTarget(FTViewTarget& outVT, float deltaTi
 	outVT.POV.OrthoWidth = CurrentCamera->GetCameraOrthoWidth();*/
 }
 
+TSharedPtr<FKMCameraLayerPlayInstance> AKMPlayerCameraManager::PlayCameraLayer(EKMCameralayerType layerType,
+	UCameraAnimationSequence* cameraSequence, float duration, float blendInTime, float blendOutTime, float rate, bool bImmediate)
+{
+	AKMCameraActorBase* currentCamera = GetCurrentCamera();
+	if (!IsValid(currentCamera))
+	{
+		return nullptr;
+	}
+		
+	TWeakPtr<FEMCameraCacheManager> cameraCacheManager = nullptr;
+	TSharedPtr<FKMCameraLayerPlayInstance> newCameraLayerPlayInstance = MakeShared<FKMCameraLayerPlayInstance>();
+	if (GetWorld()->IsGameWorld())
+	{
+		if (UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(this))
+		{
+			cameraCacheManager = gameInstance->GetCameraCacheManager();
+		}
+	}
+	else
+	{
+		if (FEMMartialArtsModule* martialArtsModule = FModuleManager::LoadModulePtr<FEMMartialArtsModule>("EMMartialArts"))
+		{
+			cameraCacheManager = martialArtsModule->GetCameraCacheManager();
+		}
+	}
+	if (!cameraCacheManager.IsValid())
+	{
+		return nullptr;
+	}
+	newCameraLayerPlayInstance->CameraCacheInstance = cameraCacheManager.Pin()->CreateCameraCacheInstance(cameraSequence);
+	if (!newCameraLayerPlayInstance->CameraCacheInstance.IsValid())
+	{
+		return nullptr;
+	}
+	
+	newCameraLayerPlayInstance->Cameralayer = currentCamera->GetCameraLayer(layerType);
+	if (!IsValid(newCameraLayerPlayInstance->Cameralayer))
+	{
+		return nullptr;
+	}
+	newCameraLayerPlayInstance->BlendInTime = blendInTime;
+	newCameraLayerPlayInstance->BlendOutTime = blendOutTime;
+	newCameraLayerPlayInstance->Rate = rate;
+	newCameraLayerPlayInstance->Duration = duration;
+	newCameraLayerPlayInstance->Cameralayer->SetAlpha(1.f);
+	newCameraLayerPlayInstance->bIsImmediate = bImmediate;
+	
+	CameraLayerPlayInstances.Emplace(newCameraLayerPlayInstance);
+
+	return newCameraLayerPlayInstance;
+}
+
+void AKMPlayerCameraManager::RemovePlayCameraLayer(const TSharedPtr<FKMCameraLayerPlayInstance>& cameraLayerPlayInstance)
+{
+	CameraLayerPlayInstances.Remove(cameraLayerPlayInstance);
+}
+
 void AKMPlayerCameraManager::Tick(float deltaTime)
 {
 	Super::Tick(deltaTime);
@@ -81,5 +190,13 @@ void AKMPlayerCameraManager::Tick(float deltaTime)
 	if (IsValid(CurrentCamera))
 	{
 		CurrentCamera->Tick(deltaTime);
+	}
+	
+	for (auto playInstanceItr = CameraLayerPlayInstances.CreateIterator(); playInstanceItr; ++playInstanceItr)
+	{
+		if (!(*playInstanceItr)->Update(deltaTime))
+		{
+			playInstanceItr.RemoveCurrent();
+		}
 	}
 }

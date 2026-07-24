@@ -4,13 +4,13 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_Misc.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Misc")
 class KMGAME_API UKMAnimNotifyState_Misc : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="IsGlobalTimedilation", Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	bool bIsOverride_GlobalTimedilation = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(EditCondition=bIsOverride_GlobalTimedilation, AllowPrivateAccess=true, DisplayAfter="bIsOverride_GlobalTimedilation"))
@@ -18,12 +18,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(EditCondition=bIsOverride_GlobalTimedilation, AllowPrivateAccess=true, DisplayAfter="GlobalTimeDilationScale"))
 	TObjectPtr<UCurveFloat> GlobalTimeDilationCurve;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="GlobalTimeDilationCurve"))
 	bool bIsOverride_ShowOwnerCharacter = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Dilation, meta=(AllowPrivateAccess=true, DisplayAfter="bIsOverride_ShowOwnerCharacter"))
-	bool bIsOverride_ShowTargetCharacter = false;
+	bool bIsOverride_ShowOtherCharacter = false;
 
 	float ElapsedTime = 0.f;
 	float TotalDuration = 0.f;
@@ -35,4 +35,7 @@ protected:
 
 	void SetTimeDilation(USkeletalMeshComponent* meshComp, float newTimeDilation);
 	void CollectionShowActor(AActor* newActor, TArray<AActor*>& showActors);
+
+protected:
+	virtual FString GetNotifyName_Implementation() const override;
 };

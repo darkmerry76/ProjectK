@@ -83,7 +83,7 @@ public:
 	void UseSkillDash(float dashDirection);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCharacterDirectionVisual(float direction, bool bForceRotate = false);
+	void SetCharacterDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
 	void SetCharacterDirection(float direction, bool bForceRotate = false);

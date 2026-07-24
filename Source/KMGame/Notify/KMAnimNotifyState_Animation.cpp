@@ -1,4 +1,6 @@
 #include "KMAnimNotifyState_Animation.h"
+
+#include "Animation/KMAnimInstance.h"
 #include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Character/KMCharacter.h"
 
@@ -62,30 +64,48 @@ float UKMAnimNotifyState_Animation::GetCustomDuration() const
 void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
 	TSharedPtr<FKMAnimNotifyState_Animation_Context> newContext = MakeShared<FKMAnimNotifyState_Animation_Context>();
-	newContext->ActivatedMontage = GetUsedMontage(meshComp->GetOwner());
 
-	Context.Emplace(meshComp, newContext);
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner());
 
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
+	Context.Emplace(targetMeshComp, newContext);
+
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
-		CustomDuration = newContext->ActivatedMontage->GetPlayLength();
-		ownerCharacter->PlayAnimMontage(newContext->ActivatedMontage);
-#if WITH_EDITOR
-		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
+		UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance();
+		if (IsValid(targetAnimInstance))
 		{
-			if (!meshComp->GetWorld()->IsGameWorld())
+			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
+
+			targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+#if WITH_EDITOR
+			if (!targetMeshComp->GetWorld()->IsGameWorld())
 			{
-				animInstance->Montage_Pause(newContext->ActivatedMontage);
+				targetAnimInstance->Montage_Pause(newContext->ActivatedMontage);
 			}
-		}
 #endif
+		}
+	}
+
+	if (bIsStartShowMeshComponent)
+	{
+		targetMeshComp->SetRenderInMainPass(true);
+		targetMeshComp->SetRenderInDepthPass(true);
+
+		if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(targetMeshComp->GetAnimInstance()))
+		{
+			animInstance->UpdateAnimation(0.f, true);
+			targetMeshComp->RefreshBoneTransforms();
+		}
 	}
 }
 
 void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
+	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	if (currContext)
 	{
 		(*currContext)->ElapsedTime += frameDeltaTime;
@@ -94,22 +114,40 @@ void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(meshComp);
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	
+	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
+	
 	if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 	{
-		ownerCharacter->StopAnimMontage((*currContext)->ActivatedMontage);
+		if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
+		{
+			targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+		}
 	}
-	Context.Remove(meshComp);
+
+	if (meshComp->GetWorld()->IsGameWorld())
+	{
+		if (bIsEndRemoveTagMeshComponent && targetMeshComp != meshComp)
+		{
+			if (IsValid(targetMeshComp))
+			{
+				targetMeshComp->DestroyComponent(true);
+			}
+		}
+	}
+	Context.Remove(targetMeshComp);
 }
 
 #if WITH_EDITOR
 
 void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(meshComp))
+	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp))
 	{
-		if (UAnimInstance* animInstance = meshComp->GetAnimInstance())
+		if (UAnimInstance* animInstance = targetMeshComp->GetAnimInstance())
 		{
 			if (FAnimMontageInstance* montageInstance = animInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage))
 			{

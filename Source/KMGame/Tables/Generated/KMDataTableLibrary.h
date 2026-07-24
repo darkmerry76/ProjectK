@@ -54,6 +54,7 @@
 #include "KMTable_SkillEffect_Normal.h"
 #include "KMTable_SkillEffectTransition.h"
 #include "KMTable_SkillSet.h"
+#include "KMTable_SkillSet_Beast.h"
 #include "KMTable_SkillSet_Hero.h"
 #include "KMTable_Stage.h"
 #include "KMTable_Stage_Dungeon.h"

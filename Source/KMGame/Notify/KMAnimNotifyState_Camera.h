@@ -37,16 +37,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))
 	float FadeOutTime = 0.2f;
-    	
-	UPROPERTY(Transient)
-	TMap<class USkeletalMeshComponent*, float> AnimationTimes;
 
-	UPROPERTY()
-	TWeakObjectPtr<class UKMCameralayerOverlaySequence> CameraOverlayLayer;
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="FadeOutTime"))
+	float PlayRate = 1.f;
 
-protected:
-	TSharedPtr<struct FEMCameraCacheInstance> CameraCacheInstance;
-	TWeakPtr<class FEMCameraCacheManager> CameraCacheManager;
+	TWeakPtr<struct FKMCameraLayerPlayInstance> CameraLayerPlayInstance; 
 
 protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
