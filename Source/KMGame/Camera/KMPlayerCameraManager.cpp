@@ -4,15 +4,81 @@
 #include "Core/KMGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Layer/KMCameraLayerBase.h"
+#include "Layer/KMCameralayerGameplay.h"
 
-bool FKMCameraLayerPlayInstance::Update(float deltaTime)
+FKMCameraLayerPlayInstance::~FKMCameraLayerPlayInstance()
 {
-	bool bResult = true;
+}
+
+bool FKMCameraLayerPlayInstance::IsEnd() const
+{
+	if (ElipsedTime >= Duration)
+	{
+		return true;
+	}
+	return false;
+}
+
+void FKMCameraLayerPlayInstance::Update(float deltaTime)
+{
 	if (ElipsedTime >= Duration)
 	{
 		ElipsedTime = Duration;
-		bResult = false;
 	}
+}
+
+FKMCameraGameLayerPlayInstance::~FKMCameraGameLayerPlayInstance()
+{
+	UKMCameralayerGameplay* cameralayerGameplay = Cast<UKMCameralayerGameplay>(Cameralayer);
+	if (IsValid(cameralayerGameplay))
+	{
+		cameralayerGameplay->TargetArmLength = Remeber_TargetArmLength;
+	}
+}
+
+void FKMCameraGameLayerPlayInstance::BeginPlay()
+{
+	UKMCameralayerGameplay* cameralayerGameplay = Cast<UKMCameralayerGameplay>(Cameralayer);
+	if (IsValid(cameralayerGameplay))
+	{
+		if (!bIsImmediate)
+		{
+			Remeber_TargetArmLength = cameralayerGameplay->TargetArmLength;
+		}
+	}
+}
+
+void FKMCameraGameLayerPlayInstance::Update(float deltaTime)
+{
+	Super::Update(deltaTime);
+
+	UKMCameralayerGameplay* cameralayerGameplay = Cast<UKMCameralayerGameplay>(Cameralayer);
+	if (IsValid(cameralayerGameplay))
+	{
+		cameralayerGameplay->TargetArmLength = FMath::FInterpTo(cameralayerGameplay->TargetArmLength, TargetArmLength, deltaTime, Speed); 
+	}
+
+	ElipsedTime += deltaTime * Rate;
+}
+
+FKMCameraSequenceLayerPlayInstance::~FKMCameraSequenceLayerPlayInstance()
+{
+	if (IsValid(Cameralayer))
+	{
+		if (bIsImmediate)
+		{
+			Cameralayer->SetAlpha(1.f);
+		}
+		else
+		{
+			Cameralayer->SetAlpha(0.f);
+		}
+	}
+}
+
+void FKMCameraSequenceLayerPlayInstance::Update(float deltaTime)
+{
+	Super::Update(deltaTime);
 	
 	float blendInAlpha = 1.0f;
 	if (BlendInTime > 0.0f)
@@ -36,23 +102,6 @@ bool FKMCameraLayerPlayInstance::Update(float deltaTime)
 	Cameralayer->SetRelativeCameraData(cameraOutput);
 
 	ElipsedTime += deltaTime * Rate;
-	
-	return bResult;
-}
-
-FKMCameraLayerPlayInstance::~FKMCameraLayerPlayInstance()
-{
-	if (IsValid(Cameralayer))
-	{
-		if (bIsImmediate)
-		{
-			Cameralayer->SetAlpha(1.f);
-		}
-		else
-		{
-			Cameralayer->SetAlpha(0.f);
-		}
-	}
 }
 
 AKMPlayerCameraManager::AKMPlayerCameraManager(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -136,7 +185,6 @@ TSharedPtr<FKMCameraLayerPlayInstance> AKMPlayerCameraManager::PlayCameraLayer(E
 	}
 		
 	TWeakPtr<FEMCameraCacheManager> cameraCacheManager = nullptr;
-	TSharedPtr<FKMCameraLayerPlayInstance> newCameraLayerPlayInstance = MakeShared<FKMCameraLayerPlayInstance>();
 	if (GetWorld()->IsGameWorld())
 	{
 		if (UKMGameInstance* gameInstance = UKMGameInstance::GetGameInstance(this))
@@ -155,10 +203,29 @@ TSharedPtr<FKMCameraLayerPlayInstance> AKMPlayerCameraManager::PlayCameraLayer(E
 	{
 		return nullptr;
 	}
-	newCameraLayerPlayInstance->CameraCacheInstance = cameraCacheManager.Pin()->CreateCameraCacheInstance(cameraSequence);
-	if (!newCameraLayerPlayInstance->CameraCacheInstance.IsValid())
+
+	TSharedPtr<FKMCameraLayerPlayInstance> newCameraLayerPlayInstance = nullptr;
+
+	if (layerType == EKMCameralayerType::OverlaySequence)
 	{
-		return nullptr;
+		TSharedPtr<FKMCameraSequenceLayerPlayInstance> newCameraSequenceLayerPlayInstance = MakeShared<FKMCameraSequenceLayerPlayInstance>();
+		newCameraLayerPlayInstance = newCameraSequenceLayerPlayInstance;
+		
+		newCameraSequenceLayerPlayInstance->CameraCacheInstance = cameraCacheManager.Pin()->CreateCameraCacheInstance(cameraSequence);
+		if (!newCameraSequenceLayerPlayInstance->CameraCacheInstance.IsValid())
+		{
+			return nullptr;
+		}
+	}
+	else if (layerType == EKMCameralayerType::Gameplay)
+	{
+		TSharedPtr<FKMCameraGameLayerPlayInstance> newCameraGameLayerPlayInstance = MakeShared<FKMCameraGameLayerPlayInstance>();
+		newCameraLayerPlayInstance = newCameraGameLayerPlayInstance;
+	}
+
+	if (!newCameraLayerPlayInstance.IsValid())
+	{
+		return nullptr;	
 	}
 	
 	newCameraLayerPlayInstance->Cameralayer = currentCamera->GetCameraLayer(layerType);
@@ -166,13 +233,13 @@ TSharedPtr<FKMCameraLayerPlayInstance> AKMPlayerCameraManager::PlayCameraLayer(E
 	{
 		return nullptr;
 	}
+	newCameraLayerPlayInstance->Cameralayer->SetAlpha(1.f);
 	newCameraLayerPlayInstance->BlendInTime = blendInTime;
 	newCameraLayerPlayInstance->BlendOutTime = blendOutTime;
 	newCameraLayerPlayInstance->Rate = rate;
 	newCameraLayerPlayInstance->Duration = duration;
-	newCameraLayerPlayInstance->Cameralayer->SetAlpha(1.f);
 	newCameraLayerPlayInstance->bIsImmediate = bImmediate;
-	
+	newCameraLayerPlayInstance->BeginPlay();
 	CameraLayerPlayInstances.Emplace(newCameraLayerPlayInstance);
 
 	return newCameraLayerPlayInstance;
@@ -194,9 +261,13 @@ void AKMPlayerCameraManager::Tick(float deltaTime)
 	
 	for (auto playInstanceItr = CameraLayerPlayInstances.CreateIterator(); playInstanceItr; ++playInstanceItr)
 	{
-		if (!(*playInstanceItr)->Update(deltaTime))
+		if ((*playInstanceItr)->IsEnd())
 		{
 			playInstanceItr.RemoveCurrent();
+		}
+		else
+		{
+			(*playInstanceItr)->Update(deltaTime);
 		}
 	}
 }

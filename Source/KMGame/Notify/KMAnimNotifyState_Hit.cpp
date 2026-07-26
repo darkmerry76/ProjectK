@@ -72,7 +72,15 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 	socketTransform.SetRotation(socketTransform.GetRotation() * HitTransform.GetRotation());
 	socketTransform.SetLocation(socketTransform.GetLocation() + (socketTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
 	socketTransform.SetScale3D(HitTransform.GetScale3D());
-	ownerCharacterInstance->BoxHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
+
+	if (CollisonType == EKMCollisonType::Box)
+	{
+		ownerCharacterInstance->BoxHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
+	}
+	else
+	{
+		ownerCharacterInstance->SphereHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
+	}
 }
 
 #if WITH_EDITOR
@@ -92,7 +100,14 @@ void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* pDI, USkeleta
 	socketTransform.SetRotation(socketTransform.GetRotation() * HitTransform.GetRotation());
 	socketTransform.SetLocation(socketTransform.GetLocation() + (socketTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
 
-	DrawWireBox(pDI, socketTransform.ToMatrixWithScale(), FBox(HitTransform.GetScale3D() * -1.f, HitTransform.GetScale3D()), FColor::Red,SDPG_World);
+	if (CollisonType == EKMCollisonType::Box)
+	{
+		DrawWireBox(pDI, socketTransform.ToMatrixWithScale(), FBox(HitTransform.GetScale3D() * -1.f, HitTransform.GetScale3D()), FColor::Red,SDPG_World);
+	}
+	else if (CollisonType == EKMCollisonType::Sphere)
+	{
+		DrawWireSphere(pDI, socketTransform.GetLocation(), FColor::Red, HitTransform.GetScale3D().X * 100.f, 32, SDPG_World);
+	}
 }
 #endif
 

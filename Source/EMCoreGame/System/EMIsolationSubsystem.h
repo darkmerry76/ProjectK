@@ -18,6 +18,7 @@ public:
 	static UEMIsolationSubsystem* GetIsolationSubsystem(UObject* worldContextObject);
 
 	inline static const FName IsolationTag = FName("Isolation");
+	inline static const FName IsolationIgnoreTag = FName("IsolationIgnore");
 
 	FDelegateHandle ActorSpawnedHandle;
 

@@ -5,7 +5,7 @@
 #include "StructUtils/InstancedStruct.h"
 #include "KMAnimNotifyState_Parameter.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Parameter")
 class KMGAME_API UKMAnimNotifyState_Parameter : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
@@ -20,4 +20,7 @@ public:
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 
 	FName GetLayerName() const;
+
+protected:
+	virtual FString GetNotifyName_Implementation() const override;
 };

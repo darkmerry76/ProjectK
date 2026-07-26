@@ -4,6 +4,14 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_Hit.generated.h"
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMCollisonType : uint8
+{
+	Box,
+	Sphere,
+	Capsule,
+};
+
 USTRUCT(BlueprintType)
 struct KMGAME_API FKMHitCheckData
 {
@@ -20,6 +28,9 @@ class KMGAME_API UKMAnimNotifyState_Hit : public UKMAnimNotifyState
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
+	EKMCollisonType CollisonType = EKMCollisonType::Box;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="CollisonType"))
 	FTransform HitTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="HitTransform"))

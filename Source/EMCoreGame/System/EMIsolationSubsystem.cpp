@@ -43,13 +43,11 @@ bool UEMIsolationSubsystem::IsActivated() const
 
 void UEMIsolationSubsystem::AddExtraComponent(AActor* ownerActor, UPrimitiveComponent* newPrimitiveComponent)
 {
-	for (auto visibleActor : VisibleActors)
+	if (!bIsActiveIsolation)
 	{
-		if (visibleActor == ownerActor)
-		{
-			ComponentRenderPassHidden(newPrimitiveComponent);
-		}
+		return;
 	}
+	ComponentRenderPassHidden(newPrimitiveComponent);
 }
 
 void UEMIsolationSubsystem::OnLevelAdded(ULevel* level, UWorld* world)
@@ -84,7 +82,7 @@ void UEMIsolationSubsystem::ComponentRenderPassHidden(UPrimitiveComponent* primi
 			skeletalMeshComponent->ComponentTags.AddUnique(IsolationTag);
 		}
 	}
-	else
+	else if (!primitiveComponent->ComponentHasTag(IsolationIgnoreTag))
 	{
 		if (primitiveComponent->IsVisible())
 		{
@@ -101,19 +99,41 @@ void UEMIsolationSubsystem::ActorPrimitveRenderPassHidden(AActor* actor)
 		return;
 	}
 
-	bool bIsActorHidden = true;
+	bool bVisibleActor = false;
+	if (VisibleActors.Contains(actor))
+	{
+		bVisibleActor = true;
+	}
+
+
+	bool bIsActorHidden = !bVisibleActor;
 
 	if (!actor->IsA<ALandscapeProxy>())
 	{
 		TArray<UMeshComponent*> meshComponents;
 		actor->GetComponents(meshComponents);
 
-		if (!meshComponents.IsEmpty())
+		if (!bVisibleActor)
+		{
+			if (!meshComponents.IsEmpty())
+			{
+				bIsActorHidden = false;
+				for (UMeshComponent* meshComponent : meshComponents)
+				{
+					ComponentRenderPassHidden(meshComponent);
+				}
+			}
+		}
+
+		TArray<UFXSystemComponent*> fxComponents;
+		actor->GetComponents(fxComponents);
+
+		if (!fxComponents.IsEmpty())
 		{
 			bIsActorHidden = false;
-			for (UMeshComponent* primitiveComponent : meshComponents)
+			for (UFXSystemComponent* fxComponent : fxComponents)
 			{
-				ComponentRenderPassHidden(primitiveComponent);
+				ComponentRenderPassHidden(fxComponent);
 			}
 		}
 	}
@@ -149,10 +169,6 @@ void UEMIsolationSubsystem::EnterIsolation(const TArray<AActor*>& visibleActors)
 		for (TActorIterator<AActor> actorItr(GetWorld()); actorItr; ++actorItr)
 		{
 			AActor* actor = *actorItr;
-			if (visibleActors.Contains(actor))
-			{
-				continue;
-			}
 			ActorPrimitveRenderPassHidden(actor);
 		}
 	}

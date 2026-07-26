@@ -15,9 +15,18 @@ class KMGAME_API UKMAnimNotifyState_Camera : public UKMAnimNotifyState
 
 protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
+	bool bOverride_UseCameraSequence = true;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(EditCondition=bOverride_UseCameraSequence, AllowPrivateAccess=true, DisplayAfter="bOverride_UseCameraSequence"))
 	TObjectPtr<class UCameraAnimationSequence> CameraSequence;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="CameraSequence"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(EditCondition="!bOverride_UseCameraSequence", AllowPrivateAccess=true, DisplayAfter="CameraSequence"))
+	float TargetArmLength = 800.f; 
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(EditCondition="!bOverride_UseCameraSequence", AllowPrivateAccess=true, DisplayAfter="TargetArmLength"))
+	float TargetArmLengthSpeed = 10.f;
+	
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="TargetArmLengthSpeed"))
 	FKMParameterSimpleScalar BlendIn;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendIn"))

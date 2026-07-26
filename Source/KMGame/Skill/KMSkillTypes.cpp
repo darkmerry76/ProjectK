@@ -591,33 +591,33 @@ double FKMSkillEffectBuffInstance::CalculateParameter(UKMCharacterInstance* targ
 	double baseValue = EffectTableRecord->BaseValue;
 	switch(EffectTableRecord->ScaleType)
 	{
-	case EKMStatParameterType::Hp: baseValue = (1.f / baseValue) * (secondaryStat.GetHp() * deltaSeconds); break;
-	case EKMStatParameterType::HpRps: baseValue = (1.f / baseValue) * (secondaryStat.GetHpRps() * deltaSeconds); break;
-	case EKMStatParameterType::HpCurr: baseValue = (1.f / baseValue) * (secondaryStat.GetHpCurr() * deltaSeconds); break;
+	case EKMStatParameterType::Hp: baseValue = (1.f * baseValue) * (secondaryStat.GetHp() * deltaSeconds); break;
+	case EKMStatParameterType::HpRps: baseValue = (1.f * baseValue) * (secondaryStat.GetHpRps() * deltaSeconds); break;
+	case EKMStatParameterType::HpCurr: baseValue = (1.f * baseValue) * (secondaryStat.GetHpCurr() * deltaSeconds); break;
 
-	case EKMStatParameterType::Sp: baseValue = (1.f / baseValue) * (secondaryStat.GetSp() * deltaSeconds); break;
-	case EKMStatParameterType::SpRps: baseValue = (1.f / baseValue) * (secondaryStat.GetSpRps() * deltaSeconds); break;
-	case EKMStatParameterType::SpCurr: baseValue = (1.f / baseValue) * (secondaryStat.GetSpCurr() * deltaSeconds); break;
+	case EKMStatParameterType::Sp: baseValue = (1.f * baseValue) * (secondaryStat.GetSp() * deltaSeconds); break;
+	case EKMStatParameterType::SpRps: baseValue = (1.f * baseValue) * (secondaryStat.GetSpRps() * deltaSeconds); break;
+	case EKMStatParameterType::SpCurr: baseValue = (1.f * baseValue) * (secondaryStat.GetSpCurr() * deltaSeconds); break;
 
-	case EKMStatParameterType::Mp: baseValue = (1.f / baseValue) * (secondaryStat.GetMp() * deltaSeconds); break;
-	case EKMStatParameterType::MpRps: baseValue = (1.f / baseValue) * (secondaryStat.GetMpRps() * deltaSeconds); break;
-	case EKMStatParameterType::MpCurr: baseValue = (1.f / baseValue) * (secondaryStat.GetMpCurr() * deltaSeconds); break;
+	case EKMStatParameterType::Mp: baseValue = (1.f * baseValue) * (secondaryStat.GetMp() * deltaSeconds); break;
+	case EKMStatParameterType::MpRps: baseValue = (1.f * baseValue) * (secondaryStat.GetMpRps() * deltaSeconds); break;
+	case EKMStatParameterType::MpCurr: baseValue = (1.f * baseValue) * (secondaryStat.GetMpCurr() * deltaSeconds); break;
 
-	case EKMStatParameterType::Atk: baseValue = (1.f / baseValue) * (secondaryStat.GetAtk() * deltaSeconds); break;
-	case EKMStatParameterType::AtkSpd: baseValue = (1.f / baseValue) * (secondaryStat.GetAtkSpd() * deltaSeconds); break;
-	case EKMStatParameterType::Dex: baseValue = (1.f / baseValue) * (secondaryStat.GetDex() * deltaSeconds); break;
+	case EKMStatParameterType::Atk: baseValue = (1.f * baseValue) * (secondaryStat.GetAtk() * deltaSeconds); break;
+	case EKMStatParameterType::AtkSpd: baseValue = (1.f * baseValue) * (secondaryStat.GetAtkSpd() * deltaSeconds); break;
+	case EKMStatParameterType::Dex: baseValue = (1.f * baseValue) * (secondaryStat.GetDex() * deltaSeconds); break;
 
-	case EKMStatParameterType::Def: baseValue = (1.f / baseValue) * (secondaryStat.GetDef() * deltaSeconds); break;
-	case EKMStatParameterType::Cri: baseValue = (1.f / baseValue) * (secondaryStat.GetCri() * deltaSeconds); break;
-	case EKMStatParameterType::CriChance: baseValue = (1.f / baseValue) * (secondaryStat.GetCriChange() * deltaSeconds); break;
-	case EKMStatParameterType::Mov: baseValue = (1.f / baseValue) * (secondaryStat.GetMov() * deltaSeconds); break;
+	case EKMStatParameterType::Def: baseValue = (1.f * baseValue) * (secondaryStat.GetDef() * deltaSeconds); break;
+	case EKMStatParameterType::Cri: baseValue = (1.f * baseValue) * (secondaryStat.GetCri() * deltaSeconds); break;
+	case EKMStatParameterType::CriChance: baseValue = (1.f * baseValue) * (secondaryStat.GetCriChange() * deltaSeconds); break;
+	case EKMStatParameterType::Mov: baseValue = (1.f * baseValue) * (secondaryStat.GetMov() * deltaSeconds); break;
 
-	case EKMStatParameterType::Emp: baseValue = (1.f / baseValue) * (secondaryStat.GetEmp() * deltaSeconds); break;
-	case EKMStatParameterType::EmpCurr: baseValue = (1.f / baseValue) * (secondaryStat.GetEmpCurr() * deltaSeconds); break;
+	case EKMStatParameterType::Emp: baseValue = (1.f * baseValue) * (secondaryStat.GetEmp() * deltaSeconds); break;
+	case EKMStatParameterType::EmpCurr: baseValue = (1.f * baseValue) * (secondaryStat.GetEmpCurr() * deltaSeconds); break;
 
-	case EKMStatParameterType::Tempo: baseValue = (1.f / baseValue) * (secondaryStat.GetTempo() * deltaSeconds); break;
-	case EKMStatParameterType::TempoRps: baseValue = (1.f / baseValue) * (secondaryStat.GetTempoRps() * deltaSeconds); break;
-	case EKMStatParameterType::TempoCurr: baseValue = (1.f / baseValue) * (secondaryStat.GetTempoCurr() * deltaSeconds); break;
+	case EKMStatParameterType::Tempo: baseValue = (1.f * baseValue) * (secondaryStat.GetTempo() * deltaSeconds); break;
+	case EKMStatParameterType::TempoRps: baseValue = (1.f * baseValue) * (secondaryStat.GetTempoRps() * deltaSeconds); break;
+	case EKMStatParameterType::TempoCurr: baseValue = (1.f * baseValue) * (secondaryStat.GetTempoCurr() * deltaSeconds); break;
 	default:break;
 	}
 	

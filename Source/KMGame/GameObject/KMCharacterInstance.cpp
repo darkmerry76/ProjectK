@@ -443,7 +443,7 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orie
 	check(IsValid(hitCharacterInstance));
 
 	if (hitCharacterInstance->IsDead() ||
-		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag) ||
+		//hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag) ||
 		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
 	{
 		return;
@@ -473,6 +473,7 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orie
 		hitCharacterInstance->Hit(this, latestSkillInstance, closestPoint);
 	}
 }
+
 void UKMCharacterInstance::BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter)
 {
 	if (objectTypeQuery.IsEmpty())
@@ -489,6 +490,30 @@ void UKMCharacterInstance::BoxHitImpact(const FTransform& orientationTransform, 
 	ActorsToIgnore.Emplace(GetCharacter());
 	if (UKismetSystemLibrary::BoxOverlapActorsWithOrientation(this, orientationTransform.GetLocation(),
 		orientationTransform.GetScale3D(), orientationTransform.GetRotation().Rotator(), objectTypeQuery, actorClassFilter, ActorsToIgnore, overlapActors))
+	{
+		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
+		{
+			HitCollection(*actorItr, orientationTransform);
+		}
+	}
+}
+
+void UKMCharacterInstance::SphereHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter)
+{
+	if (objectTypeQuery.IsEmpty())
+	{
+		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	}
+	if (!IsValid(actorClassFilter))
+	{
+		actorClassFilter = ACharacter::StaticClass();
+	}
+
+	TArray<AActor*> overlapActors;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Emplace(GetCharacter());
+	if (UKismetSystemLibrary::SphereOverlapActors(this, orientationTransform.GetLocation(),
+		orientationTransform.GetScale3D().X * 100.f, objectTypeQuery, actorClassFilter, ActorsToIgnore, overlapActors))
 	{
 		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
 		{

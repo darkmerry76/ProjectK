@@ -85,6 +85,7 @@ void UKMAbility::OnActivated_Implementation()
 
 void UKMAbility::Deactivate()
 {
+	StopMartialArts();
 	OnDeacivated();
 }
 

@@ -126,7 +126,7 @@ EKMTimingResult FKMTimingCancel::GetResult() const
 	}
 	
 	float elapsedTime = OwnerCharacterInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
-	
+
 	if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetPerfectCancel())
 	{
 		return EKMTimingResult::Perfect;

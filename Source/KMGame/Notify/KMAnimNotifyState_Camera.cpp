@@ -1,11 +1,7 @@
 #include "KMAnimNotifyState_Camera.h"
 #include "CameraAnimationSequence.h"
-#include "EMMartialArtsModule.h"
-#include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
 #include "Camera/Layer/KMCameralayerOverlaySequence.h"
-#include "Core/KMGameInstance.h"
-#include "Sequencer/EMCameraCacheManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_Camera
@@ -34,8 +30,22 @@ void UKMAnimNotifyState_Camera::NotifyBegin(USkeletalMeshComponent* meshComp, UA
 	AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(meshComp);
 	if(IsValid(playerCameraManager))
 	{
-		CameraLayerPlayInstance = playerCameraManager->PlayCameraLayer(EKMCameralayerType::OverlaySequence,
-			CameraSequence, eventReference.GetNotify()->Duration, BlendInTime, BlendOutTime, PlayRate, bIsImmadiate);
+		if (bOverride_UseCameraSequence)
+		{
+			CameraLayerPlayInstance = playerCameraManager->PlayCameraLayer(EKMCameralayerType::OverlaySequence,
+				CameraSequence, eventReference.GetNotify()->Duration, BlendInTime, BlendOutTime, PlayRate, bIsImmadiate);
+		}
+		else
+		{
+			CameraLayerPlayInstance = playerCameraManager->PlayCameraLayer(EKMCameralayerType::Gameplay,
+				CameraSequence, eventReference.GetNotify()->Duration, BlendInTime, BlendOutTime, PlayRate, bIsImmadiate);
+			if (CameraLayerPlayInstance.IsValid())
+			{
+				FKMCameraGameLayerPlayInstance* cameraGameLayerPlayInstance = static_cast<FKMCameraGameLayerPlayInstance*>(CameraLayerPlayInstance.Pin().Get());
+				cameraGameLayerPlayInstance->TargetArmLength = TargetArmLength;
+				cameraGameLayerPlayInstance->Speed = TargetArmLengthSpeed;
+			}
+		}
 	}
 }
 

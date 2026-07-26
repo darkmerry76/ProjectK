@@ -4,7 +4,16 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_NiagaraFX.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+USTRUCT()
+struct KMGAME_API FKMAnimNotifyState_NiagaraFXData
+{
+	GENERATED_USTRUCT_BODY()
+	
+	UPROPERTY()
+	TArray<class UNiagaraComponent*> NiagaraComponents;
+};
+
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Camera")
 class KMGAME_API UKMAnimNotifyState_NiagaraFX : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()
@@ -37,8 +46,11 @@ protected:
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="Scale"))
 	bool bAbsoluteScale = false;
 
+	UPROPERTY(EditAnywhere, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="bAbsoluteScale"))
+	TArray<FName> Tags;
+
 	UPROPERTY()
-	class UNiagaraComponent* SpawnedEffect;
+	TMap<class USkeletalMeshComponent*, FKMAnimNotifyState_NiagaraFXData> SpawnedEffects;
 	
 	FQuat RotationOffsetQuat = FQuat::Identity;
 
@@ -50,8 +62,9 @@ public:
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 
-	class UNiagaraComponent* GetSpawnedEffect() const;
-
 protected:
 	virtual class UNiagaraComponent* SpawnEffect(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation);
+
+protected:
+	virtual FString GetNotifyName_Implementation() const override;
 };

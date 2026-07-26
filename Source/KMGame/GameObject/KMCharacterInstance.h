@@ -163,6 +163,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter);
 
+	UFUNCTION(BlueprintCallable)
+	void SphereHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter);
+
 protected:
 	void HitCollection(class AActor* hitActor,const FTransform& orientationTransform);
 	

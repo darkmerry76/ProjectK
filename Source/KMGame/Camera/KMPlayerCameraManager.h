@@ -11,8 +11,7 @@ struct KMGAME_API FKMCameraLayerPlayInstance
 	GENERATED_USTRUCT_BODY()
 
 	virtual ~FKMCameraLayerPlayInstance();
-	
-	TSharedPtr<struct FEMCameraCacheInstance> CameraCacheInstance;
+	virtual void BeginPlay() { };
 	
 	float Duration = 0.f;
 	float ElipsedTime = 0.f;
@@ -26,7 +25,37 @@ struct KMGAME_API FKMCameraLayerPlayInstance
 	UPROPERTY()
 	TObjectPtr<class UKMCameralayerBase> Cameralayer;
 
-	bool Update(float deltaTime);
+	bool IsEnd() const;
+
+	virtual void Update(float deltaTime);
+};
+
+USTRUCT()
+struct KMGAME_API FKMCameraGameLayerPlayInstance : public FKMCameraLayerPlayInstance
+{
+	GENERATED_USTRUCT_BODY()
+	
+	virtual ~FKMCameraGameLayerPlayInstance() override;
+	
+	float TargetArmLength = 1200.f;
+	float Remeber_TargetArmLength = 1200.f;
+	
+	float Speed = 20.f;
+
+	virtual void BeginPlay() override;
+	virtual void Update(float deltaTime) override;
+};
+
+USTRUCT()
+struct KMGAME_API FKMCameraSequenceLayerPlayInstance : public FKMCameraLayerPlayInstance
+{
+	GENERATED_USTRUCT_BODY()
+
+	virtual ~FKMCameraSequenceLayerPlayInstance() override;
+	
+	TSharedPtr<struct FEMCameraCacheInstance> CameraCacheInstance;
+
+	virtual void Update(float deltaTime) override;
 };
 
 UCLASS(Blueprintable, BlueprintType)

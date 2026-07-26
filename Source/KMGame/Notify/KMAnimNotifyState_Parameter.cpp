@@ -7,6 +7,12 @@ UKMAnimNotifyState_Parameter::UKMAnimNotifyState_Parameter(const FObjectInitiali
 	SetGroupType(EEMNotifyGroupType::FX);
 }
 
+FString UKMAnimNotifyState_Parameter::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	return notifyName;
+}
+
 FName UKMAnimNotifyState_Parameter::GetLayerName() const
 {
 	return FName(*LexToString(GetUniqueID()));

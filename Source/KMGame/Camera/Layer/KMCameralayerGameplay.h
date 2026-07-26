@@ -9,7 +9,7 @@ class KMGAME_API UKMCameralayerGameplay : public UKMCameralayerBase
 {
 	GENERATED_UCLASS_BODY()
 
-	protected:
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)
 	float TargetArmLength;
 
