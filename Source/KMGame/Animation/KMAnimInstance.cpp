@@ -77,10 +77,7 @@ void UKMAnimInstance::InitOnMoveBlendSpaceUpdate(const FAnimUpdateContext& conte
 
 void UKMAnimInstance::OnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node)
 {
-//	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green,
-//		FString::Printf(TEXT("OnMoveBlendSpace::ElipsedTime %.3f"), MovementElipsedTime));
-
-	MovementElipsedTime += context.GetContext()->GetDeltaTime();
+	MovementElipsedTime = node.GetAnimNode<FAnimNode_AssetPlayerBase>().GetAccumulatedTime();
 }
 
 #endif

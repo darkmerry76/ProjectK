@@ -350,7 +350,10 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 	}
 	else
 	{
-		SetMovementMode(MOVE_Walking);
+		if (!IsCustomRun())
+		{
+			SetMovementMode(MOVE_Walking);
+		}
 	}
 }
 
@@ -396,7 +399,10 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 				activeJumpAnimMontage = nullptr;
 			}
 			Velocity = FVector::ZeroVector;
-			SetMovementMode(MOVE_Walking);
+			if (!IsCustomRun())
+			{
+				SetMovementMode(MOVE_Walking);
+			}
 			SetCustomMovementMode(EKMCustomMovementMode::CMODE_Walking);
 			activeJumpAnimMontage = nullptr;
 		}
@@ -570,4 +576,21 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 bool UKMCharacterMovementComponent::IsAir() const
 {
 	return !IsOnGround();
+}
+
+bool UKMCharacterMovementComponent::IsCustomRun() const
+{
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return false;
+	}
+	
+	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	if (!IsValid(curveWarping))
+	{
+		return false;
+	}
+
+	return curveWarping->IsCustomRun();
 }

@@ -22,7 +22,7 @@ struct FKMAbilityEvent
 struct FKMComboData
 {
 	const struct FKMTable_SkillSetRow* skillSet = nullptr;
-	int32 CurrentCombo = 0;
+	int32 CurrentCombo = -1;
 	int32 NextCombo = 0;
 	bool Pressed = false;
 	
@@ -37,9 +37,11 @@ struct FKMComboData
 	void Reset()
 	{
 		skillSet = nullptr;
-		CurrentCombo = 0;
+		CurrentCombo = -1;
+		NextCombo = 0;
 		SkillInstance = nullptr;
 		LockOnCluster = nullptr;
+		Pressed = false;
 	}
 };
 

@@ -1,5 +1,4 @@
 #include "KMAbilitySkill.h"
-#include "EMMartialArtsComponent.h"
 #include "Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
@@ -35,20 +34,13 @@ void UKMAbilitySkill::Activate()
 void UKMAbilitySkill::Deactivate()
 {
 	Super::Deactivate();
-
+	
 	AKMCharacter* character = GetOwnerCharacter();
 	if (IsValid(character))
 	{
 		if (IsValid(Montage))
 		{
 			StopMontage(Montage);
-		}
-		if (MartialArtsHandle != INDEX_NONE)
-		{
-			if (UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent())
-			{
-				martialArtsComponent->StopByInstanceId(MartialArtsHandle);
-			}
 		}
 		if (bIsDirectionFallow)
 		{

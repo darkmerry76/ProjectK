@@ -4,6 +4,7 @@
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -233,12 +234,17 @@ void UKMCharacterInstance::RevertFromBest()
 	bIsBeast = false;
 	if (GetWorld()->IsGameWorld())
 	{
-		OnRevertFromBest();
-
 		if (characterTableRow->TransformSkill != NAME_None)
 		{
 			SkillHandler->UseSkill(FKMSkillKey(characterTableRow->TransformSkill, 0), nullptr);
 		}
+
+		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
+		if (IsValid(curveWarping))
+		{
+			curveWarping->StopCustomRun();
+		}
+		OnRevertFromBest();
 	}
 }
 
@@ -317,11 +323,24 @@ void UKMCharacterInstance::TransformToBeast()
 	bIsBeast = true;
 	if (GetWorld()->IsGameWorld())
 	{
-		OnTransformToBeast();
 		if (BeastTableRow->TransformSkill != NAME_None)
 		{
 			SkillHandler->UseSkill(FKMSkillKey(BeastTableRow->TransformSkill, 0), nullptr);
 		}
+
+		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
+		if (IsValid(curveWarping))
+		{
+			UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+			if (IsValid(animInstance))
+			{
+				float minRange = 0.f, maxRange = 0.f;
+				UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
+				UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
+				curveWarping->StartCustomRun(animSequence);
+			}
+		}
+		OnTransformToBeast();
 	}
 }
 
@@ -695,18 +714,6 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 	{
 		return;
 	}
-
-	UEMCurveWarpingComponent* curveWarping =  ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return;
-	}
-
-	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
-	if (!IsValid(animInstance))
-	{
-		return;
-	}
 	
 	deltaSeconds *= ownerCharacter->CustomTimeDilation;
 	
@@ -717,24 +724,6 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 		if (IsRun())
 		{
 			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
-			if (IsBeast())
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 2.f , FColor::Red, ownerCharacter->GetCharacterMovement()->GetLastInputVector().ToString());
-				
-				if (!curveWarping->IsCustomRun() && !ownerCharacter->GetCharacterMovement()->GetLastInputVector().IsNearlyZero())
-				{
-					float minRange = 0.f;
-					float maxRange = 0.f;
-					
-					UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
-					UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
-					curveWarping->StartCustomRun(animSequence);
-				}
-				else if (curveWarping->IsCustomRun() && ownerCharacter->GetCharacterMovement()->GetLastInputVector().IsNearlyZero())
-				{
-					curveWarping->StopCustomRun();
-				}
-			}
 		}
 		else
 		{

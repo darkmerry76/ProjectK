@@ -23,6 +23,8 @@ protected:
 	virtual bool CanLockOn() const override;
 	virtual bool CanBeTargeted() const override;
 
+	virtual void Tick(float deltaTime) override;
+
 protected:
 	void ApplyPlayerSkill(const FName& skillId, int32 skillLevel);
 };

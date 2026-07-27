@@ -58,10 +58,12 @@ void UKMSkillHandler::ClearResisterSkillSet()
 
 void UKMSkillHandler::ClearActiveSkills()
 {
+	ComboData.Reset();
+	
 	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
-		if (skillInstance.IsValid() == false)
+		if (!skillInstance.IsValid())
 		{
 			continue;
 		}
@@ -79,7 +81,6 @@ void UKMSkillHandler::ClearActiveSkills()
 		OnRemoveAbilityInstance(skillInstance);
 		skillInstanceItr.RemoveCurrent();
 	}
-	ComboData.Reset();
 }
 
 void UKMSkillHandler::ClearPassiveSkills()
@@ -87,7 +88,7 @@ void UKMSkillHandler::ClearPassiveSkills()
 	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
-		if (skillInstance.IsValid() == false)
+		if (!skillInstance.IsValid())
 		{
 			continue;
 		}
@@ -139,7 +140,7 @@ void UKMSkillHandler::RegisterSkills(const TArray<FKMSkillKey>& skillKeys)
 {
 	for (FKMSkillKey skillKey : skillKeys)
 	{
-		if (skillKey.IsValid() == false)
+		if (!skillKey.IsValid())
 		{
 			continue;
 		}
@@ -161,8 +162,8 @@ void UKMSkillHandler::RegisterSkills(const TArray<FName>& skillIds)
 
 void UKMSkillHandler::RegisterSkill(const FKMSkillKey& newSkillKey)
 {
-	check(newSkillKey.IsValid() == true);
-	if (OwnedSkills.Contains(newSkillKey) == true)
+	check(newSkillKey.IsValid());
+	if (OwnedSkills.Contains(newSkillKey))
 	{
 		return;
 	}
@@ -186,7 +187,7 @@ bool UKMSkillHandler::HasOwnedSkill(const FKMSkillKey& skillKey) const
 bool UKMSkillHandler::IsReadyCooltime(const FKMSkillKey& skillKey) const
 {
 	const TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillKey);
-	check(timerInstance != nullptr);
+	check(timerInstance);
 
 	check((*timerInstance)->GetType() == FKMAbilityInstanceCooltime::TypeName());
 	
@@ -210,36 +211,36 @@ bool UKMSkillHandler::ResetCooltime(const FKMSkillKey& skillKey)
 bool UKMSkillHandler::IsSkillAvailable(const FKMSkillKey& skillKey) const
 {
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
-	if (ownerCharacterInstance->IsDead() == true)
+	if (ownerCharacterInstance->IsDead())
 	{
 		return false;
 	}
-	if (skillKey.IsValid() == false)
+	if (!skillKey.IsValid())
 	{
 		return false;
 	}
 	
-	if (HasOwnedSkill(skillKey) == false)
+	if (!HasOwnedSkill(skillKey))
 	{
 		return false;
 	}
 
-	if (IsReadyCooltime(skillKey) == false)
+	if (!IsReadyCooltime(skillKey))
 	{
 		return false;	
 	}
 	
 	const FKMTable_SkillRow* newSkillTable = FKMTable_SkillRow::FindRowPtr(skillKey.TableId, skillKey.Level);
-	check(newSkillTable != nullptr);
+	check(newSkillTable);
 
 	int32 overlapCount = 0;
 	for (auto activatedskillItr : SkillInstances)
 	{
 		TSharedPtr<FKMSkillInstance> activatedskill = activatedskillItr.Value;
 		const FKMTable_SkillRow* activatedskillTable = FKMTable_SkillRow::FindRowPtr(activatedskill->SkillKey.TableId, activatedskill->SkillKey.Level);
-		check(activatedskillTable != nullptr);
+		check(activatedskillTable);
 
 		if (activatedskill->SkillKey.TableId == skillKey.TableId && !activatedskill->IsComplete())
 		{
@@ -263,9 +264,9 @@ bool UKMSkillHandler::IsSkillAvailable(const FKMSkillKey& skillKey) const
 bool UKMSkillHandler::CanUseSkill(const FKMSkillKey& skillKey, const TSharedPtr<FKMLockOnCluster>& lockOnCluster) const
 {
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
-	if (IsSkillAvailable(skillKey) == false)
+	if (!IsSkillAvailable(skillKey))
 	{
 		return false;
 	}
@@ -281,7 +282,7 @@ bool UKMSkillHandler::CanUseSkill(const FKMSkillKey& skillKey, const TSharedPtr<
 	}*/
 
 	UKMStatModifierBase* statModifier = ownerCharacterInstance->GetStatModifier();
-	check(IsValid(statModifier) == true);
+	check(IsValid(statModifier));
 
 	if (skillKey.TableRecord->CostHp > 0 &&
 		statModifier->GetEffectiveStat().GetHpCurr() < static_cast<double>(skillKey.TableRecord->CostHp))
@@ -412,11 +413,16 @@ void UKMSkillHandler::ActivatedNextComboSkill()
 	{
 		return;
 	}
-	
+
 	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(ComboData.skillSet->Skills[ComboData.NextCombo], 0), ComboData.LockOnCluster);
 	if (!newSkillInstance.IsValid())
 	{
 		return;
+	}
+
+	if (ComboData.SkillInstance.IsValid())
+	{
+		ComboData.SkillInstance.Pin()->SetForceComplete(true);
 	}
 
 	ComboData.CurrentCombo = ComboData.NextCombo;
@@ -497,7 +503,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 		{
 			if (ComboData.SkillInstance.IsValid())
 			{
-				if (ComboData.CurrentCombo + 1 < ComboData.skillSet->Skills.Num())
+				if (ComboData.CurrentCombo == -1 || ComboData.CurrentCombo + 1 < ComboData.skillSet->Skills.Num())
 				{
 					comboSkillScore = GetConditionScore(ComboData.skillSet->Skills[ComboData.CurrentCombo + 1], lockOnCluster);
 					if (comboSkillScore > 0.f)
@@ -508,7 +514,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 			}
 		}
 	}
-	if (comboSkillScore <= 0.f)
+	if (comboSkillScore < 0.f)
 	{
 		if (ComboData.SkillInstance.IsValid())
 		{
@@ -531,6 +537,10 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 	}
 
 	if (ComboData.NextCombo != 0)
+	{
+		return nullptr;
+	}
+	if (ComboData.CurrentCombo != -1)
 	{
 		return nullptr;
 	}
@@ -662,18 +672,18 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(const TSharedPtr<
 
 TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<FKMSkillInstance>& newSkillInstance)
 {
-	if (CanUseSkill(newSkillInstance->SkillKey, newSkillInstance->Target) == false)
+	if (!CanUseSkill(newSkillInstance->SkillKey, newSkillInstance->Target))
 	{
 		return nullptr;
 	}
 	
-	check(IsValid(ownerCharacterInstance) == true);
-
+	check(IsValid(ownerCharacterInstance));
+	
 	const FKMTable_SkillRow* skillTable = newSkillInstance->SkillKey.TableRecord;
-	check(skillTable != nullptr);
+	check(skillTable);
 
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager) == true);
+	check(IsValid(assetManager));
 
 	if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(skillTable))
 	{
@@ -715,7 +725,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 	newSkillInstance->SkillEffectTriggerDelegate.AddUObject(this, &ThisClass::OnSkillEffectTrigger);
 	
 	UKMStatModifierBase* statModifier = ownerCharacterInstance->GetStatModifier();
-	check(IsValid(statModifier) == true);
+	check(IsValid(statModifier));
 	
 	statModifier->GetEffectiveStat().SetHpCurr(
 		statModifier->GetEffectiveStat().GetHpCurr() - static_cast<int32>(skillTable->CostHp), true);
@@ -730,7 +740,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 		statModifier->GetEffectiveStat().GetTempoCurr() - static_cast<int32>(skillTable->CostTempo), true);
 	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	AbilityEvents.FindOrAdd(newSkillInstance);
 	OnAddAbilityInstance(newSkillInstance);
@@ -746,14 +756,14 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 
 void UKMSkillHandler::OnSkillEffectTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance)
 {
-	check (skillInstance.IsValid() == true);
+	check (skillInstance.IsValid());
 
 	ApplyEffects(skillInstance, eventTag);
 }
 
 void UKMSkillHandler::OnSkillTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance)
 {
-	check (skillInstance.IsValid() == true);
+	check (skillInstance.IsValid());
 	
 	if (const FKMTable_Skill_ProjectileRow* projectileSkillTable = CastRow<FKMTable_Skill_ProjectileRow>(skillInstance->SkillKey.TableRecord))
 	{
@@ -786,7 +796,7 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 		for (int32 targetIndex = 0; targetIndex < skillInstance->Target->NumTarget(); ++targetIndex)
 		{
 			UKMCharacterInstance* targetCharacterInstance = Cast<UKMCharacterInstance>(skillInstance->Target->GetTargetByIndex(targetIndex));
-			if (IsValid(targetCharacterInstance) == false)
+			if (!IsValid(targetCharacterInstance))
 			{
 				continue;
 			}
@@ -838,22 +848,22 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 
 TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TSharedPtr<FKMSkillInstance>& skillInstance, const FName& effectName)
 {
-	if (skillInstance.IsValid() == false)
+	if (!skillInstance.IsValid())
 	{
 		return nullptr;
 	}
-	check(skillInstance->SkillKey.TableRecord != nullptr);
+	check(skillInstance->SkillKey.TableRecord);
 
 	TSharedPtr<FKMSkillInstance> dupSkillInstance = MakeShared<FKMSkillInstance>(*skillInstance.Get());
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	const FKMTable_SkillEffectRow* skillEffectTable = FKMTable_SkillEffectRow::FindRowPtr(effectName);
-	check(skillEffectTable != nullptr);
+	check(skillEffectTable);
 
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
 	for (auto readTag: skillEffectTable->ReadGameplaytag)
 	{
@@ -884,7 +894,7 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 		break;
 	default: return nullptr;	
 	}
-	check(newSkillEffectInstance.IsValid() == true);
+	check(newSkillEffectInstance.IsValid());
 
 	EffectInstances.Emplace(LastAbilityUniqueId++, newSkillEffectInstance);
 	OnAddAbilityInstance(newSkillEffectInstance);
@@ -896,7 +906,7 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 
 int32 UKMSkillHandler::GetScoreSkill(const FKMSkillKey& skillKey) const
 {
-	if (IsSkillAvailable(skillKey) == false)
+	if (!IsSkillAvailable(skillKey))
 	{
 		return -1;
 	}
@@ -907,10 +917,10 @@ int32 UKMSkillHandler::GetScoreSkill(const FKMSkillKey& skillKey) const
 	}
 	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
 	UKMStatModifierBase* statModifier = ownerCharacterInstance->GetStatModifier();
-	check(IsValid(statModifier) == true);
+	check(IsValid(statModifier));
 
 	if (skillKey.TableRecord->CostHp > 0)
 	{
@@ -945,14 +955,14 @@ void UKMSkillHandler::UpdateAbilities(TMap<_TLKey, TSharedPtr<_TLValue>>& abilit
 	for (auto skillInstanceItr = abilityInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
 	{
 		TSharedPtr<FKMAbilityInstanceBase> abilityInstance = skillInstanceItr->Value;
-		if (abilityInstance.IsValid() == false)
+		if (!abilityInstance.IsValid())
 		{
 			continue;
 		}
 		
 		abilityInstance->Tick(deltaSeconds);
 		abilityInstance->PostTick(deltaSeconds);
-		if (abilityInstance->IsComplete() == true)
+		if (abilityInstance->IsComplete())
 		{
 			abilityInstance->Leave();
 			OnRemoveAbilityInstance(abilityInstance);
@@ -964,7 +974,7 @@ void UKMSkillHandler::UpdateAbilities(TMap<_TLKey, TSharedPtr<_TLValue>>& abilit
 void UKMSkillHandler::Tick(float deltaSeconds)
 {
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
 	UpdateAbilities<FKMSkillKey, FKMAbilityInstanceCooltime>(CooltimeInstances, deltaSeconds);
 	

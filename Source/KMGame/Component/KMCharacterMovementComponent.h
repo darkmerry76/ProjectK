@@ -71,6 +71,8 @@ public:
 
 	bool IsOnGround() const;
 	bool IsAir() const;
+
+	bool IsCustomRun() const;
 	
 protected:
 	virtual void BeginPlay() override;

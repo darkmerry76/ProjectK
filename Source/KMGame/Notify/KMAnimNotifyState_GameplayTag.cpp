@@ -18,9 +18,9 @@ FString UKMAnimNotifyState_GameplayTag::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-void UKMAnimNotifyState_GameplayTag::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UKMAnimNotifyState_GameplayTag::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
+	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner()))
 	{
 		for (auto gameplayTag : TagContainer.GetGameplayTagArray())
 		{
@@ -29,9 +29,9 @@ void UKMAnimNotifyState_GameplayTag::NotifyBegin(USkeletalMeshComponent* MeshCom
 	}
 }
 
-void UKMAnimNotifyState_GameplayTag::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UKMAnimNotifyState_GameplayTag::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
+	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner()))
 	{
 		for (auto gameplayTag : TagContainer.GetGameplayTagArray())
 		{

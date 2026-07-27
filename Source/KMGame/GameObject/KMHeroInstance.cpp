@@ -60,3 +60,8 @@ void UKMHeroInstance::OnEnterGame_Implementation()
 		hero->OnEnterGame();
 	}
 }
+
+void UKMHeroInstance::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
+}
