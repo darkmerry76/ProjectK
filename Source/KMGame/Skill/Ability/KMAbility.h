@@ -19,6 +19,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Duration = 1.f;
 
+	UPROPERTY(EditAnywhere, DisplayName="Loop", BlueprintReadWrite)
+	bool bIsLoop = false;
+
 protected:
 	TWeakPtr<class FKMSkillInstance> SkillInstance;
 	TSharedPtr<class FKMLockOnCluster> LockOnCluster;
@@ -120,6 +123,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayOwnerCurveWarping(class UCurveBase* newCurveAsset, FVector newTargetLocation,
 		float newPlayLength = 1.f, float newZScale = 1.f, bool bIgnoreZ = false, bool bAutoEndingWalk = true);
+
+	UFUNCTION(BlueprintPure)
+	class UKMAnimationSetTag* GetOwnerAnimationSetTag() const;
 
 protected:
 	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);

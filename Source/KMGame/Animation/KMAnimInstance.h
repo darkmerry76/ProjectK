@@ -52,8 +52,15 @@ public:
 
 	const TArray<FName>& GetHiddenBones() const;
 
+	UFUNCTION(BlueprintCallable)
+	void ResetMovementElipsedTime();
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
 	float GetMovementElapsedTime() const;
-	
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
+	bool IsUseCustomMove() const;
+
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))
 	void InitOnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, const FAnimNodeReference& node);

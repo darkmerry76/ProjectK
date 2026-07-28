@@ -80,7 +80,6 @@ void UKMAbility::Activate()
 
 void UKMAbility::OnActivated_Implementation()
 {
-	
 }
 
 void UKMAbility::Deactivate()
@@ -91,12 +90,10 @@ void UKMAbility::Deactivate()
 
 void UKMAbility::OnDeacivated_Implementation()
 {
-	
 }
 
 void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 {
-	
 }
 
 void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContextData, float newRate, bool bLooping)
@@ -363,4 +360,15 @@ void UKMAbility::PlayOwnerCurveWarping(UCurveBase* newCurveAsset, FVector newTar
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayCurveWarpjng(newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ, bAutoEndingWalk);
+}
+
+UKMAnimationSetTag* UKMAbility::GetOwnerAnimationSetTag() const
+{
+	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return nullptr;
+	}
+
+	return ownerCharacterInstance->GetAnimsetTag();
 }

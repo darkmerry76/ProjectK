@@ -15,7 +15,7 @@ void UKMAbilitySkill::Activate()
 
 	if (!IsValid(Montage))
 	{
-		PlayMartialArts(nullptr, Rate, false);
+		PlayMartialArts(nullptr, Rate, bIsLoop);
 	}
 
 	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))

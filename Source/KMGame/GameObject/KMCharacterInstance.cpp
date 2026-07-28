@@ -43,6 +43,10 @@ FName UKMCharacterInstance::GetRecordKey() const
 
 FName UKMCharacterInstance::GetRecordStatKey() const
 {
+	if (IsBeast())
+	{
+		return BeastTableRow->StatId;
+	}
 	check(Table != nullptr);
 	return Table->StatId;	
 }
@@ -238,11 +242,16 @@ void UKMCharacterInstance::RevertFromBest()
 		{
 			SkillHandler->UseSkill(FKMSkillKey(characterTableRow->TransformSkill, 0), nullptr);
 		}
+		if (StatModifier)
+		{
+			StatModifier->Compact();
+		}
 
 		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
 		if (IsValid(curveWarping))
 		{
-			curveWarping->StopCustomRun();
+			curveWarping->ClearCustomMovementAnimation();
+			curveWarping->DisableCustomMovement();
 		}
 		OnRevertFromBest();
 	}
@@ -328,6 +337,11 @@ void UKMCharacterInstance::TransformToBeast()
 			SkillHandler->UseSkill(FKMSkillKey(BeastTableRow->TransformSkill, 0), nullptr);
 		}
 
+		if (StatModifier)
+		{
+			StatModifier->Compact();
+		}
+
 		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
 		if (IsValid(curveWarping))
 		{
@@ -337,7 +351,8 @@ void UKMCharacterInstance::TransformToBeast()
 				float minRange = 0.f, maxRange = 0.f;
 				UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
 				UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
-				curveWarping->StartCustomRun(animSequence);
+				curveWarping->SetCustomMovementAnimation(animSequence);
+				curveWarping->EnableCustomMovement();
 			}
 		}
 		OnTransformToBeast();
@@ -357,6 +372,15 @@ void UKMCharacterInstance::SetTable(const FKMTable_CharacterRow* newTable)
 const FKMTable_CharacterRow* UKMCharacterInstance::GetTable() const
 {
 	return Table;
+}
+
+FName UKMCharacterInstance::GetCharacterId() const
+{
+	if (IsBeast())
+	{
+		return BeastTableRow->Id;
+	}
+	return Table->Id;
 }
 
 UKMAnimationSetTag* UKMCharacterInstance::GetAnimsetTag() const

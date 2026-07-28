@@ -625,7 +625,7 @@ const FKMTable_SkillSetRow* UKMSkillHandler::EvalurateSkillSet(const UKMCharacte
 		{
 			if (!skillSetTableRow->OwnerCharacter.ContainsByPredicate([&](const FName& characterId)
 			{
-				return ownerCharacterInstance->GetTable()->Id == characterId;
+				return ownerCharacterInstance->GetCharacterId() == characterId;
 			})){
 				continue;
 			}

@@ -72,14 +72,18 @@ public:
 	bool IsOnGround() const;
 	bool IsAir() const;
 
+	bool IsCustomRunnable() const;
 	bool IsCustomRun() const;
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+
+	virtual void SetMovementMode(EMovementMode NewMovementMode, uint8 NewCustomMode = 0) override;
 	
 	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction) override;
 	virtual void PhysCustom(float deltaTime, int32 iterations) override;
+	virtual void PhysWalking(float deltaTime, int32 iterations);
 
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
 

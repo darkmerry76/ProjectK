@@ -35,15 +35,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
 	TObjectPtr<class UAnimMontage> Montage;
-
+	
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
 	bool bIsImmediate = true;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsImmediate"))
 	bool bIsStartShowMeshComponent = false;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndRemoveTagMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndRemoveTagMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartShowMeshComponent"))
 	bool bIsEndRemoveTagMeshComponent = true;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="OverrideMovementAnimSet", meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartShowMeshComponent"))
+	bool bIsOverrideMovementAnimSet = false;
 
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 

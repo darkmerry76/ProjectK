@@ -13,6 +13,7 @@ class KMGAME_API UKMStatModifierBase : public UObject
 public:
 	virtual void Init();
 	virtual void Deinit();
+	virtual void Compact();
 	
 	UFUNCTION(BlueprintPure, Category = "Stat")
 	FName GetBaseStatKey() const;

@@ -64,6 +64,8 @@ public:
 	void SetTable(const struct FKMTable_CharacterRow* newTable);
 	const struct FKMTable_CharacterRow* GetTable() const;
 
+	FName GetCharacterId() const;
+
 	class UKMAnimationSetTag* GetAnimsetTag() const;
 
 	void SetDepthSort(float newDepthSort);

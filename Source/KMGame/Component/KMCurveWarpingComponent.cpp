@@ -26,3 +26,18 @@ float UKMCurveWarpingComponent::GetSyncMoveRunElipsedTime() const
 	}
 	return animInstance->GetMovementElapsedTime();
 }
+
+void UKMCurveWarpingComponent::SetCustomMovementAnimation(UAnimSequence* animSequence)
+{
+	Super::SetCustomMovementAnimation(animSequence);
+}
+
+void UKMCurveWarpingComponent::EnableCustomMovement()
+{
+	Super::EnableCustomMovement();
+}
+
+bool UKMCurveWarpingComponent::IsCustomRun() const
+{
+	return Super::IsCustomRun();
+}

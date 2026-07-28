@@ -127,8 +127,8 @@ void UKMAnimModifier_BoneToRoot::OnApply_Implementation(UAnimSequence* AnimSeq)
 		float xScale = X > 0 ? 1.f : -1.f;
 		float yScale = Y > 0 ? 1.f : -1.f;
 		float zScale = Z > 0 ? 1.f : -1.f;
-		//RootPosKeys.Add(FVector((&CurrentRootPos.X)[abs(X)] * xScale, (&CurrentRootPos.X)[abs(Y)] * yScale, (&CurrentRootPos.X)[abs(Z)] * zScale));
-		RootPosKeys.Add(FVector(OutRootTransform.GetLocation().X, OutRootTransform.GetLocation().Y, (&CurrentRootPos.X)[abs(1)] * -zScale));
+		RootPosKeys.Add(FVector((&CurrentRootPos.X)[abs(X)] * xScale, (&CurrentRootPos.X)[abs(Y)] * yScale, (&CurrentRootPos.X)[abs(Z)] * zScale));
+		//RootPosKeys.Add(FVector(OutRootTransform.GetLocation().X, OutRootTransform.GetLocation().Y, OutRootTransform.GetLocation().Z));
 		
 		FVector CurrentBonePos = FVector(DefaultTranslateX ? DefaultTranslate.X : OutBoneTransform.GetLocation().X,
 		DefaultTranslateY ? DefaultTranslate.Y : OutBoneTransform.GetLocation().Y,

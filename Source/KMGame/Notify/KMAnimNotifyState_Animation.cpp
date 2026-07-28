@@ -79,6 +79,17 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
 
 			targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+			if (bIsOverrideMovementAnimSet)
+			{
+				if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
+				{
+					if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
+					{
+						animSetTag->SetMovementOverrideMontage(newContext->ActivatedMontage, newContext->ActivatedMontage);
+					}
+				}
+			}
+
 #if WITH_EDITOR
 			if (!targetMeshComp->GetWorld()->IsGameWorld())
 			{
@@ -123,6 +134,16 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	{
 		if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
 		{
+			if (bIsOverrideMovementAnimSet)
+			{
+				if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
+				{
+					if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
+					{
+						animSetTag->RemoveMovementOverrideMontage();
+					}
+				}
+			}
 			targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
 		}
 	}

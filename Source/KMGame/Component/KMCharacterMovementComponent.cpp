@@ -75,6 +75,19 @@ void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 	}
 }
 
+void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
+{
+	if (MovementMode == MOVE_Custom && MovementMode != newMovementMode)
+	{
+		if (IsCustomRunnable())
+		{
+			return;
+		}
+	}
+	
+	Super::SetMovementMode(newMovementMode, newCustomMode);
+}
+
 void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction)
 {
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
@@ -243,6 +256,11 @@ void UKMCharacterMovementComponent::PhysCustom(float deltaTime, int32 iterations
 	}
 }
 
+void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iterations)
+{
+	Super::PhysWalking(deltaTime, iterations);
+}
+
 void UKMCharacterMovementComponent::PlayCurveWarping(UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ, bool bAutoEndingWalk)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
@@ -350,10 +368,7 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 	}
 	else
 	{
-		if (!IsCustomRun())
-		{
-			SetMovementMode(MOVE_Walking);
-		}
+		SetMovementMode(MOVE_Walking);
 	}
 }
 
@@ -399,10 +414,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 				activeJumpAnimMontage = nullptr;
 			}
 			Velocity = FVector::ZeroVector;
-			if (!IsCustomRun())
-			{
-				SetMovementMode(MOVE_Walking);
-			}
+			SetMovementMode(MOVE_Walking);
 			SetCustomMovementMode(EKMCustomMovementMode::CMODE_Walking);
 			activeJumpAnimMontage = nullptr;
 		}
@@ -576,6 +588,23 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 bool UKMCharacterMovementComponent::IsAir() const
 {
 	return !IsOnGround();
+}
+
+bool UKMCharacterMovementComponent::IsCustomRunnable() const
+{
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return false;
+	}
+	
+	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	if (!IsValid(curveWarping))
+	{
+		return false;
+	}
+
+	return curveWarping->IsCustomRunnable();
 }
 
 bool UKMCharacterMovementComponent::IsCustomRun() const

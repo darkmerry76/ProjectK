@@ -25,6 +25,14 @@ void UKMStatModifierBase::Deinit()
 {
 }
 
+void UKMStatModifierBase::Compact()
+{
+	const FKMTable_BaseStatRow* baseStatTable = FKMTable_BaseStatRow::FindRowPtr(GetBaseStatKey());
+	check(baseStatTable != nullptr);
+	
+	LevelBaseStat.Init(baseStatTable);
+}
+
 UKMGameObjectInstance* UKMStatModifierBase::GetOwner() const
 {
 	UKMGameObjectInstance* ownerGameObject = GetTypedOuter<UKMGameObjectInstance>();
