@@ -59,7 +59,7 @@ public:
 	float GetMovementElapsedTime() const;
 
 	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
-	bool IsUseCustomMove() const;
+	bool IsCustomWalking() const;
 
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))

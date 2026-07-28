@@ -54,7 +54,12 @@ public:
 
 	FVector LatestJumpInputDir = FVector::ZeroVector;
 
-	FKMSweepPawnHitDelegate SweepPawnHitDelegate; 
+	FKMSweepPawnHitDelegate SweepPawnHitDelegate;
+
+	UPROPERTY()
+	TWeakObjectPtr<class UAnimSequence> CustomWalkingAnimSequence;
+
+	bool bIsEnableCustomWalking = false;
 
 public:
 	void SetCustomMovementMode(EKMCustomMovementMode newCustomMovementMode);
@@ -72,8 +77,20 @@ public:
 	bool IsOnGround() const;
 	bool IsAir() const;
 
-	bool IsCustomRunnable() const;
-	bool IsCustomRun() const;
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCustomWalkingAnimation(class UAnimSequence* animSequence);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ClearCustomWalkingAnimation();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void EnableCustomWalking();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DisableCustomWalking();
+
+	UFUNCTION(BlueprintPure)
+	bool IsCustomWalking() const;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -83,7 +100,7 @@ protected:
 	
 	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction) override;
 	virtual void PhysCustom(float deltaTime, int32 iterations) override;
-	virtual void PhysWalking(float deltaTime, int32 iterations);
+	virtual void PhysWalking(float deltaTime, int32 iterations) override;
 
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
 

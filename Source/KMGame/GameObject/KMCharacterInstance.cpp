@@ -197,6 +197,12 @@ void UKMCharacterInstance::RevertFromBest()
 		return;
 	}
 
+	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
+	if (!IsValid(characterMovement))
+	{
+		return;
+	}
+
 	AKMCharacter* ownerCharacterCDO = GetCharacter()->GetClass()->GetDefaultObject<AKMCharacter>();
 	if (!IsValid(ownerCharacterCDO))
 	{
@@ -247,12 +253,9 @@ void UKMCharacterInstance::RevertFromBest()
 			StatModifier->Compact();
 		}
 
-		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
-		if (IsValid(curveWarping))
-		{
-			curveWarping->ClearCustomMovementAnimation();
-			curveWarping->DisableCustomMovement();
-		}
+		characterMovement->ClearCustomWalkingAnimation();
+		characterMovement->DisableCustomWalking();
+
 		OnRevertFromBest();
 	}
 }
@@ -283,6 +286,12 @@ void UKMCharacterInstance::TransformToBeast()
 
 	AKMCharacter* ownerCharacter = GetCharacter();
 	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
+	if (!IsValid(characterMovement))
 	{
 		return;
 	}
@@ -342,18 +351,14 @@ void UKMCharacterInstance::TransformToBeast()
 			StatModifier->Compact();
 		}
 
-		UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
-		if (IsValid(curveWarping))
+		UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+		if (IsValid(animInstance))
 		{
-			UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
-			if (IsValid(animInstance))
-			{
-				float minRange = 0.f, maxRange = 0.f;
-				UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
-				UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
-				curveWarping->SetCustomMovementAnimation(animSequence);
-				curveWarping->EnableCustomMovement();
-			}
+			float minRange = 0.f, maxRange = 0.f;
+			UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
+			UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
+			characterMovement->SetCustomWalkingAnimation(animSequence);
+			characterMovement->EnableCustomWalking();
 		}
 		OnTransformToBeast();
 	}

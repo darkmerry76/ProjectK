@@ -1,9 +1,8 @@
 #include "KMAnimInstance.h"
 #include "BlendSpacePlayerLibrary.h"
-#include "EMCurveWarpingComponent.h"
 #include "Animation/AnimNode_AssetPlayerBase.h"
 #include "Character/KMCharacter.h"
-#include "Component/KMCurveWarpingComponent.h"
+#include "Component/KMCharacterMovementComponent.h"
 #include "Util/KMUtil.h"
 
 void UKMAnimInstance::NativeInitializeAnimation()
@@ -16,7 +15,7 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 {
 	Super::NativeUpdateAnimation(deltaSeconds);
 
-	if (!IsUseCustomMove())
+	if (!IsCustomWalking())
 	{
 		ResetMovementElipsedTime();
 	}
@@ -91,20 +90,20 @@ void UKMAnimInstance::OnMoveBlendSpaceUpdate(const FAnimUpdateContext& context, 
 	MovementElipsedTime = node.GetAnimNode<FAnimNode_AssetPlayerBase>().GetAccumulatedTime();
 }
 
-bool UKMAnimInstance::IsUseCustomMove() const
+bool UKMAnimInstance::IsCustomWalking() const
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(TryGetPawnOwner());
 	if (!IsValid(ownerCharacter))
 	{
 		return false;
 	}
-	UKMCurveWarpingComponent* curveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
-	if (!IsValid(curveWarping))
+	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
+	if (!IsValid(characterMovement))
 	{
 		return false;
 	}
 
-	return curveWarping->IsCustomRun(); 
+	return characterMovement->MovementMode == EMovementMode::MOVE_Walking; 
 }
 
 #endif

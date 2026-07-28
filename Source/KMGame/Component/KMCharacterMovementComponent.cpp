@@ -1,5 +1,7 @@
 #include "KMCharacterMovementComponent.h"
 #include "EMCurveWarpingComponent.h"
+#include "Animation/AnimSequenceHelpers.h"
+#include "Animation/KMAnimInstance.h"
 #include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -77,14 +79,6 @@ void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 
 void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
 {
-	if (MovementMode == MOVE_Custom && MovementMode != newMovementMode)
-	{
-		if (IsCustomRunnable())
-		{
-			return;
-		}
-	}
-	
 	Super::SetMovementMode(newMovementMode, newCustomMode);
 }
 
@@ -256,8 +250,79 @@ void UKMCharacterMovementComponent::PhysCustom(float deltaTime, int32 iterations
 	}
 }
 
+void UKMCharacterMovementComponent::SetCustomWalkingAnimation(UAnimSequence* animSequence)
+{
+	CustomWalkingAnimSequence = animSequence;
+}
+
+void UKMCharacterMovementComponent::ClearCustomWalkingAnimation()
+{
+	CustomWalkingAnimSequence = nullptr;
+}
+
+void UKMCharacterMovementComponent::EnableCustomWalking()
+{
+	bIsEnableCustomWalking = true;
+}
+
+void UKMCharacterMovementComponent::DisableCustomWalking()
+{
+	bIsEnableCustomWalking = false;
+}
+
+bool UKMCharacterMovementComponent::IsCustomWalking() const
+{
+	return CustomWalkingAnimSequence.IsValid() && !HasAnimRootMotion() && bIsEnableCustomWalking;
+}
+
 void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iterations)
 {
+	ACharacter* ownerCharacter = Cast<ACharacter>(GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	if (CustomWalkingAnimSequence.IsValid() && !HasAnimRootMotion() && bIsEnableCustomWalking)
+	{
+		USkeletalMeshComponent* skeletalMeshComponent = ownerCharacter->GetMesh();
+		if (!IsValid(skeletalMeshComponent))
+		{
+			return;
+		}
+		UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(skeletalMeshComponent->GetAnimInstance());
+		if (!IsValid(animInstance))
+		{
+			return;
+		}
+		
+		float syncMoveRunElipsedTime = animInstance->GetMovementElapsedTime();
+		const float sequenceLength = CustomWalkingAnimSequence->GetPlayLength();
+		
+		float startTime = FMath::Fmod(syncMoveRunElipsedTime, sequenceLength);
+		float endTime = startTime + deltaTime;
+
+		FTransform rootMotion = FTransform::Identity;
+		if (endTime <= sequenceLength)
+		{
+			rootMotion = UE::Anim::ExtractRootMotionFromAnimationAsset(CustomWalkingAnimSequence.Get(),nullptr, startTime, endTime);
+		}
+		else
+		{
+			const FTransform rootMotionA = UE::Anim::ExtractRootMotionFromAnimationAsset(CustomWalkingAnimSequence.Get(), nullptr, startTime, sequenceLength);
+			const FTransform rootMotionB = UE::Anim::ExtractRootMotionFromAnimationAsset(CustomWalkingAnimSequence.Get(), nullptr, 0.f,endTime - sequenceLength);
+			
+			rootMotion = rootMotionA + rootMotionB;
+		}
+
+		float movementInput = !ownerCharacter->GetLastMovementInputVector().IsNearlyZero();
+		FVector moveDirection = ownerCharacter->GetActorForwardVector() * rootMotion.GetLocation().Size2D() * 2.5f * movementInput;
+
+		Velocity = ownerCharacter->GetActorForwardVector() * 700.f * movementInput;
+		CustomMovement(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f) , deltaTime);
+		return;
+	}
+	
 	Super::PhysWalking(deltaTime, iterations);
 }
 
@@ -588,38 +653,4 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 bool UKMCharacterMovementComponent::IsAir() const
 {
 	return !IsOnGround();
-}
-
-bool UKMCharacterMovementComponent::IsCustomRunnable() const
-{
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return false;
-	}
-	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return false;
-	}
-
-	return curveWarping->IsCustomRunnable();
-}
-
-bool UKMCharacterMovementComponent::IsCustomRun() const
-{
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return false;
-	}
-	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return false;
-	}
-
-	return curveWarping->IsCustomRun();
 }
