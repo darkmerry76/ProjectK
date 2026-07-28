@@ -323,8 +323,6 @@ void UKMCharacterInstance::TransformToBeast()
 				}
 			}
 		}
-		
-		
 		leaveSkeletalMeshComponnent->ComponentTags.Emplace(LeaveSkeletalMeshCompTag);
 	}
 
