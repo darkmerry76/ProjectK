@@ -362,13 +362,10 @@ void UKMAbility::PlayOwnerCurveWarping(UCurveBase* newCurveAsset, FVector newTar
 	curveWarping->PlayCurveWarpjng(newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ, bAutoEndingWalk);
 }
 
-UKMAnimationSetTag* UKMAbility::GetOwnerAnimationSetTag() const
+UAnimMontage* UKMAbility::GetOwnerAnimationTag(FGameplayTag tag) const
 {
-	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-	if (!IsValid(ownerCharacterInstance))
-	{
-		return nullptr;
-	}
-
-	return ownerCharacterInstance->GetAnimsetTag();
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
+	
+	return ownerCharacter->GetAnimationTag(tag);
 }

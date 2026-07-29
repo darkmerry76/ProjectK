@@ -18,40 +18,10 @@ UKMAnimationSetTag::UKMAnimationSetTag(const FObjectInitializer& objectInitializ
 
 UAnimMontage* UKMAnimationSetTag::GetAnimation(FGameplayTag tag) const
 {
-	const TObjectPtr<UAnimMontage>* existOverrideMontage = AnimOverrideMontageMap.Find(tag);
-	if (existOverrideMontage && IsValid(*existOverrideMontage))
-	{
-		return *existOverrideMontage;
-	}
-	
 	const TObjectPtr<UAnimMontage>* existMontage = AnimMontageMap.Find(tag);
 	if (!existMontage)
 	{
 		return nullptr;
 	}
 	return *existMontage;
-}
-
-void UKMAnimationSetTag::SetMovementOverrideMontage(UAnimMontage* jumpMontage, UAnimMontage* landingMontage)
-{
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_0, jumpMontage);
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_0, landingMontage);
-
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_1, jumpMontage);
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_1, landingMontage);
-
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_2, jumpMontage);
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_2, landingMontage);
-}
-
-void UKMAnimationSetTag::RemoveMovementOverrideMontage()
-{
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_0);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_0);
-	
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_1);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_1);
-	
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
 }

@@ -43,6 +43,13 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 PairEff = { false };
 
+	// 이전스킬
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                TransitionSkill = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMSkillTransitionBehavior TransitionSkillBehavior = { EKMSkillTransitionBehavior::None };
+
 	// 스킬발동 로코모션
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMLocomotionState   LocomotionState = { EKMLocomotionState::None };

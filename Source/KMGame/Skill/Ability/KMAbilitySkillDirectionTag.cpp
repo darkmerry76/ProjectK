@@ -60,7 +60,6 @@ float UKMAbilitySkillDirectionTag::Get8WayDirectionWeight(EKM8WayDirection direc
 	return Angle0_DirectionWeight;
 }
 
-
 void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float moveInstance, float moveDuration, bool bIngnoreZ)
 {
 	FGameplayTag finalAnimTag = Get8WayDirectionAnimTag(direction);
@@ -71,12 +70,9 @@ void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float m
 	UKMCharacterInstance* ownerCharacterInstance = character->GetCharacterInstance();
 	check(IsValid(ownerCharacterInstance));
 
-	if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
+	if (UAnimMontage* existMontage = character->GetAnimationTag(finalAnimTag))
 	{
-		if (UAnimMontage* existMontage = animSetTag->GetAnimation(finalAnimTag))
-		{
-			Montage = existMontage;
-		}
+		Montage = existMontage;
 	}
 
 	MontageInstance = PlayerMontage(Montage, Rate);

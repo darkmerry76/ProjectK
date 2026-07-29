@@ -255,7 +255,6 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* c
 		{
 			martialArtsComponent->PlayEx(martialArts, nullptr, 1.f, true);
 		}
-		martialArtsComponent->SetPause(true);
 		SkeletonTree->SetSkeletalMesh(character->GetMesh()->GetSkeletalMeshAsset());
 		static_cast<FEMAnimationViewportClient*>(ViewportClient.Get())->SetAdjustSkeletalMeshComponent(character->GetMesh());
 	}

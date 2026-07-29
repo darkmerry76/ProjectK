@@ -1,10 +1,8 @@
 #include "KMCharacterInstance.h"
-#include "EMCurveWarpingComponent.h"
 #include "Actor/KMItemAppearanceActor.h"
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
-#include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -152,7 +150,10 @@ void UKMCharacterInstance::SetBeastTableId(FName newBeatId)
 		return;
 	}
 
-	BeastPDA = Cast<UKMBeastPDA>(assetManager->GetAsset(BeastTableRow->AssetPda));
+	if (AKMCharacter* ownerCharacter = GetCharacter())
+	{
+		ownerCharacter->SetBeastPDA(Cast<UKMBeastPDA>(assetManager->GetAsset(BeastTableRow->AssetPda)));	
+	}
 }
 
 FName UKMCharacterInstance::GetBeatId() const
@@ -278,14 +279,15 @@ void UKMCharacterInstance::TransformToBeast()
 			return;
 		}
 	}
-
-	if (!IsValid(BeastPDA))
+	
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (!IsValid(ownerCharacter))
 	{
 		return;
 	}
 
-	AKMCharacter* ownerCharacter = GetCharacter();
-	if (!IsValid(ownerCharacter))
+	const UKMBeastPDA* beastPDA = ownerCharacter->GetBeastPDA();
+	if (!IsValid(beastPDA))
 	{
 		return;
 	}
@@ -327,8 +329,8 @@ void UKMCharacterInstance::TransformToBeast()
 	}
 
 	ownerCharacter->GetMesh()->EmptyOverrideMaterials();
-	ownerCharacter->GetMesh()->SetAnimInstanceClass(BeastPDA->AnimInstanceClass);
-	ownerCharacter->GetMesh()->SetSkeletalMesh(BeastPDA->Mesh);
+	ownerCharacter->GetMesh()->SetAnimInstanceClass(beastPDA->AnimInstanceClass);
+	ownerCharacter->GetMesh()->SetSkeletalMesh(beastPDA->Mesh);
 	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(BeastTableRow->scale));
 	ownerCharacter->GetMesh()->SetRenderInMainPass(false);
 	ownerCharacter->GetMesh()->SetRenderInDepthPass(false);
@@ -384,18 +386,6 @@ FName UKMCharacterInstance::GetCharacterId() const
 		return BeastTableRow->Id;
 	}
 	return Table->Id;
-}
-
-UKMAnimationSetTag* UKMCharacterInstance::GetAnimsetTag() const
-{
-	if (IsBeast())
-	{
-		if(IsValid(BeastPDA))
-		{
-			return BeastPDA->AnimSet;
-		}
-	}
-	return GetCharacter()->GetAnimsetTag();
 }
 
 void UKMCharacterInstance::SetDepthSort(float newDepthSort)
@@ -1074,7 +1064,6 @@ void UKMCharacterInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 	}
 }
 
-
 void UKMCharacterInstance::RemoveGameplayTag(FGameplayTag Tag)
 {
 	Super::RemoveGameplayTag(Tag);
@@ -1118,9 +1107,9 @@ void UKMCharacterInstance::OnAddGameplayTag_Implementation(const FGameplayTag& n
 	}
 	else if (newTag == FKMGameplayTagName::Event_Item_Launch)
 	{
-		if (IsValid(ownerCharacter->WeaponInstance))
+		if (UKMItemAppearanceInstance* weaponInstance = ownerCharacter->GetWeaponInstance())
 		{
-			ownerCharacter->WeaponInstance->Launch();
+			weaponInstance->Launch();
 		}
 	}
 }
@@ -1149,9 +1138,9 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 	}
 	else if (removedTag == FKMGameplayTagName::Event_Item_Launch)
 	{
-		if (IsValid(ownerCharacter->WeaponInstance))
+		if (UKMItemAppearanceInstance* weaponInstance = ownerCharacter->GetWeaponInstance())
 		{
-			ownerCharacter->WeaponInstance->LaunchStop();
+			weaponInstance->LaunchStop();
 		}
 	}
 }

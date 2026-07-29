@@ -130,6 +130,16 @@ enum class EKMSkillRangeType : uint8
 	Area = 2 , // 광역
 };
 
+// 스킬이펙트거리타잎
+UENUM(BlueprintType)
+enum class EKMSkillTransitionBehavior : uint8
+{
+	None = 0 , // 없음
+	Disable = 1 , // 기능멈춤
+	Remove = 2 , // 삭제
+	Suspend = 3 , // 일시정지
+};
+
 // 스킬이펙트연산자
 UENUM(BlueprintType)
 enum class EKMOperatorType : uint8

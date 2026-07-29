@@ -68,6 +68,12 @@ public:
 
 	void SetAbility(class UKMAbility* newAbility) { Ability = newAbility; }
 	class UKMAbility* GetAbility() const { return Ability; };
+
+	void Suspend() { bIsSuspend = true; }
+	void Resume() { bIsEnabled = false; }
+
+	void SetEnable(bool newIsEnable) { bIsEnabled = newIsEnable; };
+	bool IsEnabled() const { return bIsEnabled; };
 	
 protected:
 	virtual void ResetElipsedTime();
@@ -84,6 +90,9 @@ private:
 protected:
 	float TimeScale = 1.f;
 	bool Copied = false;
+
+	bool bIsSuspend = false;
+	bool bIsEnabled = true;
 };
 
 class KMGAME_API FKMAbilityInstanceCooltime : public FKMAbilityInstanceBase 

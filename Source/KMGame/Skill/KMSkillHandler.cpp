@@ -246,11 +246,6 @@ bool UKMSkillHandler::IsSkillAvailable(const FKMSkillKey& skillKey) const
 		{
 			overlapCount++;
 		}
-
-		if (activatedskillTable->Type == EKMSkillType::Active && newSkillTable->Type == EKMSkillType::Active)
-		{
-			//return false;
-		}
 	}
 
 	if (newSkillTable->OverlapCount > 0 && overlapCount >= newSkillTable->OverlapCount)
@@ -336,13 +331,7 @@ bool UKMSkillHandler::IsUsedSkill() const
 
 float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, TSharedPtr<FKMLockOnCluster> lockOnCluster) const
 {
-	UKMCharacterInstance* targetCharacter = lockOnCluster->GetBestTarget();
-	if (!IsValid(targetCharacter))
-	{
-		
-		return -1.f;
-	}
-	return GetConditionScore(skillConditionName, targetCharacter);
+	return GetConditionScore(skillConditionName, lockOnCluster->GetBestTarget());
 }
 
 float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter) const
@@ -360,7 +349,27 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	}
 
 	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacter()->GetCharacterMovement());
-
+	if (skillConditionRow->TransitionSkill != NAME_None)
+	{
+		bool bPreviousSkillMatching = false;
+		for (auto skillInstanceItr = SkillInstances.CreateConstIterator(); skillInstanceItr; ++skillInstanceItr)
+		{
+			TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
+			if (!skillInstance.IsValid())
+			{
+				continue;
+			}
+			if (skillConditionRow->TransitionSkill == skillInstance->SkillKey.TableId)
+			{
+				bPreviousSkillMatching = true;
+			}
+		}
+		if (!bPreviousSkillMatching)
+		{
+			return -1.f;
+		}
+	}
+	
 	FVector ownerForward = ownerCharacter->GetCharacter()->GetActorForwardVector();
 	if (skillConditionRow->LocomotionState == EKMLocomotionState::Land && !characterMovement->IsOnGround())
 	{
@@ -374,30 +383,40 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		}
 	}
 
-	FVector targetToDirection = targetCharacter->GetCharacter()->GetActorLocation() - ownerCharacter->GetCharacter()->GetActorLocation();
-	float targetToDistance = targetToDirection.Size();
+	float distanceScore = skillConditionRow->TargetRange > 0.f ? 0.f : 1.f;
+	float angleScore = skillConditionRow->TargetDir > 0.f ?  0.f : 1.f;
+	if (IsValid(targetCharacter))
+	{
+		FVector targetToDirection = targetCharacter->GetCharacter()->GetActorLocation() - ownerCharacter->GetCharacter()->GetActorLocation();
+		float targetToDistance = targetToDirection.Size();
+			
+		if (skillConditionRow->TargetRangeMin > targetToDistance || skillConditionRow->TargetRange < targetToDistance)
+		{
+			return -1.f;
+		}
 		
-	if (skillConditionRow->TargetRangeMin > targetToDistance || skillConditionRow->TargetRange < targetToDistance)
-	{
-		return -1.f;
+		if (skillConditionRow->TargetRange > 0.f)
+		{
+			float center = (skillConditionRow->TargetRangeMin + skillConditionRow->TargetRange) * 0.5f;
+			float halfRange = (skillConditionRow->TargetRange - skillConditionRow->TargetRangeMin) * 0.5f;
+
+			distanceScore = 1.f - (FMath::Abs(targetToDistance - center) / halfRange);
+			distanceScore = FMath::Clamp(distanceScore, 0.f, 1.f);
+		}
+		
+		if (skillConditionRow->TargetDir > 0.f)
+		{
+			FVector targetToNormal = targetToDirection.GetSafeNormal();
+
+			float dot = FVector::DotProduct(ownerForward, targetToNormal);
+			float angleDeg = FMath::RadiansToDegrees(FMath::Acos(dot));
+			if (angleDeg > skillConditionRow->TargetDir)
+			{
+				return -1.f;
+			}
+			angleScore = FVector::DotProduct(ownerForward, targetToNormal);
+		}
 	}
-
-	float center = (skillConditionRow->TargetRangeMin + skillConditionRow->TargetRange) * 0.5f;
-	float halfRange = (skillConditionRow->TargetRange - skillConditionRow->TargetRangeMin) * 0.5f;
-
-	float distanceScore = 1.f - (FMath::Abs(targetToDistance - center) / halfRange);
-	distanceScore = FMath::Clamp(distanceScore, 0.f, 1.f);
-
-	FVector targetToNormal = targetToDirection.GetSafeNormal();
-
-	float dot = FVector::DotProduct(ownerForward, targetToNormal);
-	float angleDeg = FMath::RadiansToDegrees(FMath::Acos(dot));
-	if (angleDeg > skillConditionRow->TargetDir)
-	{
-		return -1.f;
-	}
-
-	float angleScore = FVector::DotProduct(ownerForward, targetToNormal);
 	float resultScore = angleScore * 2.f + distanceScore * 1.5f;
 	return resultScore; 
 }
@@ -670,17 +689,75 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(const TSharedPtr<
 	return nullptr;
 }
 
+void UKMSkillHandler::ResolveSkillCondition(const FKMTable_SkillRow* skillTable)
+{
+	check(skillTable);
+
+	if (skillTable->SkillCondition == NAME_None)
+	{
+		return;
+	}
+
+	const FKMTable_SkillConditionRow* skillConditionTableRow = FKMTable_SkillConditionRow::FindRowPtr(skillTable->SkillCondition);
+	if (!skillConditionTableRow)
+	{
+		return;
+	}
+
+	if (skillConditionTableRow->TransitionSkill == NAME_None)
+	{
+		return;
+	}
+
+	if (skillConditionTableRow->TransitionSkillBehavior == EKMSkillTransitionBehavior::None)
+	{
+		return;
+	}
+
+	for (auto skillInstanceItr = SkillInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
+	{
+		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
+		if (!skillInstance.IsValid())
+		{
+			continue;
+		}
+		if (skillConditionTableRow->TransitionSkill == skillInstance->SkillKey.TableId)
+		{
+			if (skillConditionTableRow->TransitionSkillBehavior == EKMSkillTransitionBehavior::Remove)
+			{
+				if (TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillInstance->SkillKey))
+				{
+					(*timerInstance)->ForceReady();
+				}
+				skillInstance->Leave();
+				OnRemoveAbilityInstance(skillInstance);
+				skillInstanceItr.RemoveCurrent();
+			}
+			else if (skillConditionTableRow->TransitionSkillBehavior == EKMSkillTransitionBehavior::Disable)
+			{
+				skillInstanceItr.Value()->SetEnable(false);
+			}
+			else if (skillConditionTableRow->TransitionSkillBehavior == EKMSkillTransitionBehavior::Suspend)
+			{
+				skillInstanceItr.Value()->Suspend();
+			}
+		}
+	}
+}
+
 TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<FKMSkillInstance>& newSkillInstance)
 {
 	if (!CanUseSkill(newSkillInstance->SkillKey, newSkillInstance->Target))
 	{
 		return nullptr;
 	}
-	
+
 	check(IsValid(ownerCharacterInstance));
 	
 	const FKMTable_SkillRow* skillTable = newSkillInstance->SkillKey.TableRecord;
 	check(skillTable);
+
+	ResolveSkillCondition(skillTable);
 
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
 	check(IsValid(assetManager));

@@ -66,8 +66,6 @@ public:
 
 	FName GetCharacterId() const;
 
-	class UKMAnimationSetTag* GetAnimsetTag() const;
-
 	void SetDepthSort(float newDepthSort);
 	float GetDepthSort() const;
 
@@ -280,9 +278,6 @@ protected:
 	FName BeastId = NAME_None;
 	const struct FKMTable_BeastRow* BeastTableRow = nullptr;
 	const struct FKMTable_BaseStat_BeastRow* BeastStatTableRow = nullptr;
-	
-	UPROPERTY(Transient)
-	const class UKMBeastPDA* BeastPDA = nullptr;
 	
 	bool bIsBeast = false;
 };

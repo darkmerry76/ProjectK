@@ -1,11 +1,13 @@
 #include "KMCharacter.h"
 #include "Actor/KMItemAppearanceActor.h"
+#include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
+#include "DataAsset/KMBeastPDA.h"
 #include "DataAsset/KMItemPDA.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/KMHeroInstance.h"
@@ -103,12 +105,66 @@ void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharac
 	}
 }
 
-UKMAnimationSetTag* AKMCharacter::GetAnimsetTag() const
+UAnimMontage* AKMCharacter::GetAnimationTag(FGameplayTag tag) const
 {
-	return AnimsetTag;
+	if (!IsValid(AnimsetTag))
+	{
+		return nullptr;
+	}
+	
+	const TObjectPtr<UAnimMontage>* existOverrideMontage = AnimOverrideMontageMap.Find(tag);
+	if (existOverrideMontage && IsValid(*existOverrideMontage))
+	{
+		return *existOverrideMontage;
+	}
+
+	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
+	{
+		if (characterInstance->IsBeast() &&
+			IsValid(BeastPDA) &&
+			IsValid(BeastPDA->AnimSet))
+		{
+			return BeastPDA->AnimSet->GetAnimation(tag);
+		}
+	}
+	return AnimsetTag->GetAnimation(tag);
+}
+
+void AKMCharacter::SetMovementOverrideMontage(UAnimMontage* jumpMontage, UAnimMontage* landingMontage)
+{
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_0, jumpMontage);
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_0, landingMontage);
+
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_1, jumpMontage);
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_1, landingMontage);
+
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_2, jumpMontage);
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_2, landingMontage);
+}
+
+void AKMCharacter::RemoveMovementOverrideMontage()
+{
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_0);
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_0);
+	
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_1);
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_1);
+	
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
+	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
 }
 
 UKMItemAppearanceInstance* AKMCharacter::GetWeaponInstance() const
 {
 	return WeaponInstance;
+}
+
+void AKMCharacter::SetBeastPDA(const UKMBeastPDA* newBeastPDA)
+{
+	BeastPDA = newBeastPDA;
+}
+
+const UKMBeastPDA* AKMCharacter::GetBeastPDA() const
+{
+	return BeastPDA;
 }

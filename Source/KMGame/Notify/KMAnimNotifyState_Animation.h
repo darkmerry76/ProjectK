@@ -60,13 +60,16 @@ protected:
 	virtual bool IsCustomDuration() const override;
 	virtual float GetCustomDuration() const override;
 
-	class UAnimMontage* GetUsedMontage(AActor* actor);
+	class UAnimMontage* GetUsedMontage(AActor* actor) const;
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
+
+	void CollectionMontageSection(USkeletalMeshComponent* meshComp, const FAnimNotifyEvent& notifyEvent);
 	
 #if WITH_EDITOR
 	virtual void SetEditorPosition(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void PostEditChangeProperty(AActor* ownerActor, FPropertyChangedEvent& propertyChangedEvent) override;
+	virtual void DrawInEditor(class FPrimitiveDrawInterface* pDI, class USkeletalMeshComponent* meshComp, const class UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const;
 #endif
 };

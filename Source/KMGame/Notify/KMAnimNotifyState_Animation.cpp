@@ -1,7 +1,6 @@
 #include "KMAnimNotifyState_Animation.h"
-
+#include "EMMartialArts.h"
 #include "Animation/KMAnimInstance.h"
-#include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Character/KMCharacter.h"
 
 UKMAnimNotifyState_Animation::UKMAnimNotifyState_Animation(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -23,7 +22,7 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor)
+UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 {
 	if (bUseSkillSet)
 	{
@@ -32,18 +31,7 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor)
 		{
 			return nullptr;
 		}
-		UKMCharacterInstance* ownerCharacteInstancer = Cast<UKMCharacterInstance>(ownerCharacter->GetCharacterInstance());
-		if (!IsValid(ownerCharacteInstancer))
-		{
-			return nullptr;
-		}
-		UKMAnimationSetTag* animSetTag = ownerCharacteInstancer->GetAnimsetTag();
-		if (!IsValid(animSetTag))
-		{
-			return nullptr;
-		}
-		
-		return animSetTag->GetAnimation(AnimationSetTag.Tag);
+		return ownerCharacter->GetAnimationTag(AnimationSetTag.Tag);
 	}
 	else
 	{
@@ -68,28 +56,27 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
 	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner());
 
+	if (eventReference.GetNotify())
+	{
+		CollectionMontageSection(meshComp, *eventReference.GetNotify());
+	}
+
 	Context.Emplace(targetMeshComp, newContext);
 
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
+		if (bIsOverrideMovementAnimSet)
+		{
+			ownerCharacter->SetMovementOverrideMontage(newContext->ActivatedMontage, newContext->ActivatedMontage);
+		}
+
 		UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance();
 		if (IsValid(targetAnimInstance))
 		{
 			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
 
 			targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
-			if (bIsOverrideMovementAnimSet)
-			{
-				if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
-				{
-					if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
-					{
-						animSetTag->SetMovementOverrideMontage(newContext->ActivatedMontage, newContext->ActivatedMontage);
-					}
-				}
-			}
-
 #if WITH_EDITOR
 			if (!targetMeshComp->GetWorld()->IsGameWorld())
 			{
@@ -129,21 +116,16 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
-	
+
+	if (bIsOverrideMovementAnimSet && IsValid((*currContext)->ActivatedMontage))
+	{
+		ownerCharacter->RemoveMovementOverrideMontage();
+	}
+
 	if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 	{
 		if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
 		{
-			if (bIsOverrideMovementAnimSet)
-			{
-				if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
-				{
-					if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
-					{
-						animSetTag->RemoveMovementOverrideMontage();
-					}
-				}
-			}
 			targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
 		}
 	}
@@ -176,10 +158,7 @@ void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* mes
 				float deltaTime = currentTime - previousPosition;
 				
 				montageInstance->SetPosition(currentTime);
-				if (deltaTime >= 0.f)
-				{
-					montageInstance->UpdateWeight(deltaTime);
-				}
+				montageInstance->UpdateWeight(0.f);
 				montageInstance->HandleEvents(previousPosition, currentTime, nullptr);
 				animInstance->TriggerAnimNotifies(deltaTime);
 			}
@@ -200,13 +179,10 @@ void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FP
 				UKMCharacterInstance* ownerCharacteInstancer = Cast<UKMCharacterInstance>(ownerCharacter->GetCharacterInstance());
 				if (!IsValid(ownerCharacteInstancer))
 				{
-					if (UKMAnimationSetTag* animsetTag = ownerCharacteInstancer->GetAnimsetTag())
+					Montage = ownerCharacter->GetAnimationTag(AnimationSetTag.Tag);
+					if (IsValid(Montage))
 					{
-						Montage = animsetTag->GetAnimation(AnimationSetTag.Tag);
-						if (IsValid(Montage))
-						{
-							CustomDuration = Montage->GetPlayLength();
-						}
+						CustomDuration = Montage->GetPlayLength();
 					}
 				}
 			}
@@ -214,4 +190,39 @@ void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FP
 	}
 }
 
+void UKMAnimNotifyState_Animation::DrawInEditor(FPrimitiveDrawInterface* pDI, USkeletalMeshComponent* meshComp, const UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const
+{
+	Super::DrawInEditor(pDI, meshComp, animation, notifyEvent);
+
+	const_cast<UKMAnimNotifyState_Animation*>(this)->CollectionMontageSection(meshComp, notifyEvent);
+}
+
+void UKMAnimNotifyState_Animation::CollectionMontageSection(USkeletalMeshComponent* meshComp, const FAnimNotifyEvent& notifyEvent)
+{
+	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(GetContainingAsset()))
+	{
+		if (UAnimMontage* useMontage = GetUsedMontage(meshComp->GetOwner()))
+		{
+			martialArts->MontageSections.Empty();
+			for (int32 sectionIndex = 0; sectionIndex < useMontage->GetNumSections(); ++sectionIndex)
+			{
+				const FCompositeSection& section = useMontage->GetAnimCompositeSection(sectionIndex);
+				const float startTime = section.GetTime();
+
+				float endTime = Montage->GetPlayLength();
+
+				if (sectionIndex + 1 < useMontage->GetNumSections())
+				{
+					endTime = useMontage->GetAnimCompositeSection(sectionIndex + 1).GetTime();
+				}
+				FEMMartialArtsMontageSection newMartialArtsSection;
+				newMartialArtsSection.Name = section.SectionName;
+				newMartialArtsSection.StartTime = notifyEvent.GetTime() + startTime;
+				newMartialArtsSection.EndTime = notifyEvent.GetTime() + endTime;
+				newMartialArtsSection.NextSectionIndex = useMontage->GetSectionIndex(section.NextSectionName);
+				martialArts->MontageSections.Emplace(newMartialArtsSection);	
+			}
+		}
+	}
+}
 #endif

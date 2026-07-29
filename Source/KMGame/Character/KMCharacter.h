@@ -30,8 +30,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UKMItemAppearanceInstance> WeaponInstance;
 
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> AnimOverrideMontageMap;
+
 	UPROPERTY(BlueprintReadOnly)
 	FVector InputVelocity = FVector::ZeroVector;
+
+	UPROPERTY(Transient)
+	const class UKMBeastPDA* BeastPDA = nullptr;
 
 public:
 	class UKMCharacterInstance* GetCharacterInstance() const;
@@ -48,9 +54,16 @@ public:
 
 	class UKMItemAppearanceInstance* GetWeaponInstance() const;
 
-protected:
-	friend UKMCharacterInstance;
-	class UKMAnimationSetTag* GetAnimsetTag() const;
+	class UAnimMontage* GetAnimationTag(FGameplayTag tag) const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetMovementOverrideMontage(class UAnimMontage* jumpMontage, class UAnimMontage* landingMontage);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveMovementOverrideMontage();
+
+	void SetBeastPDA(const class UKMBeastPDA* newBeastPDA);
+	const class UKMBeastPDA* GetBeastPDA() const;
 
 protected:
 	virtual void BeginPlay() override;

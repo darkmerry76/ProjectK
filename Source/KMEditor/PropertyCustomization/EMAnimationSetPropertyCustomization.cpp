@@ -42,19 +42,13 @@ void FKMChooserPropertyCustomization::OnChooserAddItem(TSharedPtr<IEMOutlinerTre
 		return;
 	}
 
-	UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag();
-	if (!IsValid(animSetTag))
-	{
-		return;
-	}
-
 	if (!item->IsA<FKMTagChooserOutlinerTreeItem>())
 	{
 		return;
 	}
 
 	TSharedPtr<FKMTagChooserOutlinerTreeItem> treeItem = StaticCastSharedPtr<FKMTagChooserOutlinerTreeItem>(item);
-	UAnimMontage* animMontage = animSetTag->GetAnimation(treeItem->GetTag());
+	UAnimMontage* animMontage = OwnerCharacter->GetAnimationTag(treeItem->GetTag());
 	if (!IsValid(animMontage))
 	{
 		return;
@@ -200,12 +194,9 @@ void FKMChooserPropertyCustomization::OnTagSelected(TSharedPtr<IEMOutlinerTreeIt
 	if (treeItem->IsA<FKMTagChooserOutlinerTreeItem>())
 	{
 		resultGameplayTag = StaticCastSharedRef<FKMTagChooserOutlinerTreeItem>(treeItem.ToSharedRef())->GetTag();
-		if (IsValid(OwnerCharacterInstance))
+		if (IsValid(OwnerCharacter))
 		{
-			if (UKMAnimationSetTag* animSetTag = OwnerCharacterInstance->GetAnimsetTag())
-			{
-				animMontage = animSetTag->GetAnimation(resultGameplayTag);
-			}
+			animMontage = OwnerCharacter->GetAnimationTag(resultGameplayTag);
 		}
 	}
 	else if (treeItem->IsA<FKMTagChooserOutlinerGroupTreeItem>())

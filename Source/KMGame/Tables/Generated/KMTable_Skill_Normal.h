@@ -20,9 +20,6 @@ struct FKMTable_Skill_NormalRow : public FKMTable_SkillRow
 	EKMSkillScopeType    ScopeType = { EKMSkillScopeType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName                SkillCondition = { NAME_None };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32                MaxScopeCount = { 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

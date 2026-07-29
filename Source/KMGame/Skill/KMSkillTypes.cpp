@@ -292,6 +292,10 @@ void FKMSkillInstance::NotifyEffectTrigger(float prevTime, float nextTime)
 
 void FKMSkillInstance::Tick(float deltaSeconds)
 {
+	if (bIsSuspend)
+	{
+		return;
+	}
 	deltaSeconds = deltaSeconds * TimeScale;
 
 	if (const FKMTable_Skill_NormalRow* skillNormal = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))

@@ -38,6 +38,9 @@ struct FKMTable_SkillRow : public FEM_TableBaseRow
 	TArray<EKMSkillTargetType> TargetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                SkillCondition = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32                OverlapCount = { 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

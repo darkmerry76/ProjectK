@@ -92,6 +92,7 @@ public:
 	const TArray<FKMSkillKey>& GetOwnedSkills() const;
 
 	bool CanUseSkill(const FKMSkillKey& skillKey, const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
+	void ResolveSkillCondition(const struct FKMTable_SkillRow* skillTable);
 
 	int32 GetScoreSkill(const FKMSkillKey& skillKey) const;
 
@@ -105,7 +106,6 @@ public:
 	float GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter) const;
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const UKMCharacterInstance* targetCharacterInstance) const;
-
 
 	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag);
 

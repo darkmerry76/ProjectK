@@ -2,7 +2,6 @@
 #include "EMCurveWarpingComponent.h"
 #include "Animation/AnimSequenceHelpers.h"
 #include "Animation/KMAnimInstance.h"
-#include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
@@ -195,20 +194,8 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
 		return;
 	}
-
-	UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance();
-	if (!IsValid(characterInstance))
-	{
-		return;
-	}
-
-	UKMAnimationSetTag* animSetTag = characterInstance->GetAnimsetTag();
-	if (IsValid(animSetTag))
-	{
-		return;
-	}
-
-	UAnimMontage* jumpAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Jump_0);
+	
+	UAnimMontage* jumpAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Jump_0);
 	if (!IsValid(jumpAnimMontage))
 	{
 		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
@@ -357,25 +344,13 @@ void UKMCharacterMovementComponent::CustomJump()
 		return;
 	}
 
-	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
-	if (!IsValid(ownerCharacterInstance))
-	{
-		return;
-	}
-	
 	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
 		return;
 	}
-
-	UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag();
-	if (!IsValid(animSetTag))
-	{
-		return;
-	}
-
-	UAnimMontage* jumpAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Jump_0);
+	
+	UAnimMontage* jumpAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Jump_0);
 	if (!IsValid(jumpAnimMontage))
 	{
 		return;
@@ -464,17 +439,14 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 		{
 			if (IsValid(activeJumpAnimMontage))
 			{
-				if (UKMAnimationSetTag* animSetTag = ownerCharacterInstance->GetAnimsetTag())
+				UAnimMontage* landingAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Landing_0);
+				if (IsValid(landingAnimMontage))
 				{
-					UAnimMontage* landingAnimMontage = animSetTag->GetAnimation(FKMGameplayTagName::Anim_Landing_0);
-					if (IsValid(landingAnimMontage))
-					{
-						ownerCharacter->PlayAnimMontage(landingAnimMontage);
-					}
-					else if (IsValid(activeJumpAnimMontage))
-					{
-						ownerCharacter->StopAnimMontage(activeJumpAnimMontage);
-					}
+					ownerCharacter->PlayAnimMontage(landingAnimMontage);
+				}
+				else if (IsValid(activeJumpAnimMontage))
+				{
+					ownerCharacter->StopAnimMontage(activeJumpAnimMontage);
 				}
 				activeJumpAnimMontage = nullptr;
 			}

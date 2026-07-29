@@ -125,7 +125,7 @@ public:
 		float newPlayLength = 1.f, float newZScale = 1.f, bool bIgnoreZ = false, bool bAutoEndingWalk = true);
 
 	UFUNCTION(BlueprintPure)
-	class UKMAnimationSetTag* GetOwnerAnimationSetTag() const;
+	class UAnimMontage* GetOwnerAnimationTag(FGameplayTag tag) const;
 
 protected:
 	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);
