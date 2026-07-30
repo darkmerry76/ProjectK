@@ -12,34 +12,6 @@ UKMAbilityBlow::UKMAbilityBlow(const FObjectInitializer& objectInitializer) : Su
 void UKMAbilityBlow::Activate()
 {
 	Super::Activate();
-
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
-
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	check(IsValid(curveWarping));
-	
-	float minValue = 0.f, maxValue = 1.f;
-	BlowCurve->GetValueRange(minValue, maxValue);
-
-	FVector actorForwardVector = ownerCharacter->GetActorForwardVector();
-	actorForwardVector.Z = 0.f;
-	actorForwardVector.Normalize();
-
-	FVector targetLocation = ownerCharacter->GetActorLocation() + (HorizontalPower * ownerCharacter->GetActorForwardVector() * -1.f);
-
-	float zScale = VerticalPower / maxValue;
-
-	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement()))
-	{
-		characterMovement->SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
-	}
-
-	if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
-	{
-		curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
-	}
-	curveWarping->PlayCurveWarpjng(BlowCurve, targetLocation, Duration, zScale, false, false);
 }
 
 void UKMAbilityBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, EEMCurveWarpingInteruptType type)

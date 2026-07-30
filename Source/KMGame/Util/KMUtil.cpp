@@ -486,3 +486,31 @@ UAnimSequence* UKMUtil::GetAnimSequenceWithBlendSpace1D(const UBlendSpace1D* ble
 	
 	return resultAnimSequence;
 }
+
+bool UKMUtil::ParseIndexedName(const FName& name, TCHAR openDelim, TCHAR closeDelim, FName& outName, FName& outValue)
+{
+	outName = name;
+	outValue = NAME_None;
+
+	const FString nameString = name.ToString();
+
+	int32 leftIndex = INDEX_NONE;
+	int32 rightIndex = INDEX_NONE;
+
+	if (!nameString.FindChar(openDelim, leftIndex) ||
+		!nameString.FindChar(closeDelim, rightIndex) ||
+		rightIndex <= leftIndex)
+	{
+		return false;
+	}
+
+	if (leftIndex == INDEX_NONE || rightIndex == INDEX_NONE)
+	{
+		return false;
+	}
+
+	outName = FName(*nameString.Left(leftIndex));
+	outValue = FName(*nameString.Mid(leftIndex + 1, rightIndex - leftIndex - 1));
+
+	return true;
+}

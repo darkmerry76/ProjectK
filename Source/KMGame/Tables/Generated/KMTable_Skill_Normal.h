@@ -34,9 +34,6 @@ struct FKMTable_Skill_NormalRow : public FKMTable_SkillRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FEMPrimaryAssetRef   Ability = { };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FEMPrimaryAssetRef   Bp = { };
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 

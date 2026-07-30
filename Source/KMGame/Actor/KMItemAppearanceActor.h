@@ -115,6 +115,8 @@ protected:
 
 	bool bIsCollisionCheck = false;
 
+	FTransform PreviousTransform;
+
 protected:
 	virtual TObjectPtr<UKMItemAppearanceInstance> CreateInstance(UObject* ownerObject, TSubclassOf<UKMItemAppearanceInstance> instanceClass) const override;
 

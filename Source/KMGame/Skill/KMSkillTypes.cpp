@@ -146,6 +146,10 @@ bool FKMSkillInstance::IsComplete() const
 
 	if (const FKMTable_Skill_NormalRow* skillNormal = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
+		if (skillNormal->Duration < 0.0001f)
+		{
+			return false;
+		}
 		if (skillNormal->ActiveType == EKMSkillActiveType::Cahnneling)
 		{
 			if (State != EKMSkillState::End)

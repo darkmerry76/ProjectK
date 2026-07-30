@@ -24,7 +24,7 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 
 UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 {
-	if (bUseSkillSet)
+	if (bIsUseSkillSet)
 	{
 		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(actor);
 		if (!IsValid(ownerCharacter))
@@ -41,7 +41,7 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 
 bool UKMAnimNotifyState_Animation::IsCustomDuration() const
 {
-	return bUseSkillSet && CustomDuration > 0.f;
+	return bIsUseSkillSet && CustomDuration > 0.f;
 }
 
 float UKMAnimNotifyState_Animation::GetCustomDuration() const
@@ -106,6 +106,15 @@ void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, 
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	if (currContext)
 	{
+		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
+		if (IsValid(ownerCharacter))
+		{
+			if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
+			{
+				float pos = animInstance->Montage_GetPosition(animInstance->GetCurrentActiveMontage());
+			}
+		}
+		
 		(*currContext)->ElapsedTime += frameDeltaTime;
 	}
 }
@@ -116,27 +125,29 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
-
-	if (bIsOverrideMovementAnimSet && IsValid((*currContext)->ActivatedMontage))
+	if (IsValid(ownerCharacter))
 	{
-		ownerCharacter->RemoveMovementOverrideMontage();
-	}
-
-	if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
-	{
-		if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
+		if (bIsOverrideMovementAnimSet && IsValid((*currContext)->ActivatedMontage))
 		{
-			targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+			ownerCharacter->RemoveMovementOverrideMontage();
 		}
-	}
 
-	if (meshComp->GetWorld()->IsGameWorld())
-	{
-		if (bIsEndRemoveTagMeshComponent && targetMeshComp != meshComp)
+		if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 		{
-			if (IsValid(targetMeshComp))
+			if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
 			{
-				targetMeshComp->DestroyComponent(true);
+				targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+			}
+		}
+
+		if (meshComp->GetWorld()->IsGameWorld())
+		{
+			if (bIsEndRemoveTagMeshComponent && targetMeshComp != meshComp)
+			{
+				if (IsValid(targetMeshComp))
+				{
+					targetMeshComp->DestroyComponent(true);
+				}
 			}
 		}
 	}
@@ -170,9 +181,9 @@ void UKMAnimNotifyState_Animation::PostEditChangeProperty(AActor* ownerActor, FP
 {
 	Super::PostEditChangeProperty(ownerActor, propertyChangedEvent);
 	if (propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, AnimationSetTag) ||
-		propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, bUseSkillSet))
+		propertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(UKMAnimNotifyState_Animation, bIsUseSkillSet))
 	{
-		if (bUseSkillSet)
+		if (bIsUseSkillSet)
 		{
 			if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 			{
@@ -199,6 +210,10 @@ void UKMAnimNotifyState_Animation::DrawInEditor(FPrimitiveDrawInterface* pDI, US
 
 void UKMAnimNotifyState_Animation::CollectionMontageSection(USkeletalMeshComponent* meshComp, const FAnimNotifyEvent& notifyEvent)
 {
+	if (!bIsMaster)
+	{
+		return;
+	}
 	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(GetContainingAsset()))
 	{
 		if (UAnimMontage* useMontage = GetUsedMontage(meshComp->GetOwner()))
@@ -209,7 +224,7 @@ void UKMAnimNotifyState_Animation::CollectionMontageSection(USkeletalMeshCompone
 				const FCompositeSection& section = useMontage->GetAnimCompositeSection(sectionIndex);
 				const float startTime = section.GetTime();
 
-				float endTime = Montage->GetPlayLength();
+				float endTime = useMontage->GetPlayLength();
 
 				if (sectionIndex + 1 < useMontage->GetNumSections())
 				{

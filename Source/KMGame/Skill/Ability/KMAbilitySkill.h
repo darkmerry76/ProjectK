@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "KMAbility.h"
-#include "Tables/Generated/KMTableEnums.h"
 #include "KMAbilitySkill.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)

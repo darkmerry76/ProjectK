@@ -302,7 +302,7 @@ void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iteration
 			rootMotion = rootMotionA + rootMotionB;
 		}
 
-		float movementInput = !ownerCharacter->GetLastMovementInputVector().IsNearlyZero();
+		float movementInput = ownerCharacter->GetLastMovementInputVector().IsNearlyZero() ? 0.f : 1.f;
 		FVector moveDirection = ownerCharacter->GetActorForwardVector() * rootMotion.GetLocation().Size2D() * 2.5f * movementInput;
 
 		Velocity = ownerCharacter->GetActorForwardVector() * 700.f * movementInput;
@@ -439,14 +439,20 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 		{
 			if (IsValid(activeJumpAnimMontage))
 			{
-				UAnimMontage* landingAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Landing_0);
-				if (IsValid(landingAnimMontage))
+				if (UAnimInstance* animInstance = Cast<UAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
 				{
-					ownerCharacter->PlayAnimMontage(landingAnimMontage);
-				}
-				else if (IsValid(activeJumpAnimMontage))
-				{
-					ownerCharacter->StopAnimMontage(activeJumpAnimMontage);
+					UAnimMontage* landingAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Landing_0);
+					if (IsValid(landingAnimMontage))
+					{
+						if (animInstance->GetCurrentActiveMontage() != landingAnimMontage)
+						{
+							animInstance->Montage_Play(landingAnimMontage);
+						}
+					}
+					else if (IsValid(activeJumpAnimMontage))
+					{
+						animInstance->Montage_Stop(0.f, activeJumpAnimMontage);
+					}
 				}
 				activeJumpAnimMontage = nullptr;
 			}
@@ -497,6 +503,11 @@ bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, floa
 
 bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjusted, float deltaTime)
 {
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return false;
+	}
 	FHitResult hitResult;
 	SafeMoveUpdatedComponent(adjusted, UpdatedComponent->GetComponentRotation(), true, hitResult);
 
@@ -506,6 +517,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 	{
 		if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 		{
+			ownerCharacter->Landed(hitResult);
 			return false;	
 		}
 		else
@@ -518,6 +530,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 
 				if (!floorResult.bLineTrace && adjusted.Z < 0.f && floorResult.IsWalkableFloor() && IsValidLandingSpot(pawnLocation, floorResult.HitResult))
 				{
+					ownerCharacter->Landed(floorResult.HitResult);
 					return false;
 				}
 			}
@@ -534,6 +547,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 
 					if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 					{
+						ownerCharacter->Landed(hitResult);
 						return false;
 					}
 					lastMoveTimeSlice = subTimeTickRemaining;
@@ -563,6 +577,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 					}
 					if(bDitch || IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult) || hitResult.Time == 0.f)
 					{
+						ownerCharacter->Landed(hitResult);
 						return false;
 					}
 				}

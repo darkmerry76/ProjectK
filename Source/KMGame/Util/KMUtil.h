@@ -100,6 +100,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	static class UAnimSequence* GetAnimSequenceWithBlendSpace1D(const class UBlendSpace1D* blendSpace1D, float nearDistance);
 
+	static bool ParseIndexedName(const FName& name, TCHAR openDelim, TCHAR closeDelim, FName& outName, FName& outValue);
+
 protected:
 	static double GameElipsedStartTime;
 };

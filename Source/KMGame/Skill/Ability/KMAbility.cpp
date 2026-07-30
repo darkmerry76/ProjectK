@@ -1,9 +1,14 @@
 #include "KMAbility.h"
 #include "EMCurveWarpingComponent.h"
 #include "EMMartialArtsComponent.h"
+#include "KMAbilityBlow.h"
 #include "Character/KMCharacter.h"
+#include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Curves/CurveVector.h"
 #include "GameObject/KMCharacterInstance.h"
+#include "Skill/KMSkillHandler.h"
 #include "System/KMTargetSubsystem.h"
 
 UKMAbility::UKMAbility(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -72,9 +77,36 @@ AKMCharacter* UKMAbility::GetTargetCharacter() const
 
 void UKMAbility::Activate()
 {
-	UKMCharacterInstance* characterInstance = GetOwnerCharacterInstance();
-	check(IsValid(characterInstance));
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
 
+	if (IsValid(BlowCurve))
+	{
+		UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+		check(IsValid(curveWarping));
+		
+		float minValue = 0.f, maxValue = 1.f;
+		BlowCurve->GetValueRange(minValue, maxValue);
+
+		FVector actorForwardVector = ownerCharacter->GetActorForwardVector();
+		actorForwardVector.Z = 0.f;
+		actorForwardVector.Normalize();
+
+		FVector targetLocation = ownerCharacter->GetActorLocation() + (HorizontalPower * ownerCharacter->GetActorForwardVector() * -1.f);
+
+		float zScale = VerticalPower / maxValue;
+
+		if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement()))
+		{
+			characterMovement->SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
+		}
+
+		if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
+		{
+			curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
+		}
+		curveWarping->PlayCurveWarpjng(BlowCurve, targetLocation, Duration, zScale, false, false);
+	}
 	OnActivated();
 }
 
@@ -93,6 +125,10 @@ void UKMAbility::OnDeacivated_Implementation()
 }
 
 void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
+{
+}
+
+void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, EEMCurveWarpingInteruptType type)
 {
 }
 
@@ -121,6 +157,28 @@ void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContex
 	}
 
 	MartialArtsHandle = martialArtsComponent->PlayEx(martialArts, newContextData, newRate, bLooping);
+
+	TSharedPtr<FEMMartialArtsInstance> martialArtsInstance = martialArtsComponent->GetInstance(MartialArtsHandle);
+	if (martialArtsInstance.IsValid())
+	{
+		martialArtsInstance->EndPlayDelegate.AddUObject(this, &ThisClass::OnMartialArtsEnd);
+	}
+}
+
+void UKMAbility::OnMartialArtsEnd(FEMMartialArtsInstance* martialArtsInstance)
+{
+	if (martialArtsInstance)
+	{
+		K2_OnMartialArtsEnd(martialArtsInstance->GetId());
+	}
+	else
+	{
+		K2_OnMartialArtsEnd(INDEX_NONE);
+	}
+}
+
+void UKMAbility::K2_OnMartialArtsEnd_Implementation(int instanceId)
+{
 }
 
 void UKMAbility::StopMartialArts()
@@ -340,6 +398,17 @@ FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, flo
 	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
 }
 
+FVector UKMAbility::GetOwnerFootLocation(float offsetHeight) const
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
+
+	FVector footLocation = ownerCharacter->GetActorLocation();
+	footLocation.Z -= ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + offsetHeight;
+
+	return footLocation;
+}
+
 void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation)
 {
 	AKMCharacter* character = GetOwnerCharacter();
@@ -368,4 +437,17 @@ UAnimMontage* UKMAbility::GetOwnerAnimationTag(FGameplayTag tag) const
 	check(IsValid(ownerCharacter));
 	
 	return ownerCharacter->GetAnimationTag(tag);
+}
+
+int32 UKMAbility::GetMartialArtsHandle() const
+{
+	return MartialArtsHandle;
+}
+
+void UKMAbility::ForceSkillComplate()
+{
+	if (SkillInstance.IsValid())
+	{
+		SkillInstance.Pin()->SetForceComplete(true);
+	}
 }

@@ -22,6 +22,15 @@ public:
 	UPROPERTY(EditAnywhere, DisplayName="Loop", BlueprintReadWrite)
 	bool bIsLoop = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UCurveVector> BlowCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HorizontalPower = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float VerticalPower = 100.f;
+
 protected:
 	TWeakPtr<class FKMSkillInstance> SkillInstance;
 	TSharedPtr<class FKMLockOnCluster> LockOnCluster;
@@ -63,6 +72,11 @@ public:
 	void PlayMartialArts(TSharedPtr<class FEMMartialArtsContextData> newContextData, float newRate = 1.f, bool bLooping = false);
 
 	void StopMartialArts();
+
+	void OnMartialArtsEnd(class FEMMartialArtsInstance* martialArtsInstance);
+
+	UFUNCTION(BlueprintNativeEvent, DisplayName="OnMartialArtsEnd")
+	void K2_OnMartialArtsEnd(int instanceId);
 
 	UFUNCTION(BlueprintCallable)
 	void MontageJump(FName sectionName);
@@ -117,6 +131,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FVector GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ = false) const;
 
+	UFUNCTION(BlueprintPure)
+	FVector GetOwnerFootLocation(float offsetHeight = 0.f) const;
+
 	UFUNCTION(BlueprintCallable)
 	void AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation);
 
@@ -126,6 +143,15 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetOwnerAnimationTag(FGameplayTag tag) const;
+
+	UFUNCTION(BlueprintPure)
+	int32 GetMartialArtsHandle() const;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnCurveWarpingInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type);
+
+	UFUNCTION(BlueprintCallable)
+	void ForceSkillComplate();
 
 protected:
 	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);

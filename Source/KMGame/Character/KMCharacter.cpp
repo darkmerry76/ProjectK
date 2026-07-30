@@ -11,6 +11,7 @@
 #include "DataAsset/KMItemPDA.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/KMHeroInstance.h"
+#include "Skill/KMSkillHandler.h"
 #include "Tables/Generated/KMTable_Item.h"
 #include "Util/KMUtil.h"
 
@@ -66,6 +67,19 @@ void AKMCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 	if (IsValid(WeaponInstance))
 	{
 		WeaponInstance->Despawn();
+	}
+}
+
+void AKMCharacter::Landed(const FHitResult& hitResult)
+{
+	Super::Landed(hitResult);
+
+	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
+	{
+		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
+		{
+			skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
+		}
 	}
 }
 

@@ -33,7 +33,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="CollisonType"))
 	FTransform HitTransform;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="HitTransform"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="HitTransform"))
+	FName HitTag = NAME_None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="HitTag"))
 	FName SocketName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="SocketName"))
@@ -46,7 +49,7 @@ protected:
 	bool FollowSocketRotation = true;
 
 	UPROPERTY()
-	TMap<class USkeletalMeshComponent*, FKMHitCheckData> HitCheckPair;
+	TMap<class USkeletalMeshComponent*, FTransform> HitPreviousTransforms;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY()
@@ -60,6 +63,7 @@ protected:
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
+	void GetFinalTransform(const class AKMCharacter* ownerCharacter, const class USkeletalMeshComponent* meshComp, FTransform& outTransform) const;
 
 #if WITH_EDITOR
 	virtual void DrawInEditor(FPrimitiveDrawInterface* pDI, USkeletalMeshComponent* meshComp, const UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const override;

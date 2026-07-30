@@ -68,9 +68,6 @@ struct FKMTable_SkillRow : public FEM_TableBaseRow
 	double               CostTempo = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float                AnimTime = { 0.f };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FName>        Effects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

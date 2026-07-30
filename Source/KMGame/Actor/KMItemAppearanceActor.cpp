@@ -204,6 +204,12 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 	{
 		ownerCharacterInstance->HitCheckClear();
 	}
+	if (IsValid(ChainMesh))
+	{
+		FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
+		socketTransform.SetScale3D(FVector(RingRadius));
+		PreviousTransform = socketTransform;
+	}
 	
 	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
 	{
@@ -272,7 +278,9 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 		{
 			FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
 			socketTransform.SetScale3D(FVector(RingRadius));
-			ownerCharacterInstance->BoxHitImpact(socketTransform, { UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn) }, ACharacter::StaticClass());
+			ownerCharacterInstance->BoxHitImpact(PreviousTransform, socketTransform, { UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn) }, ACharacter::StaticClass(), NAME_None);
+
+			PreviousTransform = socketTransform;
 		}
 	}
 }

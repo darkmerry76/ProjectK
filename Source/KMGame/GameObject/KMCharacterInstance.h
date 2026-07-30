@@ -146,7 +146,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Stiff(float duration = 0.2f);
 
-	void Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint);
+	void Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 	
 	void OnStiffRelease();
 
@@ -161,13 +161,13 @@ public:
 	void HitCheckClear();
 
 	UFUNCTION(BlueprintCallable)
-	void BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter);
+	void BoxHitImpact(const FTransform& prevOrientationTransform, const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
 
 	UFUNCTION(BlueprintCallable)
-	void SphereHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter);
+	void SphereHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
 
 protected:
-	void HitCollection(class AActor* hitActor,const FTransform& orientationTransform);
+	void HitCollection(AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;

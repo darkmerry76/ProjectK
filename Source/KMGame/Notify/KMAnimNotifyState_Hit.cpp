@@ -1,10 +1,7 @@
 #include "KMAnimNotifyState_Hit.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMEditorDrawDebugComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
-#include "System/KMTargetSubsystem.h"
 
 UKMAnimNotifyState_Hit::UKMAnimNotifyState_Hit(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -25,6 +22,23 @@ FString UKMAnimNotifyState_Hit::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
+void UKMAnimNotifyState_Hit::GetFinalTransform(const AKMCharacter* ownerCharacter, const USkeletalMeshComponent* meshComp, FTransform& outTransform) const
+{
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	outTransform = meshComp->GetSocketTransform(SocketName);
+	if (!FollowSocketRotation)
+	{
+		outTransform.SetRotation(ownerCharacter->GetActorTransform().GetRotation());
+	}
+	outTransform.SetRotation(outTransform.GetRotation() * HitTransform.GetRotation());
+	outTransform.SetLocation(outTransform.GetLocation() + (outTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
+	outTransform.SetScale3D(HitTransform.GetScale3D());
+}
+
 void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
 	AActor* ownerActor = meshComp->GetOwner();
@@ -40,8 +54,16 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnim
 		EditorDrawDebugComponent = Cast<UKMEditorDrawDebugComponent>(ownerActor->AddComponentByClass(UKMEditorDrawDebugComponent::StaticClass(), false, FTransform::Identity, false));
 	}
 #endif
-
-	HitCheckPair.FindOrAdd(meshComp) = FKMHitCheckData();
+	
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	
+	FTransform finalTransform;
+	GetFinalTransform(ownerCharacter, meshComp, finalTransform);
+	HitPreviousTransforms.FindOrAdd(meshComp) = finalTransform;
 }
 
 void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
@@ -63,24 +85,21 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 	{
 		return;
 	}
+
+	FTransform& previousTransform = HitPreviousTransforms.FindOrAdd(meshComp);
 	
-	FTransform socketTransform = meshComp->GetSocketTransform(SocketName);
-	if (!FollowSocketRotation)
-	{
-		socketTransform.SetRotation(ownerActor->GetActorTransform().GetRotation());
-	}
-	socketTransform.SetRotation(socketTransform.GetRotation() * HitTransform.GetRotation());
-	socketTransform.SetLocation(socketTransform.GetLocation() + (socketTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
-	socketTransform.SetScale3D(HitTransform.GetScale3D());
+	FTransform finalTransform;
+	GetFinalTransform(ownerCharacter, meshComp, finalTransform);
 
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		ownerCharacterInstance->BoxHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
+		ownerCharacterInstance->BoxHitImpact(previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
 	else
 	{
-		ownerCharacterInstance->SphereHitImpact(socketTransform, ObjectTypeQuery, ActorClassFilter);
+		ownerCharacterInstance->SphereHitImpact(previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
+	previousTransform = finalTransform;
 }
 
 #if WITH_EDITOR
@@ -111,10 +130,10 @@ void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* pDI, USkeleta
 }
 #endif
 
-void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
 #if WITH_EDITOR
-	AActor* ownerActor = MeshComp->GetOwner();
+	AActor* ownerActor = meshComp->GetOwner();
 	if(!IsValid(ownerActor))
 	{
 		return;
@@ -126,6 +145,8 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSe
 		EditorDrawDebugComponent->DestroyComponent();
 	}
 #endif
+
+	HitPreviousTransforms.Remove(meshComp);
 
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
 	if (IsValid(ownerCharacter))

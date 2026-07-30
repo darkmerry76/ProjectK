@@ -13,7 +13,7 @@ struct KMGAME_API FKMAnimNotifyState_NiagaraFXData
 	TArray<class UNiagaraComponent*> NiagaraComponents;
 };
 
-UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play Camera")
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play NiagaraFX")
 class KMGAME_API UKMAnimNotifyState_NiagaraFX : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()

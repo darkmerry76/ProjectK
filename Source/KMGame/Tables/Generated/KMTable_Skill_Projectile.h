@@ -23,6 +23,9 @@ struct FKMTable_Skill_ProjectileRow : public FKMTable_SkillRow
 	FName                TransformSocket = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float                AnimTime = { 0.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FEMPrimaryAssetRef   ProjectileBp = { };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

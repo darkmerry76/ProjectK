@@ -20,6 +20,7 @@ const FGameplayTag FKMGameplayTagName::Event_Cancel_Tag = FGameplayTag::RequestG
 const FGameplayTag FKMGameplayTagName::Event_Cancel_Combo_Available_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Cancel.Combo.Available"));
 const FGameplayTag FKMGameplayTagName::Event_Cancel_Available_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Cancel.Available"));
 const FGameplayTag FKMGameplayTagName::Event_Cancel_Available_Perfect_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Cancel.Available.Perfect"));
+const FGameplayTag FKMGameplayTagName::Event_Move_Landing_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Move.Landing"));
 
 const FGameplayTag FKMGameplayTagName::State_Tag = FGameplayTag::RequestGameplayTag(TEXT("State"));
 const FGameplayTag FKMGameplayTagName::State_Dead_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Dead"));

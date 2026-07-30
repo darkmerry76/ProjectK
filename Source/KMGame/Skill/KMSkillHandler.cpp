@@ -19,6 +19,7 @@
 #include "Tables/Generated/KMTable_Character.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Animation/AnimSequence.h"
+#include "Util/KMUtil.h"
 
 UKMSkillHandler::UKMSkillHandler(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -389,14 +390,14 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	{
 		FVector targetToDirection = targetCharacter->GetCharacter()->GetActorLocation() - ownerCharacter->GetCharacter()->GetActorLocation();
 		float targetToDistance = targetToDirection.Size();
-			
-		if (skillConditionRow->TargetRangeMin > targetToDistance || skillConditionRow->TargetRange < targetToDistance)
-		{
-			return -1.f;
-		}
 		
 		if (skillConditionRow->TargetRange > 0.f)
 		{
+			if (skillConditionRow->TargetRangeMin > targetToDistance || skillConditionRow->TargetRange < targetToDistance)
+			{
+				return -1.f;
+			}
+
 			float center = (skillConditionRow->TargetRangeMin + skillConditionRow->TargetRange) * 0.5f;
 			float halfRange = (skillConditionRow->TargetRange - skillConditionRow->TargetRangeMin) * 0.5f;
 
@@ -851,7 +852,7 @@ void UKMSkillHandler::OnSkillTrigger(const FGameplayTag& eventTag, const TShared
 	}
 }
 
-TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag)
+TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag)
 {
 	check(skillInstance.IsValid());
 
@@ -883,7 +884,16 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 	
 	for (auto skillEffectItr : skillInstance->SkillKey.TableRecord->Effects)
 	{
-		const FKMTable_SkillEffectRow* skillEffectRow = FKMTable_SkillEffectRow::FindRowPtr(skillEffectItr);
+		FName skillEffectName;
+		FName skillEffectTagValue;
+		
+		UKMUtil::ParseIndexedName(skillEffectItr, '[', ']', skillEffectName, skillEffectTagValue);
+		if (skillEffectTagValue != hitTag)
+		{
+			continue;
+		}
+		
+		const FKMTable_SkillEffectRow* skillEffectRow = FKMTable_SkillEffectRow::FindRowPtr(skillEffectName);
 		check(skillEffectRow);
 
 		TSet<UKMCharacterInstance*> fianltargetInstances;
@@ -912,7 +922,7 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			UKMSkillHandler* targetSkillHandler = targetCharacterInstance->GetSkillHandler();
 			check(IsValid(targetSkillHandler));
 	
-			TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectItr);
+			TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
 			if (newSkillInstance.IsValid())
 			{
 				outSkillEffectInstances.Emplace(newSkillInstance);

@@ -458,7 +458,7 @@ void UKMCharacterInstance::HitCheckClear()
 	HitCheckData.Actors.Empty();	
 }
 
-void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orientationTransform)
+void UKMCharacterInstance::HitCollection(AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
 {
 	if (GetCharacter() == hitActor)
 	{
@@ -496,7 +496,7 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orie
 	TSharedPtr<FKMSkillInstance> latestSkillInstance = MakeShared<FKMSkillInstance>(*SkillHandler->GetLatestActiveSkillInstance().Get());
 	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitharacter->GetRootComponent());
 	FVector closestPoint;
-	rootComp->GetClosestPointOnCollision(orientationTransform.GetLocation(), closestPoint);
+	rootComp->GetClosestPointOnCollision(hitLocation, closestPoint);
 
 	if (latestSkillInstance.IsValid())
 	{
@@ -506,11 +506,11 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FTransform& orie
 		UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
 		check(IsValid(hitCharacterSkillHandler));
 
-		hitCharacterInstance->Hit(this, latestSkillInstance, closestPoint);
+		hitCharacterInstance->Hit(this, latestSkillInstance, closestPoint, hitTag);
 	}
 }
 
-void UKMCharacterInstance::BoxHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter)
+void UKMCharacterInstance::BoxHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -520,21 +520,28 @@ void UKMCharacterInstance::BoxHitImpact(const FTransform& orientationTransform, 
 	{
 		actorClassFilter = ACharacter::StaticClass();
 	}
-
-	TArray<AActor*> overlapActors;
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Emplace(GetCharacter());
-	if (UKismetSystemLibrary::BoxOverlapActorsWithOrientation(this, orientationTransform.GetLocation(),
-		orientationTransform.GetScale3D(), orientationTransform.GetRotation().Rotator(), objectTypeQuery, actorClassFilter, ActorsToIgnore, overlapActors))
+	
+	TArray<FHitResult> hitResults;
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(GetCharacter());
+	
+	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),
+	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
-		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
+		for (const FHitResult& hitResult : hitResults)
 		{
-			HitCollection(*actorItr, orientationTransform);
+			if (AActor* actor = hitResult.GetActor())
+			{
+				if (actor->IsA(actorClassFilter))
+				{
+					HitCollection(actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+				}
+			}
 		}
 	}
 }
 
-void UKMCharacterInstance::SphereHitImpact(const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter)
+void UKMCharacterInstance::SphereHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -545,15 +552,22 @@ void UKMCharacterInstance::SphereHitImpact(const FTransform& orientationTransfor
 		actorClassFilter = ACharacter::StaticClass();
 	}
 
-	TArray<AActor*> overlapActors;
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Emplace(GetCharacter());
-	if (UKismetSystemLibrary::SphereOverlapActors(this, orientationTransform.GetLocation(),
-		orientationTransform.GetScale3D().X * 100.f, objectTypeQuery, actorClassFilter, ActorsToIgnore, overlapActors))
+	TArray<FHitResult> hitResults;
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(GetCharacter());
+
+	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
+	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
 	{
-		for (auto actorItr = overlapActors.CreateIterator(); actorItr; ++actorItr)
+		for (const FHitResult& hitResult : hitResults)
 		{
-			HitCollection(*actorItr, orientationTransform);
+			if (AActor* actor = hitResult.GetActor())
+			{
+				if (actor->IsA(actorClassFilter))
+				{
+					HitCollection(actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+				}
+			}
 		}
 	}
 }
@@ -574,7 +588,7 @@ void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
 	InflictDelegate.Broadcast(++ComboCount, victimCharacter);
 }
 
-void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint)
+void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
 {
 	if (UseParrySkill())
 	{
@@ -585,11 +599,9 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 	{
 		return;
 	}
-	
-	//SetCharacterDirection(UKMUtil::InverseCircularDirection(attackerCharacterInstance->GetCharacterDirection()));
 	SkillHandler->ClearActiveSkills();
 
-	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag);
+	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag, hitTag);
 	for (auto skillEffectItr : skillEffectInstances)
 	{
 		const FName typeName = skillEffectItr->GetType();
@@ -615,16 +627,32 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 
 void UKMCharacterInstance::Stiff(float duration)
 {
-	if (StiffTimerHandle.IsValid())
+	if (duration <= 0.f)
 	{
 		return;
 	}
 	
-	GetCharacter()->GetMesh()->bPauseAnims = true;
-	GetCharacter()->GetMesh()->SuspendClothingSimulation();
+	float newDuration = duration;
+	if (StiffTimerHandle.IsValid())
+	{
+		newDuration = duration - GetWorld()->GetTimerManager().GetTimerRemaining(StiffTimerHandle);
+		if (newDuration <= 0.f)
+		{
+			return;
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(StiffTimerHandle);
+		}
+	}
+	else
+	{
+		GetCharacter()->GetMesh()->bPauseAnims = true;
+		GetCharacter()->GetMesh()->SuspendClothingSimulation();
 
-	GetCharacter()->CustomTimeDilation = 0.f;
-	GetWorld()->GetTimerManager().SetTimer(StiffTimerHandle, FTimerDelegate::CreateUObject(this, &UKMCharacterInstance::OnStiffRelease), duration, false);
+		GetCharacter()->CustomTimeDilation = 0.f;
+	}
+	GetWorld()->GetTimerManager().SetTimer(StiffTimerHandle, FTimerDelegate::CreateUObject(this, &UKMCharacterInstance::OnStiffRelease), newDuration, false);
 }
 
 void UKMCharacterInstance::OnStiffRelease()

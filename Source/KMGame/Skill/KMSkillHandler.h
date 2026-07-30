@@ -107,7 +107,7 @@ public:
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const UKMCharacterInstance* targetCharacterInstance) const;
 
-	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag);
+	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag = NAME_None);
 
 	void Tick(float deltaSeconds);
 

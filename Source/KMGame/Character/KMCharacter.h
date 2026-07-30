@@ -65,6 +65,8 @@ public:
 	void SetBeastPDA(const class UKMBeastPDA* newBeastPDA);
 	const class UKMBeastPDA* GetBeastPDA() const;
 
+	virtual void Landed(const FHitResult& hitResult) override;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;

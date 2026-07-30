@@ -27,10 +27,13 @@ class KMGAME_API UKMAnimNotifyState_Animation : public UKMAnimNotifyState
 	GENERATED_UCLASS_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
-	bool bUseSkillSet = true;
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Master", meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
+	bool bIsMaster = false;
 	
-	UPROPERTY(EditAnywhere, Category=AnimNotify, BlueprintReadOnly, meta=(AllowPrivateAccess=true, EditCondition="bUseSkillSet", DisplayAfter="bUseSkillSet"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="UseSkillSet", meta=(AllowPrivateAccess=true, DisplayAfter="bIsMaster"))
+	bool bIsUseSkillSet = true;
+	
+	UPROPERTY(EditAnywhere, Category=AnimNotify, BlueprintReadOnly, meta=(AllowPrivateAccess=true, EditCondition="bIsUseSkillSet", DisplayAfter="bUseSkillSet"))
 	FEMAnimationSetTag AnimationSetTag;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
