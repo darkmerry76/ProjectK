@@ -84,9 +84,7 @@ void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float m
 	ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(newDirection.X, newDirection.Y) * directionWeight));
 	FVector newTargetLocation = GetOffsetAlongOwnerDirection(newDirection, moveInstance, 1.f, bIngnoreZ);
 
-	newTargetLocation.Z = character->GetActorLocation().Z;
-
-	PlayOwnerCurveWarping(Curve, newTargetLocation, moveDuration, 0.f, bIngnoreZ);
+	AddOwnerMotionWarpingLocation(MotionWarpingTarget, newTargetLocation);
 
 	OnApplyAngle(direction, moveInstance, moveDuration);
 }

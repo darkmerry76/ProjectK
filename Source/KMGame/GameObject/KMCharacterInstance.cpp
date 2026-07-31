@@ -8,7 +8,6 @@
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityEffect.h"
@@ -524,7 +523,7 @@ void UKMCharacterInstance::BoxHitImpact(const FTransform& startOrientationTransf
 	TArray<FHitResult> hitResults;
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(GetCharacter());
-	
+
 	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),
 	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
