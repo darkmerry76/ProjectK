@@ -52,13 +52,27 @@ public:
 
 	const FVector& GetInputVelocity() const;
 
+	UFUNCTION(BlueprintPure)
 	class UKMItemAppearanceInstance* GetWeaponInstance() const;
 
+	float MontqagePlayTag(FGameplayTag tag, float playRate = 1.f,
+		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
+
+	float MontqagePlay(class UAnimMontage* animMontage, float playRate = 1.f,
+		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
+
+	UFUNCTION(BlueprintPure)
+	class UAnimMontage* GetAnimationTagOriginal(FGameplayTag tag) const;
+
+	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetAnimationTag(FGameplayTag tag) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetMovementOverrideMontage(class UAnimMontage* jumpMontage, class UAnimMontage* landingMontage);
 
+	UFUNCTION(BlueprintCallable)
+	void RevertOverrideAnimationTag(FGameplayTag tag);
+	
 	UFUNCTION(BlueprintCallable)
 	void RemoveMovementOverrideMontage();
 

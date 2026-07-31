@@ -119,19 +119,8 @@ void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharac
 	}
 }
 
-UAnimMontage* AKMCharacter::GetAnimationTag(FGameplayTag tag) const
+UAnimMontage* AKMCharacter::GetAnimationTagOriginal(FGameplayTag tag) const
 {
-	if (!IsValid(AnimsetTag))
-	{
-		return nullptr;
-	}
-	
-	const TObjectPtr<UAnimMontage>* existOverrideMontage = AnimOverrideMontageMap.Find(tag);
-	if (existOverrideMontage && IsValid(*existOverrideMontage))
-	{
-		return *existOverrideMontage;
-	}
-
 	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
 	{
 		if (characterInstance->IsBeast() &&
@@ -144,28 +133,88 @@ UAnimMontage* AKMCharacter::GetAnimationTag(FGameplayTag tag) const
 	return AnimsetTag->GetAnimation(tag);
 }
 
+UAnimMontage* AKMCharacter::GetAnimationTag(FGameplayTag tag) const
+{
+	if (!IsValid(AnimsetTag))
+	{
+		return nullptr;
+	}
+	
+	const TObjectPtr<UAnimMontage>* existOverrideMontage = AnimOverrideMontageMap.Find(tag);
+	if (existOverrideMontage && IsValid(*existOverrideMontage))
+	{
+		return *existOverrideMontage;
+	}
+	
+	return GetAnimationTagOriginal(tag);
+}
+
+float AKMCharacter::MontqagePlay(UAnimMontage* animMontage, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
+{
+	UAnimInstance* animInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(animMontage))
+	{
+		return 0.f;
+	}
+	return animInstance->Montage_Play(animMontage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
+}
+
+float AKMCharacter::MontqagePlayTag(FGameplayTag tag, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
+{
+	UAnimMontage* tagAnimMontage = GetAnimationTag(tag);
+	
+	return MontqagePlay(tagAnimMontage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
+}
+
 void AKMCharacter::SetMovementOverrideMontage(UAnimMontage* jumpMontage, UAnimMontage* landingMontage)
 {
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_0, jumpMontage);
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_0, landingMontage);
+	//AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_0, jumpMontage);
+	//AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_0, landingMontage);
 
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_1, jumpMontage);
+/*	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_1, jumpMontage);
 	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_1, landingMontage);
 
 	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Jump_2, jumpMontage);
-	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_2, landingMontage);
+	AnimOverrideMontageMap.FindOrAdd(FKMGameplayTagName::Anim_Landing_2, landingMontage);*/
+}
+
+void AKMCharacter::RevertOverrideAnimationTag(FGameplayTag tag)
+{
+	TObjectPtr<UAnimMontage>* existOverrideMontage = AnimOverrideMontageMap.Find(tag);
+	if (!existOverrideMontage)
+	{
+		return;
+	}
+
+	if (UAnimMontage* originMontage = GetAnimationTagOriginal(tag))
+	{
+		if (UAnimInstance* animInstance = GetMesh()->GetAnimInstance())
+		{
+			for (auto montageInstance : animInstance->MontageInstances)
+			{
+				if (montageInstance != animInstance->GetRootMotionMontageInstance() && animInstance->MontageInstances.Num() > 1)
+				{
+					continue;
+				}
+				if (montageInstance->Montage == *existOverrideMontage)
+				{
+					//animInstance->Montage_Play(originMontage, 1.f, EMontagePlayReturnType::MontageLength, montageInstance->GetPosition());
+					break;
+				}
+			}
+		}
+	}
+	AnimOverrideMontageMap.Remove(tag);
 }
 
 void AKMCharacter::RemoveMovementOverrideMontage()
 {
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_0);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_0);
-	
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_1);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Landing_1);
-	
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
-	AnimOverrideMontageMap.Remove(FKMGameplayTagName::Anim_Jump_2);
+	//RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Jump_0);
+	//RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Landing_0);
+/*	RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Jump_1);
+	RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Landing_1);
+	RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Jump_2);
+	RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Landing_2);*/
 }
 
 UKMItemAppearanceInstance* AKMCharacter::GetWeaponInstance() const

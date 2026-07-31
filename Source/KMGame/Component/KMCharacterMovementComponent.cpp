@@ -195,20 +195,11 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 		return;
 	}
 	
-	UAnimMontage* jumpAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Jump_0);
-	if (!IsValid(jumpAnimMontage))
-	{
-		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
-		return;
-	}
-
 	SetMovementMode(MOVE_Custom);
 
 	StartCustomFalling(Velocity);
 
-	activeJumpAnimMontage = jumpAnimMontage;
-
-	ownerCharacter->PlayAnimMontage(activeJumpAnimMontage);
+	ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Jump_0);
 }
 
 void UKMCharacterMovementComponent::StartCustomFalling(const FVector& latestMoveDelta)
@@ -350,16 +341,8 @@ void UKMCharacterMovementComponent::CustomJump()
 		return;
 	}
 	
-	UAnimMontage* jumpAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Jump_0);
-	if (!IsValid(jumpAnimMontage))
-	{
-		return;
-	}
-
 	SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
 	
-	activeJumpAnimMontage = jumpAnimMontage;
-
 	LatestJumpInputDir = ownerCharacter->GetLastMovementInputVector();
 	LatestJumpInputDir.Normalize();
 
@@ -370,7 +353,7 @@ void UKMCharacterMovementComponent::CustomJump()
 
 	float zScale = JumpApexHeight / maxValue;
 
-	ownerCharacter->PlayAnimMontage(activeJumpAnimMontage);
+	ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Jump_0);
 	curveWarping->PlayCurveWarpjng(JumpCurve, targetLocation, JumpDuration,  zScale, false, false);
 }
 
@@ -437,29 +420,10 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 	case EEMCurveWarpingInteruptType::Ending: StartCurveEndingFalling(JumpCurve); break;
 	case EEMCurveWarpingInteruptType::Landing:
 		{
-			if (IsValid(activeJumpAnimMontage))
-			{
-				if (UAnimInstance* animInstance = Cast<UAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
-				{
-					UAnimMontage* landingAnimMontage = ownerCharacter->GetAnimationTag(FKMGameplayTagName::Anim_Landing_0);
-					if (IsValid(landingAnimMontage))
-					{
-						if (animInstance->GetCurrentActiveMontage() != landingAnimMontage)
-						{
-							animInstance->Montage_Play(landingAnimMontage);
-						}
-					}
-					else if (IsValid(activeJumpAnimMontage))
-					{
-						animInstance->Montage_Stop(0.f, activeJumpAnimMontage);
-					}
-				}
-				activeJumpAnimMontage = nullptr;
-			}
+			ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
 			Velocity = FVector::ZeroVector;
 			SetMovementMode(MOVE_Walking);
 			SetCustomMovementMode(EKMCustomMovementMode::CMODE_Walking);
-			activeJumpAnimMontage = nullptr;
 		}
 		break;
 	default: break;

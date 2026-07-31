@@ -45,9 +45,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UClass* ActorClassFilter;
 
-	UPROPERTY()
-	TObjectPtr<UAnimMontage> activeJumpAnimMontage = nullptr;
-
 	float FallTime = 0.f;
 
 	EKMCustomMovementMode MovementModeEx;
