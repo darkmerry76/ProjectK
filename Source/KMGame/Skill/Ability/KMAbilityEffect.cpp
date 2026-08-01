@@ -17,10 +17,7 @@ void UKMAbilityEffect::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	if (!IsValid(Montage))
-	{
-		PlayMartialArts(nullptr, Rate, bIsLoop);
-	}
+	PlayMartialArts(nullptr, Rate, bIsLoop);
 
 	if (bIsDirectionFallow && IsValid(GetCasterCharacter()))
 	{

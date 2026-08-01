@@ -73,7 +73,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TargetDistance = 200.f;
-	
+
 public:
 	virtual void Activate() override;
 	virtual void Deactivate() override;

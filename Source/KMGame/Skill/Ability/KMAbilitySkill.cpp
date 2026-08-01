@@ -13,10 +13,7 @@ void UKMAbilitySkill::Activate()
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
-	if (!IsValid(Montage))
-	{
-		PlayMartialArts(nullptr, Rate, bIsLoop);
-	}
+	PlayMartialArts(nullptr, Rate, bIsLoop);
 
 	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
 	{
@@ -38,10 +35,6 @@ void UKMAbilitySkill::Deactivate()
 	AKMCharacter* character = GetOwnerCharacter();
 	if (IsValid(character))
 	{
-		if (IsValid(Montage))
-		{
-			StopMontage(Montage);
-		}
 		if (bIsDirectionFallow)
 		{
 /*			UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();

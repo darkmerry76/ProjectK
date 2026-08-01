@@ -11,9 +11,6 @@ class UKMAbilitySkill : public UKMAbility
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bIsUseAnimSet = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsDirectionFallow = true;
 	
 public:

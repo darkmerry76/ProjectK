@@ -4,7 +4,6 @@
 #include "GameplayTagContainer.h"
 #include "KMAbility.h"
 #include "Core/KMDefine.h"
-#include "Tables/Generated/KMTableEnums.h"
 #include "KMAbilityEffect.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)

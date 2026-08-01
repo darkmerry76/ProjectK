@@ -11,9 +11,6 @@ class UKMAbility : public UEMAbility
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UAnimMontage* Montage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Rate = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -30,6 +27,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float VerticalPower = 100.f;
+
+	UPROPERTY()
+	class UAnimMontage* Montage = nullptr;
 
 protected:
 	TWeakPtr<class FKMSkillInstance> SkillInstance;
