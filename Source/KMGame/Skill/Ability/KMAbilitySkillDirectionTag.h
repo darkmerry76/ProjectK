@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "KMAbility.h"
+#include "KMAbilitySkill.h"
 #include "KMAbilitySkillDirectionTag.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class UKMAbilitySkillDirectionTag : public UKMAbility
+class UKMAbilitySkillDirectionTag : public UKMAbilitySkill
 {
 	GENERATED_UCLASS_BODY()
 	
@@ -76,7 +76,7 @@ public:
 
 public:
 	virtual void Activate() override;
-	virtual void Deactivate() override;
+	virtual void Deactivate(bool bCancel = false) override;
 
 	UFUNCTION(BlueprintPure)
 	FGameplayTag Get8WayDirectionAnimTag(EKM8WayDirection direction) const;

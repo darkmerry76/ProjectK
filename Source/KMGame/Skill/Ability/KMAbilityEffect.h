@@ -23,6 +23,7 @@ public:
 
 protected:
 	FKMObjectKey CastObjectKey;
+	TWeakPtr<class FKMSkillEffectInstance> SkillEffectInstance;
 
 public:
 	void SetCastObjectKey(FKMObjectKey newCasterObjectKey);
@@ -35,5 +36,9 @@ public:
 	class UKMCharacterInstance* GetCasterCharacterInstance() const;
 	
 	virtual void Activate() override;
-	virtual void Deactivate() override;
+	virtual void Deactivate(bool bCancel = false) override;
+	virtual void Impact(const FTransform& newImpactTransform) override;
+
+	void SetSkillEffectInstance(const TSharedPtr<class FKMSkillEffectInstance>& newSkillEffectInstance);
+	class FKMSkillEffectInstance* GetSkillEffectInstance() const;
 };

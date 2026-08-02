@@ -175,6 +175,21 @@ enum class EKMRewardType : uint8
 	Collect = 3 , // 수집
 };
 
+// 스킬효과타잎
+UENUM(BlueprintType)
+enum class EKMSkillEffectOverlapType : uint8
+{
+	None = 0 , // 없음
+	Add = 1 , // 증가
+	Override = 2 , // 덮어쓰기
+	Refresh = 3 , // Duration갱신
+	Ignore = 4 , // 무시
+	Max = 5 , // 더강한기준
+	Min = 6 , // 더약한기준
+	Remove = 7 , // 기존효과제거
+	Multiply = 8 , // 배율
+};
+
 UENUM(BlueprintType)
 enum class EKMStatParameterType : uint8
 {

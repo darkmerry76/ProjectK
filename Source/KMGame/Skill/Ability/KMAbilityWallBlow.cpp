@@ -35,7 +35,7 @@ void UKMAbilityWallBlow::Impact(const FTransform& newImpactTransform)
 	Super::Impact(newImpactTransform);
 }
 
-void UKMAbilityWallBlow::Deactivate()
+void UKMAbilityWallBlow::Deactivate(bool bCancel)
 {
-	Super::Deactivate();
+	Super::Deactivate(bCancel);
 }

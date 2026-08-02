@@ -19,15 +19,17 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 	{
 		ResetMovementElipsedTime();
 	}
-	
-	CurrentDirection = UKMUtil::FInterpToCircular(CurrentDirection, NextDirection, deltaSeconds, LerpDirectionSpeed);
 	if(AKMCharacter* ownerCharacter = Cast<AKMCharacter>(TryGetPawnOwner()))
 	{
 		if (UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance())
 		{
-			if (PrevActorDirection != characterInstance->GetCharacterDirection())
+			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
 			{
-				PrevActorDirection = characterInstance->GetCharacterDirection();
+				CurrentDirection = UKMUtil::FInterpToCircular(CurrentDirection, NextDirection, deltaSeconds, LerpDirectionSpeed);
+				if (PrevActorDirection != characterInstance->GetCharacterDirection())
+				{
+					PrevActorDirection = characterInstance->GetCharacterDirection();
+				}
 			}
 		}
 	}

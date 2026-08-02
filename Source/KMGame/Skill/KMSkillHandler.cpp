@@ -4,6 +4,7 @@
 #include <Tables/Generated/KMTable_Skill_Normal.h>
 #include <Tables/Generated/KMTable_Skill_Projectile.h>
 #include "Ability/KMAbility.h"
+#include "Ability/KMAbilitySkill.h"
 #include "Character/KMCharacter.h"
 #include "DataAsset/KMAssetManager.h"
 #include "GameObject/KMCharacterInstance.h"
@@ -16,7 +17,6 @@
 #include "Animation/AnimSequence.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Tables/Generated/KMTable_Character.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Animation/AnimSequence.h"
 #include "Util/KMUtil.h"
@@ -33,21 +33,6 @@ UKMGameObjectInstance* UKMSkillHandler::GetOwner() const
 const TArray<FKMSkillKey>& UKMSkillHandler::GetOwnedSkills() const
 {
 	return OwnedSkills;
-}
-
-void UKMSkillHandler::SetAbilityFlag(EKMAbilityFlag newFlag)
-{
-	AbilityMask |= static_cast<int8>(newFlag);
-}
-
-void UKMSkillHandler::ClearAbilityFlag(EKMAbilityFlag flag)
-{
-	AbilityMask = AbilityMask & ~static_cast<int32>(flag);
-}
-
-bool UKMSkillHandler::HasAbilityFlag(EKMAbilityFlag flag) const
-{
-	return AbilityMask & static_cast<int32>(flag);
 }
 
 void UKMSkillHandler::ClearResisterSkillSet()
@@ -209,6 +194,46 @@ bool UKMSkillHandler::ResetCooltime(const FKMSkillKey& skillKey)
 	return true;
 }
 
+int32 UKMSkillHandler::GetSkillEffectOverlapCount(const FName& skillEffectGroup, const FName& skillEffectId, TArray<TSharedPtr<FKMSkillEffectInstance>>* outSkillEffects) const
+{
+	int32 overlapCount = 0;
+	for (auto activatedskillItr : EffectInstances)
+	{
+		TSharedPtr<FKMSkillEffectInstance> activatedSkillEffect = activatedskillItr.Value;
+		if (skillEffectGroup != NAME_None && activatedSkillEffect->GetEffectTableRecord()->OverlapGroup == skillEffectGroup)
+		{
+			if(outSkillEffects)
+			{
+				outSkillEffects->Emplace(activatedSkillEffect);
+			}
+			overlapCount++;
+		}
+		else if (activatedSkillEffect->GetEffectTableRecord()->Id == skillEffectId && !activatedSkillEffect->IsComplete())
+		{
+			if(outSkillEffects)
+			{
+				outSkillEffects->Emplace(activatedSkillEffect);
+			}
+			overlapCount++;
+		}
+	}
+	return overlapCount;
+}
+
+int32 UKMSkillHandler::GetSkillOverlapCount(const FName& skillId) const
+{
+	int32 overlapCount = 0;
+	for (auto activatedskillItr : SkillInstances)
+	{
+		TSharedPtr<FKMSkillInstance> activatedskill = activatedskillItr.Value;
+		if (activatedskill->SkillKey.TableId == skillId && !activatedskill->IsComplete())
+		{
+			overlapCount++;
+		}
+	}
+	return overlapCount;
+}
+
 bool UKMSkillHandler::IsSkillAvailable(const FKMSkillKey& skillKey) const
 {
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
@@ -233,22 +258,10 @@ bool UKMSkillHandler::IsSkillAvailable(const FKMSkillKey& skillKey) const
 		return false;	
 	}
 	
-	const FKMTable_SkillRow* newSkillTable = FKMTable_SkillRow::FindRowPtr(skillKey.TableId, skillKey.Level);
+	const FKMTable_SkillRow* newSkillTable = skillKey.TableRecord;
 	check(newSkillTable);
 
-	int32 overlapCount = 0;
-	for (auto activatedskillItr : SkillInstances)
-	{
-		TSharedPtr<FKMSkillInstance> activatedskill = activatedskillItr.Value;
-		const FKMTable_SkillRow* activatedskillTable = FKMTable_SkillRow::FindRowPtr(activatedskill->SkillKey.TableId, activatedskill->SkillKey.Level);
-		check(activatedskillTable);
-
-		if (activatedskill->SkillKey.TableId == skillKey.TableId && !activatedskill->IsComplete())
-		{
-			overlapCount++;
-		}
-	}
-
+	int32 overlapCount = GetSkillOverlapCount(skillKey.TableId);
 	if (newSkillTable->OverlapCount > 0 && overlapCount >= newSkillTable->OverlapCount)
 	{
 		return false;
@@ -790,7 +803,10 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 		{
 			newAbility->SetLockOnCluster(newSkillInstance->Target);
 			newAbility->Activate();
-			newAbility->SetSkillInstance(newSkillInstance);
+			if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(newAbility))
+			{
+				abilitySkill->SetSkillInstance(newSkillInstance);
+			}
 		}
 	}
 	
@@ -921,16 +937,84 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			
 			UKMSkillHandler* targetSkillHandler = targetCharacterInstance->GetSkillHandler();
 			check(IsValid(targetSkillHandler));
-	
-			TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
-			if (newSkillInstance.IsValid())
+
+			TArray<TSharedPtr<FKMSkillEffectInstance>> overlapSkillInstances;
+			int32 overlapCount = GetSkillEffectOverlapCount(skillEffectRow->OverlapGroup, skillEffectRow->Id, &overlapSkillInstances);
+			if (overlapCount >= skillEffectRow->OverlapCount)
 			{
-				outSkillEffectInstances.Emplace(newSkillInstance);
+				switch (skillEffectRow->OverlapType)
+				{
+				case EKMSkillEffectOverlapType::Override:
+					RemoveForceAbility<FKMSkillEffectInstance>(EffectInstances,overlapSkillInstances, true);
+					overlapSkillInstances.Empty();
+					break;
+				case EKMSkillEffectOverlapType::Ignore:
+					break;
+				default:
+					overlapSkillInstances.Empty();
+					continue;
+				}
+			}
+
+			if (!overlapSkillInstances.IsEmpty())
+			{
+				outSkillEffectInstances.Append(overlapSkillInstances);
+			}
+			else
+			{
+				TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
+				if (newSkillInstance.IsValid())
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("NewSkill=%s"), *newSkillInstance->GetEffectTableRecord()->Id.ToString()));
+					UE_LOG(LogTemp, Display, TEXT("NewSkill=%s"), *newSkillInstance->GetEffectTableRecord()->Id.ToString());
+
+					outSkillEffectInstances.Emplace(newSkillInstance);
+				}
 			}
 		}
 	}
 
 	return outSkillEffectInstances;
+}
+
+void UKMSkillHandler::ResetSkillEffect(const FName& skillEffectId)
+{
+	for (auto activatedskillItr : EffectInstances)
+	{
+		TSharedPtr<FKMSkillEffectInstance> activatedSkillEffect = activatedskillItr.Value;
+		if (activatedSkillEffect->GetEffectTableRecord()->Id == skillEffectId && !activatedSkillEffect->IsComplete())
+		{
+			activatedSkillEffect->Reset();
+		}
+	}
+}
+
+void UKMSkillHandler::RemoveSkillEffect(const FName& skillEffectId)
+{
+	for (auto activatedskillItr : EffectInstances)
+	{
+		TSharedPtr<FKMSkillEffectInstance> activatedSkillEffect = activatedskillItr.Value;
+		if (activatedSkillEffect->GetEffectTableRecord()->Id == skillEffectId && !activatedSkillEffect->IsComplete())
+		{
+			activatedSkillEffect->SetForceComplete(true);
+		}
+	}
+}
+
+template<typename _TL>
+void UKMSkillHandler::RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityInstances, const TArray<TSharedPtr<_TL>>& sourceAbilityInstances, bool bCancel)
+{
+	for (auto abilityInstanceItr = abilityInstances.CreateIterator(); abilityInstanceItr; ++abilityInstanceItr)
+	{
+		if (sourceAbilityInstances.Contains(abilityInstanceItr->Value))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Overlap Remove=%s"), *abilityInstanceItr.Value()->GetEffectTableRecord()->Id.ToString()));
+			UE_LOG(LogTemp, Display, TEXT("Overlap Remove=%s"), *abilityInstanceItr.Value()->GetEffectTableRecord()->Id.ToString());
+			abilityInstanceItr.Value()->Leave(bCancel);
+			OnRemoveAbilityInstance(abilityInstanceItr.Value());
+			abilityInstanceItr.RemoveCurrent();
+		}
+	}
 }
 
 TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TSharedPtr<FKMSkillInstance>& skillInstance, const FName& effectName)
@@ -951,7 +1035,7 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
 	check(IsValid(ownerCharacterInstance));
-
+	
 	for (auto readTag: skillEffectTable->ReadGameplaytag)
 	{
 		bool isNot = false;
@@ -1178,7 +1262,10 @@ void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag
 		{
 			continue;
 		}
-		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == characterInstance); 
+		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == characterInstance);
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("NextTransition %s"), *effectTransitionRow->BranchEffectId.ToString()));
+		UE_LOG(LogTemp, Display, TEXT("NextTransition %s"), *effectTransitionRow->BranchEffectId.ToString());
 
 		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
 		skillEffectInstance->SetForceComplete(true);

@@ -9,12 +9,12 @@ UKMAbilitySkillDirectionTag::UKMAbilitySkillDirectionTag(const FObjectInitialize
 
 void UKMAbilitySkillDirectionTag::Activate()
 {
-	Super::Activate();
+	UKMAbility::Activate();
 }
 
-void UKMAbilitySkillDirectionTag::Deactivate()
+void UKMAbilitySkillDirectionTag::Deactivate(bool bCancel)
 {
-	Super::Deactivate();
+	UKMAbility::Deactivate(bCancel);
 
 	AKMCharacter* character = GetOwnerCharacter();
 	if (IsValid(character))

@@ -80,6 +80,9 @@ void UKMAbility::Activate()
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	check(IsValid(ownerCharacter));
 
+	UEMMartialArts* martialArts = GetMartialArts();
+	check(IsValid(martialArts));
+
 	if (IsValid(BlowCurve))
 	{
 		UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
@@ -98,7 +101,10 @@ void UKMAbility::Activate()
 
 		if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement()))
 		{
-			characterMovement->SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
+			if (CustomMovementMode != EKMCustomMovementMode::None)
+			{
+				characterMovement->SetCustomMovementMode(CustomMovementMode);
+			}
 		}
 
 		if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
@@ -114,13 +120,13 @@ void UKMAbility::OnActivated_Implementation()
 {
 }
 
-void UKMAbility::Deactivate()
+void UKMAbility::Deactivate(bool bCancel)
 {
 	StopMartialArts();
-	OnDeacivated();
+	OnDeacivated(bCancel);
 }
 
-void UKMAbility::OnDeacivated_Implementation()
+void UKMAbility::OnDeacivated_Implementation(bool bCancel)
 {
 }
 
@@ -253,24 +259,6 @@ UWorld* UKMAbility::GetWorld() const
 
 void UKMAbility::Trigger(const FGameplayTag eventTag)
 {
-	if (SkillInstance.IsValid())
-	{
-		SkillInstance.Pin()->SkillEffectTriggerDelegate.Broadcast(eventTag, SkillInstance.Pin());
-	}
-}
-
-void UKMAbility::SetSkillInstance(const TSharedPtr<FKMSkillInstance> newSkillInstance)
-{
-	SkillInstance = newSkillInstance;
-	if (SkillInstance.IsValid())
-	{
-		SkillInstance.Pin()->SetAbility(this);
-	}
-}
-
-FKMSkillInstance* UKMAbility::GetSkillInstance() const
-{
-	return SkillInstance.IsValid() ? SkillInstance.Pin().Get() : nullptr;
 }
 
 FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float playRate, FName startSectionName)
@@ -444,10 +432,6 @@ int32 UKMAbility::GetMartialArtsHandle() const
 	return MartialArtsHandle;
 }
 
-void UKMAbility::ForceSkillComplate()
+void UKMAbility::ForceComplate()
 {
-	if (SkillInstance.IsValid())
-	{
-		SkillInstance.Pin()->SetForceComplete(true);
-	}
 }

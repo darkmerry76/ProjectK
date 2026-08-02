@@ -58,6 +58,12 @@ struct FKMTable_SkillEffectRow : public FEM_TableBaseRow
 	float                Interval = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName                OverlapGroup = { NAME_None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMSkillEffectOverlapType OverlapType = { EKMSkillEffectOverlapType::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32                OverlapCount = { 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

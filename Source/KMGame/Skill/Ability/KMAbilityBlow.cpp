@@ -35,9 +35,9 @@ void UKMAbilityBlow::Impact(const FTransform& newImpactTransform)
 	OnImpact(newImpactTransform);
 }
 
-void UKMAbilityBlow::Deactivate()
+void UKMAbilityBlow::Deactivate(bool bCancel)
 {
-	Super::Deactivate();
+	Super::Deactivate(bCancel);
 	
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	check(IsValid(ownerCharacter));

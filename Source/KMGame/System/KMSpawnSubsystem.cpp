@@ -146,5 +146,5 @@ void UKMSpawnSubsystem::OnSkillProjectileEvent(FGameplayTag eventTag, const FKMP
 			skillHandler->ApplyEffects(projectileActor->SkillInstance, FKMGameplayTagName::Event_Hit_Projectile_Tag);
 		}
 	}
-	assistSkillInstance->ForceComplete = true;
+	assistSkillInstance->SetForceComplete(true);
 }

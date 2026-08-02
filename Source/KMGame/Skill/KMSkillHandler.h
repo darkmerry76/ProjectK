@@ -65,10 +65,6 @@ public:
 	bool IsReadyCooltime(const FKMSkillKey& skillKey) const;
 	bool ResetCooltime(const FKMSkillKey& skillKey);
 
-	void SetAbilityFlag(EKMAbilityFlag newFlag);
-	void ClearAbilityFlag(EKMAbilityFlag flag);
-	bool HasAbilityFlag(EKMAbilityFlag flag) const;
-	
 	void ClearActiveSkills();
 	void ClearPassiveSkills();
 	void ClearAllSkills();
@@ -119,6 +115,11 @@ public:
 
 	void TriggerTransitionSkillEffect(const FGameplayTag& effectTag);
 	void ActivatedNextComboSkill();
+
+	UFUNCTION(BlueprintPure)
+	int32 GetSkillOverlapCount(const FName& skillId) const;
+	
+	int32 GetSkillEffectOverlapCount(const FName& skillEffectGroup, const FName& skillEffectId, TArray<TSharedPtr<FKMSkillEffectInstance>>* outSkillEffects = nullptr) const;
 	
 protected:
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
@@ -128,6 +129,13 @@ protected:
 	void OnSkillTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance);
 	
 	TSharedPtr<FKMSkillInstance> UseSkillInternal(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
+
+	void ResetSkillEffect(const FName& skillEffectId);
+	
+	void RemoveSkillEffect(const FName& skillEffectId);
+	
+	template<typename _TL>
+	void RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityInstances, const TArray<TSharedPtr<_TL>>& sourceAbilityInstances, bool bCancel = false);
 	
 	TSharedPtr<FKMSkillEffectInstance> ApplyEffectInternal(const TSharedPtr<class FKMSkillInstance>& skillInstance, const FName& effectName);
 	

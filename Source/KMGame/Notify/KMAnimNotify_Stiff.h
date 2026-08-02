@@ -15,14 +15,17 @@ class KMGAME_API UKMAnimNotify_Stiff : public UEMAnimNotifyMA
 protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	float Duration = 0.2f;
-	
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Force", meta=(AllowPrivateAccess=true, DisplayAfter="Duration"))
+	bool bIsForce = true;
+
 public:
 	UKMAnimNotify_Stiff();
 
 protected:
 	virtual void Notify(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 	
-	void DoStiff(USkeletalMeshComponent* meshComp, float stiffDuration);
+	void DoStiff(USkeletalMeshComponent* meshComp, float stiffDuration, bool bForce = true);
 	
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

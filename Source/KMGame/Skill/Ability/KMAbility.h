@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "EMMartialArts.h"
+#include "Component/KMCharacterMovementComponent.h"
 #include "KMAbility.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
@@ -19,20 +20,22 @@ public:
 	UPROPERTY(EditAnywhere, DisplayName="Loop", BlueprintReadWrite)
 	bool bIsLoop = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadOnly)
 	TObjectPtr<class UCurveVector> BlowCurve;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	float HorizontalPower = 100.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	float VerticalPower = 100.f;
+
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
+	EKMCustomMovementMode CustomMovementMode = EKMCustomMovementMode::CMODE_Jump;  
 
 	UPROPERTY()
 	class UAnimMontage* Montage = nullptr;
 
 protected:
-	TWeakPtr<class FKMSkillInstance> SkillInstance;
 	TSharedPtr<class FKMLockOnCluster> LockOnCluster;
 
 	struct FAnimMontageInstance* MontageInstance = nullptr;
@@ -41,10 +44,6 @@ protected:
 	int32 MartialArtsHandle = INDEX_NONE;
 
 public:
-	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance> newSkillInstance);
-	class FKMSkillInstance* GetSkillInstance() const;
-	
-public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Activate();
 
@@ -52,13 +51,13 @@ public:
 	void OnActivated();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate();
+	virtual void Deactivate(bool bCancel = false);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnDeacivated();
+	void OnDeacivated(bool bCancel);
 
 	UFUNCTION(BlueprintCallable)
-	void Trigger(const FGameplayTag eventTag);
+	virtual void Trigger(const FGameplayTag eventTag);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnTriggerEvent(const FGameplayTag& eventTag);
@@ -151,7 +150,7 @@ public:
 	void OnCurveWarpingInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type);
 
 	UFUNCTION(BlueprintCallable)
-	void ForceSkillComplate();
+	virtual void ForceComplate();
 
 protected:
 	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);

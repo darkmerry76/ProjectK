@@ -28,9 +28,9 @@ void UKMAbilitySkill::Activate()
 	}
 }
 
-void UKMAbilitySkill::Deactivate()
+void UKMAbilitySkill::Deactivate(bool bCancel)
 {
-	Super::Deactivate();
+	Super::Deactivate(bCancel);
 	
 	AKMCharacter* character = GetOwnerCharacter();
 	if (IsValid(character))
@@ -46,5 +46,35 @@ void UKMAbilitySkill::Deactivate()
 		
 			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerForwardDirection)));*/
 		}
+	}
+}
+
+void UKMAbilitySkill::Trigger(const FGameplayTag eventTag)
+{
+	if (SkillInstance.IsValid())
+	{
+		SkillInstance.Pin()->SkillEffectTriggerDelegate.Broadcast(eventTag, SkillInstance.Pin());
+	}
+}
+
+void UKMAbilitySkill::SetSkillInstance(const TSharedPtr<FKMSkillInstance>& newSkillInstance)
+{
+	SkillInstance = newSkillInstance;
+	if (SkillInstance.IsValid())
+	{
+		SkillInstance.Pin()->SetAbility(this);
+	}
+}
+
+FKMSkillInstance* UKMAbilitySkill::GetSkillInstance() const
+{
+	return SkillInstance.IsValid() ? SkillInstance.Pin().Get() : nullptr;
+}
+
+void UKMAbilitySkill::ForceComplate()
+{
+	if (SkillInstance.IsValid())
+	{
+		SkillInstance.Pin()->SetForceComplete(true);
 	}
 }

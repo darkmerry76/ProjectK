@@ -4,7 +4,7 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_CurveWarping.generated.h"
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Play CurveWarping")
 class KMGAME_API UKMAnimNotifyState_CurveWarping : public UKMAnimNotifyState
 {
 	GENERATED_UCLASS_BODY()

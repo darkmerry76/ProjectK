@@ -12,8 +12,6 @@ void UKMAbilityEffect::Activate()
 {
 	CasterCharacterObject = Cast<UKMCharacterInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
 	
-	Super::Activate();
-	
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
@@ -23,25 +21,45 @@ void UKMAbilityEffect::Activate()
 	{
 		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
 		check(IsValid(ownerCharacterInstance));
-		
+
 		FVector targetToDirection = GetOwnerCharacter()->GetActorLocation() - GetCasterCharacter()->GetActorLocation();
 		targetToDirection.Z = 0.0f;
 		targetToDirection.Normalize();
-		
 		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
 	}
+
+	Super::Activate();
 }
 
-void UKMAbilityEffect::Deactivate()
+void UKMAbilityEffect::Impact(const FTransform& newImpactTransform)
 {
-	Super::Deactivate();
+	AKMCharacter* character = GetOwnerCharacter();
+	check(IsValid(character));
+
+	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+	check(IsValid(ownerCharacterInstance));
+
+	FVector targetToDirection = character->GetActorLocation() - newImpactTransform.GetLocation();
+	targetToDirection.Z = 0.0f;
+	targetToDirection.Normalize();
+	ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
+	
+	Super::Impact(newImpactTransform);
+}
+
+void UKMAbilityEffect::Deactivate(bool bCancel)
+{
+	Super::Deactivate(bCancel);
 	
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
 
 	UKMSkillHandler* skillHandler = character->GetCharacterInstance()->GetSkillHandler();
 
-	skillHandler->TriggerTransitionSkillEffect(EndingTag);
+	if (SkillEffectInstance.IsValid() && !bCancel)
+	{
+		skillHandler->TriggerTransitionSkillEffect(EndingTag);
+	}
 
 	if (bIsDirectionFallow)
 	{
@@ -78,4 +96,18 @@ UKMCharacterInstance* UKMAbilityEffect::GetCasterCharacterInstance() const
 		return nullptr;
 	}
 	return CasterCharacterObject.Pin().Get();
+}
+
+void UKMAbilityEffect::SetSkillEffectInstance(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance)
+{
+	SkillEffectInstance = newSkillEffectInstance;
+	if (SkillEffectInstance.IsValid())
+	{
+		SkillEffectInstance.Pin()->SetAbility(this);
+	}
+}
+
+FKMSkillEffectInstance* UKMAbilityEffect::GetSkillEffectInstance() const
+{
+	return SkillEffectInstance.IsValid() ? SkillEffectInstance.Pin().Get() : nullptr;
 }

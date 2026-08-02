@@ -468,17 +468,16 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FVector& hitLoca
 		return;
 	}
 
-	AKMCharacter* hitharacter = Cast<AKMCharacter>(hitActor);
-	if (!IsValid(hitharacter))
+	AKMCharacter* hitCharacter = Cast<AKMCharacter>(hitActor);
+	if (!IsValid(hitCharacter))
 	{
 		return;
 	}
 
-	UKMCharacterInstance* hitCharacterInstance = hitharacter->GetCharacterInstance();
+	UKMCharacterInstance* hitCharacterInstance = hitCharacter->GetCharacterInstance();
 	check(IsValid(hitCharacterInstance));
 
 	if (hitCharacterInstance->IsDead() ||
-		//hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag) ||
 		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
 	{
 		return;
@@ -491,16 +490,21 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FVector& hitLoca
 	{
 		return;
 	}
+
+	if (hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag))
+	{
+		hitCharacter = hitCharacter;
+	}
 	
 	TSharedPtr<FKMSkillInstance> latestSkillInstance = MakeShared<FKMSkillInstance>(*SkillHandler->GetLatestActiveSkillInstance().Get());
-	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitharacter->GetRootComponent());
+	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitCharacter->GetRootComponent());
 	FVector closestPoint;
 	rootComp->GetClosestPointOnCollision(hitLocation, closestPoint);
 
 	if (latestSkillInstance.IsValid())
 	{
 		latestSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
-		latestSkillInstance->Target->Targets.Emplace(hitharacter->GetCharacterInstance()->GetId());
+		latestSkillInstance->Target->Targets.Emplace(hitCharacter->GetCharacterInstance()->GetId());
 				
 		UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
 		check(IsValid(hitCharacterSkillHandler));
@@ -624,7 +628,7 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 	}	
 }
 
-void UKMCharacterInstance::Stiff(float duration)
+void UKMCharacterInstance::Stiff(float duration, bool bReset)
 {
 	if (duration <= 0.f)
 	{
@@ -634,7 +638,10 @@ void UKMCharacterInstance::Stiff(float duration)
 	float newDuration = duration;
 	if (StiffTimerHandle.IsValid())
 	{
-		newDuration = duration - GetWorld()->GetTimerManager().GetTimerRemaining(StiffTimerHandle);
+		if (!bReset)
+		{
+			newDuration = duration - GetWorld()->GetTimerManager().GetTimerRemaining(StiffTimerHandle);
+		}
 		if (newDuration <= 0.f)
 		{
 			return;

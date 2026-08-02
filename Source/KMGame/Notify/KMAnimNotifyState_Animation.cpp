@@ -41,7 +41,7 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 
 bool UKMAnimNotifyState_Animation::IsCustomDuration() const
 {
-	return bIsUseSkillSet && CustomDuration > 0.f;
+	return false;//bIsUseSkillSet && CustomDuration > 0.f;
 }
 
 float UKMAnimNotifyState_Animation::GetCustomDuration() const
@@ -51,9 +51,25 @@ float UKMAnimNotifyState_Animation::GetCustomDuration() const
 
 void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	TSharedPtr<FKMAnimNotifyState_Animation_Context> newContext = MakeShared<FKMAnimNotifyState_Animation_Context>();
-
 	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return;
+	}
+
+	if (!IsCompareTag(ownerCharacterInstance))
+	{
+		return;
+	}
+	
+	TSharedPtr<FKMAnimNotifyState_Animation_Context> newContext = MakeShared<FKMAnimNotifyState_Animation_Context>();
 	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner());
 
 	if (eventReference.GetNotify())
@@ -62,8 +78,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	}
 
 	Context.Emplace(targetMeshComp, newContext);
-
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
+	
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
 		if (bIsOverrideMovementAnimSet)
@@ -75,8 +90,26 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 		if (IsValid(targetAnimInstance))
 		{
 			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
-
-			targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+			if (bIsEqualsPlay)
+			{
+				targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+			}
+			else
+			{
+				bool isActivatedMontage = false;
+				for (auto mointageInstance : targetAnimInstance->MontageInstances)
+				{
+					if (mointageInstance->Montage == newContext->ActivatedMontage)
+					{
+						isActivatedMontage = true;
+						break;
+					}
+				}
+				if (!isActivatedMontage)
+				{
+					targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+				}
+			}
 #if WITH_EDITOR
 			if (!targetMeshComp->GetWorld()->IsGameWorld())
 			{
@@ -106,15 +139,6 @@ void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, 
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	if (currContext)
 	{
-		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
-		if (IsValid(ownerCharacter))
-		{
-			if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
-			{
-				float pos = animInstance->Montage_GetPosition(animInstance->GetCurrentActiveMontage());
-			}
-		}
-		
 		(*currContext)->ElapsedTime += frameDeltaTime;
 	}
 }
@@ -124,6 +148,10 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
 	
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
+	if (!currContext)
+	{
+		return;
+	}
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
 	if (IsValid(ownerCharacter))
 	{

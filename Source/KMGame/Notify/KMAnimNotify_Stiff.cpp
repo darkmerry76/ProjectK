@@ -16,7 +16,7 @@ FString UKMAnimNotify_Stiff::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-void UKMAnimNotify_Stiff::DoStiff(USkeletalMeshComponent* meshComp, float stiffDuration)
+void UKMAnimNotify_Stiff::DoStiff(USkeletalMeshComponent* meshComp, float stiffDuration, bool bForce)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -29,12 +29,12 @@ void UKMAnimNotify_Stiff::DoStiff(USkeletalMeshComponent* meshComp, float stiffD
 	{
 		return;
 	}
-	ownerCharacterInstance->Stiff(stiffDuration);
+	ownerCharacterInstance->Stiff(stiffDuration, bForce);
 }
 
 void UKMAnimNotify_Stiff::Notify(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
 	Super::Notify(meshComp, animation, eventReference);
 
-	DoStiff(meshComp, Duration);
+	DoStiff(meshComp, Duration, bIsForce);
 }

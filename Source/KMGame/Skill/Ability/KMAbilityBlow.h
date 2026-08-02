@@ -11,7 +11,7 @@ class UKMAbilityBlow : public UKMAbilityEffect
 
 public:
 	virtual void Activate() override;
-	virtual void Deactivate() override;
+	virtual void Deactivate(bool bCancel = false) override;
 
 	virtual void Impact(const FTransform& newImpactTransform) override;
 	virtual void OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, EEMCurveWarpingInteruptType type) override;

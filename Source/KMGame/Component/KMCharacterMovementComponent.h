@@ -103,6 +103,7 @@ protected:
 
 	bool CustomMovementFalling(const FVector& adjusted, float deltaTime);
 	bool CustomMovementFlying(const FVector& adjusted, float deltaTime);
+	bool CustomMovementWalking(const FVector& adjusted, float deltaTime);
 	
 	virtual void StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc) override;
 	

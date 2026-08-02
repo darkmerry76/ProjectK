@@ -7,6 +7,12 @@ UKMAnimNotifyState_Movement::UKMAnimNotifyState_Movement(const FObjectInitialize
 	SetGroupType(EEMNotifyGroupType::Animation);
 }
 
+FString UKMAnimNotifyState_Movement::GetNotifyName_Implementation() const
+{
+	FString notifyName = GetClass()->GetDisplayNameText().ToString();
+	return notifyName;
+}
+
 void UKMAnimNotifyState_Movement::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))

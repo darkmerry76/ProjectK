@@ -73,7 +73,7 @@ void AKMCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 void AKMCharacter::Landed(const FHitResult& hitResult)
 {
 	Super::Landed(hitResult);
-
+	
 	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
 	{
 		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())

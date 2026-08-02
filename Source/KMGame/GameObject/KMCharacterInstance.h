@@ -144,7 +144,7 @@ public:
 	void Inflict(class UKMCharacterInstance* victimCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void Stiff(float duration = 0.2f);
+	void Stiff(float duration = 0.2f, bool bReset = false);
 
 	void Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 	

@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="OverrideMovementAnimSet", meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartShowMeshComponent"))
 	bool bIsOverrideMovementAnimSet = false;
 
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EqualsPlay", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOverrideMovementAnimSet"))
+	bool bIsEqualsPlay = true;
+
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 
 	float CustomDuration = 0.f;

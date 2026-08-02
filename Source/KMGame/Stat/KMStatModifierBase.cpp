@@ -120,14 +120,14 @@ UObject* UKMStatModifierBase::ApplyEffectiveAnimation(const FName& pDAKey)
 	return newAbility;
 }
 
-void UKMStatModifierBase::RemoveEffectiveAnimation(class UObject* effectObject)
+void UKMStatModifierBase::RemoveEffectiveAnimation(class UObject* effectObject, bool bCancel)
 {
 	if (AbnormalAbilities.Contains(effectObject))
 	{
 		if (UKMAbility* ability = Cast<UKMAbility>(effectObject))
 		{
-			ability->Deactivate();
+			ability->Deactivate(bCancel);
 		}
-		AbnormalAbilities.Emplace(effectObject);
+		AbnormalAbilities.Remove(effectObject);
 	}
 }

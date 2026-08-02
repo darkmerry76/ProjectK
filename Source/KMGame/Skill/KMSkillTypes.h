@@ -55,8 +55,9 @@ public:
 
 	virtual FString GetReferencerName() const override { return GetType().ToString(); }
 
+	virtual void Reset() { };
 	virtual void Enter() { };
-	virtual void Leave() { };
+	virtual void Leave(bool bCancel = false) { };
 	
 	virtual float GetElipsedTime() const;
 	virtual void Tick(float deltaSeconds) { };
@@ -185,7 +186,7 @@ public:
 protected:
 	void NotifyEffectTrigger(float prevTime, float nextTime);
 
-	TArray<TSharedPtr<FKMSkillEffectTriggerData>>* EffectTriggers;
+	TArray<TSharedPtr<FKMSkillEffectTriggerData>>* EffectTriggers = nullptr;
 	TArray<int32> EffectTriggerIndices;
 	TArray<TSharedPtr<FKMSkillInstance>> AssistSkills;
 
@@ -217,11 +218,6 @@ public:
 	virtual void Enter() override;
 
 	virtual void OnTriggerEvent(const FGameplayTag& eventTag) override;
-
-	bool ForceComplete = false;
-
-protected:
-	void NotifyEffectTrigger(float prevTime, float nextTime);
 };
 
 class KMGAME_API FKMSkillEffectInstance : public FKMAbilityInstanceBase
@@ -240,17 +236,21 @@ public:
 	}
 	static FName TypeName() { return TEXT("FKMSkillEffectInstance"); }
 
+	virtual void Reset() override;
 	virtual bool IsComplete() const override;
 	virtual void Enter() override;
-	virtual void Leave() override;
-
+	virtual void Leave(bool bCancel = false) override;
 	const struct FKMTable_SkillEffectRow* GetEffectTableRecord() const;
 
 	void SetForceComplete(bool bForceComplete) { bIsForceComplete = bForceComplete; };
 
 	TSharedPtr<FKMSkillInstance> GetOwnerSkillInstance() const { return OwnerSkillInstance; };
 
-	TMap<TWeakObjectPtr<class UKMStatModifierBase>, TWeakObjectPtr<UObject>> GetUsedEffectAbilities() { return UsedEffectAbilities; }; 
+	TMap<TWeakObjectPtr<class UKMStatModifierBase>, TWeakObjectPtr<UObject>> GetUsedEffectAbilities() { return UsedEffectAbilities; };
+
+protected:
+	virtual void ActivatedAbility();
+	virtual void DeactivatedAbility(bool bCancel = false);
 
 protected:
 	float ApplyTime = 0.f;
@@ -270,7 +270,7 @@ public:
 	void Classification();
 
 	virtual void Enter() override;
-	virtual void Leave() override;
+	virtual void Leave(bool bCancel = false) override;
 	
 	virtual FName GetType() const override { return FKMSkillEffectDamageInstance::TypeName(); }
 	static FName TypeName() { return TEXT("FKMSkillEffectDamageInstance"); }
@@ -294,7 +294,7 @@ public:
 	void Classification();
 
 	virtual void Enter() override;
-	virtual void Leave() override;
+	virtual void Leave(bool bCancel = false) override;
 	
 	virtual FName GetType() const override { return FKMSkillEffectAbnormalInstance::TypeName(); }
 	static FName TypeName() { return TEXT("FKMSkillEffectAbnormalInstance"); }
@@ -318,7 +318,7 @@ public:
 	void Classification();
 
 	virtual void Enter() override;
-	virtual void Leave() override;
+	virtual void Leave(bool bCancel = false) override;
 	
 	virtual FName GetType() const override { return FKMSkillEffectBuffInstance::TypeName(); }
 	static FName TypeName() { return TEXT("FKMSkillEffectBuffInstance"); }

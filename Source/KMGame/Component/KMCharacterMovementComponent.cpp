@@ -293,11 +293,12 @@ void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iteration
 			rootMotion = rootMotionA + rootMotionB;
 		}
 
+		bool bRun = syncMoveRunElipsedTime >= 0.19f && syncMoveRunElipsedTime <= (0.19f + 0.45f);
 		float movementInput = ownerCharacter->GetLastMovementInputVector().IsNearlyZero() ? 0.f : 1.f;
-		FVector moveDirection = ownerCharacter->GetActorForwardVector() * rootMotion.GetLocation().Size2D() * 2.5f * movementInput;
-
+		FVector moveDirection = ownerCharacter->GetActorForwardVector() * rootMotion.GetLocation().Size2D() * (bRun ? 2.5f : 1.f) * movementInput;
+		
 		Velocity = ownerCharacter->GetActorForwardVector() * 700.f * movementInput;
-		CustomMovement(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f) , deltaTime);
+		CustomMovementWalking(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f), deltaTime);
 		return;
 	}
 	
@@ -371,7 +372,8 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 		return;
 	}
 	
-	if (!IsCustomMovementMode(EKMCustomMovementMode::CMODE_Flying))
+	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump) ||
+		IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling))
 	{
 		SetCustomMovementMode(EKMCustomMovementMode::CMODE_Falling);
 		if (IsValid(curveVector))
@@ -454,8 +456,11 @@ void UKMCharacterMovementComponent::UpdateCustomFalling(float deltaTime)
 
 bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, float deltaTime)
 {
-	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling) ||
-		IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
+	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Walking))
+	{
+		return CustomMovementWalking(adjusted, deltaTime);
+	}
+	else if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling) || IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
 	{
 		return CustomMovementFalling(adjusted, deltaTime);
 	}
@@ -463,6 +468,31 @@ bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, floa
 	{
 		return CustomMovementFlying(adjusted, deltaTime);
 	}
+}
+
+bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjusted, float deltaTime)
+{
+	FHitResult hitResult;
+	FVector finalAdjusted = FVector(adjusted.X, adjusted.Y, GetGravityZ() * deltaTime * 0.5f);
+	SafeMoveUpdatedComponent(finalAdjusted, UpdatedComponent->GetComponentRotation(), true, hitResult);
+	if (hitResult.bBlockingHit)
+	{
+		FVector gravDir = FVector(0.f, 0.f, -1.f); 
+        
+		if (!StepUp(gravDir, adjusted, hitResult, nullptr))
+		{
+			SlideAlongSurface(adjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
+		}
+	}
+		
+	FFindFloorResult floorResult;
+	FindFloor(UpdatedComponent->GetComponentLocation(), floorResult, false);
+
+	if (!floorResult.IsWalkableFloor())
+	{
+		SetCustomMovementMode(EKMCustomMovementMode::CMODE_Falling);
+	}
+	return true;
 }
 
 bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjusted, float deltaTime)

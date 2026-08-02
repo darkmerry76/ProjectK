@@ -12,8 +12,18 @@ class UKMAbilitySkill : public UKMAbility
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsDirectionFallow = true;
-	
+
+protected:
+	TWeakPtr<class FKMSkillInstance> SkillInstance;
+
 public:
 	virtual void Activate() override;
-	virtual void Deactivate() override;
+	virtual void Deactivate(bool bCancel) override;
+
+	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
+	class FKMSkillInstance* GetSkillInstance() const;
+
+protected:
+	virtual void Trigger(const FGameplayTag eventTag) override;
+	virtual void ForceComplate() override;
 };

@@ -11,7 +11,7 @@ class UKMAbilityWallBlow : public UKMAbilityBlow
 	
 public:
 	virtual void Activate() override;
-	virtual void Deactivate() override;
+	virtual void Deactivate(bool bCancel) override;
 
 	virtual void Impact(const FTransform& newImpactTransform) override;
 
