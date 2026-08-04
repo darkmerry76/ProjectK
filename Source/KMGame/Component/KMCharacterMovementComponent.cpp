@@ -78,6 +78,17 @@ void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 
 void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
 {
+	if (MovementMode == MOVE_Custom && newMovementMode != MOVE_Custom)
+	{
+		if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner()))
+		{
+			if (UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping())
+			{
+				curveWarping->ClearCurveWarping();
+			}
+		}
+	}
+	
 	Super::SetMovementMode(newMovementMode, newCustomMode);
 }
 
@@ -358,7 +369,7 @@ void UKMCharacterMovementComponent::CustomJump()
 	curveWarping->PlayCurveWarpjng(JumpCurve, targetLocation, JumpDuration,  zScale, false, false);
 }
 
-void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* curveVector)
+void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* curveVector, FEMCurveWarpingInstance& curveWarpingInstance)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -383,7 +394,7 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 			FVector v2 = curveVector->GetVectorValue(1.f);
 
 			FVector CalculatedVelocity = (v2 - v1) / sampleTime;
-			const FQuat meshRotation = curveWarping->GetStartMeshQuat();
+			const FQuat meshRotation = curveWarping->StartMeshQuat;
 			CalculatedVelocity = meshRotation.RotateVector(CalculatedVelocity);
 
 			CalculatedVelocity = CalculatedVelocity * FVector(5.f * FMath::Abs(LatestJumpInputDir.X), 5.f * FMath::Abs(LatestJumpInputDir.Y), 1.f);
@@ -397,7 +408,7 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 	}
 }
 
-void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type)
+void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -419,7 +430,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, EE
 	
 	switch (type)
 	{
-	case EEMCurveWarpingInteruptType::Ending: StartCurveEndingFalling(JumpCurve); break;
+	case EEMCurveWarpingInteruptType::Ending: StartCurveEndingFalling(JumpCurve, curveWarpingInstance); break;
 	case EEMCurveWarpingInteruptType::Landing:
 		{
 			ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
@@ -449,7 +460,7 @@ void UKMCharacterMovementComponent::UpdateCustomFalling(float deltaTime)
 	{
 		if(IsValid(curveWarping))
 		{
-			curveWarping->GetInteruptDelegate().Broadcast(adjusted, EEMCurveWarpingInteruptType::Landing);	
+			curveWarping->GetInteruptDelegate().Broadcast(adjusted, FEMCurveWarpingInstance::Empty(), EEMCurveWarpingInteruptType::Landing);	
 		}
 	}
 }

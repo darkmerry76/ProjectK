@@ -140,6 +140,15 @@ void UKMUiSubsystem::SelectedTitleMenu(FName menuId)
 			UGameplayStatics::OpenLevel(this, TEXT("HeroSelect_p"));
 		}), 1.f, false);
 	}
+	else if (menuId == TEXT("Practice"))
+	{
+		UKMUtil::PlaySlateFade(this, 0.f, 1.f, 1.f);
+		FTimerHandle timerHandle;
+		GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([this, menuId]()
+		{
+			UGameplayStatics::OpenLevel(this, TEXT("Practice_p"));
+		}), 1.f, false);
+	}
 	else if (menuId == TEXT("QuitGame"))
 	{
 		ShowQuitPopup();

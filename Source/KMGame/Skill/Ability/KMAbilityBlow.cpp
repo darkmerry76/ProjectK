@@ -2,7 +2,6 @@
 #include "EMCurveWarpingComponent.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
-#include "Curves/CurveVector.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMAbilityBlow::UKMAbilityBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -14,7 +13,7 @@ void UKMAbilityBlow::Activate()
 	Super::Activate();
 }
 
-void UKMAbilityBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, EEMCurveWarpingInteruptType type)
+void UKMAbilityBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	check(IsValid(ownerCharacter));

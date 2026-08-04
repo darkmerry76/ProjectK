@@ -806,6 +806,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 
 		FKMSkillKey dashSkillKey;
 		EKMTimingResult cancelResult = TimingCancel->GetResult();
+		cancelResult = EKMTimingResult::Perfect;
 		if (cancelResult == EKMTimingResult::Perfect)
 		{
 			dashSkillKey = FKMSkillKey(TEXT("sk_perfect_cancel_dash"), 0);
@@ -1088,7 +1089,9 @@ void UKMCharacterInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 			continue;
 		}
 
-		if (targetCharacterInstance->IsDead() || targetCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag))
+		if (targetCharacterInstance->IsDead() ||
+			targetCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Bound_Tag) ||
+			targetCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
 		{
 			continue;
 		}

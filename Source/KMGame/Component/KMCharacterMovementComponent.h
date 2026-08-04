@@ -69,7 +69,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayCurveWarping(UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ, bool bAutoEndingWalk);
 
-	void StartCurveEndingFalling(const class UCurveVector* curveVector);
+	void StartCurveEndingFalling(const class UCurveVector* curveVector, FEMCurveWarpingInstance& curveWarpingInstance);
 
 	bool IsOnGround() const;
 	bool IsAir() const;
@@ -108,7 +108,7 @@ protected:
 	virtual void StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc) override;
 	
 	UFUNCTION()
-	void OnJumpInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type);
+	void OnJumpInterrupt(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
 
 	void StartCustomFalling(const FVector& latestMoveDelta);
 	void UpdateCustomFalling(float deltaTime);

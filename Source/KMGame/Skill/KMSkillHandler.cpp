@@ -965,9 +965,6 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 				TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
 				if (newSkillInstance.IsValid())
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("NewSkill=%s"), *newSkillInstance->GetEffectTableRecord()->Id.ToString()));
-					UE_LOG(LogTemp, Display, TEXT("NewSkill=%s"), *newSkillInstance->GetEffectTableRecord()->Id.ToString());
-
 					outSkillEffectInstances.Emplace(newSkillInstance);
 				}
 			}
@@ -1008,8 +1005,6 @@ void UKMSkillHandler::RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityIn
 	{
 		if (sourceAbilityInstances.Contains(abilityInstanceItr->Value))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Overlap Remove=%s"), *abilityInstanceItr.Value()->GetEffectTableRecord()->Id.ToString()));
-			UE_LOG(LogTemp, Display, TEXT("Overlap Remove=%s"), *abilityInstanceItr.Value()->GetEffectTableRecord()->Id.ToString());
 			abilityInstanceItr.Value()->Leave(bCancel);
 			OnRemoveAbilityInstance(abilityInstanceItr.Value());
 			abilityInstanceItr.RemoveCurrent();
@@ -1263,10 +1258,6 @@ void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag
 			continue;
 		}
 		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == characterInstance);
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("NextTransition %s"), *effectTransitionRow->BranchEffectId.ToString()));
-		UE_LOG(LogTemp, Display, TEXT("NextTransition %s"), *effectTransitionRow->BranchEffectId.ToString());
-
 		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
 		skillEffectInstance->SetForceComplete(true);
 	}

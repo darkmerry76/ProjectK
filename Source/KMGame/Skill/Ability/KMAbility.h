@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	float VerticalPower = 100.f;
 
+	UPROPERTY(EditAnywhere, Category="Curve", DisplayName="ClearCurve", BlueprintReadWrite)
+	bool bIsClearCurve = false;
+
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	EKMCustomMovementMode CustomMovementMode = EKMCustomMovementMode::CMODE_Jump;  
 
@@ -147,7 +150,7 @@ public:
 	int32 GetMartialArtsHandle() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCurveWarpingInterrupt(const FVector& moveDelta, EEMCurveWarpingInteruptType type);
+	void OnCurveWarpingInterrupt(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ForceComplate();

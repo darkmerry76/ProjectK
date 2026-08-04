@@ -49,7 +49,7 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnim
 
 #if WITH_EDITOR
 	EditorDrawDebugComponent = ownerActor->FindComponentByClass<UKMEditorDrawDebugComponent>();
-	if (!IsValid(EditorDrawDebugComponent))
+	if (!IsValid(EditorDrawDebugComponent) && !meshComp->GetWorld()->IsGameWorld())
 	{
 		EditorDrawDebugComponent = Cast<UKMEditorDrawDebugComponent>(ownerActor->AddComponentByClass(UKMEditorDrawDebugComponent::StaticClass(), false, FTransform::Identity, false));
 	}
