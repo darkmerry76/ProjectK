@@ -165,16 +165,6 @@ struct KMGAME_API FKMProjectileArrivalData
 	static FName TypeName() { return TEXT("FKMProjectileArrivalData"); }
 };
 
-struct KMGAME_API FKMSkillEffectTriggerData
-{
-	FKMSkillEffectTriggerData(FName section, float BeginTime, float EndTime) :
-		Section(section), BeginTime(BeginTime), EndTime(EndTime) { };
-	
-	FName Section;
-	float BeginTime;
-	float EndTime;
-};
-
 USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMSkillKeyBase
 {

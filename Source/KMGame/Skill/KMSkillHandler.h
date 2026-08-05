@@ -124,9 +124,6 @@ public:
 protected:
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	void OnRemoveAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
-
-	void OnSkillEffectTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance);
-	void OnSkillTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance);
 	
 	TSharedPtr<FKMSkillInstance> UseSkillInternal(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
 

@@ -369,7 +369,7 @@ void UKMCharacterMovementComponent::CustomJump()
 	curveWarping->PlayCurveWarpjng(JumpCurve, targetLocation, JumpDuration,  zScale, false, false);
 }
 
-void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* curveVector, FEMCurveWarpingInstance& curveWarpingInstance)
+void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* curveVector, const FEMCurveWarpingInstance& curveWarpingInstance)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -408,7 +408,7 @@ void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* 
 	}
 }
 
-void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))

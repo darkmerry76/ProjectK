@@ -56,8 +56,8 @@ public:
 	virtual FString GetReferencerName() const override { return GetType().ToString(); }
 
 	virtual void Reset() { };
-	virtual void Enter() { };
-	virtual void Leave(bool bCancel = false) { };
+	virtual void Enter();
+	virtual void Leave(bool bCancel = false);
 	
 	virtual float GetElipsedTime() const;
 	virtual void Tick(float deltaSeconds) { };
@@ -65,16 +65,21 @@ public:
 
 	virtual void PostTick(float deltaSeconds);
 
-	virtual void OnTriggerEvent(const FGameplayTag& eventTag) { };
-
-	void SetAbility(class UKMAbility* newAbility) { Ability = newAbility; }
-	class UKMAbility* GetAbility() const { return Ability; };
-
+	virtual void OnTriggerEvent(const FGameplayTag& eventTag);
+	virtual void ActivatedAbility();
+	virtual void DeactivatedAbility(bool bCancel = false);
+	
 	void Suspend() { bIsSuspend = true; }
 	void Resume() { bIsEnabled = false; }
 
 	void SetEnable(bool newIsEnable) { bIsEnabled = newIsEnable; };
 	bool IsEnabled() const { return bIsEnabled; };
+
+	class UKMAbility* AddAbillityAsset(const FName& pDAKey);
+	void RemoveAbilityAsset(class UKMAbility* ability);
+	void RemoveAllAbilityAsset(bool bDeactivateEvent = true, bool bCancel = false);
+	
+	const TArray<TObjectPtr<class UKMAbility>> GetAbilitieAssets() const;
 	
 protected:
 	virtual void ResetElipsedTime();
@@ -82,8 +87,8 @@ protected:
 protected:
 	virtual void AddReferencedObjects( FReferenceCollector& Collector ) override;
 	TWeakObjectPtr<UObject> OwnerObject = nullptr;
-
-	TObjectPtr<class UKMAbility> Ability;
+	
+	TArray<TObjectPtr<class UKMAbility>> AbilitieAssets;
 
 private:
 	float ElipsedTime = 0.f;
@@ -160,8 +165,6 @@ public:
 	void AddAssistSkill(TSharedPtr<class FKMSkillInstance> assistSkillInstance);
 
 	virtual void OnTriggerEvent(const FGameplayTag& eventTag) override;
-	void SetEffectTriggers(TArray<TSharedPtr<FKMSkillEffectTriggerData>>* newEffectTriggers);
-
 	void RequestEnd();
 
 	void SetForceComplete(bool bForceComplete) { bIsForceComplete = bForceComplete; }
@@ -172,6 +175,9 @@ protected:
 	void TransitionTo(EKMSkillState newState);
 	void TransitionTo_Reseved(EKMSkillState newState);
 	void OnStateEnter(EKMSkillState newState);
+
+	virtual void ActivatedAbility() override;
+	virtual void DeactivatedAbility(bool bCancel = false) override; 
 	
 public:
 	FKMSkillKey SkillKey;
@@ -180,16 +186,8 @@ public:
 
 	TMap<FName, FName> Tags;
 
-	FKMSkillEffectTriggerDelegate SkillEffectTriggerDelegate;
-	FKMSkillTriggerDelegate SkillTriggerDelegate;
-
 protected:
-	void NotifyEffectTrigger(float prevTime, float nextTime);
-
-	TArray<TSharedPtr<FKMSkillEffectTriggerData>>* EffectTriggers = nullptr;
-	TArray<int32> EffectTriggerIndices;
 	TArray<TSharedPtr<FKMSkillInstance>> AssistSkills;
-
 	bool bIsForceComplete = false;
 
 	EKMSkillState State = EKMSkillState::Start;
@@ -246,11 +244,10 @@ public:
 
 	TSharedPtr<FKMSkillInstance> GetOwnerSkillInstance() const { return OwnerSkillInstance; };
 
-	TMap<TWeakObjectPtr<class UKMStatModifierBase>, TWeakObjectPtr<UObject>> GetUsedEffectAbilities() { return UsedEffectAbilities; };
-
 protected:
-	virtual void ActivatedAbility();
-	virtual void DeactivatedAbility(bool bCancel = false);
+	virtual void ActivatedAbility() override;
+	virtual void DeactivatedAbility(bool bCancel = false) override;
+	virtual void OnTriggerEvent(const FGameplayTag& eventTag) override;
 
 protected:
 	float ApplyTime = 0.f;
@@ -258,8 +255,6 @@ protected:
 
 	TSharedPtr<FKMSkillInstance> OwnerSkillInstance;
 	const struct FKMTable_SkillEffectRow* EffectTableRecord;
-	
-	TMap<TWeakObjectPtr<class UKMStatModifierBase>, TWeakObjectPtr<UObject>> UsedEffectAbilities; 
 };
 
 class KMGAME_API FKMSkillEffectDamageInstance : public FKMSkillEffectInstance

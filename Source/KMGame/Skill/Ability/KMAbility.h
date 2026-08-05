@@ -150,7 +150,7 @@ public:
 	int32 GetMartialArtsHandle() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCurveWarpingInterrupt(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
+	void OnCurveWarpingInterrupt(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ForceComplate();

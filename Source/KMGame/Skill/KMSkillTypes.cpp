@@ -6,6 +6,8 @@
 #include "GameplayTagContainer.h"
 #include "Ability/KMAbility.h"
 #include "Ability/KMAbilityEffect.h"
+#include "Ability/KMAbilitySkill.h"
+#include "DataAsset/KMAssetManager.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"
@@ -22,7 +24,6 @@ FKMAbilityInstanceBase::FKMAbilityInstanceBase() : OwnerObject(nullptr)
 }
 
 FKMAbilityInstanceBase::FKMAbilityInstanceBase(const FKMAbilityInstanceBase& sourceInstanceBase) : OwnerObject(sourceInstanceBase.OwnerObject)
-	, Ability(sourceInstanceBase.Ability)
 	, ElipsedTime(sourceInstanceBase.ElipsedTime)
 	, TimeScale(sourceInstanceBase.TimeScale)
 	, Copied(true)
@@ -35,17 +36,22 @@ FKMAbilityInstanceBase::FKMAbilityInstanceBase(UObject* ownerObject) : OwnerObje
 
 FKMAbilityInstanceBase::~FKMAbilityInstanceBase()
 {
-	if (IsValid(Ability) && !Copied)
-	{
-		Ability->Deactivate();
-		Ability = nullptr;
-	}
+}
+
+void FKMAbilityInstanceBase::Enter()
+{
+	ActivatedAbility();
+}
+
+void FKMAbilityInstanceBase::Leave(bool bCancel)
+{
+	DeactivatedAbility(bCancel);
 }
 
 void FKMAbilityInstanceBase::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(OwnerObject);
-	Collector.AddReferencedObject(Ability);
+	Collector.AddReferencedObjects(AbilitieAssets);
 }
 
 float FKMAbilityInstanceBase::GetElipsedTime() const
@@ -62,6 +68,84 @@ void FKMAbilityInstanceBase::PostTick(float deltaSeconds)
 {
 	ElipsedTime += deltaSeconds * TimeScale;
 }
+
+void FKMAbilityInstanceBase::OnTriggerEvent(const FGameplayTag& eventTag)
+{
+	for (auto& ability : AbilitieAssets)
+	{
+		ability->OnTriggerEvent(eventTag);
+	}
+}
+
+void FKMAbilityInstanceBase::ActivatedAbility()
+{
+}
+
+void FKMAbilityInstanceBase::DeactivatedAbility(bool bCancel)
+{
+	RemoveAllAbilityAsset(true, bCancel);
+}
+
+UKMAbility* FKMAbilityInstanceBase::AddAbillityAsset(const FName& pDAKey)
+{
+	if (!OwnerObject.IsValid())
+	{
+		return nullptr;
+	}
+	
+	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
+	check(IsValid(assetManager) == true);
+
+	UObject* assetObject = assetManager->GetAsset(pDAKey);
+
+	UKMAbility* newAbility = nullptr;
+	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(assetObject))
+	{
+		if (IsValid(martialArts->GetAbilityBP()->GeneratedClass))
+		{
+			newAbility = NewObject<UKMAbility>(OwnerObject.Pin().Get(), martialArts->GetAbilityBP()->GeneratedClass);
+			newAbility->SetMartialArts(martialArts);
+		}
+	}
+	else
+	{
+		UClass* abilityClass = Cast<UClass>(assetObject);
+		if (!abilityClass)
+		{
+			return nullptr;
+		}
+		newAbility = NewObject<UKMAbility>(OwnerObject.Pin().Get(), abilityClass);
+	}
+	if (!IsValid(newAbility))
+	{
+		return nullptr;
+	}
+	
+	AbilitieAssets.Emplace(newAbility);
+	return newAbility;
+}
+
+void FKMAbilityInstanceBase::RemoveAbilityAsset(UKMAbility* ability)
+{
+	AbilitieAssets.Remove(ability);
+}
+
+void FKMAbilityInstanceBase::RemoveAllAbilityAsset(bool bDeactivateEvent, bool bCancel)
+{
+	if (bDeactivateEvent)
+	{
+		for (auto ability : AbilitieAssets)
+		{
+			ability->Deactivate(bCancel);
+		}
+	}
+	AbilitieAssets.Empty();
+}
+
+const TArray<TObjectPtr<class UKMAbility>> FKMAbilityInstanceBase::GetAbilitieAssets() const
+{
+	return AbilitieAssets;
+};
 
 FKMAbilityInstanceCooltime::FKMAbilityInstanceCooltime(UObject* ownerObject, const FKMSkillKey& skillKey) : FKMAbilityInstanceBase(ownerObject)
 	, SkillKey(skillKey)
@@ -103,7 +187,6 @@ void FKMAbilityInstanceCooltime::Reset()
 
 FKMSkillInstance::FKMSkillInstance(UObject* ownerObject, const FKMSkillKey& skillKey) : FKMAbilityInstanceBase(ownerObject)
 	, SkillKey(skillKey)
-	, EffectTriggers(nullptr)
 {
 	State = EKMSkillState::Start;
 }
@@ -113,9 +196,6 @@ FKMSkillInstance::FKMSkillInstance(const FKMSkillInstance& sourceSkillInstance) 
 	, Caster(sourceSkillInstance.Caster)
 	, Target(nullptr)
 	, Tags(sourceSkillInstance.Tags)
-	, SkillEffectTriggerDelegate(sourceSkillInstance.SkillEffectTriggerDelegate)
-	, SkillTriggerDelegate(sourceSkillInstance.SkillTriggerDelegate)
-	, EffectTriggers(nullptr)
 {
 	if(sourceSkillInstance.Target.IsValid())
 	{
@@ -125,10 +205,26 @@ FKMSkillInstance::FKMSkillInstance(const FKMSkillInstance& sourceSkillInstance) 
 
 void FKMSkillInstance::Enter()
 {
-	if (EffectTriggerIndices.Num() == 0)
+	FKMAbilityInstanceBase::Enter();
+}
+
+void FKMSkillInstance::ActivatedAbility()
+{
+	FKMAbilityInstanceBase::ActivatedAbility();
+	if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
-		//SkillEffectTriggerDelegate.Broadcast(SharedThis(this));
+		if (UKMAbilitySkill* newAbilitySkill = Cast<UKMAbilitySkill>(AddAbillityAsset(normalSkillTable->Ability.PdaKey)))
+		{
+			newAbilitySkill->SetLockOnCluster(Target);
+			newAbilitySkill->SetSkillInstance(SharedThis(this));
+			newAbilitySkill->Activate();
+		}
 	}
+}
+
+void FKMSkillInstance::DeactivatedAbility(bool bCancel)
+{
+	FKMAbilityInstanceBase::DeactivatedAbility(bCancel);
 }
 
 bool FKMSkillInstance::IsComplete() const
@@ -179,13 +275,7 @@ void FKMSkillInstance::AddAssistSkill(TSharedPtr<class FKMSkillInstance> assistS
 
 void FKMSkillInstance::OnTriggerEvent(const FGameplayTag& eventTag)
 {
-	if (IsValid(Ability))
-	{
-		Ability->OnTriggerEvent(eventTag);
-	}
-
-	SkillTriggerDelegate.Broadcast(eventTag, SharedThis(this));
-	
+	FKMAbilityInstanceBase::OnTriggerEvent(eventTag);
 	for (int32 assistSkillIndex = 0; assistSkillIndex < AssistSkills.Num(); ++assistSkillIndex)
 	{
 		TSharedPtr<FKMSkillInstance> assistSkillInstance = AssistSkills[assistSkillIndex];
@@ -194,24 +284,6 @@ void FKMSkillInstance::OnTriggerEvent(const FGameplayTag& eventTag)
 			continue;
 		}
 		assistSkillInstance->OnTriggerEvent(eventTag);
-	}
-}
-
-void FKMSkillInstance::SetEffectTriggers(TArray<TSharedPtr<FKMSkillEffectTriggerData>>* newEffectTriggers)
-{
-	EffectTriggers = newEffectTriggers;
-
-	if(EffectTriggers != nullptr)
-	{
-		EffectTriggerIndices.AddUninitialized(EffectTriggers->Num());
-		for (int32 triggerCount = 0;  triggerCount < EffectTriggers->Num();  ++triggerCount)
-		{
-			EffectTriggerIndices[triggerCount] = triggerCount;	
-		}
-	}
-	else
-	{
-		EffectTriggerIndices.Empty();
 	}
 }
 
@@ -250,9 +322,9 @@ void FKMSkillInstance::OnStateEnter(EKMSkillState newState)
 	
 	if (newState == EKMSkillState::End)
 	{
-		if (IsValid(Ability))
+		for (auto& ability : AbilitieAssets)
 		{
-			Ability->OnRequestEnd();
+			ability->OnRequestEnd();
 		}
 	}
 }
@@ -265,29 +337,6 @@ void FKMSkillInstance::RequestEnd()
 	}
 	
 	TransitionTo_Reseved(EKMSkillState::End);
-}
-
-void FKMSkillInstance::NotifyEffectTrigger(float prevTime, float nextTime)
-{
-	if (EffectTriggers == nullptr)
-	{
-		return;
-	}
-	
-	for (auto effectItr = EffectTriggerIndices.CreateIterator(); effectItr; ++effectItr)
-	{
-		TSharedPtr<FKMSkillEffectTriggerData> effectTrigger = (*EffectTriggers)[*effectItr];
-		if (!effectTrigger.IsValid())
-		{
-			continue;
-		}
-
-		if (effectTrigger->BeginTime > prevTime && effectTrigger->BeginTime < nextTime && effectTrigger->EndTime > prevTime)
-		{
-			SkillEffectTriggerDelegate.Broadcast(FKMGameplayTagName::Event_Trigger_Tag, SharedThis(this));	
-			effectItr.RemoveCurrent();
-		}
-	}
 }
 
 void FKMSkillInstance::Tick(float deltaSeconds)
@@ -311,11 +360,6 @@ void FKMSkillInstance::Tick(float deltaSeconds)
 			}			
 		}
 	}
-
-	if (EffectTriggerIndices.Num() != 0)
-	{
-		NotifyEffectTrigger(GetElipsedTime(), GetElipsedTime() + deltaSeconds);
-	}
 }
 
 
@@ -325,6 +369,7 @@ FKMAssistSkillInstance::FKMAssistSkillInstance(UObject* ownerObject, const FKMSk
 
 void FKMAssistSkillInstance::Enter()
 {
+	FKMSkillInstance::Enter();
 }
 
 bool FKMAssistSkillInstance::IsComplete() const
@@ -339,7 +384,6 @@ void FKMAssistSkillInstance::OnTriggerEvent(const FGameplayTag& eventTag)
 
 void FKMAssistSkillInstance::Tick(float deltaSeconds)
 {
-	
 }
 
 FKMSkillEffectInstance::FKMSkillEffectInstance(UObject* ownerObject,
@@ -381,6 +425,13 @@ bool FKMSkillEffectInstance::IsComplete() const
 
 void FKMSkillEffectInstance::ActivatedAbility()
 {
+	FKMAbilityInstanceBase::ActivatedAbility();
+
+	if (!EffectTableRecord)
+	{
+		return;
+	}
+	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
 	check(IsValid(gameObjectSubsystem));
 
@@ -397,64 +448,33 @@ void FKMSkillEffectInstance::ActivatedAbility()
 
 	check(targetCharacterInstance == targetStat->GetTypedOuter<UKMCharacterInstance>());
 
-	if (const FKMTable_SkillEffect_NormalRow* skillEffectNormalRow = CastRow<FKMTable_SkillEffect_NormalRow>(EffectTableRecord))
+	if (UKMAbilityEffect* newEffectAbility = Cast<UKMAbilityEffect>(AddAbillityAsset(EffectTableRecord->Ability.PdaKey)))
 	{
-		if (skillEffectNormalRow->Ability.IsValid())
-		{
-			if (UKMAbilityEffect* effectAbility = Cast<UKMAbilityEffect>(targetStat->ApplyEffectiveAnimation(skillEffectNormalRow->Ability.PdaKey)))
-			{
-				effectAbility->SetSkillEffectInstance(SharedThis(this));
-				effectAbility->SetLockOnCluster(OwnerSkillInstance->Target);
-				effectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);
-				effectAbility->Activate();
-				UsedEffectAbilities.Emplace(targetStat, effectAbility);
-			}
-		}
-	}
-	else if (const FKMTable_SkillEffect_GrabRow* skillEffectGrabRow = CastRow<FKMTable_SkillEffect_GrabRow>(EffectTableRecord))
-	{
-		if (UKMAbilityEffect* effectAbility = Cast<UKMAbilityEffect>(targetStat->ApplyEffectiveAnimation(skillEffectGrabRow->Ability.PdaKey)))
-		{
-			effectAbility->SetSkillEffectInstance(SharedThis(this));
-			effectAbility->SetLockOnCluster(OwnerSkillInstance->Target);
-			effectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);
-			effectAbility->Activate();
-			UsedEffectAbilities.Emplace(targetStat, effectAbility);
-		}
+		newEffectAbility->SetSkillEffectInstance(SharedThis(this));
+		newEffectAbility->SetLockOnCluster(OwnerSkillInstance->Target);
+		newEffectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);
+		newEffectAbility->Activate();
 	}
 }
 
 void FKMSkillEffectInstance::DeactivatedAbility(bool bCancel)
 {
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
-	check(IsValid(gameObjectSubsystem));
+	FKMAbilityInstanceBase::DeactivatedAbility(bCancel);
+}
 
-	for (auto effectAbilityItr : UsedEffectAbilities)
-	{
-		if (!effectAbilityItr.Key.IsValid())
-		{
-			continue;
-		}
-		
-		UKMStatModifierBase* targetStat = effectAbilityItr.Key.Pin().Get();
-		check(IsValid(targetStat));
-
-		targetStat->RemoveEffectiveAnimation(effectAbilityItr.Value.Pin().Get(), bCancel);
-	}
-	UsedEffectAbilities.Empty();
+void FKMSkillEffectInstance::OnTriggerEvent(const FGameplayTag& eventTag)
+{
+	FKMAbilityInstanceBase::OnTriggerEvent(eventTag);
 }
 
 void FKMSkillEffectInstance::Enter()
 {
-	check(OwnerObject.IsValid());
-
-	ActivatedAbility();
+	FKMAbilityInstanceBase::Enter();	
 }
 
 void FKMSkillEffectInstance::Leave(bool bCancel)
 {
-	check(OwnerObject.IsValid());
-	DeactivatedAbility(bCancel);
+	FKMAbilityInstanceBase::Leave(bCancel);
 }
 
 const FKMTable_SkillEffectRow* FKMSkillEffectInstance::GetEffectTableRecord() const

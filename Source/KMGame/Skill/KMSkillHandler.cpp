@@ -1,12 +1,7 @@
 #include "KMSkillHandler.h"
 #include <Tables/Generated/KMTable_SkillEffectTransition.h>
 #include <Tables/Generated/KMTable_SkillSet_Hero.h>
-#include <Tables/Generated/KMTable_Skill_Normal.h>
-#include <Tables/Generated/KMTable_Skill_Projectile.h>
-#include "Ability/KMAbility.h"
-#include "Ability/KMAbilitySkill.h"
 #include "Character/KMCharacter.h"
-#include "DataAsset/KMAssetManager.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Stat/KMStatModifierBase.h"
@@ -773,50 +768,10 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 
 	ResolveSkillCondition(skillTable);
 
-	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager));
-
-	if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(skillTable))
-	{
-		AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter();
-		check(IsValid(ownerCharacter));
-
-		UKMAbility* newAbility = nullptr;
-		UObject* assetObject = assetManager->GetAsset(normalSkillTable->Ability);
-		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(assetObject))
-		{
-			if (IsValid(martialArts->GetAbilityBP()) && IsValid(martialArts->GetAbilityBP()->GeneratedClass))
-			{
-				UClass* abilityGeneratedClass = martialArts->GetAbilityBP()->GeneratedClass;
-				newAbility = NewObject<UKMAbility>(this, abilityGeneratedClass);
-				newAbility->SetMartialArts(martialArts);
-			}
-		}
-		else
-		{
-			if (UClass* abilityClass = Cast<UClass>(assetObject))
-			{
-				newAbility = NewObject<UKMAbility>(this, abilityClass);
-			}
-		}
-		if (IsValid(newAbility))
-		{
-			newAbility->SetLockOnCluster(newSkillInstance->Target);
-			newAbility->Activate();
-			if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(newAbility))
-			{
-				abilitySkill->SetSkillInstance(newSkillInstance);
-			}
-		}
-	}
-	
 	if (skillTable->Type == EKMSkillType::Active)
 	{
 		LatestActiveSkillInstance = newSkillInstance;
 	}
-
-	newSkillInstance->SkillTriggerDelegate.AddUObject(this, &ThisClass::OnSkillTrigger);
-	newSkillInstance->SkillEffectTriggerDelegate.AddUObject(this, &ThisClass::OnSkillEffectTrigger);
 	
 	UKMStatModifierBase* statModifier = ownerCharacterInstance->GetStatModifier();
 	check(IsValid(statModifier));
@@ -835,8 +790,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
 	check(IsValid(gameObjectSubsystem));
-
-	AbilityEvents.FindOrAdd(newSkillInstance);
+	
 	OnAddAbilityInstance(newSkillInstance);
 	newSkillInstance->Enter();
 	
@@ -846,26 +800,6 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Skill_Start_Tag);
 
 	return newSkillInstance;
-}
-
-void UKMSkillHandler::OnSkillEffectTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance)
-{
-	check (skillInstance.IsValid());
-
-	ApplyEffects(skillInstance, eventTag);
-}
-
-void UKMSkillHandler::OnSkillTrigger(const FGameplayTag& eventTag, const TSharedPtr<FKMSkillInstance>& skillInstance)
-{
-	check (skillInstance.IsValid());
-	
-	if (const FKMTable_Skill_ProjectileRow* projectileSkillTable = CastRow<FKMTable_Skill_ProjectileRow>(skillInstance->SkillKey.TableRecord))
-	{
-		if (eventTag.GetTagName() == projectileSkillTable->TriggerEvent)
-		{
-			GetProjectileTriggerDelegate().Broadcast(skillInstance);
-		}
-	}
 }
 
 TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag)
@@ -1065,7 +999,6 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 
 	EffectInstances.Emplace(LastAbilityUniqueId++, newSkillEffectInstance);
 	OnAddAbilityInstance(newSkillEffectInstance);
-		//check(newSkillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == GetTypedOuter<UKMCharacterInstance>());
 	newSkillEffectInstance->Enter();
 
 	return newSkillEffectInstance;
@@ -1151,6 +1084,8 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 
 void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
+	AbilityEvents.FindOrAdd(abilityInstance);
+	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
 	if (abilityInstance->IsA(FKMSkillInstance::TypeName()))
 	{
@@ -1174,8 +1109,6 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 
 void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
-	AbilityEvents.Remove(abilityInstance);
-	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
 	if (abilityInstance->IsA(FKMSkillInstance::TypeName()))
 	{
@@ -1195,16 +1128,14 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		}
 		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("effect end:"));
 	}
+	AbilityEvents.Remove(abilityInstance);
 }
 
 void UKMSkillHandler::TriggerEvent(const FGameplayTag& eventTag)
 {
 	for (auto& abilityItr : AbilityEvents)
 	{
-		if (abilityItr->GetType() == FKMSkillInstance::TypeName())
-		{
-			abilityItr->OnTriggerEvent(eventTag);	
-		}
+		abilityItr->OnTriggerEvent(eventTag);
 	}
 }
 

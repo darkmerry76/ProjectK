@@ -49,21 +49,9 @@ void UKMAbilitySkill::Deactivate(bool bCancel)
 	}
 }
 
-void UKMAbilitySkill::Trigger(const FGameplayTag eventTag)
-{
-	if (SkillInstance.IsValid())
-	{
-		SkillInstance.Pin()->SkillEffectTriggerDelegate.Broadcast(eventTag, SkillInstance.Pin());
-	}
-}
-
 void UKMAbilitySkill::SetSkillInstance(const TSharedPtr<FKMSkillInstance>& newSkillInstance)
 {
 	SkillInstance = newSkillInstance;
-	if (SkillInstance.IsValid())
-	{
-		SkillInstance.Pin()->SetAbility(this);
-	}
 }
 
 TWeakPtr<FKMSkillInstance> UKMAbilitySkill::GetSkillInstance() const

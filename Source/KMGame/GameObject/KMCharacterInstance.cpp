@@ -614,9 +614,9 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 			continue;
 		}
 		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(skillEffectItr);
-		for (auto abilityItr : skillEffectInstance->GetUsedEffectAbilities())
+		for (auto ability : skillEffectInstance->GetAbilitieAssets())
 		{
-			UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(abilityItr.Value);
+			UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(ability);
 			if (!IsValid(abilityEffect))
 			{
 				continue;
@@ -736,10 +736,10 @@ void UKMCharacterInstance::OnDeath()
 		{
 			if (const FKMTable_SkillEffect_NormalRow* skillEffectDieTableRow = FKMTable_SkillEffect_NormalRow::FindRowPtr(TEXT("eff_die")))
 			{
-				if (UKMAbility* deathAbility = Cast<UKMAbility>(GetStatModifier()->ApplyEffectiveAnimation(skillEffectDieTableRow->Ability.PdaKey)))
-				{
-					deathAbility->Activate();
-				}
+				//if (UKMAbility* deathAbility = Cast<UKMAbility>(GetStatModifier()->ApplyEffectiveAnimation(skillEffectDieTableRow->Ability.PdaKey)))
+				//{
+					//deathAbility->Activate();
+				//}
 			}
 		}
 		ownerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
@@ -832,9 +832,12 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 				TSharedPtr<FKMSkillInstance> cancelSkillInstance = SkillHandler->UseSkill(dashSkillKey, nullptr);
 				if (cancelSkillInstance.IsValid())
 				{
-					if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(cancelSkillInstance->GetAbility()))
+					for (auto& ability : cancelSkillInstance->GetAbilitieAssets())
 					{
-						abilitySkillDirectionTag->ApplyAngle(direction8way, 150.f, 0.35f);
+						if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(ability))
+						{
+							abilitySkillDirectionTag->ApplyAngle(direction8way, 150.f, 0.35f);
+						}
 					}
 				}
 			}

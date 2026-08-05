@@ -24,6 +24,5 @@ public:
 	TWeakPtr<class FKMSkillInstance> GetSkillInstance() const;
 
 protected:
-	virtual void Trigger(const FGameplayTag eventTag) override;
 	virtual void ForceComplate() override;
 };

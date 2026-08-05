@@ -25,9 +25,6 @@ public:
 	
 	FKMSecondaryStat& GetEffectiveStat();
 
-	class UObject* ApplyEffectiveAnimation(const FName& pDAKey);
-	void RemoveEffectiveAnimation(class UObject* effectObject, bool bCancel = false);
-
 	int32 GetLevel() const { return Level; }
 
 	void ComputePreEffectStat();;
@@ -40,7 +37,4 @@ protected:
 	FKMBaseStat LevelBaseStat;
 	FKMSecondaryStat EffectiveStat;
 	int32 Level = 0;
-
-	UPROPERTY()
-	TSet<TObjectPtr<UObject>> AbnormalAbilities;
 };

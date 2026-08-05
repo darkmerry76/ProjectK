@@ -135,7 +135,7 @@ void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 {
 }
 
-void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 }
 

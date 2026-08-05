@@ -101,10 +101,6 @@ UKMCharacterInstance* UKMAbilityEffect::GetCasterCharacterInstance() const
 void UKMAbilityEffect::SetSkillEffectInstance(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance)
 {
 	SkillEffectInstance = newSkillEffectInstance;
-	if (SkillEffectInstance.IsValid())
-	{
-		SkillEffectInstance.Pin()->SetAbility(this);
-	}
 }
 
 FKMSkillEffectInstance* UKMAbilityEffect::GetSkillEffectInstance() const
