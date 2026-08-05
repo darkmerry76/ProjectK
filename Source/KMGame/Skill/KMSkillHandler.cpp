@@ -946,6 +946,7 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 				{
 				case EKMSkillEffectOverlapType::Override:
 					RemoveForceAbility<FKMSkillEffectInstance>(EffectInstances,overlapSkillInstances, true);
+					UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacter, overlapSkillInstances[0], TEXT("effect override:"));
 					overlapSkillInstances.Empty();
 					break;
 				case EKMSkillEffectOverlapType::Ignore:
@@ -962,10 +963,10 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			}
 			else
 			{
-				TSharedPtr<FKMSkillEffectInstance> newSkillInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
-				if (newSkillInstance.IsValid())
+				TSharedPtr<FKMSkillEffectInstance> newSkillEffectInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
+				if (newSkillEffectInstance.IsValid())
 				{
-					outSkillEffectInstances.Emplace(newSkillInstance);
+					outSkillEffectInstances.Emplace(newSkillEffectInstance);
 				}
 			}
 		}
@@ -1158,6 +1159,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerCharacterInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
+		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("skill start:"));
 	}
 	else if (abilityInstance->IsA(FKMSkillEffectInstance::TypeName()))
 	{
@@ -1166,6 +1168,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerCharacterInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
+		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("effect start:"));
 	}
 }
 
@@ -1181,6 +1184,7 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerCharacterInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
+		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("skill end:"));
 	}
 	else if (abilityInstance->IsA(FKMSkillEffectInstance::TypeName()))
 	{
@@ -1189,6 +1193,7 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerCharacterInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
+		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("effect end:"));
 	}
 }
 

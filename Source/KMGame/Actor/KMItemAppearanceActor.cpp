@@ -1,6 +1,7 @@
 ﻿#include "KMItemAppearanceActor.h"
 #include "Character/KMChainAnimInstance.h"
 #include "Character/KMCharacter.h"
+#include "Skill/KMSkillHandler.h"
 
 UKMItemAppearanceInstance::UKMItemAppearanceInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -238,12 +239,18 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 	UEMTickerSubsystem* tickerSubsystem = UEMTickerSubsystem::GetTickerSubsystem(this);
 	check(IsValid(tickerSubsystem));
 
+	UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return;
+	}
+
 	TWeakObjectPtr<UKMChainAnimInstance> chainAnimInstance = Cast<UKMChainAnimInstance>(ChainMesh->GetAnimInstance());
 	if (!chainAnimInstance.IsValid())
 	{
 		return;
 	}
-	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
+	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance, ownerCharacterInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
 	{
 		switch (eventType)
 		{
@@ -257,6 +264,7 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = 0.f;
 			SetVisbility(false);
+			ownerCharacterInstance->HitCheckClear();
 			break;
 		default:break;
 		}
@@ -278,7 +286,8 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 		{
 			FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
 			socketTransform.SetScale3D(FVector(RingRadius));
-			ownerCharacterInstance->BoxHitImpact(PreviousTransform, socketTransform, { UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn) }, ACharacter::StaticClass(), NAME_None);
+			ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
+				PreviousTransform, socketTransform, { UEngineTypes::ConvertToObjectType(ECC_Damage) }, ACharacter::StaticClass(), NAME_None);
 
 			PreviousTransform = socketTransform;
 		}

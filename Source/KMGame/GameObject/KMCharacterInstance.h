@@ -16,6 +16,7 @@ DECLARE_MULTICAST_DELEGATE_FourParams(FKMCharacterStatChangeDelegate, class UKMC
 DECLARE_MULTICAST_DELEGATE_TwoParams(FKMCharacterInflictDelegate, int32 comboCount, class UKMCharacterInstance* victimCharacter);
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMCharacterDamageDelegate, const FKMDamageEvent& newDamageEvent);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterCommbatMessageDelegate, const class UKMCharacterInstance* character, EKMCommbatMessageType messageType, const FString& newMessage);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterSkillMessageDelegate, const class UKMCharacterInstance* character, TSharedPtr<FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
 
 UCLASS(Blueprintable, BlueprintType, abstract)
 class KMGAME_API UKMCharacterInstance : public UKMGameObjectInstance
@@ -157,17 +158,18 @@ public:
 	
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
-	UFUNCTION(BlueprintCallable)
 	void HitCheckClear();
+	void BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+		const FTransform& prevOrientationTransform, const FTransform& orientationTransform,
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
 
-	UFUNCTION(BlueprintCallable)
-	void BoxHitImpact(const FTransform& prevOrientationTransform, const FTransform& orientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
-
-	UFUNCTION(BlueprintCallable)
-	void SphereHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
+	void SphereHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
 
 protected:
-	void HitCollection(AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
+	void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;
@@ -211,6 +213,12 @@ public:
 	FKMCharacterCommbatMessageDelegate& GetCombatMessageDelegate()
 	{
 		return CombatMessageDelegate;
+	}
+
+	static FKMCharacterSkillMessageDelegate& GetSkillMessageDelegate()
+	{
+		static FKMCharacterSkillMessageDelegate newSkillMessageDelegate;
+		return newSkillMessageDelegate;
 	}
 	
 protected:

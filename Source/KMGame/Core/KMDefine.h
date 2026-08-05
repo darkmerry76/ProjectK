@@ -11,6 +11,8 @@
 #define ONE_FRAME_SECONDS 0.01666666666666666666666666666667
 #define FRAME_TO_SECONDS(f) (f * ONE_FRAME_SECONDS)
 
+#define ECC_Damage ECC_GameTraceChannel3
+
 UENUM(BlueprintType)
 enum class EKMGameState : uint8
 {

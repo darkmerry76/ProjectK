@@ -66,9 +66,9 @@ void UKMAbilitySkill::SetSkillInstance(const TSharedPtr<FKMSkillInstance>& newSk
 	}
 }
 
-FKMSkillInstance* UKMAbilitySkill::GetSkillInstance() const
+TWeakPtr<FKMSkillInstance> UKMAbilitySkill::GetSkillInstance() const
 {
-	return SkillInstance.IsValid() ? SkillInstance.Pin().Get() : nullptr;
+	return SkillInstance;
 }
 
 void UKMAbilitySkill::ForceComplate()

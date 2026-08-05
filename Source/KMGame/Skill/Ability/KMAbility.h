@@ -71,7 +71,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnRequestEnd();
 
-	void PlayMartialArts(TSharedPtr<class FEMMartialArtsContextData> newContextData, float newRate = 1.f, bool bLooping = false);
+	void PlayMartialArts(TSharedPtr<class UE::Anim::IAnimNotifyEventContextDataInterface> newContextData, float newRate = 1.f, bool bLooping = false);
 
 	void StopMartialArts();
 
@@ -154,6 +154,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ForceComplate();
+
+	UFUNCTION(BlueprintCallable)
+	void InverseDirection(bool bForce = false);
 
 protected:
 	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);

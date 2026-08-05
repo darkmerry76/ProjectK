@@ -1,11 +1,14 @@
 #include "KMAnimNotifyState_Hit.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMEditorDrawDebugComponent.h"
+#include "Component/KMMartialArtsComponent.h"
+#include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
+#include "Skill/Ability/KMAbilitySkill.h"
 
 UKMAnimNotifyState_Hit::UKMAnimNotifyState_Hit(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	ObjectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	ObjectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Damage));
 	ActorClassFilter = ACharacter::StaticClass();
 
 	SetGroupType(EEMNotifyGroupType::Plan);
@@ -86,6 +89,19 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 		return;
 	}
 
+	TWeakPtr<FKMSkillInstance> latestSkillInstance = nullptr;
+	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+	{
+		if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(martialArtsData->GetAbility()))
+		{
+			latestSkillInstance = abilitySkill->GetSkillInstance();
+		}
+	}
+	if (!latestSkillInstance.IsValid())
+	{
+		latestSkillInstance = ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
+	}
+	
 	FTransform& previousTransform = HitPreviousTransforms.FindOrAdd(meshComp);
 	
 	FTransform finalTransform;
@@ -93,11 +109,11 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		ownerCharacterInstance->BoxHitImpact(previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		ownerCharacterInstance->BoxHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
 	else
 	{
-		ownerCharacterInstance->SphereHitImpact(previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		ownerCharacterInstance->SphereHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
 	previousTransform = finalTransform;
 }

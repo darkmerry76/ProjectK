@@ -457,7 +457,8 @@ void UKMCharacterInstance::HitCheckClear()
 	HitCheckData.Actors.Empty();	
 }
 
-void UKMCharacterInstance::HitCollection(AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
+void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
+	AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
 {
 	if (GetCharacter() == hitActor)
 	{
@@ -490,34 +491,31 @@ void UKMCharacterInstance::HitCollection(AActor* hitActor,const FVector& hitLoca
 	{
 		return;
 	}
-
-	if (hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Tag))
-	{
-		hitCharacter = hitCharacter;
-	}
 	
-	TSharedPtr<FKMSkillInstance> latestSkillInstance = MakeShared<FKMSkillInstance>(*SkillHandler->GetLatestActiveSkillInstance().Get());
 	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitCharacter->GetRootComponent());
 	FVector closestPoint;
 	rootComp->GetClosestPointOnCollision(hitLocation, closestPoint);
 
-	if (latestSkillInstance.IsValid())
+	if (adjustSkillInstance.IsValid())
 	{
-		latestSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
-		latestSkillInstance->Target->Targets.Emplace(hitCharacter->GetCharacterInstance()->GetId());
+		TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get()); 
+		duplicatSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
+		duplicatSkillInstance->Target->Targets.Emplace(hitCharacter->GetCharacterInstance()->GetId());
 				
 		UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
 		check(IsValid(hitCharacterSkillHandler));
 
-		hitCharacterInstance->Hit(this, latestSkillInstance, closestPoint, hitTag);
+		hitCharacterInstance->Hit(this, duplicatSkillInstance, closestPoint, hitTag);
 	}
 }
 
-void UKMCharacterInstance::BoxHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
+void UKMCharacterInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
+	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Damage));
 	}
 	if (!IsValid(actorClassFilter))
 	{
@@ -537,18 +535,21 @@ void UKMCharacterInstance::BoxHitImpact(const FTransform& startOrientationTransf
 			{
 				if (actor->IsA(actorClassFilter))
 				{
-					HitCollection(actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+					HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
 				}
 			}
 		}
 	}
 }
 
-void UKMCharacterInstance::SphereHitImpact(const FTransform& startOrientationTransform, const FTransform& endOrientationTransform, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
+void UKMCharacterInstance::SphereHitImpact(
+	const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
+	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Damage));
 	}
 	if (!IsValid(actorClassFilter))
 	{
@@ -568,7 +569,7 @@ void UKMCharacterInstance::SphereHitImpact(const FTransform& startOrientationTra
 			{
 				if (actor->IsA(actorClassFilter))
 				{
-					HitCollection(actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+					HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
 				}
 			}
 		}

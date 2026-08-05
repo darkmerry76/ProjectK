@@ -10,6 +10,7 @@
 #include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMTargetSubsystem.h"
+#include "Util/KMUtil.h"
 
 UKMAbility::UKMAbility(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -138,7 +139,7 @@ void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta
 {
 }
 
-void UKMAbility::PlayMartialArts(TSharedPtr<FEMMartialArtsContextData> newContextData, float newRate, bool bLooping)
+void UKMAbility::PlayMartialArts(TSharedPtr<UE::Anim::IAnimNotifyEventContextDataInterface> newContextData, float newRate, bool bLooping)
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	if (!IsValid(ownerCharacter))
@@ -434,4 +435,14 @@ int32 UKMAbility::GetMartialArtsHandle() const
 
 void UKMAbility::ForceComplate()
 {
+}
+
+void UKMAbility::InverseDirection(bool bForce)
+{
+	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return;
+	}
+	ownerCharacterInstance->SetCharacterDirection(UKMUtil::InverseCircularDirection(ownerCharacterInstance->GetCharacterDirection()), bForce);
 }

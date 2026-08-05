@@ -21,7 +21,7 @@ public:
 	virtual void Deactivate(bool bCancel) override;
 
 	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
-	class FKMSkillInstance* GetSkillInstance() const;
+	TWeakPtr<class FKMSkillInstance> GetSkillInstance() const;
 
 protected:
 	virtual void Trigger(const FGameplayTag eventTag) override;
