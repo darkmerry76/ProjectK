@@ -57,10 +57,7 @@ void UKMSkillHandler::ClearActiveSkills()
 		{
 			(*timerInstance)->ForceReady();
 		}
-		
-		skillInstance->Leave();
-		OnRemoveAbilityInstance(skillInstance);
-		skillInstanceItr.RemoveCurrent();
+		skillInstance->SetForceComplete(true);
 	}
 }
 
@@ -82,10 +79,7 @@ void UKMSkillHandler::ClearPassiveSkills()
 		{
 			(*timerInstance)->ForceReady();
 		}
-		
-		skillInstance->Leave();
-		OnRemoveAbilityInstance(skillInstance);
-		skillInstanceItr.RemoveCurrent();
+		skillInstance->SetForceComplete(true);
 	}
 }
 
@@ -102,10 +96,7 @@ void UKMSkillHandler::ClearAllSkills()
 		{
 			(*timerInstance)->ForceReady();
 		}
-		
-		skillInstance->Leave();
-		OnRemoveAbilityInstance(skillInstance);
-		skillInstanceItr.RemoveCurrent();
+		skillInstance->SetForceComplete(true);
 	}
 	ComboData.Reset();
 }
@@ -152,7 +143,7 @@ void UKMSkillHandler::RegisterSkill(const FKMSkillKey& newSkillKey)
 	OwnedSkills.Emplace(newSkillKey);
 	TSharedPtr<FKMAbilityInstanceCooltime> newCooltime = MakeShared<FKMAbilityInstanceCooltime>(this, newSkillKey);
 	newCooltime->ForceReady();
-	CooltimeInstances.Emplace(newSkillKey, newCooltime);
+	PendingNewAbilities.Emplace(newCooltime);
 
 	if (newSkillKey.TableRecord->Type == EKMSkillType::Passive)
 	{
@@ -168,7 +159,10 @@ bool UKMSkillHandler::HasOwnedSkill(const FKMSkillKey& skillKey) const
 bool UKMSkillHandler::IsReadyCooltime(const FKMSkillKey& skillKey) const
 {
 	const TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillKey);
-	check(timerInstance);
+	if (!timerInstance)
+	{
+		return true;
+	}
 
 	check((*timerInstance)->GetType() == FKMAbilityInstanceCooltime::TypeName());
 	
@@ -195,7 +189,8 @@ int32 UKMSkillHandler::GetSkillEffectOverlapCount(const FName& skillEffectGroup,
 	for (auto activatedskillItr : EffectInstances)
 	{
 		TSharedPtr<FKMSkillEffectInstance> activatedSkillEffect = activatedskillItr.Value;
-		if (skillEffectGroup != NAME_None && activatedSkillEffect->GetEffectTableRecord()->OverlapGroup == skillEffectGroup)
+		if (skillEffectGroup != NAME_None &&
+			activatedSkillEffect->GetEffectTableRecord()->OverlapGroup == skillEffectGroup && !activatedSkillEffect->IsComplete())
 		{
 			if(outSkillEffects)
 			{
@@ -284,7 +279,7 @@ bool UKMSkillHandler::CanUseSkill(const FKMSkillKey& skillKey, const TSharedPtr<
 	{
 		return false;
 	}*/
-
+	
 	UKMStatModifierBase* statModifier = ownerCharacterInstance->GetStatModifier();
 	check(IsValid(statModifier));
 
@@ -738,9 +733,7 @@ void UKMSkillHandler::ResolveSkillCondition(const FKMTable_SkillRow* skillTable)
 				{
 					(*timerInstance)->ForceReady();
 				}
-				skillInstance->Leave();
-				OnRemoveAbilityInstance(skillInstance);
-				skillInstanceItr.RemoveCurrent();
+				skillInstance->SetForceComplete(true);
 			}
 			else if (skillConditionTableRow->TransitionSkillBehavior == EKMSkillTransitionBehavior::Disable)
 			{
@@ -791,11 +784,9 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMCharacterInsta
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
 	check(IsValid(gameObjectSubsystem));
 	
-	OnAddAbilityInstance(newSkillInstance);
-	newSkillInstance->Enter();
-	
-	SkillInstances.Emplace(LastAbilityUniqueId++, newSkillInstance);
 	ResetCooltime(newSkillInstance->SkillKey);
+	PendingNewAbilities.Emplace(newSkillInstance);
+	newSkillInstance->Init();
 
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Skill_Start_Tag);
 
@@ -872,34 +863,13 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			UKMSkillHandler* targetSkillHandler = targetCharacterInstance->GetSkillHandler();
 			check(IsValid(targetSkillHandler));
 
-			TArray<TSharedPtr<FKMSkillEffectInstance>> overlapSkillInstances;
-			int32 overlapCount = GetSkillEffectOverlapCount(skillEffectRow->OverlapGroup, skillEffectRow->Id, &overlapSkillInstances);
-			if (overlapCount >= skillEffectRow->OverlapCount)
-			{
-				switch (skillEffectRow->OverlapType)
-				{
-				case EKMSkillEffectOverlapType::Override:
-					RemoveForceAbility<FKMSkillEffectInstance>(EffectInstances,overlapSkillInstances, true);
-					UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacter, overlapSkillInstances[0], TEXT("effect override:"));
-					overlapSkillInstances.Empty();
-					break;
-				case EKMSkillEffectOverlapType::Ignore:
-					break;
-				default:
-					overlapSkillInstances.Empty();
-					continue;
-				}
-			}
 
-			if (!overlapSkillInstances.IsEmpty())
+			TSharedPtr<FKMSkillEffectInstance> newSkillEffectInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
+			if (newSkillEffectInstance.IsValid())
 			{
-				outSkillEffectInstances.Append(overlapSkillInstances);
-			}
-			else
-			{
-				TSharedPtr<FKMSkillEffectInstance> newSkillEffectInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
-				if (newSkillEffectInstance.IsValid())
+				if (skillEffectRow->OverlapType == EKMSkillEffectOverlapType::Override)
 				{
+					UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacter, newSkillEffectInstance, TEXT("effect override:"));
 					outSkillEffectInstances.Emplace(newSkillEffectInstance);
 				}
 			}
@@ -938,11 +908,10 @@ void UKMSkillHandler::RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityIn
 {
 	for (auto abilityInstanceItr = abilityInstances.CreateIterator(); abilityInstanceItr; ++abilityInstanceItr)
 	{
-		if (sourceAbilityInstances.Contains(abilityInstanceItr->Value))
+		abilityInstanceItr.Value()->SetForceComplete(true);
+		if (bCancel)
 		{
-			abilityInstanceItr.Value()->Leave(bCancel);
-			OnRemoveAbilityInstance(abilityInstanceItr.Value());
-			abilityInstanceItr.RemoveCurrent();
+			abilityInstanceItr.Value()->Cancel();
 		}
 	}
 }
@@ -965,6 +934,22 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
 	check(IsValid(ownerCharacterInstance));
+
+	TArray<TSharedPtr<FKMSkillEffectInstance>> overlapSkillInstances;
+	int32 overlapCount = GetSkillEffectOverlapCount(skillEffectTable->OverlapGroup, skillEffectTable->Id, &overlapSkillInstances);
+	if (overlapCount >= skillEffectTable->OverlapCount)
+	{
+		switch (skillEffectTable->OverlapType)
+		{
+		case EKMSkillEffectOverlapType::Override:
+			RemoveForceAbility<FKMSkillEffectInstance>(EffectInstances, overlapSkillInstances, true);
+			break;
+		case EKMSkillEffectOverlapType::Ignore:
+			break;
+		default:
+			return nullptr;
+		}
+	}
 	
 	for (auto readTag: skillEffectTable->ReadGameplaytag)
 	{
@@ -996,11 +981,9 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 	default: return nullptr;	
 	}
 	check(newSkillEffectInstance.IsValid());
-
-	EffectInstances.Emplace(LastAbilityUniqueId++, newSkillEffectInstance);
-	OnAddAbilityInstance(newSkillEffectInstance);
-	newSkillEffectInstance->Enter();
-
+	
+	PendingNewAbilities.Emplace(newSkillEffectInstance);
+	newSkillEffectInstance->Init();
 	return newSkillEffectInstance;
 }
 
@@ -1049,23 +1032,31 @@ int32 UKMSkillHandler::GetScoreSkill(const FKMSkillKey& skillKey) const
 	return 0;
 }
 
+bool UKMSkillHandler::UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& abilityInstance, float deltaSeconds)
+{
+	if (!abilityInstance.IsValid())
+	{
+		return false;
+	}
+	abilityInstance->Tick(deltaSeconds);
+	abilityInstance->PostTick(deltaSeconds);
+	if (abilityInstance->IsComplete())
+	{
+		abilityInstance->Leave();
+		OnRemoveAbilityInstance(abilityInstance);
+		return false;
+	}
+	return true;
+}
+
 template<typename _TLKey, typename _TLValue>
 void UKMSkillHandler::UpdateAbilities(TMap<_TLKey, TSharedPtr<_TLValue>>& abilityInstances, float deltaSeconds)
 {
 	for (auto skillInstanceItr = abilityInstances.CreateIterator(); skillInstanceItr; ++skillInstanceItr)
 	{
 		TSharedPtr<FKMAbilityInstanceBase> abilityInstance = skillInstanceItr->Value;
-		if (!abilityInstance.IsValid())
+		if (!UpdateAbilitiy(abilityInstance, deltaSeconds))
 		{
-			continue;
-		}
-		
-		abilityInstance->Tick(deltaSeconds);
-		abilityInstance->PostTick(deltaSeconds);
-		if (abilityInstance->IsComplete())
-		{
-			abilityInstance->Leave();
-			OnRemoveAbilityInstance(abilityInstance);
 			skillInstanceItr.RemoveCurrent();
 		}
 	}
@@ -1075,11 +1066,43 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 {
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
 	check(IsValid(ownerCharacterInstance));
-
-	UpdateAbilities<FKMSkillKey, FKMAbilityInstanceCooltime>(CooltimeInstances, deltaSeconds);
 	
+	UpdateAbilities<FKMSkillKey, FKMAbilityInstanceCooltime>(CooltimeInstances, deltaSeconds);
 	UpdateAbilities<int32, FKMSkillInstance>(SkillInstances, deltaSeconds);
 	UpdateAbilities<int32, FKMSkillEffectInstance>(EffectInstances, deltaSeconds);
+
+	if (!PendingNewAbilities.IsEmpty())
+	{
+		for (auto& pendingNewAbility : PendingNewAbilities)
+		{
+			if (!pendingNewAbility.IsValid())
+			{
+				continue;
+			}
+			pendingNewAbility->Enter();
+			OnAddAbilityInstance(pendingNewAbility);
+
+			if (!UpdateAbilitiy(pendingNewAbility, deltaSeconds))
+			{
+				continue;
+			}
+			if (pendingNewAbility->IsA<FKMSkillInstance>())
+			{
+				SkillInstances.Emplace(LastAbilityUniqueId, StaticCastSharedPtr<FKMSkillInstance>(pendingNewAbility));
+			}
+			else if(pendingNewAbility->IsA<FKMSkillEffectInstance>())
+			{
+				EffectInstances.Emplace(LastAbilityUniqueId, StaticCastSharedPtr<FKMSkillEffectInstance>(pendingNewAbility));
+			}
+			else if(pendingNewAbility->IsA<FKMAbilityInstanceCooltime>())
+			{
+				TSharedPtr<FKMAbilityInstanceCooltime> newCooltimeInstance = StaticCastSharedPtr<FKMAbilityInstanceCooltime>(pendingNewAbility);
+				CooltimeInstances.Emplace(newCooltimeInstance->SkillKey, newCooltimeInstance);
+			}
+			LastAbilityUniqueId++;
+		}
+		PendingNewAbilities.Empty();
+	}
 }
 
 void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
@@ -1087,7 +1110,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 	AbilityEvents.FindOrAdd(abilityInstance);
 	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	if (abilityInstance->IsA(FKMSkillInstance::TypeName()))
+	if (abilityInstance->IsA<FKMSkillInstance>())
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = StaticCastSharedPtr<FKMSkillInstance>(abilityInstance);
 		for (auto tag : skillInstance->SkillKey.TableRecord->GameplayTag)
@@ -1096,7 +1119,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		}
 		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("skill start:"));
 	}
-	else if (abilityInstance->IsA(FKMSkillEffectInstance::TypeName()))
+	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
 		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(abilityInstance);
 		for (auto tag : skillEffectInstance->GetEffectTableRecord()->WriteGameplayTag)
@@ -1109,8 +1132,9 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 
 void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
+	AbilityEvents.Remove(abilityInstance);
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	if (abilityInstance->IsA(FKMSkillInstance::TypeName()))
+	if (abilityInstance->IsA<FKMSkillInstance>())
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = StaticCastSharedPtr<FKMSkillInstance>(abilityInstance);
 		for (auto tag : skillInstance->SkillKey.TableRecord->GameplayTag)
@@ -1119,7 +1143,7 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		}
 		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("skill end:"));
 	}
-	else if (abilityInstance->IsA(FKMSkillEffectInstance::TypeName()))
+	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
 		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(abilityInstance);
 		for (auto tag : skillEffectInstance->GetEffectTableRecord()->WriteGameplayTag)
@@ -1128,7 +1152,6 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		}
 		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerCharacterInstance, abilityInstance, TEXT("effect end:"));
 	}
-	AbilityEvents.Remove(abilityInstance);
 }
 
 void UKMSkillHandler::TriggerEvent(const FGameplayTag& eventTag)
@@ -1194,7 +1217,8 @@ void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag
 			continue;
 		}
 		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == characterInstance);
-		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
 		skillEffectInstance->SetForceComplete(true);
+		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
+		
 	}
 }

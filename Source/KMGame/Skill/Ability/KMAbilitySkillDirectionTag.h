@@ -24,7 +24,7 @@ public:
 	float Angle0_DirectionWeight = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag AngleL45_AnimTag = FGameplayTag::RequestGameplayTag(TEXT("Anim.Dash.Back.0"));
+	FGameplayTag AngleL45_AnimTag = FGameplayTag::RequestGameplayTag(TEXT("Anim.Dash.Front.0"));
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AngleL45_DirectionWeight = 1.f;
@@ -48,7 +48,7 @@ public:
 	float Angle180_DirectionWeight = -1.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag AngleR45_AnimTag = FGameplayTag::RequestGameplayTag(TEXT("Anim.Dash.Back.0"));
+	FGameplayTag AngleR45_AnimTag = FGameplayTag::RequestGameplayTag(TEXT("Anim.Dash.Front.0"));
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AngleR45_DirectionWeight = 1.f;

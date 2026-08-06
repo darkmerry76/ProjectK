@@ -92,7 +92,6 @@ public:
 
 	int32 GetScoreSkill(const FKMSkillKey& skillKey) const;
 
-	TSharedPtr<class FKMSkillInstance> GetSkillInstance(int32 skillHandle) const;
 	TSharedPtr<class FKMSkillInstance> GetSkillInstance(const FKMSkillKey& skillKey) const;
 	bool IsSkillActivated(const FKMSkillKey& skillKey) const;
 	
@@ -138,6 +137,8 @@ protected:
 	
 	TSharedPtr<FKMSkillInstance> UseSkillInternal(class UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
 
+	bool UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& abilityInstance, float deltaSeconds);
+	
 	template<typename _TLKey, typename _TLValue>
 	void UpdateAbilities(TMap<_TLKey, TSharedPtr<_TLValue>>& abilityInstances, float deltaSeconds);
 
@@ -152,6 +153,7 @@ protected:
 	TMap<int32, TSharedPtr<class FKMSkillInstance>> SkillInstances;
 	TMap<int32, TSharedPtr<class FKMSkillEffectInstance>> EffectInstances;
 	TMap<FKMSkillKey, TSharedPtr<class FKMAbilityInstanceCooltime>> CooltimeInstances;
+	TArray<TSharedPtr<FKMAbilityInstanceBase>> PendingNewAbilities;
 		
 	int32 LastAbilityUniqueId = 0;
 

@@ -2,6 +2,8 @@
 #include "EMMartialArts.h"
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
+#include "System/EMMontageCacheManager.h"
+#include "Util/KMUtil.h"
 
 UKMAnimNotifyState_Animation::UKMAnimNotifyState_Animation(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -16,7 +18,7 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 	
 	if (IsValid(Montage))
 	{
-		notifyName += FString::Printf(TEXT("-'%s'"), *Montage->GetName());		
+		notifyName += FString::Printf(TEXT("-'%s[%s]'"), *Montage->GetName(), *UKMUtil::GetAnimSlotName(SlotType).ToString());		
 	}
 	
 	return notifyName;
@@ -24,6 +26,7 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 
 UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 {
+	UAnimMontage* usedMontage = nullptr;
 	if (bIsUseSkillSet)
 	{
 		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(actor);
@@ -31,12 +34,15 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 		{
 			return nullptr;
 		}
-		return ownerCharacter->GetAnimationTag(AnimationSetTag.Tag);
+		usedMontage = ownerCharacter->GetAnimationTag(AnimationSetTag.Tag);
 	}
 	else
 	{
-		return Montage;
+		usedMontage = Montage;
 	}
+
+	FName slotName = UKMUtil::GetAnimSlotName(SlotType);
+	return FEMMontageCacheManager::Get().GetMontageBySlot(usedMontage, slotName);
 }
 
 bool UKMAnimNotifyState_Animation::IsCustomDuration() const
@@ -47,6 +53,11 @@ bool UKMAnimNotifyState_Animation::IsCustomDuration() const
 float UKMAnimNotifyState_Animation::GetCustomDuration() const
 {
 	return CustomDuration;
+}
+
+bool UKMAnimNotifyState_Animation::IsAutoMontageStop() const
+{
+	return !bIsImmediate || SlotType != EKMAnimSlotType::DefaultSlot;
 }
 
 void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
@@ -160,11 +171,14 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			ownerCharacter->RemoveMovementOverrideMontage();
 		}
 
-		if (!bIsImmediate && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
+		if (IsAutoMontageStop() && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
 		{
 			if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
 			{
-				targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+				if (targetAnimInstance->Montage_IsActive((*currContext)->ActivatedMontage))
+				{
+					targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+				}
 			}
 		}
 

@@ -22,9 +22,7 @@ void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& m
 	{
 		switch(type)
 		{
-		case EEMCurveWarpingInteruptType::Landing:
-		case EEMCurveWarpingInteruptType::Ending:
-			skillHandler->TriggerTransitionSkillEffect(FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
+		case EEMCurveWarpingInteruptType::Ending: skillHandler->TriggerTransitionSkillEffect(FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
 		default:break;
 		}
 	}

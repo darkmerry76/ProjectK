@@ -430,7 +430,18 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, co
 	
 	switch (type)
 	{
-	case EEMCurveWarpingInteruptType::Ending: StartCurveEndingFalling(JumpCurve, curveWarpingInstance); break;
+	case EEMCurveWarpingInteruptType::Ending:
+		if (!IsOnGround())
+		{
+			StartCurveEndingFalling(JumpCurve, curveWarpingInstance);
+		}
+		else
+		{
+			FHitResult hitResult;
+			hitResult.ImpactPoint = ownerCharacter->GetActorLocation();
+			ownerCharacter->Landed(hitResult);
+		}
+		break;
 	case EEMCurveWarpingInteruptType::Landing:
 		{
 			ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);

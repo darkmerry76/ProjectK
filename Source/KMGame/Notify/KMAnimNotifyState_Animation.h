@@ -38,8 +38,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
 	TObjectPtr<class UAnimMontage> Montage;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
+	EKMAnimSlotType SlotType = EKMAnimSlotType::DefaultSlot;
 	
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(EditCondition="SlotType==EKMAnimSlotType::DefaultSlot", AllowPrivateAccess=true, DisplayAfter="SlotName"))
 	bool bIsImmediate = true;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsImmediate"))
@@ -67,6 +70,8 @@ protected:
 	virtual float GetCustomDuration() const override;
 
 	class UAnimMontage* GetUsedMontage(AActor* actor) const;
+
+	bool IsAutoMontageStop() const;
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

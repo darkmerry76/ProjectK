@@ -15,15 +15,6 @@ void UKMAbilitySkillDirectionTag::Activate()
 void UKMAbilitySkillDirectionTag::Deactivate(bool bCancel)
 {
 	UKMAbility::Deactivate(bCancel);
-
-	AKMCharacter* character = GetOwnerCharacter();
-	if (IsValid(character))
-	{
-		if (IsValid(Montage))
-		{
-			StopMontage(Montage);
-		}
-	}
 }
 
 FGameplayTag UKMAbilitySkillDirectionTag::Get8WayDirectionAnimTag(EKM8WayDirection direction) const

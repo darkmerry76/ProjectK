@@ -60,7 +60,7 @@ public:
 	void OnDeacivated(bool bCancel);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Trigger(const FGameplayTag eventTag);
+	virtual void Trigger(const FGameplayTag& eventTag);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnTriggerEvent(const FGameplayTag& eventTag);

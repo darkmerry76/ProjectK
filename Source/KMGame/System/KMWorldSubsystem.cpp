@@ -4,6 +4,7 @@
 #include "Core/KMWorldSettings.h"
 #include "GameMode/KMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "System/EMMontageCacheManager.h"
 #include "Util/KMUtil.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +28,8 @@ void UKMWorldSubsystem::Deinitialize()
 void UKMWorldSubsystem::OnPreWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)
 {
 	Super::OnPreWorldInitialization(newWorld, iVS);
+
+	FEMMontageCacheManager::Get().Clear();
 }
 
 void UKMWorldSubsystem::OnPostWorldInitialization(UWorld* newWorld, const UWorld::InitializationValues iVS)

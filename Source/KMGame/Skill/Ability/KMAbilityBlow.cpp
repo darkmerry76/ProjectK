@@ -13,17 +13,22 @@ void UKMAbilityBlow::Activate()
 	Super::Activate();
 }
 
-void UKMAbilityBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMAbilityBlow::Trigger(const FGameplayTag& eventTag)
 {
+	Super::Trigger(eventTag);
+
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	check(IsValid(ownerCharacter));
 
 	UKMSkillHandler* skillHandler = ownerCharacter->GetCharacterInstance()->GetSkillHandler();
-	switch(type)
+	if (!IsValid(skillHandler))
 	{
-		case EEMCurveWarpingInteruptType::Landing:
-			skillHandler->TriggerTransitionSkillEffect(FGameplayTag::RequestGameplayTag(TEXT("event.blow.landing"))); break; 
-		default:break;
+		return;
+	}
+
+	if (eventTag == FKMGameplayTagName::Event_Move_Landing_Tag)
+	{
+		skillHandler->TriggerTransitionSkillEffect(FGameplayTag::RequestGameplayTag(TEXT("event.blow.landing")));
 	}
 }
 

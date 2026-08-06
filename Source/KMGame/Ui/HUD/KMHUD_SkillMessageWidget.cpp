@@ -102,15 +102,15 @@ void UKMHUD_SkillMessageWidget::OnSkillMessage(const UKMCharacterInstance* chara
 		return;
 	}
 	
-	if (abilityInstance->IsA(FKMSkillInstance::TypeName()))
+	if (abilityInstance->IsA<FKMSkillInstance>())
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = StaticCastSharedPtr<FKMSkillInstance>(abilityInstance);
-		AddMessage(FText::FromString(FString::Printf(TEXT("[%s] %s%s"), *characterInstance->GetName(), *prefixMessage, *skillInstance->SkillKey.TableRecord->Id.ToString())), FLinearColor::White, 14.f);
+		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *characterInstance->GetName(), *prefixMessage, *skillInstance->SkillKey.TableRecord->Id.ToString())), FLinearColor::White, 14.f);
 	}
-	else if (abilityInstance->IsA(FKMSkillEffectInstance::TypeName()))
+	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
 		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(abilityInstance);
-		AddMessage(FText::FromString(FString::Printf(TEXT("[%s] %s%s"), *characterInstance->GetName(), *prefixMessage, *skillEffectInstance->GetEffectTableRecord()->Id.ToString())), FLinearColor::Red, 14.f);
+		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *characterInstance->GetName(), *prefixMessage, *skillEffectInstance->GetEffectTableRecord()->Id.ToString())), FLinearColor::Red, 14.f);
 	}
 }
 

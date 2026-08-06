@@ -38,14 +38,23 @@ FKMAbilityInstanceBase::~FKMAbilityInstanceBase()
 {
 }
 
-void FKMAbilityInstanceBase::Enter()
+void FKMAbilityInstanceBase::Init()
 {
-	ActivatedAbility();
+	InitAbilityAsset(false);
 }
 
-void FKMAbilityInstanceBase::Leave(bool bCancel)
+void FKMAbilityInstanceBase::Enter()
 {
-	DeactivatedAbility(bCancel);
+	bIsEnter = true;
+	for (auto ability : AbilitieAssets)
+	{
+		ability->Activate();
+	}
+}
+
+void FKMAbilityInstanceBase::Leave()
+{
+	DeactivatedAbility(bIsCancel);
 }
 
 void FKMAbilityInstanceBase::AddReferencedObjects(FReferenceCollector& Collector)
@@ -73,11 +82,11 @@ void FKMAbilityInstanceBase::OnTriggerEvent(const FGameplayTag& eventTag)
 {
 	for (auto& ability : AbilitieAssets)
 	{
-		ability->OnTriggerEvent(eventTag);
+		ability->Trigger(eventTag);
 	}
 }
 
-void FKMAbilityInstanceBase::ActivatedAbility()
+void FKMAbilityInstanceBase::InitAbilityAsset(bool bAutoActivate)
 {
 }
 
@@ -208,16 +217,19 @@ void FKMSkillInstance::Enter()
 	FKMAbilityInstanceBase::Enter();
 }
 
-void FKMSkillInstance::ActivatedAbility()
+void FKMSkillInstance::InitAbilityAsset(bool bAutoActivate)
 {
-	FKMAbilityInstanceBase::ActivatedAbility();
+	FKMAbilityInstanceBase::InitAbilityAsset(bAutoActivate);
 	if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
 		if (UKMAbilitySkill* newAbilitySkill = Cast<UKMAbilitySkill>(AddAbillityAsset(normalSkillTable->Ability.PdaKey)))
 		{
 			newAbilitySkill->SetLockOnCluster(Target);
 			newAbilitySkill->SetSkillInstance(SharedThis(this));
-			newAbilitySkill->Activate();
+			if (bAutoActivate)
+			{
+				newAbilitySkill->Activate();
+			}
 		}
 	}
 }
@@ -397,8 +409,7 @@ FKMSkillEffectInstance::FKMSkillEffectInstance(UObject* ownerObject,
 void FKMSkillEffectInstance::Reset()
 {
 	DeactivatedAbility(!IsComplete());
-	ActivatedAbility();
-
+	InitAbilityAsset(true);
 	ResetElipsedTime();
 }
 
@@ -423,9 +434,9 @@ bool FKMSkillEffectInstance::IsComplete() const
 	return false;
 }
 
-void FKMSkillEffectInstance::ActivatedAbility()
+void FKMSkillEffectInstance::InitAbilityAsset(bool bAutoActivate)
 {
-	FKMAbilityInstanceBase::ActivatedAbility();
+	FKMAbilityInstanceBase::InitAbilityAsset(bAutoActivate);
 
 	if (!EffectTableRecord)
 	{
@@ -453,7 +464,10 @@ void FKMSkillEffectInstance::ActivatedAbility()
 		newEffectAbility->SetSkillEffectInstance(SharedThis(this));
 		newEffectAbility->SetLockOnCluster(OwnerSkillInstance->Target);
 		newEffectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);
-		newEffectAbility->Activate();
+		if (bAutoActivate)
+		{
+			newEffectAbility->Activate();
+		}
 	}
 }
 
@@ -472,9 +486,9 @@ void FKMSkillEffectInstance::Enter()
 	FKMAbilityInstanceBase::Enter();	
 }
 
-void FKMSkillEffectInstance::Leave(bool bCancel)
+void FKMSkillEffectInstance::Leave()
 {
-	FKMAbilityInstanceBase::Leave(bCancel);
+	FKMAbilityInstanceBase::Leave();
 }
 
 const FKMTable_SkillEffectRow* FKMSkillEffectInstance::GetEffectTableRecord() const
@@ -497,9 +511,9 @@ void FKMSkillEffectDamageInstance::Enter()
 	FKMSkillEffectInstance::Enter();
 }
 
-void FKMSkillEffectDamageInstance::Leave(bool bCancel)
+void FKMSkillEffectDamageInstance::Leave()
 {
-	FKMSkillEffectInstance::Leave(bCancel);
+	FKMSkillEffectInstance::Leave();
 }
 
 void FKMSkillEffectDamageInstance::Tick(float deltaSeconds)
@@ -595,9 +609,9 @@ void FKMSkillEffectAbnormalInstance::Enter()
 	FKMSkillEffectInstance::Enter();
 }
 
-void FKMSkillEffectAbnormalInstance::Leave(bool bCancel)
+void FKMSkillEffectAbnormalInstance::Leave()
 {
-	FKMSkillEffectInstance::Leave(bCancel);
+	FKMSkillEffectInstance::Leave();
 }
 
 void FKMSkillEffectAbnormalInstance::Tick(float deltaSeconds)
@@ -624,9 +638,9 @@ void FKMSkillEffectBuffInstance::Enter()
 	Apply(0.f);
 }
 
-void FKMSkillEffectBuffInstance::Leave(bool bCancel)
+void FKMSkillEffectBuffInstance::Leave()
 {
-	FKMSkillEffectInstance::Leave(bCancel);
+	FKMSkillEffectInstance::Leave();
 }
 
 double FKMSkillEffectBuffInstance::CalculateParameter(UKMCharacterInstance* target, double statValue, float deltaSeconds) const

@@ -258,8 +258,9 @@ UWorld* UKMAbility::GetWorld() const
 	return nullptr;
 }
 
-void UKMAbility::Trigger(const FGameplayTag eventTag)
+void UKMAbility::Trigger(const FGameplayTag& eventTag)
 {
+	OnTriggerEvent(eventTag);
 }
 
 FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float playRate, FName startSectionName)

@@ -514,3 +514,8 @@ bool UKMUtil::ParseIndexedName(const FName& name, TCHAR openDelim, TCHAR closeDe
 
 	return true;
 }
+
+FName UKMUtil::GetAnimSlotName(EKMAnimSlotType slotType)
+{
+	return *StaticEnum<EKMAnimSlotType>()->GetNameStringByValue(static_cast<int64>(slotType));
+}

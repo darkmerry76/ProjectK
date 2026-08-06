@@ -807,7 +807,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 
 		FKMSkillKey dashSkillKey;
 		EKMTimingResult cancelResult = TimingCancel->GetResult();
-		cancelResult = EKMTimingResult::Perfect;
+		cancelResult = EKMTimingResult::Great;
 		if (cancelResult == EKMTimingResult::Perfect)
 		{
 			dashSkillKey = FKMSkillKey(TEXT("sk_perfect_cancel_dash"), 0);

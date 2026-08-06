@@ -101,6 +101,11 @@ void FKMGameplayTagContainer::RemoveTag(const FGameplayTag& tagToRemove)
 {
 	FGameplayTag currentTag = tagToRemove;
 
+	if (tagToRemove == FKMGameplayTagName::State_Blow_Bound_Tag)
+	{
+		currentTag = tagToRemove;
+	}
+
 	while (currentTag.IsValid())
 	{
 		int32* countPtr = TagRefCounts.Find(currentTag);

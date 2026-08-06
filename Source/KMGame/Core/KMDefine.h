@@ -143,6 +143,13 @@ enum class EKMInputActionType : uint8
 	Ultimate,
 };
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMAnimSlotType : uint8
+{
+	DefaultSlot,
+	OverrideSlot,
+};
+
 USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMProjectileEventData
 {

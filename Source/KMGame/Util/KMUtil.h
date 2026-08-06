@@ -102,6 +102,9 @@ public:
 
 	static bool ParseIndexedName(const FName& name, TCHAR openDelim, TCHAR closeDelim, FName& outName, FName& outValue);
 
+	UFUNCTION(BlueprintPure)
+	static FName GetAnimSlotName(EKMAnimSlotType slotType);
+
 protected:
 	static double GameElipsedStartTime;
 };
