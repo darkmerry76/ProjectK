@@ -1,7 +1,6 @@
 #include "KMSkillTypes.h"
 #include <Tables/Generated/KMTable_SkillEffect.h>
 #include <Tables/Generated/KMTable_SkillEffect_Grab.h>
-#include <Tables/Generated/KMTable_SkillEffect_Normal.h>
 #include <Tables/Generated/KMTable_Skill_Normal.h>
 #include "GameplayTagContainer.h"
 #include "Ability/KMAbility.h"
@@ -357,8 +356,6 @@ void FKMSkillInstance::Tick(float deltaSeconds)
 	{
 		return;
 	}
-	deltaSeconds = deltaSeconds * TimeScale;
-
 	if (const FKMTable_Skill_NormalRow* skillNormal = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
 		if (skillNormal->ActiveType == EKMSkillActiveType::Cahnneling)
@@ -373,7 +370,6 @@ void FKMSkillInstance::Tick(float deltaSeconds)
 		}
 	}
 }
-
 
 FKMAssistSkillInstance::FKMAssistSkillInstance(UObject* ownerObject, const FKMSkillKey& skillKey) : FKMSkillInstance(ownerObject, skillKey)
 {
@@ -481,6 +477,11 @@ void FKMSkillEffectInstance::OnTriggerEvent(const FGameplayTag& eventTag)
 	FKMAbilityInstanceBase::OnTriggerEvent(eventTag);
 }
 
+void FKMSkillEffectInstance::SetForceComplete(bool bForceComplete)
+{
+	FKMAbilityInstanceBase::SetForceComplete(bForceComplete);
+}
+
 void FKMSkillEffectInstance::Enter()
 {
 	FKMAbilityInstanceBase::Enter();	
@@ -503,7 +504,6 @@ FKMSkillEffectDamageInstance::FKMSkillEffectDamageInstance(UObject* ownerObject,
 
 void FKMSkillEffectDamageInstance::Classification()
 {
-	
 }
 
 void FKMSkillEffectDamageInstance::Enter()

@@ -131,7 +131,7 @@ protected:
 	void RemoveSkillEffect(const FName& skillEffectId);
 	
 	template<typename _TL>
-	void RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityInstances, const TArray<TSharedPtr<_TL>>& sourceAbilityInstances, bool bCancel = false);
+	void RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityInstances, bool bCancel = false);
 	
 	TSharedPtr<FKMSkillEffectInstance> ApplyEffectInternal(const TSharedPtr<class FKMSkillInstance>& skillInstance, const FName& effectName);
 	

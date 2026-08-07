@@ -39,13 +39,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
 	TObjectPtr<class UAnimMontage> Montage;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AnimationSetTag"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
 	EKMAnimSlotType SlotType = EKMAnimSlotType::DefaultSlot;
 	
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="Immediate", meta=(EditCondition="SlotType==EKMAnimSlotType::DefaultSlot", AllowPrivateAccess=true, DisplayAfter="SlotName"))
-	bool bIsImmediate = true;
-
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsImmediate"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndMontageStop", meta=(AllowPrivateAccess=true, DisplayAfter="SlotType"))
+	bool bIsEndMontageStop = false;
+	
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsEndMontageStop"))
 	bool bIsStartShowMeshComponent = false;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndRemoveTagMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartShowMeshComponent"))
@@ -56,6 +56,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EqualsPlay", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOverrideMovementAnimSet"))
 	bool bIsEqualsPlay = true;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsEqualsPlay"))
+	float BlendOut = 0.f;
 
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 
@@ -69,9 +72,7 @@ protected:
 	virtual bool IsCustomDuration() const override;
 	virtual float GetCustomDuration() const override;
 
-	class UAnimMontage* GetUsedMontage(AActor* actor) const;
-
-	bool IsAutoMontageStop() const;
+	class UAnimMontage* GetUsedMontage(AActor* actor, const FName& slotName) const;
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

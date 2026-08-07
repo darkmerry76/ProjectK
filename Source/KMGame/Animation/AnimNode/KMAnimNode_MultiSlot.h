@@ -6,6 +6,18 @@
 #include "Animation/AnimNodeBase.h"
 #include "KMAnimNode_MultiSlot.generated.h"
 
+USTRUCT(Blueprintable, BlueprintType)
+struct FKMMultiSlotBlendInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName TargetSlot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BlendWeight;
+};
+
 USTRUCT(BlueprintInternalUseOnly)
 struct KMGAME_API FKMAnimNode_MultiSlot : public FAnimNode_Base
 {
@@ -23,9 +35,8 @@ struct KMGAME_API FKMAnimNode_MultiSlot : public FAnimNode_Base
 protected:
 	virtual void PostEvaluateSourcePose(FPoseContext& sourceContext) {}
 
-	bool GetBestSlotName(const FAnimInstanceProxy* animInstanceProxy, FName& outSlotName, FSlotNodeWeightInfo& outWeightData) const;
-
-	FSlotNodeWeightInfo WeightData;
+	FSlotNodeWeightInfo DefaultWeightData;
+	FSlotNodeWeightInfo TargetWeightData;
 	FGraphTraversalCounter SlotNodeInitializationCounter;
 
 public:	
@@ -36,4 +47,7 @@ public:
 	virtual void Update_AnyThread(const FAnimationUpdateContext& context) override;
 	virtual void Evaluate_AnyThread(FPoseContext& output) override;
 	virtual void GatherDebugData(FNodeDebugData& debugData) override;
+
+protected:
+	void UpdateSlot(const FAnimationUpdateContext& context, const FName& slotName, FSlotNodeWeightInfo& weightInfo);
 };

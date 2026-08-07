@@ -890,7 +890,7 @@ bool UKMCharacterInstance::UseParrySkill()
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	if (SkillHandler->IsSkillActivated(guardSkillKey))
 	{
-		FKMSkillKey parrySkillKey;
+		FKMSkillKey parrySkillKey = {};
 		if (TimingParry.IsValid())
 		{
 			TimingParry->SetUsed(true);

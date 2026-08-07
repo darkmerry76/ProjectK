@@ -78,8 +78,11 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 	{
 		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Landed"));
-			skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
+			if (GFrameCounter - LasteLandedFrameCount > 1)
+			{
+				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
+				LasteLandedFrameCount = GFrameCounter;
+			}
 		}
 	}
 }

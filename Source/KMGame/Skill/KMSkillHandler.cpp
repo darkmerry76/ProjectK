@@ -904,14 +904,14 @@ void UKMSkillHandler::RemoveSkillEffect(const FName& skillEffectId)
 }
 
 template<typename _TL>
-void UKMSkillHandler::RemoveForceAbility(TMap<int32, TSharedPtr<_TL>>& abilityInstances, const TArray<TSharedPtr<_TL>>& sourceAbilityInstances, bool bCancel)
+void UKMSkillHandler::RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityInstances, bool bCancel)
 {
-	for (auto abilityInstanceItr = abilityInstances.CreateIterator(); abilityInstanceItr; ++abilityInstanceItr)
+	for (auto abilityInstanceItr = abilityInstances.CreateConstIterator(); abilityInstanceItr; ++abilityInstanceItr)
 	{
-		abilityInstanceItr.Value()->SetForceComplete(true);
+		(*abilityInstanceItr)->SetForceComplete(true);
 		if (bCancel)
 		{
-			abilityInstanceItr.Value()->Cancel();
+			(*abilityInstanceItr)->Cancel();
 		}
 	}
 }
@@ -942,7 +942,7 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 		switch (skillEffectTable->OverlapType)
 		{
 		case EKMSkillEffectOverlapType::Override:
-			RemoveForceAbility<FKMSkillEffectInstance>(EffectInstances, overlapSkillInstances, true);
+			RemoveForceAbility<FKMSkillEffectInstance>(overlapSkillInstances, true);
 			break;
 		case EKMSkillEffectOverlapType::Ignore:
 			break;
@@ -1219,6 +1219,5 @@ void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag
 		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == characterInstance);
 		skillEffectInstance->SetForceComplete(true);
 		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
-		
 	}
 }

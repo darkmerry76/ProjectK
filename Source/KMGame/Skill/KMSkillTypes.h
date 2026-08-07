@@ -92,7 +92,7 @@ public:
 	
 	const TArray<TObjectPtr<class UKMAbility>> GetAbilitieAssets() const;
 
-	void SetForceComplete(bool bForceComplete) { bIsForceComplete = bForceComplete; }
+	virtual void SetForceComplete(bool bForceComplete) { bIsForceComplete = bForceComplete; }
 	bool GetForceComplete() const { return bIsForceComplete; }
 
 	void Cancel() { bIsCancel = true; };
@@ -224,9 +224,11 @@ public:
 	virtual bool IsComplete() const override;
 	virtual void Enter() override;
 	virtual void Leave() override;
-	const struct FKMTable_SkillEffectRow* GetEffectTableRecord() const;
 	
+	const struct FKMTable_SkillEffectRow* GetEffectTableRecord() const;
 	TSharedPtr<FKMSkillInstance> GetOwnerSkillInstance() const { return OwnerSkillInstance; };
+
+	virtual void SetForceComplete(bool bForceComplete) override;
 
 protected:
 	virtual void InitAbilityAsset(bool bAutoActivate = false) override;

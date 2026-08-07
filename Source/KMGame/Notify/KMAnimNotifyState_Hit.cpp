@@ -97,7 +97,7 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 			latestSkillInstance = abilitySkill->GetSkillInstance();
 		}
 	}
-	if (!latestSkillInstance.IsValid())
+	if (!latestSkillInstance.IsValid() && IsValid(ownerCharacterInstance->GetSkillHandler()))
 	{
 		latestSkillInstance = ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
 	}

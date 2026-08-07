@@ -39,6 +39,8 @@ protected:
 	UPROPERTY(Transient)
 	const class UKMBeastPDA* BeastPDA = nullptr;
 
+	uint64 LasteLandedFrameCount = 0;
+
 public:
 	class UKMCharacterInstance* GetCharacterInstance() const;
 	virtual void PossessedByCharacterInstance(class UEMGameObjectInstance* newCharacterInstance) override;

@@ -24,7 +24,7 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
+UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor, const FName& slotName) const
 {
 	UAnimMontage* usedMontage = nullptr;
 	if (bIsUseSkillSet)
@@ -40,8 +40,6 @@ UAnimMontage* UKMAnimNotifyState_Animation::GetUsedMontage(AActor* actor) const
 	{
 		usedMontage = Montage;
 	}
-
-	FName slotName = UKMUtil::GetAnimSlotName(SlotType);
 	return FEMMontageCacheManager::Get().GetMontageBySlot(usedMontage, slotName);
 }
 
@@ -53,11 +51,6 @@ bool UKMAnimNotifyState_Animation::IsCustomDuration() const
 float UKMAnimNotifyState_Animation::GetCustomDuration() const
 {
 	return CustomDuration;
-}
-
-bool UKMAnimNotifyState_Animation::IsAutoMontageStop() const
-{
-	return !bIsImmediate || SlotType != EKMAnimSlotType::DefaultSlot;
 }
 
 void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
@@ -81,8 +74,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	}
 	
 	TSharedPtr<FKMAnimNotifyState_Animation_Context> newContext = MakeShared<FKMAnimNotifyState_Animation_Context>();
-	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner());
-
+	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner(), UKMUtil::GetAnimSlotName(SlotType));
 	if (eventReference.GetNotify())
 	{
 		CollectionMontageSection(meshComp, *eventReference.GetNotify());
@@ -100,27 +92,55 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 		UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance();
 		if (IsValid(targetAnimInstance))
 		{
+			bool bMontagePlay = bIsEqualsPlay; 
 			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
-			if (bIsEqualsPlay)
+			if (!bMontagePlay)
 			{
-				targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
-			}
-			else
-			{
-				bool isActivatedMontage = false;
 				for (auto mointageInstance : targetAnimInstance->MontageInstances)
 				{
 					if (mointageInstance->Montage == newContext->ActivatedMontage)
 					{
-						isActivatedMontage = true;
+						bMontagePlay = true;
 						break;
 					}
 				}
-				if (!isActivatedMontage)
+			}
+			if (bMontagePlay)
+			{
+				if (UKMAnimInstance* castTargetAnimInstance = Cast<UKMAnimInstance>(targetAnimInstance))
 				{
-					targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+					if (SlotType == EKMAnimSlotType::OverrideSlot)
+					{
+						if (castTargetAnimInstance->GetSlotBlendInfo().BlendWeight <= ZERO_ANIMWEIGHT_THRESH)
+						{
+							FAlphaBlendArgs blendArg;
+							blendArg.BlendOption = EAlphaBlendOption::Linear;
+							blendArg.BlendTime = 0.f;
+							targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
+						}
+						else
+						{
+							targetAnimInstance->Montage_Play(newContext->ActivatedMontage);	
+						}
+						castTargetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, 0.1f);
+					}
+					else
+					{
+						if (castTargetAnimInstance->GetSlotBlendInfo().BlendWeight > castTargetAnimInstance->GetNextSlotBlendInfo().BlendWeight)
+						{
+							FAlphaBlendArgs blendArg;
+							blendArg.BlendOption = EAlphaBlendOption::Linear;
+							blendArg.BlendTime = 0.f;
+							targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
+						}
+						else
+						{
+							targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+						}
+					}
 				}
 			}
+			
 #if WITH_EDITOR
 			if (!targetMeshComp->GetWorld()->IsGameWorld())
 			{
@@ -163,6 +183,7 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	{
 		return;
 	}
+	
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
 	if (IsValid(ownerCharacter))
 	{
@@ -170,14 +191,24 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 		{
 			ownerCharacter->RemoveMovementOverrideMontage();
 		}
-
-		if (IsAutoMontageStop() && currContext && currContext->IsValid() && IsValid((*currContext)->ActivatedMontage) && IsValid(ownerCharacter))
+		if (bIsEndMontageStop)
 		{
-			if (UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance())
+			if (UKMAnimInstance* targetAnimInstance =Cast<UKMAnimInstance>(targetMeshComp->GetAnimInstance()))
 			{
-				if (targetAnimInstance->Montage_IsActive((*currContext)->ActivatedMontage))
+				if (IsValid((*currContext)->ActivatedMontage))
 				{
-					targetAnimInstance->Montage_Stop(0.f, (*currContext)->ActivatedMontage);
+					FAnimMontageInstance* montageInstance = targetAnimInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage);
+					if (montageInstance)
+					{
+						if (montageInstance->GetCurrentSection() != montageInstance->GetNextSection())
+						{
+							targetAnimInstance->Montage_Stop(0.1f, (*currContext)->ActivatedMontage);
+						}
+					}
+				}
+				if (SlotType == EKMAnimSlotType::OverrideSlot)
+				{
+					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 0.f, 0.1f);
 				}
 			}
 		}
@@ -258,7 +289,7 @@ void UKMAnimNotifyState_Animation::CollectionMontageSection(USkeletalMeshCompone
 	}
 	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(GetContainingAsset()))
 	{
-		if (UAnimMontage* useMontage = GetUsedMontage(meshComp->GetOwner()))
+		if (UAnimMontage* useMontage = GetUsedMontage(meshComp->GetOwner(), UKMUtil::GetAnimSlotName(SlotType)))
 		{
 			martialArts->MontageSections.Empty();
 			for (int32 sectionIndex = 0; sectionIndex < useMontage->GetNumSections(); ++sectionIndex)
