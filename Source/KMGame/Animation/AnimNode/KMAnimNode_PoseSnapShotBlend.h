@@ -6,7 +6,7 @@
 USTRUCT(BlueprintInternalUseOnly)
 struct KMGAME_API FKMAnimNode_PoseSnapShotBlend : public FAnimNode_Base
 {
-	GENERATED_BODY()
+	GENERATED_USTRUCT_BODY()
 
 public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Snapshot", meta=(PinShownByDefault))

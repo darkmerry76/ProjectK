@@ -5,6 +5,7 @@ const FGameplayTag FKMGameplayTagName::Game_Event_Stage_Begin = FGameplayTag::Re
 const FGameplayTag FKMGameplayTagName::Block_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block"));
 const FGameplayTag FKMGameplayTagName::Block_Control_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block.Control"));
 const FGameplayTag FKMGameplayTagName::Block_Control_Move_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block.Control.Move"));
+const FGameplayTag FKMGameplayTagName::Block_Control_Rotation_Tag = FGameplayTag::RequestGameplayTag(TEXT("Block.Control.Rotation"));
 
 const FGameplayTag FKMGameplayTagName::Event_Hit_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Hit"));
 const FGameplayTag FKMGameplayTagName::Event_Hit_Normal_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Hit.Normal"));

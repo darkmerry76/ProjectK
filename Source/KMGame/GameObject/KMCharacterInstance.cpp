@@ -1,6 +1,7 @@
 #include "KMCharacterInstance.h"
 #include "Actor/KMItemAppearanceActor.h"
 #include "Animation/KMAnimInstance.h"
+#include "Camera/KMPlayerCameraManager.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
@@ -478,8 +479,7 @@ void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjus
 	UKMCharacterInstance* hitCharacterInstance = hitCharacter->GetCharacterInstance();
 	check(IsValid(hitCharacterInstance));
 
-	if (hitCharacterInstance->IsDead() ||
-		hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
+	if (hitCharacterInstance->IsDead() || hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
 	{
 		return;
 	}
@@ -509,6 +509,21 @@ void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjus
 	}
 }
 
+void UKMCharacterInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag)
+{
+	for (const FHitResult& hitResult : hitResults)
+	{
+		if (AActor* actor = hitResult.GetActor())
+		{
+			if (!actor->IsA(actorClassFilter))
+			{
+				continue;
+			}
+			HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+		}
+	}
+}
+
 void UKMCharacterInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
@@ -529,16 +544,7 @@ void UKMCharacterInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjust
 	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),
 	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
-		for (const FHitResult& hitResult : hitResults)
-		{
-			if (AActor* actor = hitResult.GetActor())
-			{
-				if (actor->IsA(actorClassFilter))
-				{
-					HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
-				}
-			}
-		}
+		HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
 	}
 }
 
@@ -563,24 +569,25 @@ void UKMCharacterInstance::SphereHitImpact(
 	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
 	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
 	{
-		for (const FHitResult& hitResult : hitResults)
-		{
-			if (AActor* actor = hitResult.GetActor())
-			{
-				if (actor->IsA(actorClassFilter))
-				{
-					HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
-				}
-			}
-		}
+		HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
 	}
+}
+
+TSubclassOf<UCameraShakeBase> UKMCharacterInstance::GetCameraShakeByPowerType(EKMDamagePowerType powerType) const
+{
+	const TSubclassOf<UCameraShakeBase>* existCameraShakeClass = InflictCameraShakes.Find(powerType);
+	if (!existCameraShakeClass || !IsValid(*existCameraShakeClass))
+	{
+		return nullptr;
+	}
+	return *existCameraShakeClass; 
 }
 
 void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
 {
 	if (IsValid(victimCharacter) && !victimCharacter->HasGameplayTag(FKMGameplayTagName::State_Parry_Tag))
 	{
-		Stiff(0.15f);
+		Stiff(0.1f);
 	}
 
 	TimingCancel = nullptr;
@@ -608,7 +615,6 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag, hitTag);
 	for (auto skillEffectItr : skillEffectInstances)
 	{
-		const FName typeName = skillEffectItr->GetType();
 		if (skillEffectItr->GetType() != FKMSkillEffectAbnormalInstance::TypeName())
 		{
 			continue;
@@ -626,7 +632,33 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 			impactTransform.SetLocation(hitClosestPoint);
 			abilityEffect->Impact(impactTransform);
 		}
-	}	
+		
+		if (HitPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		{
+			HitPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+		}
+		if (attackerCharacterInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		{
+			attackerCharacterInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+		}
+	}
+}
+
+void UKMCharacterInstance::ShakeRoot(float newDistance, float newFrequency, float newDuration)
+{
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+
+	animInstance->StartShake(newDistance, newFrequency, newDuration);
 }
 
 void UKMCharacterInstance::Stiff(float duration, bool bReset)
@@ -654,8 +686,8 @@ void UKMCharacterInstance::Stiff(float duration, bool bReset)
 	}
 	else
 	{
-		GetCharacter()->GetMesh()->bPauseAnims = true;
-		GetCharacter()->GetMesh()->SuspendClothingSimulation();
+		//GetCharacter()->GetMesh()->bPauseAnims = true;
+		//GetCharacter()->GetMesh()->SuspendClothingSimulation();
 
 		GetCharacter()->CustomTimeDilation = 0.f;
 	}
@@ -665,8 +697,8 @@ void UKMCharacterInstance::Stiff(float duration, bool bReset)
 void UKMCharacterInstance::OnStiffRelease()
 {
 	GetCharacter()->CustomTimeDilation = 1.f;
-	GetCharacter()->GetMesh()->bPauseAnims = false;
-	GetCharacter()->GetMesh()->ResumeClothingSimulation();
+	//GetCharacter()->GetMesh()->bPauseAnims = false;
+	//GetCharacter()->GetMesh()->ResumeClothingSimulation();
 	GetWorld()->GetTimerManager().ClearTimer(StiffTimerHandle);
 }
 
@@ -787,6 +819,36 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 	SkillHandler->Tick(deltaSeconds);
 	StatModifier->ComputePostEffectStat();
 	SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
+
+	if (InflectPowerType != EKMDamagePowerType::None)
+	{
+		if (AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
+		{
+			TSubclassOf<UCameraShakeBase> cameraShakeClass = GetCameraShakeByPowerType(InflectPowerType);
+			if (!IsValid(cameraShakeClass))
+			{
+				cameraShakeClass = GetCameraShakeByPowerType(EKMDamagePowerType::Default);
+			}
+			
+			if (IsValid(cameraShakeClass))
+			{
+				playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+			}
+		}
+	}
+
+	if (HitPowerType != EKMDamagePowerType::None)
+	{
+		ShakeRoot(5.f, 10.f, 0.2f);
+	}
+
+	if (InflectPowerType != EKMDamagePowerType::None || HitPowerType != EKMDamagePowerType::None)
+	{
+		Stiff(0.1f);
+	}
+
+	InflectPowerType = EKMDamagePowerType::None;
+	HitPowerType = EKMDamagePowerType::None;
 }
 
 bool UKMCharacterInstance::UseSkill(const FName skillName, int32 skillLevel)
@@ -1039,7 +1101,7 @@ void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bFo
 
 void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRotate)
 {
-	if (IsDead() && HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
+	if (IsDead())
 	{
 		return;
 	}

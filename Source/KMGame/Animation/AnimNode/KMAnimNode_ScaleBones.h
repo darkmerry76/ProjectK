@@ -7,7 +7,7 @@
 USTRUCT(BlueprintInternalUseOnly)
 struct KMGAME_API FKMAnimNode_ScaleBones : public FAnimNode_SkeletalControlBase
 {
-	GENERATED_BODY()
+	GENERATED_USTRUCT_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, Category=Bone)

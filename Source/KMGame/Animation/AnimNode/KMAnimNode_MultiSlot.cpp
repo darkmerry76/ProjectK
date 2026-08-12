@@ -117,7 +117,6 @@ void FKMAnimNode_MultiSlot::Evaluate_AnyThread(FPoseContext& output)
 		const FKMAnimInstanceProxy& animInstanceProxy = static_cast<const FKMAnimInstanceProxy&>(*output.AnimInstanceProxy);
 		const FKMMultiSlotBlendInfo& slotBlendInfo = animInstanceProxy.GetSlotBlendInfo();
 
-		bool bUpdated = false;
 		bool bEvaluate = FMath::Max(1.f - slotBlendInfo.BlendWeight,slotBlendInfo.BlendWeight) > ZERO_ANIMWEIGHT_THRESH;
 		if (slotBlendInfo.BlendWeight > ZERO_ANIMWEIGHT_THRESH && slotBlendInfo.BlendWeight < (1.f - ZERO_ANIMWEIGHT_THRESH))
 		{
@@ -160,44 +159,35 @@ void FKMAnimNode_MultiSlot::Evaluate_AnyThread(FPoseContext& output)
 
 			FAnimationPoseData outputPoseData(output);
 			FAnimationRuntime::BlendPosesTogetherIndirect(poses,curves,attributes,weights, outputPoseData);
-
-			bUpdated = true;
+		}
+		else if (slotBlendInfo.BlendWeight >= (1.f - ZERO_ANIMWEIGHT_THRESH) && TargetWeightData.SlotNodeWeight > ZERO_ANIMWEIGHT_THRESH)
+		{
+			FPoseContext targetContext(output);
+			if (bEvaluate)
+			{
+				Source.Evaluate(targetContext);
+				PostEvaluateSourcePose(targetContext);
+			}
+			const FAnimationPoseData targetPoseData(targetContext);
+			FAnimationPoseData outputTargettPoseData(output);
+			output.AnimInstanceProxy->SlotEvaluatePose(slotBlendInfo.TargetSlot, targetPoseData,
+				TargetWeightData.SourceWeight, outputTargettPoseData, TargetWeightData.SlotNodeWeight, TargetWeightData.TotalNodeWeight);
+		}
+		else if (slotBlendInfo.BlendWeight <= ZERO_ANIMWEIGHT_THRESH && DefaultWeightData.SlotNodeWeight > ZERO_ANIMWEIGHT_THRESH)
+		{
+			FPoseContext defaultContext(output);
+			if (bEvaluate)
+			{
+				Source.Evaluate(defaultContext);
+				PostEvaluateSourcePose(defaultContext);
+			}
+			const FAnimationPoseData defulatPoseData(defaultContext);
+			
+			FAnimationPoseData outputDefaultPoseData(output);
+			output.AnimInstanceProxy->SlotEvaluatePose(SlotName[0], defulatPoseData,
+				DefaultWeightData.SourceWeight, outputDefaultPoseData, DefaultWeightData.SlotNodeWeight, DefaultWeightData.TotalNodeWeight);
 		}
 		else
-		{
-			if (slotBlendInfo.BlendWeight >= (1.f - ZERO_ANIMWEIGHT_THRESH) && TargetWeightData.SlotNodeWeight > ZERO_ANIMWEIGHT_THRESH)
-			{
-				FPoseContext targetContext(output);
-				if (bEvaluate)
-				{
-					Source.Evaluate(targetContext);
-					PostEvaluateSourcePose(targetContext);
-				}
-				const FAnimationPoseData targetPoseData(targetContext);
-				FAnimationPoseData outputTargettPoseData(output);
-				output.AnimInstanceProxy->SlotEvaluatePose(slotBlendInfo.TargetSlot, targetPoseData,
-		TargetWeightData.SourceWeight, outputTargettPoseData, TargetWeightData.SlotNodeWeight, TargetWeightData.TotalNodeWeight);
-				bUpdated = true;
-			}
-			
-			if (slotBlendInfo.BlendWeight < ZERO_ANIMWEIGHT_THRESH && DefaultWeightData.SlotNodeWeight > ZERO_ANIMWEIGHT_THRESH)
-			{
-				FPoseContext defaultContext(output);
-				if (bEvaluate)
-				{
-					Source.Evaluate(defaultContext);
-					PostEvaluateSourcePose(defaultContext);
-				}
-				const FAnimationPoseData defulatPoseData(defaultContext);
-				
-				FAnimationPoseData outputDefaultPoseData(output);
-				output.AnimInstanceProxy->SlotEvaluatePose(SlotName[0], defulatPoseData,
-		DefaultWeightData.SourceWeight, outputDefaultPoseData, DefaultWeightData.SlotNodeWeight, DefaultWeightData.TotalNodeWeight);
-				bUpdated = true;
-			}
-		}
-		
-		if (!bUpdated)
 		{
 			Source.Evaluate(output);
 			PostEvaluateSourcePose(output);

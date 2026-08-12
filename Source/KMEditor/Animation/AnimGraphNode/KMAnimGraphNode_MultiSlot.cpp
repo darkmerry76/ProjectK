@@ -14,12 +14,11 @@ FLinearColor UKMAnimGraphNode_MultiSlot::GetNodeTitleColor() const
 
 FText UKMAnimGraphNode_MultiSlot::GetTooltipText() const
 {
-	return LOCTEXT("AnimSlotNode_Tooltip", "Plays animation from code using AnimMontage");
+	return LOCTEXT("AnimSlotNode_Tooltip", "Multi Slot Blending");
 }
 
 FText UKMAnimGraphNode_MultiSlot::GetNodeTitle(ENodeTitleType::Type titleType) const
 {
-
 	return LOCTEXT("MultiSlotNodeTitle_NoName", "MultiSlot");
 }
 

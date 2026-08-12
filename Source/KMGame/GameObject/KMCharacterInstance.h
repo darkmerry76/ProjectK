@@ -141,11 +141,17 @@ public:
 
 	void StartForceMove(const float& newDirection);
 
+	UFUNCTION(BlueprintPure)
+	TSubclassOf<class UCameraShakeBase> GetCameraShakeByPowerType(EKMDamagePowerType powerType) const;
+	
 	UFUNCTION(BlueprintCallable)
 	void Inflict(class UKMCharacterInstance* victimCharacter);
 
 	UFUNCTION(BlueprintCallable)
 	void Stiff(float duration = 0.2f, bool bReset = false);
+
+	UFUNCTION(BlueprintCallable)
+	void ShakeRoot(float newDistance, float newFrequency, float newDuration = 0.2f);
 
 	void Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 	
@@ -170,6 +176,8 @@ public:
 protected:
 	void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
+
+	void HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;
@@ -263,6 +271,9 @@ protected:
 	UPROPERTY()
 	TSet<TWeakObjectPtr<UKMCharacterInstance>> AggroTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<EKMDamagePowerType, TSubclassOf<class UCameraShakeBase>> InflictCameraShakes;
+
 	UPROPERTY(EditAnywhere, Transient)
 	TSet<AActor*> ThrowOverlapActors;
 	
@@ -288,4 +299,7 @@ protected:
 	const struct FKMTable_BaseStat_BeastRow* BeastStatTableRow = nullptr;
 	
 	bool bIsBeast = false;
+
+	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
+	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
 };

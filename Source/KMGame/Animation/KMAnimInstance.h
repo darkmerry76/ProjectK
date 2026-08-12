@@ -5,19 +5,23 @@
 #include "Animation/AnimInstanceProxy.h"
 #include "Animation/AnimNodeReference.h"
 #include "AnimNode/KMAnimNode_MultiSlot.h"
+#include "AnimNode/KMAnimNode_Shake.h"
 #include "KMAnimInstance.generated.h"
 
 class FKMAnimInstanceProxy : public FAnimInstanceProxy
 {
 public:
 	FKMAnimInstanceProxy(class UAnimInstance* instance);
+	
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
+	const FKMAnimNodeShakeData& GetShakeData() const;
 
 protected:
 	virtual void PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds) override;
 
 protected:
 	FKMMultiSlotBlendInfo SlotBlendInfo = { };
+	FKMAnimNodeShakeData ShakeData = { };
 };
 
 UCLASS(Abstract)
@@ -58,6 +62,8 @@ protected:
 	
 	float MovementElipsedTime = 0.f;
 
+	FKMAnimNodeShakeData ShakeData;
+
 protected:
 	float NextDirection = 0.f;
 
@@ -92,11 +98,17 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	void BlendSlot(EKMAnimSlotType newSlotType, float newWeight, float blendTime = 0.f);
 
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	void StartShake(float newDistance, float newFrequency, float newDuration = 0.2f);
+
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
 	const FKMMultiSlotBlendInfo& GetNextSlotBlendInfo() const;
 
+	const FKMAnimNodeShakeData& GetShakeData() const;
+
 protected:
 	void TickSlotBlend(float deltaTime);
+	void TickShake(float deltaTime);
 
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))

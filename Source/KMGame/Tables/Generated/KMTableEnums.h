@@ -244,3 +244,13 @@ enum class EKMCoreArmamentType : uint8
 	Chain = 1 , 
 	Kunai = 2 , 
 };
+
+UENUM(BlueprintType)
+enum class EKMDamagePowerType : uint8
+{
+	None = 0 , 
+	Default = 1 , 
+	Low = 2 , 
+	Medium = 3 , 
+	High = 4 , 
+};

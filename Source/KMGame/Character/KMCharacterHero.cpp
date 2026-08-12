@@ -59,7 +59,7 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 
 void AKMCharacterHero::StartCustomJump()
 {
-	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
+	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
 	{
 		return;
 	}
@@ -73,7 +73,7 @@ void AKMCharacterHero::StartCustomJump()
 
 void AKMCharacterHero::Move(const FInputActionValue& Value)
 {
-	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
+	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
 	{
 		return;
 	}
@@ -135,7 +135,7 @@ void AKMCharacterHero::MoveReleased()
 
 void AKMCharacterHero::RunPressed()
 {
-	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
+	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
 	{
 		return;
 	}

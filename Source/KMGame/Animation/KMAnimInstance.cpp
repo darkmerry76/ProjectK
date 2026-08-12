@@ -1,6 +1,8 @@
 #include "KMAnimInstance.h"
 #include "BlendSpacePlayerLibrary.h"
 #include "Animation/AnimNode_AssetPlayerBase.h"
+#include "Camera/KMCameraActorBase.h"
+#include "Camera/KMPlayerCameraManager.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Util/KMUtil.h"
@@ -15,12 +17,18 @@ void FKMAnimInstanceProxy::PreUpdate(UAnimInstance* animInstance, float deltaSec
 	
 	const UKMAnimInstance* castAnimInstance = static_cast<const UKMAnimInstance*>(animInstance);
 	check(IsValid(castAnimInstance));
-	SlotBlendInfo = castAnimInstance->GetSlotBlendInfo();	
+	SlotBlendInfo = castAnimInstance->GetSlotBlendInfo();
+	ShakeData = castAnimInstance->GetShakeData();
 }
 
 const FKMMultiSlotBlendInfo& FKMAnimInstanceProxy::GetSlotBlendInfo() const
 {
 	return SlotBlendInfo;
+}
+
+const FKMAnimNodeShakeData& FKMAnimInstanceProxy::GetShakeData() const
+{
+	return ShakeData;
 }
 
 void UKMAnimInstance::NativeInitializeAnimation()
@@ -34,6 +42,7 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 	Super::NativeUpdateAnimation(deltaSeconds);
 
 	TickSlotBlend(deltaSeconds);
+	TickShake(GetWorld()->GetDeltaSeconds());
 
 	if (!IsCustomWalking())
 	{
@@ -43,7 +52,7 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 	{
 		if (UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance())
 		{
-			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
+			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag) && !characterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
 			{
 				CurrentDirection = UKMUtil::FInterpToCircular(CurrentDirection, NextDirection, deltaSeconds, LerpDirectionSpeed);
 				if (PrevActorDirection != characterInstance->GetCharacterDirection())
@@ -115,6 +124,24 @@ void UKMAnimInstance::BlendSlot(EKMAnimSlotType newSlotType, float newWeight, fl
 	StartBlendWeight = SlotBlendInfo.BlendWeight;
 }
 
+void UKMAnimInstance::StartShake(float newDistance, float newFrequency, float newDuration)
+{
+	ShakeData.bIsEnable = true;
+	ShakeData.Distance = newDistance;
+	ShakeData.Frequency = newFrequency;
+	ShakeData.Duration = newDuration;
+	ShakeData.ElapsedTime = 0.f;
+
+	if (AKMPlayerCameraManager* cameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
+	{
+		if (IsValid(cameraManager->GetCurrentCamera()))
+		{
+			ShakeData.CameraUp = cameraManager->GetCurrentCamera()->GetActorUpVector();
+			ShakeData.CameraRight = cameraManager->GetCurrentCamera()->GetActorRightVector();
+		}
+	}
+}
+
 void UKMAnimInstance::TickSlotBlend(float deltaTime)
 {
 	if (!bIsSlotBlending)
@@ -136,6 +163,20 @@ void UKMAnimInstance::TickSlotBlend(float deltaTime)
 
 	SlotBlendInfo.BlendWeight = FMath::Lerp(StartBlendWeight, NextSlotBlendInfo.BlendWeight, alpha);
 	SlotBlendElapsedTime += deltaTime;
+}
+
+void UKMAnimInstance::TickShake(float deltaTime)
+{
+	if (!ShakeData.bIsEnable)
+	{
+		return;
+	}
+	if (ShakeData.ElapsedTime > ShakeData.Duration)
+	{
+		ShakeData.bIsEnable = false;
+		return;
+	}
+	ShakeData.ElapsedTime += deltaTime;
 }
 
 const TArray<FName>& UKMAnimInstance::GetHiddenBones() const
@@ -189,4 +230,9 @@ const FKMMultiSlotBlendInfo& UKMAnimInstance::GetNextSlotBlendInfo() const
 	return NextSlotBlendInfo;
 }
 
-#endif
+const FKMAnimNodeShakeData& UKMAnimInstance::GetShakeData() const
+{
+	return ShakeData;
+}
+
+#endif	
