@@ -43,6 +43,9 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 PairEff = { false };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMTargetLockonType  LockonType = { EKMTargetLockonType::None };
+
 	// 이전스킬
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName                TransitionSkill = { NAME_None };
@@ -65,6 +68,10 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	// 스킬발동각
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                TargetDir = { 0.f };
+
+	// 입력발동각
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float                InputDir = { 0.f };
 
 	// 적이 공중일때 발동각
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

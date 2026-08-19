@@ -5,7 +5,8 @@
 #include "Curves/CurveVector.h"
 
 FKMAnimNode_Shake::FKMAnimNode_Shake() : ShakeCurve(nullptr)
-                                         , BoneIndex(INDEX_NONE)
+	, ShakeBoneIndex(INDEX_NONE)
+	, RootBoneIndex(INDEX_NONE)
 {
 }
 
@@ -23,7 +24,10 @@ void FKMAnimNode_Shake::CacheBones_AnyThread(const FAnimationCacheBonesContext& 
 
 	const FBoneContainer& boneContainer = context.AnimInstanceProxy->GetRequiredBones();
 	ShakeBone.Initialize(boneContainer);
-	BoneIndex = ShakeBone.GetCompactPoseIndex(boneContainer);
+	RootBone.Initialize(boneContainer);
+	
+	ShakeBoneIndex = ShakeBone.GetCompactPoseIndex(boneContainer);
+	RootBoneIndex = RootBone.GetCompactPoseIndex(boneContainer);
 }
 
 void FKMAnimNode_Shake::Update_AnyThread(const FAnimationUpdateContext& context)
@@ -38,44 +42,44 @@ void FKMAnimNode_Shake::Evaluate_AnyThread(FPoseContext& output)
 	ANIM_MT_SCOPE_CYCLE_COUNTER_VERBOSE(Slot, !IsInGameThread());
 
 	Source.Evaluate(output);
-	if (!BoneIndex.IsValid())
-	{
-		return;
-	}
-	if (!IsValid(ShakeCurve))
-	{
-		return;
-	}
-
+	
 	const FKMAnimInstanceProxy& animInstanceProxy = static_cast<const FKMAnimInstanceProxy&>(*output.AnimInstanceProxy);
+	
 	const FKMAnimNodeShakeData& shakeData = animInstanceProxy.GetShakeData();
-	if (!shakeData.IsValid())
+	if (shakeData.IsValid() && IsValid(ShakeCurve) && ShakeBoneIndex.IsValid())
 	{
-		return;
+		FTransform shakeBoneTM = output.Pose[ShakeBoneIndex];
+		const float alpha = FMath::Clamp(shakeData.ElapsedTime / shakeData.Duration, 0.f, 1.f);
+
+		float minTime = 0.f, maxTime = 1.f;
+		ShakeCurve->GetTimeRange(minTime, maxTime);
+
+		float finalTime = FMath::Lerp(minTime, maxTime, alpha);
+
+		FVector curveVector = ShakeCurve->GetVectorValue(finalTime);
+		
+		const FVector shakeOffset  = (shakeData.CameraRight * curveVector.X + shakeData.CameraUp * curveVector.Z) * shakeData.Distance;
+
+		const FTransform& componentTM = animInstanceProxy.GetComponentTransform();
+		const FVector shakeOffsetCS = componentTM.InverseTransformVectorNoScale(shakeOffset);
+		shakeBoneTM.AddToTranslation(shakeOffsetCS);
+
+		output.Pose[ShakeBoneIndex] = shakeBoneTM;
 	}
-	
-	FTransform boneTM = output.Pose[BoneIndex];
 
-	const float alpha = FMath::Clamp(shakeData.ElapsedTime / shakeData.Duration, 0.f, 1.f);
+	const FKMPairPositionBlendInfo& pairData = animInstanceProxy.GetPairBlendInfo();
+	if (RootBoneIndex.IsValid())
+	{
+		FTransform rootBoneTM = output.Pose[RootBoneIndex];
+		
+		const FTransform& componentTM = animInstanceProxy.GetComponentTransform();
+		FVector pairOffset = componentTM.GetRotation().RotateVector(pairData.FinalWorldPosition);
+		
+		//pairOffset = rootBoneTM.InverseTransformVectorNoScale(pairOffset);
 
-	float minTime = 0.f, maxTime = 1.f;
-	ShakeCurve->GetTimeRange(minTime, maxTime);
-
-	float finalTime = FMath::Lerp(minTime, maxTime, alpha);
-
-	FVector curveVector = ShakeCurve->GetVectorValue(finalTime);
-	
-	const FVector shakeOffset  = (shakeData.CameraRight * curveVector.X + shakeData.CameraUp * curveVector.Z) * shakeData.Distance;
-
-	const FTransform& componentTM = animInstanceProxy.GetComponentTransform();
-	
-	const FVector shakeOffsetCS = componentTM.InverseTransformVectorNoScale(shakeOffset);
-	FVector addLocation = shakeOffsetCS;
-	boneTM.AddToTranslation(addLocation);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::White, FString::Printf(TEXT("x=%.3f y=%.3f z=%.3f"), addLocation.X, addLocation.Y, addLocation.Z));
-	
-	output.Pose[BoneIndex] = boneTM;
+		rootBoneTM.AddToTranslation(pairOffset);
+		output.Pose[RootBoneIndex] = rootBoneTM;
+	}
 }
 
 void FKMAnimNode_Shake::GatherDebugData(FNodeDebugData& debugData)

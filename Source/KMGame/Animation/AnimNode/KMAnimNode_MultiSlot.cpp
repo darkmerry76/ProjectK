@@ -81,6 +81,9 @@ void FKMAnimNode_MultiSlot::Update_AnyThread(const FAnimationUpdateContext& cont
 	const FKMAnimInstanceProxy& animInstanceProxy = static_cast<const FKMAnimInstanceProxy&>(*context.AnimInstanceProxy);
 	const FKMMultiSlotBlendInfo& slotBlendInfo = animInstanceProxy.GetSlotBlendInfo();
 
+	DefaultWeightData.Reset();
+	TargetWeightData.Reset();	
+
 	if (slotBlendInfo.BlendWeight > ZERO_ANIMWEIGHT_THRESH && slotBlendInfo.BlendWeight < (1.f - ZERO_ANIMWEIGHT_THRESH))
 	{
 		UpdateSlot(context, SlotName[0],  DefaultWeightData);

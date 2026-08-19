@@ -40,7 +40,11 @@ struct KMGAME_API FKMAnimNode_Shake : public FAnimNode_Base
 	UPROPERTY(EditAnywhere, Category=Settings)
 	FBoneReference ShakeBone;
 
-	FCompactPoseBoneIndex BoneIndex;
+	UPROPERTY(EditAnywhere, Category=Settings)
+	FBoneReference RootBone;
+
+	FCompactPoseBoneIndex ShakeBoneIndex;
+	FCompactPoseBoneIndex RootBoneIndex;
 
 public:	
 	FKMAnimNode_Shake();

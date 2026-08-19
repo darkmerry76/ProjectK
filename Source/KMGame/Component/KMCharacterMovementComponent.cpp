@@ -94,7 +94,11 @@ void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMod
 
 void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction)
 {
+	bHasResolvedBlockMove = false;
+	
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
+	
+	MoveBlockProcessing(deltaTime);
 }
 
 void UKMCharacterMovementComponent::ProcessOverlapDamage(float deltaSeconds, const FVector& oldLocation, const FVector& newLocation)
@@ -262,6 +266,90 @@ void UKMCharacterMovementComponent::DisableCustomWalking()
 bool UKMCharacterMovementComponent::IsCustomWalking() const
 {
 	return CustomWalkingAnimSequence.IsValid() && !HasAnimRootMotion() && bIsEnableCustomWalking;
+}
+
+void UKMCharacterMovementComponent::HandleImpact(const FHitResult& impact, float timeSlice, const FVector& moveDelta)
+{
+	Super::HandleImpact(impact, timeSlice, moveDelta);
+
+	if (!impact.bBlockingHit || IsWalkable(impact))
+	{
+		return;
+	}
+	BlockHitResult = impact;
+}
+
+void UKMCharacterMovementComponent::RegisterMoveBlockReflection(AKMCharacter* targetCharacter)
+{
+	TSharedPtr<FKMBlockReflectionData> newBlockReflectionData = MakeShared<FKMBlockReflectionData>();
+	newBlockReflectionData->Character = targetCharacter;
+	
+	bool bExist = BlockReflections.ContainsByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
+	{
+		return blockReflectionData->Character == targetCharacter;
+	});
+
+	if (bExist)
+	{
+		return;
+	}
+	BlockReflections.Emplace(newBlockReflectionData);
+}
+
+void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime)
+{
+	for (auto blockReflection : BlockReflections)
+	{
+		if (!blockReflection->Character.IsValid())
+		{
+			continue;
+		}
+		
+		UKMCharacterMovementComponent* targetCharacterMovement = Cast<UKMCharacterMovementComponent>(blockReflection->Character->GetCharacterMovement());
+		if (!IsValid(targetCharacterMovement))
+		{
+			continue;
+		}
+
+		FVector blockedDelta = FVector::ZeroVector;
+		if (!targetCharacterMovement->bHasResolvedBlockMove)
+		{
+			if (targetCharacterMovement->BlockHitResult.bBlockingHit && targetCharacterMovement->MovementMode != MOVE_Custom)
+			{
+				FVector actorLocation = blockReflection->Character->GetActorLocation();
+				blockedDelta = targetCharacterMovement->BlockHitResult.TraceEnd - actorLocation;
+			}
+		}
+		else
+		{
+			blockedDelta = targetCharacterMovement->BlockMoveDelta;
+		}
+
+/*		if (blockedDelta.Size() > 50.f)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, FString::Printf(TEXT("Overflow BlockedDelta=%s"),  *blockedDelta.ToString()));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::White, FString::Printf(TEXT("blockedDelta=%s"),  *blockedDelta.ToString()));
+		}*/
+		CustomMovementWalking(FVector(blockedDelta.X * -1.f, blockedDelta.Y * -1.f, GetGravityZ() * deltaTime * 0.5f), deltaTime);
+
+		targetCharacterMovement->BlockHitResult.Reset();
+	}
+}
+
+void UKMCharacterMovementComponent::UnregisterMoveBlockReflection(AKMCharacter* targetCharacter)
+{
+	int32 existIndex = BlockReflections.IndexOfByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
+	{
+		return blockReflectionData->Character == targetCharacter;
+	});
+	if (existIndex == INDEX_NONE)
+	{
+		return;
+	}
+	BlockReflections.RemoveAt(existIndex);
 }
 
 void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iterations)
@@ -440,6 +528,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, co
 			FHitResult hitResult;
 			hitResult.ImpactPoint = ownerCharacter->GetActorLocation();
 			ownerCharacter->Landed(hitResult);
+			SetMovementMode(MOVE_Walking);
 		}
 		break;
 	case EEMCurveWarpingInteruptType::Landing:
@@ -478,18 +567,26 @@ void UKMCharacterMovementComponent::UpdateCustomFalling(float deltaTime)
 
 bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, float deltaTime)
 {
+	FVector startLocation = UpdatedComponent->GetComponentLocation();
+
+	bool bResult = true;
 	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Walking))
 	{
-		return CustomMovementWalking(adjusted, deltaTime);
+		bResult = CustomMovementWalking(adjusted, deltaTime);
 	}
 	else if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling) || IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
 	{
-		return CustomMovementFalling(adjusted, deltaTime);
+		bResult = CustomMovementFalling(adjusted, deltaTime);
 	}
 	else
 	{
-		return CustomMovementFlying(adjusted, deltaTime);
+		bResult =CustomMovementFlying(adjusted, deltaTime);
 	}
+	FVector actualDelta = UpdatedComponent->GetComponentLocation() - startLocation;
+	BlockMoveDelta = FVector(adjusted.X - actualDelta.X,adjusted.Y - actualDelta.Y,0.f);
+	bHasResolvedBlockMove = true;
+
+	return bResult;
 }
 
 bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjusted, float deltaTime)
@@ -506,7 +603,6 @@ bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjuste
 			SlideAlongSurface(adjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
 		}
 	}
-		
 	FFindFloorResult floorResult;
 	FindFloor(UpdatedComponent->GetComponentLocation(), floorResult, false);
 
@@ -620,7 +716,6 @@ bool UKMCharacterMovementComponent::CustomMovementFlying(const FVector& adjusted
 			SlideAlongSurface(adjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
 		}
 	}
-
     return true;
 }
 
@@ -656,4 +751,45 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 bool UKMCharacterMovementComponent::IsAir() const
 {
 	return !IsOnGround();
+}
+
+void UKMCharacterMovementComponent::StartFollowActor(AActor* newFollowActor, const FVector& targetOffset, float duration)
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+
+	FollowActor = newFollowActor;
+	
+	FTransform startTransform = ownerCharacter->GetActorTransform();
+	ownerCharacter->SetActorLocation(newFollowActor->GetActorLocation());
+	animInstance->BlendPairPosition(startTransform, targetOffset, duration);
+}
+
+void UKMCharacterMovementComponent::StopFollowActor(float duration)
+{
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+	
+	FollowActor = nullptr;
+
+	ownerCharacter->AddActorLocalOffset(animInstance->GetPairBlendInfo().FinalWorldPosition);
+	animInstance->BlendPairPosition(ownerCharacter->GetActorTransform(), FVector::ZeroVector, duration);
 }

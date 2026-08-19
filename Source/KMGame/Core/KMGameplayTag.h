@@ -19,6 +19,7 @@ public:
 	static const FGameplayTag Event_Throw_Tag;
 	static const FGameplayTag Event_Item_Launch;
 	static const FGameplayTag Event_Grab_Tag;
+	static const FGameplayTag Event_Grab_Begin_End_Tag;
 	static const FGameplayTag Event_Bound_Wall_Tag;
 	static const FGameplayTag Event_Trigger_Tag;
 	static const FGameplayTag Event_Skill_Start_Tag;

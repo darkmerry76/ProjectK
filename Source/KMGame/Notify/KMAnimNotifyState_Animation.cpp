@@ -20,7 +20,6 @@ FString UKMAnimNotifyState_Animation::GetNotifyName_Implementation() const
 	{
 		notifyName += FString::Printf(TEXT("-'%s[%s]'"), *Montage->GetName(), *UKMUtil::GetAnimSlotName(SlotType).ToString());		
 	}
-	
 	return notifyName;
 }
 
@@ -62,6 +61,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	{
 		return;
 	}
+	
 	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
 	if (!IsValid(ownerCharacterInstance))
 	{
@@ -72,7 +72,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	{
 		return;
 	}
-	
+
 	TSharedPtr<FKMAnimNotifyState_Animation_Context> newContext = MakeShared<FKMAnimNotifyState_Animation_Context>();
 	newContext->ActivatedMontage = GetUsedMontage(targetMeshComp->GetOwner(), UKMUtil::GetAnimSlotName(SlotType));
 	if (eventReference.GetNotify())
@@ -92,7 +92,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 		UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance();
 		if (IsValid(targetAnimInstance))
 		{
-			bool bMontagePlay = bIsEqualsPlay; 
+			bool bMontagePlay = bIsEqualsPlay;
 			CustomDuration = newContext->ActivatedMontage->GetPlayLength();
 			if (!bMontagePlay)
 			{
@@ -105,6 +105,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 					}
 				}
 			}
+			
 			if (bMontagePlay)
 			{
 				if (UKMAnimInstance* castTargetAnimInstance = Cast<UKMAnimInstance>(targetAnimInstance))
@@ -122,7 +123,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 						{
 							targetAnimInstance->Montage_Play(newContext->ActivatedMontage);	
 						}
-						castTargetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, 0.1f);
+						castTargetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, SlotBlendInTime);
 					}
 					else
 					{
@@ -208,7 +209,7 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 				}
 				if (SlotType == EKMAnimSlotType::OverrideSlot)
 				{
-					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 0.f, 0.1f);
+					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 0.f, SlotBlendOutTime);
 				}
 			}
 		}
@@ -228,7 +229,6 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 }
 
 #if WITH_EDITOR
-
 void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
 	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);

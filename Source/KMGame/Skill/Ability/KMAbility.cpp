@@ -352,6 +352,18 @@ FVector UKMAbility::GetOffsetToTargetByOwnerForward(float offsetDistance, float 
 	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
 }
 
+FVector UKMAbility::GetOffsetToTargetByOwnerForward2D(FVector2D offset, float weight, bool bIgnoreZ) const
+{
+	AKMCharacter* targetCharacter = GetTargetCharacter();
+	check(IsValid(targetCharacter));
+
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
+
+	FVector result = targetCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * offset.X * weight) + (ownerCharacter->GetActorRightVector() * offset.Y * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+}
+
 FVector UKMAbility::GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight, bool bIgnoreZ) const
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();

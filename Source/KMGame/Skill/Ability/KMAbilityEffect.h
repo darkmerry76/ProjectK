@@ -18,6 +18,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsDirectionFallow = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bIsDirectionFallow"))
+	bool bIsForceRotation = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bIsDirectionFallow"))
+	float DirectionWeight = -1.f;
+
 	UPROPERTY()
 	TWeakObjectPtr<UKMCharacterInstance> CasterCharacterObject;
 
@@ -36,6 +42,7 @@ public:
 	class UKMCharacterInstance* GetCasterCharacterInstance() const;
 	
 	virtual void Activate() override;
+	virtual void PostActivated();
 	virtual void Deactivate(bool bCancel = false) override;
 	virtual void Impact(const FTransform& newImpactTransform) override;
 

@@ -4,6 +4,7 @@
 #include "Component/KMMartialArtsComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
+#include "Skill/Ability/KMAbilityEffect.h"
 #include "Skill/Ability/KMAbilitySkill.h"
 
 UKMAnimNotifyState_Hit::UKMAnimNotifyState_Hit(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -37,6 +38,7 @@ void UKMAnimNotifyState_Hit::GetFinalTransform(const AKMCharacter* ownerCharacte
 	{
 		outTransform.SetRotation(ownerCharacter->GetActorTransform().GetRotation());
 	}
+	
 	outTransform.SetRotation(outTransform.GetRotation() * HitTransform.GetRotation());
 	outTransform.SetLocation(outTransform.GetLocation() + (outTransform.GetRotation().RotateVector(HitTransform.GetLocation())));
 	outTransform.SetScale3D(HitTransform.GetScale3D());
@@ -95,6 +97,13 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 		if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(martialArtsData->GetAbility()))
 		{
 			latestSkillInstance = abilitySkill->GetSkillInstance();
+		}
+		else if (UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(martialArtsData->GetAbility()))
+		{
+			if (abilityEffect->GetSkillEffectInstance())
+			{
+				latestSkillInstance = abilityEffect->GetSkillEffectInstance()->GetOwnerSkillInstance();
+			}
 		}
 	}
 	if (!latestSkillInstance.IsValid() && IsValid(ownerCharacterInstance->GetSkillHandler()))

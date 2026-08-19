@@ -1,10 +1,9 @@
 #include "KMAnimNotify_Stiff.h"
-#include "Camera/KMPlayerCameraManager.h"
 #include "Character/KMCharacter.h"
 
 UKMAnimNotify_Stiff::UKMAnimNotify_Stiff() : Super()
 {
-	GroupType = EEMNotifyGroupType::Plan; 
+	UEMAnimNotifyMA::SetGroupType(EEMNotifyGroupType::Plan);
 }
 
 FString UKMAnimNotify_Stiff::GetNotifyName_Implementation() const

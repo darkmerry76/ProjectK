@@ -1,4 +1,6 @@
 #include "KMCharacterInstance.h"
+
+#include "KMHeroInstance.h"
 #include "Actor/KMItemAppearanceActor.h"
 #include "Animation/KMAnimInstance.h"
 #include "Camera/KMPlayerCameraManager.h"
@@ -465,6 +467,12 @@ void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjus
 	{
 		return;
 	}
+
+	if (!adjustSkillInstance.IsValid())
+	{
+		return;
+	}
+
 	if (HitCheckData.Actors.Contains(hitActor))
 	{
 		return;
@@ -487,10 +495,6 @@ void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjus
 	HitCheckData.Actors.FindOrAdd(hitActor);
 
 	Inflict(hitCharacterInstance);
-	if (!SkillHandler->GetLatestActiveSkillInstance().IsValid())
-	{
-		return;
-	}
 	
 	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitCharacter->GetRootComponent());
 	FVector closestPoint;
@@ -565,7 +569,7 @@ void UKMCharacterInstance::SphereHitImpact(
 	TArray<FHitResult> hitResults;
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(GetCharacter());
-
+	
 	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
 	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
 	{

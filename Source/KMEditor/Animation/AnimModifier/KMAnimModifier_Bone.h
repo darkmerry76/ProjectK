@@ -103,13 +103,19 @@ public:
 	FName BoneName = FName("Pelvis");
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	FVector AddTransform = FVector(0.0f, 0.0f, 0.0f);
+	FVector AddLocation = FVector(0.0f, 0.0f, 0.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FVector MultiplyLocation = FVector(1.0f, 1.0f, 1.0f);
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	FRotator AddRotator = FRotator(0.0f, 0.0f, 0.0f);
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	FVector RotateScale = FVector::One();
+	FVector AddScale = FVector::Zero();
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FVector MultiplyScale = FVector(1.0f, 1.0f, 1.0f);
 };
 
 UCLASS()

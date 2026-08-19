@@ -41,8 +41,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
 	EKMAnimSlotType SlotType = EKMAnimSlotType::DefaultSlot;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, EditCondition="SlotType==EKMAnimSlotType::OverrideSlot", DisplayAfter="SlotType"))
+	float SlotBlendInTime = 0.1f;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, EditCondition="SlotType==EKMAnimSlotType::OverrideSlot", DisplayAfter="SlotBlendInTime"))
+	float SlotBlendOutTime = 0.1f;
 	
-	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndMontageStop", meta=(AllowPrivateAccess=true, DisplayAfter="SlotType"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EndMontageStop", meta=(AllowPrivateAccess=true, DisplayAfter="SlotBlendOutTime"))
 	bool bIsEndMontageStop = false;
 	
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="StartShowMeshComponent", meta=(AllowPrivateAccess=true, DisplayAfter="bIsEndMontageStop"))
@@ -56,10 +62,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, DisplayName="EqualsPlay", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOverrideMovementAnimSet"))
 	bool bIsEqualsPlay = true;
-
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsEqualsPlay"))
-	float BlendOut = 0.f;
-
+	
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Animation_Context>> Context;
 
 	float CustomDuration = 0.f;

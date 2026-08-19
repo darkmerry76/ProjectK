@@ -12,6 +12,7 @@
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "Skill/KMSkillHandler.h"
+#include "Sound/KMSoundSetTag.h"
 #include "Tables/Generated/KMTable_Item.h"
 #include "Util/KMUtil.h"
 
@@ -105,6 +106,11 @@ bool AKMCharacter::GetMirror() const
 const FVector& AKMCharacter::GetInputVelocity() const
 {
 	return InputVelocity;
+}
+
+const FVector& AKMCharacter::GetLatestMoveInputVelocity() const
+{
+	return LastetMoveInputVelocity;
 }
 
 UKMCharacterInstance* AKMCharacter::GetCharacterInstance() const
@@ -221,6 +227,18 @@ void AKMCharacter::RemoveMovementOverrideMontage()
 	RevertOverrideAnimationTag(FKMGameplayTagName::Anim_Landing_2);*/
 }
 
+USoundBase* AKMCharacter::GetSoundTag(FGameplayTag tag) const
+{
+	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
+	{
+		if (characterInstance->IsBeast() && IsValid(BeastPDA) && IsValid(BeastPDA->AnimSet))
+		{
+			return BeastPDA->SoundSet->GetSound(tag);
+		}
+	}
+	return SoundsetTag->GetSound(tag);
+}
+
 UKMItemAppearanceInstance* AKMCharacter::GetWeaponInstance() const
 {
 	return WeaponInstance;
@@ -234,4 +252,13 @@ void AKMCharacter::SetBeastPDA(const UKMBeastPDA* newBeastPDA)
 const UKMBeastPDA* AKMCharacter::GetBeastPDA() const
 {
 	return BeastPDA;
+}
+
+bool AKMCharacter::IsAir() const
+{
+	if (UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		return characterMovementComponent->IsAir();
+	}
+	return false;
 }

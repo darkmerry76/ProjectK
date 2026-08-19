@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "EMMartialArts.h"
+#include "GameplayTagContainer.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "KMAbility.generated.h"
 
@@ -13,16 +14,16 @@ class UKMAbility : public UEMAbility
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Rate = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Duration = 1.f;
-
+	
 	UPROPERTY(EditAnywhere, DisplayName="Loop", BlueprintReadWrite)
 	bool bIsLoop = false;
 
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadOnly)
 	TObjectPtr<class UCurveVector> BlowCurve;
 
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
+	float Duration = 1.f;
+	
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	float HorizontalPower = 100.f;
 
@@ -128,10 +129,13 @@ public:
 	FVector GetOffsetToTargetByOwnerForward(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
 
 	UFUNCTION(BlueprintPure)
-	FVector GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight, bool bIgnoreZ) const;
+	FVector GetOffsetToTargetByOwnerForward2D(FVector2D offset, float weight = 1.f, bool bIgnoreZ = false) const;
+
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
 	
 	UFUNCTION(BlueprintPure)
-	FVector GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ = false) const;
+	FVector GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
 
 	UFUNCTION(BlueprintPure)
 	FVector GetOwnerFootLocation(float offsetHeight = 0.f) const;

@@ -96,6 +96,8 @@ public:
 	bool GetForceComplete() const { return bIsForceComplete; }
 
 	void Cancel() { bIsCancel = true; };
+
+	int32 UniqueId = INDEX_NONE;
 	
 protected:
 	virtual void ResetElipsedTime();

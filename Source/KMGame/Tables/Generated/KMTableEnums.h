@@ -254,3 +254,13 @@ enum class EKMDamagePowerType : uint8
 	Medium = 3 , 
 	High = 4 , 
 };
+
+UENUM(BlueprintType)
+enum class EKMTargetLockonType : uint8
+{
+	None = 0 , 
+	Lockon = 1 , 
+	Stand = 2 , 
+	Down = 3 , 
+	Air = 4 , 
+};

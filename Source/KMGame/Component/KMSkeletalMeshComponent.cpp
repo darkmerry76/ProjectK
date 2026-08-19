@@ -53,7 +53,14 @@ void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterfac
 
 void UKMSkeletalMeshComponent::FinalizeBoneTransform()
 {
+	TArray<FTransform>& testTransform = GetEditableComponentSpaceTransforms();
+
+	testTransform[0].SetLocation(FVector(0, 0, 0));
+
 	Super::FinalizeBoneTransform();
+
+
+	return;
 }
 
 void UKMSkeletalMeshComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)

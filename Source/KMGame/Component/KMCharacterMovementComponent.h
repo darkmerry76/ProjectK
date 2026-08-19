@@ -15,6 +15,11 @@ enum class EKMCustomMovementMode : uint8
 	CMODE_Falling,
 };
 
+struct KMGAME_API FKMBlockReflectionData
+{
+	TWeakObjectPtr<class AKMCharacter> Character;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FKMCustomMovementDelegate, float, deltaTime, int32, iterations);
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnHitDelegate, const TArray<FHitResult>& hitResults);
 
@@ -58,6 +63,17 @@ public:
 
 	bool bIsEnableCustomWalking = false;
 
+	TArray<TSharedPtr<FKMBlockReflectionData>> BlockReflections;
+
+	FHitResult BlockHitResult;
+
+	bool bHasResolvedBlockMove = false;
+	FVector BlockMoveDelta = FVector::ZeroVector;
+
+protected:
+	UPROPERTY()
+	class AActor* FollowActor = nullptr;
+
 public:
 	void SetCustomMovementMode(EKMCustomMovementMode newCustomMovementMode);
 	bool IsCustomMovementMode(EKMCustomMovementMode customMovementMode) const;
@@ -86,8 +102,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void DisableCustomWalking();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void StartFollowActor(class AActor* newFollowerActor, const FVector& targetOffset, float duration = 0.2f);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopFollowActor(float duration = 0.2f);
+
 	UFUNCTION(BlueprintPure)
 	bool IsCustomWalking() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterMoveBlockReflection(class AKMCharacter* targetCharacter);
+
+	UFUNCTION(BlueprintCallable)
+	void UnregisterMoveBlockReflection(class AKMCharacter* targetCharacter);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -98,7 +126,8 @@ protected:
 	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction) override;
 	virtual void PhysCustom(float deltaTime, int32 iterations) override;
 	virtual void PhysWalking(float deltaTime, int32 iterations) override;
-
+	virtual void HandleImpact(const FHitResult& impact, float timeSlice, const FVector& moveDelta) override;
+	virtual void MoveBlockProcessing(float deltaTime);
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
 
 	bool CustomMovementFalling(const FVector& adjusted, float deltaTime);

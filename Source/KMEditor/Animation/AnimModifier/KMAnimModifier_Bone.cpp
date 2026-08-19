@@ -175,14 +175,15 @@ void UKMAnimModifier_BoneTransform::OnApply_Implementation(UAnimSequence* AnimSe
 		FAnimExtractContext extractContext(Time, AnimSeq->bEnableRootMotion);
 		AnimSeq->GetBoneTransform(OutBoneTransform, poseBoneIndex, extractContext, false);
 
-		FVector CurrentBonePos = OutBoneTransform.GetLocation() + AddTransform;
-
 		FQuat addQuat = AddRotator.Quaternion();
 		FQuat CurrentBoneRot = addQuat * OutBoneTransform.GetRotation();
+
+		FVector CurrentBoneLocation = addQuat * ((OutBoneTransform.GetLocation() + AddLocation) * MultiplyLocation);
+
 		
-		FVector CurrentBoneScale = OutBoneTransform.GetScale3D();
+		FVector CurrentBoneScale = (OutBoneTransform.GetScale3D() + AddScale) * MultiplyScale;
 		
-		BonePosKeys.Add(CurrentBonePos);
+		BonePosKeys.Add(CurrentBoneLocation);
 		BoneRotKeys.Add(CurrentBoneRot);
 		BoneScaleKeys.Add(CurrentBoneScale);
 	}

@@ -73,19 +73,17 @@ void AKMCharacterHero::StartCustomJump()
 
 void AKMCharacterHero::Move(const FInputActionValue& Value)
 {
-	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
+	FVector2D moveDirection = UKMUtil::GetCameraToDirection2D(Value.Get<FVector2D>(), GetController());
+	InputVelocity = FVector(moveDirection, 0.f);
+
+	if (moveDirection.IsNearlyZero())
 	{
 		return;
 	}
 
-	//if (GetCharacterMovement()->MovementMode != MOVE_Walking)
-	{
-	//	return;
-	}
+	LastetMoveInputVelocity = FVector(moveDirection, 0.f);
 
-	FVector2D moveDirection = UKMUtil::GetCameraToDirection2D(Value.Get<FVector2D>(), GetController());
-	InputVelocity = FVector(moveDirection, 0.f);
-	if (moveDirection.IsNearlyZero())
+	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
 	{
 		return;
 	}

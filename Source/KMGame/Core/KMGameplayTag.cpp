@@ -13,6 +13,7 @@ const FGameplayTag FKMGameplayTagName::Event_Hit_Projectile_Tag = FGameplayTag::
 const FGameplayTag FKMGameplayTagName::Event_Throw_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Throw"));
 const FGameplayTag FKMGameplayTagName::Event_Item_Launch = FGameplayTag::RequestGameplayTag(TEXT("Event.Item.Launch"));
 const FGameplayTag FKMGameplayTagName::Event_Grab_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Grab"));
+const FGameplayTag FKMGameplayTagName::Event_Grab_Begin_End_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Grab.Begin.End"));
 const FGameplayTag FKMGameplayTagName::Event_Bound_Wall_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Bounding.Wall"));
 const FGameplayTag FKMGameplayTagName::Event_Trigger_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Trigger"));
 const FGameplayTag FKMGameplayTagName::Event_Skill_Start_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Skill.Start"));

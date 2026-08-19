@@ -8,6 +8,24 @@
 #include "AnimNode/KMAnimNode_Shake.h"
 #include "KMAnimInstance.generated.h"
 
+struct FKMPairPositionBlendInfo
+{
+	bool IsValid() const
+	{
+		return bIsEnableBlend;
+	}
+	
+	bool bIsEnableBlend = false;
+	FTransform StartWorldTransform = FTransform::Identity;
+	FVector PreviousWorldOffset = FVector::ZeroVector;
+	FVector WorldOffset = FVector::ZeroVector;
+
+	FVector FinalWorldPosition = FVector::ZeroVector;
+
+	float Duration = 0.f;
+	float EplisedTime = 0.f;
+};
+
 class FKMAnimInstanceProxy : public FAnimInstanceProxy
 {
 public:
@@ -15,6 +33,7 @@ public:
 	
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
 	const FKMAnimNodeShakeData& GetShakeData() const;
+	const FKMPairPositionBlendInfo& GetPairBlendInfo() const;
 
 protected:
 	virtual void PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds) override;
@@ -22,6 +41,7 @@ protected:
 protected:
 	FKMMultiSlotBlendInfo SlotBlendInfo = { };
 	FKMAnimNodeShakeData ShakeData = { };
+	FKMPairPositionBlendInfo PairBlendInfo = { };
 };
 
 UCLASS(Abstract)
@@ -55,6 +75,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsSlotBlending = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector PairLocalOffset = FVector::ZeroVector;;
+
 	FKMMultiSlotBlendInfo NextSlotBlendInfo;
 	float StartBlendWeight = 0.f;
 	float SlotBlendTime = 0.f;
@@ -63,6 +86,9 @@ protected:
 	float MovementElipsedTime = 0.f;
 
 	FKMAnimNodeShakeData ShakeData;
+	
+
+	FKMPairPositionBlendInfo PairBlendInfo;
 
 protected:
 	float NextDirection = 0.f;
@@ -101,14 +127,19 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	void StartShake(float newDistance, float newFrequency, float newDuration = 0.2f);
 
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	void BlendPairPosition(const FTransform& startWorldTransform, const FVector& targetWorldOffset, float newDuration = 0.2f);
+	
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
 	const FKMMultiSlotBlendInfo& GetNextSlotBlendInfo() const;
+	const FKMPairPositionBlendInfo& GetPairBlendInfo() const;
 
 	const FKMAnimNodeShakeData& GetShakeData() const;
 
 protected:
 	void TickSlotBlend(float deltaTime);
 	void TickShake(float deltaTime);
+	void TickPairBlend(float deltaTime);
 
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))

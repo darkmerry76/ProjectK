@@ -1,6 +1,5 @@
 #include "KMAnimationSetTag.h"
 #include "GameplayTagsManager.h"
-#include "Core/KMGameplayTag.h"
 
 UKMAnimationSetTag::UKMAnimationSetTag(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {

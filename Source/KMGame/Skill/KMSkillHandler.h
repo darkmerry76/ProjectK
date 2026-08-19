@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "KMSkillTypes.h"
 #include "GameplayTagContainer.h"
+#include "Tables/Generated/KMTableEnums.h"
 #include "KMSkillHandler.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FKMAbilityEventDelegate, const class UKMAbility*, ability);
@@ -71,11 +72,14 @@ public:
 	
 	void ClearResisterSkillSet();
 
+	int32 NumSkillByType(EKMSkillType skilltype = EKMSkillType::Active) const;
+
 	TSharedPtr<FKMSkillInstance> UseAssistSkill(const FKMSkillKey& skillKey);
 	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
 	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
-	
+	void TransitionTechniqueSkill(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag);
+
 	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);
 
 	UFUNCTION(BlueprintCallable)
@@ -97,8 +101,8 @@ public:
 	
 	TSharedPtr<class FKMSkillInstance> GetLatestActiveSkillInstance() const;
 	
-	float GetConditionScore(const FName& skillConditionName, TSharedPtr<class FKMLockOnCluster> lockOnCluster) const;
-	float GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter) const;
+	float GetConditionScore(const FName& skillConditionName, TSharedPtr<class FKMLockOnCluster> lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag ) const;
+	float GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter, const FGameplayTag& eventTag = FGameplayTag::EmptyTag) const;
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
 	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const UKMCharacterInstance* targetCharacterInstance) const;
 
@@ -121,6 +125,8 @@ public:
 	int32 GetSkillEffectOverlapCount(const FName& skillEffectGroup, const FName& skillEffectId, TArray<TSharedPtr<FKMSkillEffectInstance>>* outSkillEffects = nullptr) const;
 	
 protected:
+	TSharedPtr<FKMSkillInstance> UseTechniqueSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
+	
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	void OnRemoveAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	
@@ -129,6 +135,7 @@ protected:
 	void ResetSkillEffect(const FName& skillEffectId);
 	
 	void RemoveSkillEffect(const FName& skillEffectId);
+	void RemoveSkill(const TSharedPtr<FKMSkillInstance>& skillInstance);
 	
 	template<typename _TL>
 	void RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityInstances, bool bCancel = false);

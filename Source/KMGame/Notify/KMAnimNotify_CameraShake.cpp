@@ -3,7 +3,9 @@
 
 UKMAnimNotify_CameraShake::UKMAnimNotify_CameraShake() : Super()
 {
-	GroupType = EEMNotifyGroupType::Animation; 
+#if WITH_EDITOR
+	UEMAnimNotifyMA::SetGroupType(EEMNotifyGroupType::Animation);
+#endif
 }
 
 FString UKMAnimNotify_CameraShake::GetNotifyName_Implementation() const

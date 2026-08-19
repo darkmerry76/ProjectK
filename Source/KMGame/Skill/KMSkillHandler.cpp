@@ -101,6 +101,37 @@ void UKMSkillHandler::ClearAllSkills()
 	ComboData.Reset();
 }
 
+int32 UKMSkillHandler::NumSkillByType(EKMSkillType skilltype) const
+{
+	int32 numSkill = 0;
+	for (auto skillInstanceItr = SkillInstances.CreateConstIterator(); skillInstanceItr; ++skillInstanceItr)
+	{
+		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
+		if (!skillInstance.IsValid())
+		{
+			continue;
+		}
+
+		if (skillInstance->SkillKey.TableRecord->Type != skilltype)
+		{
+			continue;
+		}
+
+		++numSkill;
+	}
+	
+	return numSkill;
+}
+
+void UKMSkillHandler::RemoveSkill(const TSharedPtr<FKMSkillInstance>& skillInstance)
+{
+	if (!skillInstance.IsValid())
+	{
+		return;
+	}
+	SkillInstances.Remove(skillInstance->UniqueId);
+}
+
 void UKMSkillHandler::RegisterSkillSets(const FKMTable_SkillSetRow* newSkillSet)
 {
 	check(newSkillSet);
@@ -333,17 +364,30 @@ bool UKMSkillHandler::IsUsedSkill() const
 	return numActiveSkill != 0;
 }
 
-float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, TSharedPtr<FKMLockOnCluster> lockOnCluster) const
+float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, TSharedPtr<FKMLockOnCluster> lockOnCluster, const FGameplayTag& eventTag) const
 {
-	return GetConditionScore(skillConditionName, lockOnCluster->GetBestTarget());
+	return GetConditionScore(skillConditionName, lockOnCluster->GetBestTarget(), eventTag);
 }
 
-float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter) const
+float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter, const FGameplayTag& eventTag) const
 {
 	const FKMTable_SkillConditionRow* skillConditionRow = FKMTable_SkillConditionRow::FindRowPtr(skillConditionName);
 	if (!skillConditionRow)
 	{
 		return -1.f;
+	}
+
+	if (skillConditionRow->LockonType != EKMTargetLockonType::None && !IsValid(targetCharacter))
+	{
+		return -1.f;
+	}
+
+	if (skillConditionRow->LockonType == EKMTargetLockonType::Stand)
+	{
+		if (targetCharacter->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
+		{
+			return -1;
+		}
 	}
 	
 	UKMCharacterInstance* ownerCharacter = Cast<UKMCharacterInstance>(GetOwner());
@@ -373,6 +417,23 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			return -1.f;
 		}
 	}
+
+	if (eventTag.IsValid())
+	{
+		FName eventTagName = *eventTag.ToString();
+		bool bExistTag = false;
+		for (auto tag : skillConditionRow->ReadTag)
+		{
+			if (tag == eventTagName)
+			{
+				bExistTag = true;
+			}
+		}
+		if (!bExistTag)
+		{
+			return -1.f;
+		}
+	}
 	
 	FVector ownerForward = ownerCharacter->GetCharacter()->GetActorForwardVector();
 	if (skillConditionRow->LocomotionState == EKMLocomotionState::Land && !characterMovement->IsOnGround())
@@ -386,17 +447,18 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			return -1.f;
 		}
 	}
-
-	float distanceScore = skillConditionRow->TargetRange > 0.f ? 0.f : 1.f;
-	float angleScore = skillConditionRow->TargetDir > 0.f ?  0.f : 1.f;
+	
+	float targetDistanceScore = !FMath::IsNearlyZero(skillConditionRow->TargetRange) ? 0.f : 1.f;
+	float targetAngleScore = !FMath::IsNearlyZero(skillConditionRow->TargetDir) ?  0.f : 1.f;
+	float inputAngleScore = !FMath::IsNearlyZero(skillConditionRow->InputDir) ?  0.f : 1.f;
 	if (IsValid(targetCharacter))
 	{
 		FVector targetToDirection = targetCharacter->GetCharacter()->GetActorLocation() - ownerCharacter->GetCharacter()->GetActorLocation();
 		float targetToDistance = targetToDirection.Size();
 		
-		if (skillConditionRow->TargetRange > 0.f)
+		if (!FMath::IsNearlyZero(skillConditionRow->TargetRange))
 		{
-			if (skillConditionRow->TargetRangeMin > targetToDistance || skillConditionRow->TargetRange < targetToDistance)
+			if (skillConditionRow->TargetRange < targetToDistance)
 			{
 				return -1.f;
 			}
@@ -404,11 +466,11 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			float center = (skillConditionRow->TargetRangeMin + skillConditionRow->TargetRange) * 0.5f;
 			float halfRange = (skillConditionRow->TargetRange - skillConditionRow->TargetRangeMin) * 0.5f;
 
-			distanceScore = 1.f - (FMath::Abs(targetToDistance - center) / halfRange);
-			distanceScore = FMath::Clamp(distanceScore, 0.f, 1.f);
+			targetDistanceScore = 1.f - (FMath::Abs(targetToDistance - center) / halfRange);
+			targetDistanceScore = FMath::Clamp(targetDistanceScore, 0.f, 1.f);
 		}
 		
-		if (skillConditionRow->TargetDir > 0.f)
+		if (!FMath::IsNearlyZero(skillConditionRow->TargetDir))
 		{
 			FVector targetToNormal = targetToDirection.GetSafeNormal();
 
@@ -418,10 +480,37 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			{
 				return -1.f;
 			}
-			angleScore = FVector::DotProduct(ownerForward, targetToNormal);
+			targetAngleScore = dot;
+		}
+		if (!FMath::IsNearlyZero(skillConditionRow->InputDir))
+		{
+			FVector inputVelocity = ownerCharacter->GetCharacter()->GetLatestMoveInputVelocity().GetSafeNormal();
+			if (FMath::IsNearlyZero(inputVelocity.Size()))
+			{
+				inputVelocity = ownerCharacter->GetCharacter()->GetActorForwardVector();
+			}
+			float dot = FVector::DotProduct(ownerForward, inputVelocity);
+			float angleDeg = FMath::RadiansToDegrees(FMath::Acos(dot));
+
+/*			DrawDebugDirectionalArrow(GetWorld(), ownerCharacter->GetCharacter()->GetActorLocation(), ownerCharacter->GetCharacter()->GetActorLocation() + (ownerCharacter->GetCharacter()->GetActorForwardVector() * 100.f),
+			30.f, FColor::Red, false, 4.f);
+
+			DrawDebugDirectionalArrow(GetWorld(), ownerCharacter->GetCharacter()->GetActorLocation(), ownerCharacter->GetCharacter()->GetActorLocation() + (inputVelocity * 100.f),
+			30.f, FColor::White, false, 4.f);
+
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::Printf(TEXT("Angle=%.3f"), angleDeg));*/
+			if (skillConditionRow->InputDir > 0.f && angleDeg > skillConditionRow->InputDir)
+			{
+				return -1.f;
+			}
+			else if (skillConditionRow->InputDir < 0.f && angleDeg < FMath::Abs(skillConditionRow->InputDir))
+			{
+				return -1.f;
+			}
+			inputAngleScore = dot;
 		}
 	}
-	float resultScore = angleScore * 2.f + distanceScore * 1.5f;
+	float resultScore = inputAngleScore * 2.f + targetAngleScore * 2.f + targetDistanceScore * 1.5f;
 	return resultScore; 
 }
 
@@ -463,8 +552,8 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 	check(IsValid(ownerCharacterInstance));
 	
 	if (ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) &&
-	!ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Event_Cancel_Tag) &&
-	!ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Cancel_Tag))
+		!ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Event_Cancel_Tag) &&
+		!ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Cancel_Tag))
 	{
 		return nullptr;
 	}
@@ -587,7 +676,15 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr
 	{
 		return nullptr;
 	}
+	if (NumSkillByType() > 0)
+	{
+		return nullptr;
+	}
+	return UseTechniqueSkill_Internal(lockOnCluster);
+}
 
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag)
+{
 	float bestScore = 0.f;
 	FName bestSkillId = NAME_None;
 
@@ -603,7 +700,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr
 
 		for (int32 skillIndex = 0; skillIndex < skillSetRow->Skills.Num(); ++skillIndex)
 		{
-			float currentSkillScore = GetConditionScore(skillSetRow->Skills[skillIndex], newLockOnCluster);
+			float currentSkillScore = GetConditionScore(skillSetRow->Skills[skillIndex], newLockOnCluster, eventTag);
 			if (currentSkillScore > bestScore)
 			{
 				bestScore = currentSkillScore;
@@ -623,6 +720,11 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr
 	}
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Grab_Tag);
 	return nullptr;
+}
+
+void UKMSkillHandler::TransitionTechniqueSkill(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag)
+{
+	UseTechniqueSkill_Internal(skillInstance->Target, eventTag);
 }
 
 const FKMTable_SkillSetRow* UKMSkillHandler::EvalurateSkillSet(const TSharedPtr<FKMLockOnCluster>& lockOnCluster) const
@@ -863,7 +965,6 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			UKMSkillHandler* targetSkillHandler = targetCharacterInstance->GetSkillHandler();
 			check(IsValid(targetSkillHandler));
 
-
 			TSharedPtr<FKMSkillEffectInstance> newSkillEffectInstance = targetSkillHandler->ApplyEffectInternal(skillInstance, skillEffectName);
 			if (newSkillEffectInstance.IsValid())
 			{
@@ -1099,6 +1200,7 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 				TSharedPtr<FKMAbilityInstanceCooltime> newCooltimeInstance = StaticCastSharedPtr<FKMAbilityInstanceCooltime>(pendingNewAbility);
 				CooltimeInstances.Emplace(newCooltimeInstance->SkillKey, newCooltimeInstance);
 			}
+			pendingNewAbility->UniqueId = LastAbilityUniqueId; 
 			LastAbilityUniqueId++;
 		}
 		PendingNewAbilities.Empty();

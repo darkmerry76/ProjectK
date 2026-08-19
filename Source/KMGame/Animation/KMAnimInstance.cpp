@@ -19,6 +19,7 @@ void FKMAnimInstanceProxy::PreUpdate(UAnimInstance* animInstance, float deltaSec
 	check(IsValid(castAnimInstance));
 	SlotBlendInfo = castAnimInstance->GetSlotBlendInfo();
 	ShakeData = castAnimInstance->GetShakeData();
+	PairBlendInfo = castAnimInstance->GetPairBlendInfo();
 }
 
 const FKMMultiSlotBlendInfo& FKMAnimInstanceProxy::GetSlotBlendInfo() const
@@ -29,6 +30,11 @@ const FKMMultiSlotBlendInfo& FKMAnimInstanceProxy::GetSlotBlendInfo() const
 const FKMAnimNodeShakeData& FKMAnimInstanceProxy::GetShakeData() const
 {
 	return ShakeData;
+}
+
+const FKMPairPositionBlendInfo& FKMAnimInstanceProxy::GetPairBlendInfo() const
+{
+	return PairBlendInfo;
 }
 
 void UKMAnimInstance::NativeInitializeAnimation()
@@ -43,7 +49,7 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 
 	TickSlotBlend(deltaSeconds);
 	TickShake(GetWorld()->GetDeltaSeconds());
-
+	TickPairBlend(GetWorld()->GetDeltaSeconds());
 	if (!IsCustomWalking())
 	{
 		ResetMovementElipsedTime();
@@ -99,6 +105,50 @@ void UKMAnimInstance::SetNextDirection(float newNextDirection)
 float UKMAnimInstance::GetNextDirection() const
 {
 	return NextDirection;
+}
+
+void UKMAnimInstance::BlendPairPosition(const FTransform& startWorldTransform, const FVector& targetWorldOffset, float newDuration)
+{
+	ACharacter* ownerCharacter = Cast<ACharacter>(GetSkelMeshComponent()->GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	PairBlendInfo.bIsEnableBlend = true;
+	PairBlendInfo.StartWorldTransform = startWorldTransform;
+
+	PairBlendInfo.WorldOffset = targetWorldOffset;
+	PairBlendInfo.Duration = newDuration;
+	PairBlendInfo.EplisedTime = 0.f;
+	PairBlendInfo.FinalWorldPosition = ownerCharacter->GetActorLocation() - PairBlendInfo.StartWorldTransform.GetLocation();
+}
+
+void UKMAnimInstance::TickPairBlend(float deltaTime)
+{
+	if (!PairBlendInfo.bIsEnableBlend)
+	{
+		return;
+	}
+
+	if (PairBlendInfo.EplisedTime > PairBlendInfo.Duration)
+	{
+		//PairBlendInfo.bIsEnableBlend = false;
+	}
+	
+	ACharacter* ownerCharacter = Cast<ACharacter>(GetSkelMeshComponent()->GetOwner());
+	if (!IsValid(ownerCharacter))
+	{
+		return;
+	}
+	
+	float alpha = FMath::Clamp(PairBlendInfo.EplisedTime / PairBlendInfo.Duration, 0.f, 1.f);
+	
+	//const FVector worldPosition = FMath::Lerp(PairBlendInfo.StartWorldTransform.GetLocation(), ownerCharacter->GetActorLocation() + PairBlendInfo.WorldOffset , 0.f);
+	const FVector worldPosition = FMath::Lerp(PairBlendInfo.StartWorldTransform.GetLocation(),ownerCharacter->GetActorLocation() + PairBlendInfo.WorldOffset, alpha);
+
+	const FVector worldVector = ownerCharacter->GetActorLocation() - worldPosition;
+	PairBlendInfo.FinalWorldPosition = worldVector;
+	PairBlendInfo.EplisedTime += deltaTime;
 }
 
 void UKMAnimInstance::BlendSlot(EKMAnimSlotType newSlotType, float newWeight, float blendTime)
@@ -233,6 +283,11 @@ const FKMMultiSlotBlendInfo& UKMAnimInstance::GetNextSlotBlendInfo() const
 const FKMAnimNodeShakeData& UKMAnimInstance::GetShakeData() const
 {
 	return ShakeData;
+}
+
+const FKMPairPositionBlendInfo& UKMAnimInstance::GetPairBlendInfo() const
+{
+	return PairBlendInfo;
 }
 
 #endif	

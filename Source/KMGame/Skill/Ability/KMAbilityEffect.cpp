@@ -16,7 +16,12 @@ void UKMAbilityEffect::Activate()
 	check(IsValid(character));
 
 	PlayMartialArts(nullptr, Rate, bIsLoop);
+	PostActivated();
+	Super::Activate();
+}
 
+void UKMAbilityEffect::PostActivated()
+{
 	if (bIsDirectionFallow && IsValid(GetCasterCharacter()))
 	{
 		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
@@ -25,10 +30,8 @@ void UKMAbilityEffect::Activate()
 		FVector targetToDirection = GetOwnerCharacter()->GetActorLocation() - GetCasterCharacter()->GetActorLocation();
 		targetToDirection.Z = 0.0f;
 		targetToDirection.Normalize();
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
+		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
 	}
-
-	Super::Activate();
 }
 
 void UKMAbilityEffect::Impact(const FTransform& newImpactTransform)
@@ -56,21 +59,21 @@ void UKMAbilityEffect::Deactivate(bool bCancel)
 
 	UKMSkillHandler* skillHandler = character->GetCharacterInstance()->GetSkillHandler();
 
-	if (SkillEffectInstance.IsValid() && !bCancel)
+	if (SkillEffectInstance.IsValid() && !bCancel && EndingTag.IsValid())
 	{
 		skillHandler->TriggerTransitionSkillEffect(EndingTag);
 	}
 
 	if (bIsDirectionFallow)
 	{
-		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+/*		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
 		check(IsValid(ownerCharacterInstance));
 		
 		FVector ownerForwardDirection = GetOwnerCharacter()->GetActorForwardVector();
 		ownerForwardDirection.Z = 0.0f;
 		ownerForwardDirection.Normalize();
 	
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerForwardDirection)));
+		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerForwardDirection)), true);*/
 	}
 }
 

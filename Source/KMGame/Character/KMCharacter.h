@@ -19,6 +19,9 @@ protected:
 	TObjectPtr<class UKMAnimationSetTag> AnimsetTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMSoundSetTag> SoundsetTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UEMCurveWarpingComponent> CurveWarping;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -35,6 +38,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector InputVelocity = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector LastetMoveInputVelocity = FVector::ZeroVector;
 
 	UPROPERTY(Transient)
 	const class UKMBeastPDA* BeastPDA = nullptr;
@@ -53,13 +59,16 @@ public:
 	bool GetMirror() const;
 
 	const FVector& GetInputVelocity() const;
+	const FVector& GetLatestMoveInputVelocity() const;
 
 	UFUNCTION(BlueprintPure)
 	class UKMItemAppearanceInstance* GetWeaponInstance() const;
 
+	UFUNCTION(BlueprintCallable)
 	float MontqagePlayTag(FGameplayTag tag, float playRate = 1.f,
 		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
 
+	UFUNCTION(BlueprintCallable)
 	float MontqagePlay(class UAnimMontage* animMontage, float playRate = 1.f,
 		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
 
@@ -68,6 +77,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetAnimationTag(FGameplayTag tag) const;
+
+	UFUNCTION(BlueprintPure)
+	class USoundBase* GetSoundTag(FGameplayTag tag) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetMovementOverrideMontage(class UAnimMontage* jumpMontage, class UAnimMontage* landingMontage);
@@ -82,6 +94,9 @@ public:
 	const class UKMBeastPDA* GetBeastPDA() const;
 
 	virtual void Landed(const FHitResult& hitResult) override;
+
+	UFUNCTION(BlueprintPure)
+	bool IsAir() const;
 	
 protected:
 	virtual void BeginPlay() override;
