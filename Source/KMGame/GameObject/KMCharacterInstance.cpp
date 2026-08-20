@@ -693,17 +693,38 @@ void UKMCharacterInstance::Stiff(float duration, bool bReset)
 		//GetCharacter()->GetMesh()->bPauseAnims = true;
 		//GetCharacter()->GetMesh()->SuspendClothingSimulation();
 
-		GetCharacter()->CustomTimeDilation = 0.f;
+		SetTimeDilation(TEXT("HitStop"), 0.f);
 	}
 	GetWorld()->GetTimerManager().SetTimer(StiffTimerHandle, FTimerDelegate::CreateUObject(this, &UKMCharacterInstance::OnStiffRelease), newDuration, false);
 }
 
 void UKMCharacterInstance::OnStiffRelease()
 {
-	GetCharacter()->CustomTimeDilation = 1.f;
+	RemoveTimeDilation(TEXT("HitStop"));
 	//GetCharacter()->GetMesh()->bPauseAnims = false;
 	//GetCharacter()->GetMesh()->ResumeClothingSimulation();
 	GetWorld()->GetTimerManager().ClearTimer(StiffTimerHandle);
+}
+
+float UKMCharacterInstance::GetTimeDilation() const
+{
+	float timeDilation = 1.f;
+	for (auto timeDilationItr : TimeDilations)
+	{
+		timeDilation *= timeDilationItr.Value;
+	}
+
+	return timeDilation;
+}
+
+void UKMCharacterInstance::SetTimeDilation(const FName& layerName, float newTimeDilation)
+{
+	TimeDilations.Add(layerName, newTimeDilation);
+}
+
+void UKMCharacterInstance::RemoveTimeDilation(const FName& layerName)
+{
+	TimeDilations.Remove(layerName);
 }
 
 float UKMCharacterInstance::GetMoveAccelate() const
@@ -803,7 +824,11 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 		return;
 	}
 	
-	deltaSeconds *= ownerCharacter->CustomTimeDilation;
+	float resultTimeDilation = GetTimeDilation();
+	
+	GetCharacter()->CustomTimeDilation = resultTimeDilation;
+	
+	deltaSeconds *= resultTimeDilation;
 	
 	Super::Tick(deltaSeconds);
 	

@@ -36,11 +36,16 @@ const FKMPairPositionBlendInfo& FKMAnimInstanceProxy::GetPairBlendInfo() const
 {
 	return PairBlendInfo;
 }
+UKMAnimInstance::UKMAnimInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+{
+}
 
 void UKMAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	NextDirection = CurrentDirection;
+
+	OnMontageStarted.AddDynamic(this, &UKMAnimInstance::OnMontageStarted_Internal);
 }
 
 void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
@@ -288,6 +293,55 @@ const FKMAnimNodeShakeData& UKMAnimInstance::GetShakeData() const
 const FKMPairPositionBlendInfo& UKMAnimInstance::GetPairBlendInfo() const
 {
 	return PairBlendInfo;
+}
+
+int32 UKMAnimInstance::GetLastPlayedMontageInstanceId() const
+{
+	return LastPlayedMontageInstanceId;
+}
+
+void UKMAnimInstance::SetMontageInstanceTag(int32 instanceId, const FName& newTag)
+{
+	if (instanceId == INDEX_NONE)
+	{
+		return;
+	}
+	TagByMontageInstanceIds.Add(newTag, instanceId);
+}
+
+int32 UKMAnimInstance::GetMontageInstanceIdByTag(const FName& tag) const
+{
+	const int32* exist = TagByMontageInstanceIds.Find(tag);
+	if (!exist)
+	{
+		return INDEX_NONE;
+	}
+	return *exist;
+}
+
+void UKMAnimInstance::OnMontageStarted_Internal(UAnimMontage* montage)
+{
+	LastPlayedMontageInstanceId = INDEX_NONE;
+	
+	if (!MontageInstances.IsEmpty())
+	{
+		if (MontageInstances.Last()->IsValid())
+		{
+			LastPlayedMontageInstanceId = MontageInstances.Last()->GetInstanceID();
+		}
+	}
+}
+
+void UKMAnimInstance::OnMontageInstanceStopped(FAnimMontageInstance& stoppedMontageInstance)
+{
+	for (auto intanceItr = TagByMontageInstanceIds.CreateIterator(); intanceItr; ++intanceItr)
+	{
+		if (intanceItr.Value() == stoppedMontageInstance.GetInstanceID())
+		{
+			intanceItr.RemoveCurrent();
+			break;
+		}
+	}
 }
 
 #endif	

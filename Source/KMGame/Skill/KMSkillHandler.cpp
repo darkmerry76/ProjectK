@@ -1180,6 +1180,7 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 			{
 				continue;
 			}
+
 			pendingNewAbility->Enter();
 			OnAddAbilityInstance(pendingNewAbility);
 

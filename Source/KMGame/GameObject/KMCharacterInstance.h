@@ -173,6 +173,15 @@ public:
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
 		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
 
+	UFUNCTION(BlueprintCallable)
+	void SetTimeDilation(const FName& layerName, float newTimeDilation = 1.f);
+
+	UFUNCTION(BlueprintPure)
+	float GetTimeDilation() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveTimeDilation(const FName& layerName);
+
 protected:
 	void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
@@ -302,4 +311,6 @@ protected:
 
 	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
 	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
+
+	TMap<FName, float> TimeDilations;
 };

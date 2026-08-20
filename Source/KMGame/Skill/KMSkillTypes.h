@@ -188,7 +188,8 @@ protected:
 	void OnStateEnter(EKMSkillState newState);
 
 	virtual void InitAbilityAsset(bool bAutoActivate = false) override;
-	virtual void DeactivatedAbility(bool bCancel = false) override; 
+	virtual void DeactivatedAbility(bool bCancel = false) override;
+	virtual void Leave() override;
 	
 public:
 	FKMSkillKey SkillKey;

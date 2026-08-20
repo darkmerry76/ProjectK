@@ -42,7 +42,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="Montage"))
 	EKMAnimSlotType SlotType = EKMAnimSlotType::DefaultSlot;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, EditCondition="SlotType==EKMAnimSlotType::OverrideSlot", DisplayAfter="SlotType"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="SlotType"))
+	FName MontageInstanceTag = NAME_None;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, EditCondition="SlotType==EKMAnimSlotType::OverrideSlot", DisplayAfter="MontageInstanceTag"))
 	float SlotBlendInTime = 0.1f;
 
 	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, EditCondition="SlotType==EKMAnimSlotType::OverrideSlot", DisplayAfter="SlotBlendInTime"))
@@ -79,7 +82,7 @@ protected:
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
-
+	
 	void CollectionMontageSection(USkeletalMeshComponent* meshComp, const FAnimNotifyEvent& notifyEvent);
 	
 #if WITH_EDITOR

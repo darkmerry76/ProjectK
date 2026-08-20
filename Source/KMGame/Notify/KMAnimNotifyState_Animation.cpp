@@ -2,6 +2,7 @@
 #include "EMMartialArts.h"
 #include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
+#include "Skill/Ability/KMAbilityEffect.h"
 #include "System/EMMontageCacheManager.h"
 #include "Util/KMUtil.h"
 
@@ -89,7 +90,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 			ownerCharacter->SetMovementOverrideMontage(newContext->ActivatedMontage, newContext->ActivatedMontage);
 		}
 
-		UAnimInstance* targetAnimInstance = targetMeshComp->GetAnimInstance();
+		UKMAnimInstance* targetAnimInstance = Cast<UKMAnimInstance>(targetMeshComp->GetAnimInstance());
 		if (IsValid(targetAnimInstance))
 		{
 			bool bMontagePlay = bIsEqualsPlay;
@@ -108,37 +109,41 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 			
 			if (bMontagePlay)
 			{
-				if (UKMAnimInstance* castTargetAnimInstance = Cast<UKMAnimInstance>(targetAnimInstance))
+				if (SlotType == EKMAnimSlotType::OverrideSlot)
 				{
-					if (SlotType == EKMAnimSlotType::OverrideSlot)
+					if (targetAnimInstance->GetSlotBlendInfo().BlendWeight <= ZERO_ANIMWEIGHT_THRESH)
 					{
-						if (castTargetAnimInstance->GetSlotBlendInfo().BlendWeight <= ZERO_ANIMWEIGHT_THRESH)
-						{
-							FAlphaBlendArgs blendArg;
-							blendArg.BlendOption = EAlphaBlendOption::Linear;
-							blendArg.BlendTime = 0.f;
-							targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
-						}
-						else
-						{
-							targetAnimInstance->Montage_Play(newContext->ActivatedMontage);	
-						}
-						castTargetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, SlotBlendInTime);
+						FAlphaBlendArgs blendArg;
+						blendArg.BlendOption = EAlphaBlendOption::Linear;
+						blendArg.BlendTime = 0.f;
+						targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
 					}
 					else
 					{
-						if (castTargetAnimInstance->GetSlotBlendInfo().BlendWeight > castTargetAnimInstance->GetNextSlotBlendInfo().BlendWeight)
-						{
-							FAlphaBlendArgs blendArg;
-							blendArg.BlendOption = EAlphaBlendOption::Linear;
-							blendArg.BlendTime = 0.f;
-							targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
-						}
-						else
-						{
-							targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
-						}
+						targetAnimInstance->Montage_Play(newContext->ActivatedMontage);	
 					}
+					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, SlotBlendInTime);
+				}
+				else
+				{
+					if (targetAnimInstance->GetSlotBlendInfo().BlendWeight > targetAnimInstance->GetNextSlotBlendInfo().BlendWeight)
+					{
+						FAlphaBlendArgs blendArg;
+						blendArg.BlendOption = EAlphaBlendOption::Linear;
+						blendArg.BlendTime = 0.f;
+						targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
+					}
+					else
+					{
+						targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+					}
+				}
+
+				int32 montageInstanceId = targetAnimInstance->GetLastPlayedMontageInstanceId();
+				newContext->MontageInstance = targetAnimInstance->GetMontageInstanceForID(montageInstanceId);
+				if (MontageInstanceTag != NAME_None)
+				{
+					targetAnimInstance->SetMontageInstanceTag(montageInstanceId, MontageInstanceTag);
 				}
 			}
 			
@@ -168,8 +173,7 @@ void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, 
 {
 	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
 	
-	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
-	if (currContext)
+	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp))
 	{
 		(*currContext)->ElapsedTime += frameDeltaTime;
 	}
@@ -225,6 +229,7 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			}
 		}
 	}
+	
 	Context.Remove(targetMeshComp);
 }
 

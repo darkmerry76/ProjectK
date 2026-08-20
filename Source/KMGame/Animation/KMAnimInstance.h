@@ -47,7 +47,7 @@ protected:
 UCLASS(Abstract)
 class KMGAME_API UKMAnimInstance : public UAnimInstance
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -76,7 +76,9 @@ protected:
 	bool bIsSlotBlending = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector PairLocalOffset = FVector::ZeroVector;;
+	FVector PairLocalOffset = FVector::ZeroVector;
+
+	TMap<FName, int32> TagByMontageInstanceIds;
 
 	FKMMultiSlotBlendInfo NextSlotBlendInfo;
 	float StartBlendWeight = 0.f;
@@ -86,9 +88,10 @@ protected:
 	float MovementElipsedTime = 0.f;
 
 	FKMAnimNodeShakeData ShakeData;
-	
 
 	FKMPairPositionBlendInfo PairBlendInfo;
+
+	int32 LastPlayedMontageInstanceId = INDEX_NONE;
 
 protected:
 	float NextDirection = 0.f;
@@ -129,7 +132,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	void BlendPairPosition(const FTransform& startWorldTransform, const FVector& targetWorldOffset, float newDuration = 0.2f);
-	
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
+	int32 GetLastPlayedMontageInstanceId() const;
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
+	void SetMontageInstanceTag(int32 instanceId, const FName& newTag);
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
+	int32 GetMontageInstanceIdByTag(const FName& tag) const;
+
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
 	const FKMMultiSlotBlendInfo& GetNextSlotBlendInfo() const;
 	const FKMPairPositionBlendInfo& GetPairBlendInfo() const;
@@ -140,6 +152,11 @@ protected:
 	void TickSlotBlend(float deltaTime);
 	void TickShake(float deltaTime);
 	void TickPairBlend(float deltaTime);
+
+	UFUNCTION()
+	virtual void OnMontageStarted_Internal(class UAnimMontage* montage);
+
+	virtual void OnMontageInstanceStopped(FAnimMontageInstance& stoppedMontageInstance) override;
 
 protected:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe, AllowPrivateAccess="true"))

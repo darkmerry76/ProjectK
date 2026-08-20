@@ -105,6 +105,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	static FName GetAnimSlotName(EKMAnimSlotType slotType);
 
+	static struct FAnimMontageInstance* FindMontageInstaceTagByCharacter(const class AKMCharacter* character, const FName& montageInstancetag);
+
 protected:
 	static double GameElipsedStartTime;
 };

@@ -2,6 +2,7 @@
 #include <Tables/Generated/KMTable_Chapter.h>
 #include "AIController.h"
 #include "Animation/BlendSpace1D.h"
+#include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Core/KMGameInstance.h"
 #include "Core/KMGameViewportClient.h"
@@ -518,4 +519,26 @@ bool UKMUtil::ParseIndexedName(const FName& name, TCHAR openDelim, TCHAR closeDe
 FName UKMUtil::GetAnimSlotName(EKMAnimSlotType slotType)
 {
 	return *StaticEnum<EKMAnimSlotType>()->GetNameStringByValue(static_cast<int64>(slotType));
+}
+
+FAnimMontageInstance* UKMUtil::FindMontageInstaceTagByCharacter(const AKMCharacter* character, const FName& montageInstancetag)
+{
+	if (!IsValid(character))
+	{
+		return nullptr;
+	}
+
+	USkeletalMeshComponent* sketalMeshComponent = character->GetMesh();
+	if (!IsValid(sketalMeshComponent))
+	{
+		return nullptr;
+	}
+	
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(sketalMeshComponent->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return nullptr;
+	}
+	
+	return animInstance->GetMontageInstanceForID(animInstance->GetMontageInstanceIdByTag(montageInstancetag));
 }

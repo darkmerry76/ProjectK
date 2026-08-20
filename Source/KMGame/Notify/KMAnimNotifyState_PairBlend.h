@@ -4,6 +4,24 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_PairBlend.generated.h"
 
+USTRUCT()
+struct KMGAME_API FKMAnimNotifyState_Pair_Context
+{
+	GENERATED_USTRUCT_BODY()
+
+	bool IsValid() const;
+
+	UPROPERTY()
+	TObjectPtr<class UKMCharacterInstance> LeaderCharacterInstance = nullptr;
+	struct FAnimMontageInstance* LeaderMontageInstance = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<class UKMCharacterInstance> FollowerCharacterInstance = nullptr;
+	struct FAnimMontageInstance* FollowerMontageInstance = nullptr;
+
+	float ElapsedTime = 0.f;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_PairBlend
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,10 +46,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(EditCondition="bIsStopBlend", AllowPrivateAccess=true, DisplayAfter="bIsStopBlend"))
 	float StopBlendTime = 0.1f;
 
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="SlotType"))
+	FName LeaderMontageInstanceTag = NAME_None;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="MontageLeaderTag"))
+	FName FollowMontageInstanceTag = NAME_None;
+	
+	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Pair_Context>> PairContexts;
+
 protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
+
+	void FollowAnimation(const class USkeletalMeshComponent* meshComp, const FAnimNotifyEventReference& eventReference) const;
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

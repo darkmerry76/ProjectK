@@ -279,6 +279,11 @@ bool FKMSkillInstance::IsComplete() const
 	return false;
 }
 
+void FKMSkillInstance::Leave()
+{
+	FKMAbilityInstanceBase::Leave();
+}
+
 void FKMSkillInstance::AddAssistSkill(TSharedPtr<class FKMSkillInstance> assistSkillInstance)
 {
 	AssistSkills.Emplace(assistSkillInstance);	
