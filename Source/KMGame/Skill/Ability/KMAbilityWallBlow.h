@@ -14,5 +14,5 @@ public:
 	virtual void Deactivate(bool bCancel) override;
 
 	virtual void Impact(const FTransform& newImpactTransform) override;
-	virtual void OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type) override;
+	virtual void OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type) override;
 };

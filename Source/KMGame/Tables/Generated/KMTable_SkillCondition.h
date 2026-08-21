@@ -48,6 +48,10 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 
 	// 이전스킬
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 IsCancel = { false };
+
+	// 이전스킬
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName                TransitionSkill = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

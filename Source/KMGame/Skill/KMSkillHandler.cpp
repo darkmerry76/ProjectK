@@ -104,6 +104,7 @@ void UKMSkillHandler::ClearAllSkills()
 int32 UKMSkillHandler::NumSkillByType(EKMSkillType skilltype) const
 {
 	int32 numSkill = 0;
+
 	for (auto skillInstanceItr = SkillInstances.CreateConstIterator(); skillInstanceItr; ++skillInstanceItr)
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = skillInstanceItr->Value;
@@ -116,7 +117,7 @@ int32 UKMSkillHandler::NumSkillByType(EKMSkillType skilltype) const
 		{
 			continue;
 		}
-
+		
 		++numSkill;
 	}
 	
@@ -417,8 +418,15 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			return -1.f;
 		}
 	}
+	else if (!skillConditionRow->IsCancel)
+	{
+		if (NumSkillByType() > 0)
+		{
+			return -1.f;
+		}
+	}
 
-	if (eventTag.IsValid())
+	if (!skillConditionRow->ReadTag.IsEmpty())
 	{
 		FName eventTagName = *eventTag.ToString();
 		bool bExistTag = false;
@@ -427,6 +435,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			if (tag == eventTagName)
 			{
 				bExistTag = true;
+				break;
 			}
 		}
 		if (!bExistTag)
@@ -436,16 +445,13 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	}
 	
 	FVector ownerForward = ownerCharacter->GetCharacter()->GetActorForwardVector();
-	if (skillConditionRow->LocomotionState == EKMLocomotionState::Land && !characterMovement->IsOnGround())
+	if (skillConditionRow->LocomotionState == EKMLocomotionState::Land && characterMovement->IsAir())
 	{
 		return -1.f;
 	}
 	else if (skillConditionRow->LocomotionState == EKMLocomotionState::Air && !characterMovement->IsAir())
 	{
-		if (!characterMovement->IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
-		{
-			return -1.f;
-		}
+		return -1.f;
 	}
 	
 	float targetDistanceScore = !FMath::IsNearlyZero(skillConditionRow->TargetRange) ? 0.f : 1.f;
@@ -676,10 +682,6 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr
 	{
 		return nullptr;
 	}
-	if (NumSkillByType() > 0)
-	{
-		return nullptr;
-	}
 	return UseTechniqueSkill_Internal(lockOnCluster);
 }
 
@@ -718,6 +720,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill_Internal(const T
 	{
 		return nullptr;
 	}
+	
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Grab_Tag);
 	return nullptr;
 }
@@ -1171,7 +1174,7 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 	UpdateAbilities<FKMSkillKey, FKMAbilityInstanceCooltime>(CooltimeInstances, deltaSeconds);
 	UpdateAbilities<int32, FKMSkillInstance>(SkillInstances, deltaSeconds);
 	UpdateAbilities<int32, FKMSkillEffectInstance>(EffectInstances, deltaSeconds);
-
+	
 	if (!PendingNewAbilities.IsEmpty())
 	{
 		for (auto& pendingNewAbility : PendingNewAbilities)

@@ -2,6 +2,7 @@
 #include "EMCurveWarpingComponent.h"
 #include "EMMartialArtsComponent.h"
 #include "KMAbilityBlow.h"
+#include "Animation/KMAnimInstance.h"
 #include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMMartialArtsComponent.h"
@@ -9,6 +10,7 @@
 #include "Curves/CurveVector.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
+#include "System/EMMontageCacheManager.h"
 #include "System/KMTargetSubsystem.h"
 #include "Util/KMUtil.h"
 
@@ -102,9 +104,12 @@ void UKMAbility::Activate()
 		
 		if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement()))
 		{
-			if (CustomMovementMode != EKMCustomMovementMode::None)
+			if (CustomMovementMode != EKMCustomMovementMode::CMODE_None)
 			{
-				characterMovement->SetCustomMovementMode(CustomMovementMode);
+				if (!(characterMovement->IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump) && CustomMovementMode == EKMCustomMovementMode::CMODE_Walking))
+				{
+					characterMovement->SetCustomMovementMode(CustomMovementMode);
+				}
 			}
 		}
 
@@ -135,7 +140,7 @@ void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 {
 }
 
-void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 }
 
@@ -263,13 +268,26 @@ void UKMAbility::Trigger(const FGameplayTag& eventTag)
 	OnTriggerEvent(eventTag);
 }
 
-FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float playRate, FName startSectionName)
+FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float playRate, FName startSectionName, EKMAnimSlotType slotType, float slotBlendTime)
 {
-	GetOwnerCharacter()->PlayAnimMontage(montage, playRate, startSectionName);
-
-	if (UAnimInstance* animInstance = GetOwnerCharacter()->GetMesh()->GetAnimInstance())
+	UAnimMontage* usedMontage = FEMMontageCacheManager::Get().GetMontageBySlot(montage, UKMUtil::GetAnimSlotName(slotType));
+	if (!IsValid(usedMontage))
 	{
-		return animInstance->GetInstanceForMontage(montage);
+		return nullptr;
+	}
+
+	if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(GetOwnerCharacter()->GetMesh()->GetAnimInstance()))
+	{
+		animInstance->Montage_Play(usedMontage, playRate);
+		if (slotType == EKMAnimSlotType::DefaultSlot)
+		{
+			animInstance->BlendSlot(slotType, 0.f, slotBlendTime);
+		}
+		else if (slotType == EKMAnimSlotType::OverrideSlot)
+		{
+			animInstance->BlendSlot(slotType, 1.f, slotBlendTime);
+		}
+		return animInstance->GetMontageInstanceForID(animInstance->GetLastPlayedMontageInstanceId());
 	}
 	return nullptr;
 }

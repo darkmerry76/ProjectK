@@ -65,8 +65,8 @@ void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float m
 	{
 		Montage = existMontage;
 	}
-
-	MontageInstance = PlayerMontage(Montage, Rate);
+	
+	MontageInstance = PlayerMontage(Montage, Rate, NAME_None, EKMAnimSlotType::DefaultSlot, 0.1f);
 
 	float yawAngle = UKMUtil::Get8WayDirectionYaw(direction);
 	float directionWeight = Get8WayDirectionWeight(direction);

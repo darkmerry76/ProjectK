@@ -180,8 +180,11 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 
 	if (pairContext && (*pairContext)->IsValid())
 	{
-		(*pairContext)->LeaderMontageInstance->MontageSync_StopLeading();
-		(*pairContext)->FollowerMontageInstance->MontageSync_StopFollowing();
-		(*pairContext)->FollowerCharacterInstance->RemoveTimeDilation(TEXT("Follow"));
+		if ((*pairContext)->FollowerMontageInstance->GetMontageSyncLeader() == (*pairContext)->LeaderMontageInstance)
+		{
+			(*pairContext)->FollowerMontageInstance->MontageSync_StopFollowing();
+			(*pairContext)->LeaderMontageInstance->MontageSync_StopLeading();
+			(*pairContext)->FollowerCharacterInstance->RemoveTimeDilation(TEXT("Follow"));
+		}
 	}
 }

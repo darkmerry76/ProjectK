@@ -123,8 +123,7 @@ void UKMCharacterMovementComponent::ProcessOverlapDamage(float deltaSeconds, con
 
 	float radius = ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
 	float halfHeight = ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-
-	TArray<AActor*> overlapActors;
+	
 	TArray<FHitResult> hitResults;
 	if (FVector::Dist(newLocation, oldLocation) > radius * 0.5f)
 	{
@@ -139,6 +138,8 @@ void UKMCharacterMovementComponent::ProcessOverlapDamage(float deltaSeconds, con
 	}
 	else
 	{
+		TArray<AActor*> overlapActors;
+		
 		TArray<AActor*> actorsToIgnore;
 		actorsToIgnore.Emplace(ownerCharacter);
 		UKismetSystemLibrary::CapsuleOverlapActors(this, newLocation, radius, halfHeight,  ObjectTypeQuery, ActorClassFilter, actorsToIgnore, overlapActors);
@@ -203,32 +204,14 @@ bool UKMCharacterMovementComponent::IsCustomMovementMode(EKMCustomMovementMode c
 
 void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc)
 {
+	Super::StartFalling(iterations, remainingTime, timeTick, delta, subLoc);
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
 	{
-		Super::StartFalling(iterations, remainingTime, timeTick, delta,  subLoc);
 		return;
 	}
-	
-	SetMovementMode(MOVE_Custom);
-
-	StartCustomFalling(Velocity);
 
 	ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Jump_0);
-}
-
-void UKMCharacterMovementComponent::StartCustomFalling(const FVector& latestMoveDelta)
-{
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter)) return;
-
-	Velocity.X = latestMoveDelta.X;
-	Velocity.Y = latestMoveDelta.Y;
-	Velocity.Z = latestMoveDelta.Z;
-
-	FallTime = 0.f;
-
-	SetCustomMovementMode(EKMCustomMovementMode::CMODE_Falling);
 }
 
 void UKMCharacterMovementComponent::PhysCustom(float deltaTime, int32 iterations)
@@ -236,11 +219,6 @@ void UKMCharacterMovementComponent::PhysCustom(float deltaTime, int32 iterations
 	Super::PhysCustom(deltaTime, iterations);
 
 	CustomMovementDelegate.Broadcast(deltaTime, iterations);
-
-	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling))
-	{
-		UpdateCustomFalling(deltaTime);
-	}
 }
 
 void UKMCharacterMovementComponent::SetCustomWalkingAnimation(UAnimSequence* animSequence)
@@ -324,17 +302,8 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime)
 		{
 			blockedDelta = targetCharacterMovement->BlockMoveDelta;
 		}
-
-/*		if (blockedDelta.Size() > 50.f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Red, FString::Printf(TEXT("Overflow BlockedDelta=%s"),  *blockedDelta.ToString()));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::White, FString::Printf(TEXT("blockedDelta=%s"),  *blockedDelta.ToString()));
-		}*/
+		
 		CustomMovementWalking(FVector(blockedDelta.X * -1.f, blockedDelta.Y * -1.f, GetGravityZ() * deltaTime * 0.5f), deltaTime);
-
 		targetCharacterMovement->BlockHitResult.Reset();
 	}
 }
@@ -404,24 +373,6 @@ void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iteration
 	Super::PhysWalking(deltaTime, iterations);
 }
 
-void UKMCharacterMovementComponent::PlayCurveWarping(UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ, bool bAutoEndingWalk)
-{
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return;
-	}
-
-	curveWarping->PlayCurveWarpjng(newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ, bAutoEndingWalk);
-	SetCustomMovementMode(EKMCustomMovementMode::CMODE_Flying);
-}
-
 void UKMCharacterMovementComponent::CustomJump()
 {
 	if (!IsValid(JumpCurve))
@@ -457,46 +408,7 @@ void UKMCharacterMovementComponent::CustomJump()
 	curveWarping->PlayCurveWarpjng(JumpCurve, targetLocation, JumpDuration,  zScale, false, false);
 }
 
-void UKMCharacterMovementComponent::StartCurveEndingFalling(const UCurveVector* curveVector, const FEMCurveWarpingInstance& curveWarpingInstance)
-{
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return;
-	}
-	
-	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump) ||
-		IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling))
-	{
-		SetCustomMovementMode(EKMCustomMovementMode::CMODE_Falling);
-		if (IsValid(curveVector))
-		{
-			const float sampleTime = 1.f / 60.f;
-			FVector v1 = curveVector->GetVectorValue(1.f - sampleTime);
-			FVector v2 = curveVector->GetVectorValue(1.f);
-
-			FVector CalculatedVelocity = (v2 - v1) / sampleTime;
-			const FQuat meshRotation = curveWarping->StartMeshQuat;
-			CalculatedVelocity = meshRotation.RotateVector(CalculatedVelocity);
-
-			CalculatedVelocity = CalculatedVelocity * FVector(5.f * FMath::Abs(LatestJumpInputDir.X), 5.f * FMath::Abs(LatestJumpInputDir.Y), 1.f);
-					
-			StartCustomFalling(CalculatedVelocity);
-		}
-	}
-	else
-	{
-		SetMovementMode(MOVE_Walking);
-	}
-}
-
-void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -519,49 +431,28 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, co
 	switch (type)
 	{
 	case EEMCurveWarpingInteruptType::Ending:
-		if (!IsOnGround())
+		if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
 		{
-			StartCurveEndingFalling(JumpCurve, curveWarpingInstance);
+			Velocity = moveDelta * (1.f / deltaTime);
+			SetMovementMode(MOVE_Falling);
 		}
 		else
+		{
+			SetMovementMode(MOVE_Walking);
+		}
+		SetCustomMovementMode(EKMCustomMovementMode::CMODE_None);
+		break;
+	case EEMCurveWarpingInteruptType::Landing:
 		{
 			FHitResult hitResult;
 			hitResult.ImpactPoint = ownerCharacter->GetActorLocation();
 			ownerCharacter->Landed(hitResult);
+
 			SetMovementMode(MOVE_Walking);
 		}
-		break;
-	case EEMCurveWarpingInteruptType::Landing:
-		{
-			ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
-			Velocity = FVector::ZeroVector;
-			SetMovementMode(MOVE_Walking);
-			SetCustomMovementMode(EKMCustomMovementMode::CMODE_Walking);
-		}
+		SetCustomMovementMode(EKMCustomMovementMode::CMODE_None);
 		break;
 	default: break;
-	}
-}
-
-void UKMCharacterMovementComponent::UpdateCustomFalling(float deltaTime)
-{
-	FallTime += deltaTime;
-	Velocity.Z += GetGravityZ() * deltaTime;
-
-	UEMCurveWarpingComponent* curveWarping = nullptr;
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (IsValid(ownerCharacter))
-	{
-		curveWarping = ownerCharacter->GetCurveWarping();
-	}
-
-	const FVector adjusted = Velocity * deltaTime;
-	if (!CustomMovement(adjusted, deltaTime))
-	{
-		if(IsValid(curveWarping))
-		{
-			curveWarping->GetInteruptDelegate().Broadcast(adjusted, FEMCurveWarpingInstance::Empty(), EEMCurveWarpingInteruptType::Landing);	
-		}
 	}
 }
 
@@ -574,13 +465,13 @@ bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, floa
 	{
 		bResult = CustomMovementWalking(adjusted, deltaTime);
 	}
-	else if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Falling) || IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
+	else if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
 	{
 		bResult = CustomMovementFalling(adjusted, deltaTime);
 	}
 	else
 	{
-		bResult =CustomMovementFlying(adjusted, deltaTime);
+		bResult = CustomMovementFlying(adjusted, deltaTime);
 	}
 	FVector actualDelta = UpdatedComponent->GetComponentLocation() - startLocation;
 	BlockMoveDelta = FVector(adjusted.X - actualDelta.X,adjusted.Y - actualDelta.Y,0.f);
@@ -602,13 +493,6 @@ bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjuste
 		{
 			SlideAlongSurface(adjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
 		}
-	}
-	FFindFloorResult floorResult;
-	FindFloor(UpdatedComponent->GetComponentLocation(), floorResult, false);
-
-	if (!floorResult.IsWalkableFloor())
-	{
-		SetCustomMovementMode(EKMCustomMovementMode::CMODE_Falling);
 	}
 	return true;
 }
@@ -730,15 +614,23 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 	{
 		if (CurrentFloor.IsWalkableFloor() && CurrentFloor.FloorDist <= MIN_TICK_DIST)
 		{
-			return true;
+			//return true;
 		}
 
-		FFindFloorResult FloorResult;
-		FindFloor(UpdatedComponent->GetComponentLocation(), FloorResult, false);
+		FFindFloorResult floorResult;
+		//FindFloor(UpdatedComponent->GetComponentLocation(), FloorResult, false);
 
-		if (FloorResult.IsWalkableFloor())
+		ComputeFloorDist(
+			UpdatedComponent->GetComponentLocation(),
+	MaxStepHeight,
+	MaxStepHeight,
+		floorResult,
+		CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius(),
+	nullptr);
+
+		if (floorResult.IsWalkableFloor())
 		{
-			if (FloorResult.FloorDist <= MaxStepHeight) 
+			if (floorResult.FloorDist <= MAX_FLOOR_DIST)
 			{
 				return true;
 			}
@@ -750,7 +642,11 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 
 bool UKMCharacterMovementComponent::IsAir() const
 {
-	return !IsOnGround();
+	if (MovementMode == MOVE_Custom)
+	{
+		return !IsOnGround();
+	}
+	return IsFalling();
 }
 
 void UKMCharacterMovementComponent::StartFollowActor(AActor* newFollowActor, const FVector& targetOffset, float duration)

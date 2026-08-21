@@ -8,11 +8,10 @@
 UENUM(BlueprintType)
 enum class EKMCustomMovementMode : uint8
 {
-	None,
+	CMODE_None,
 	CMODE_Walking,
 	CMODE_Flying,
 	CMODE_Jump,
-	CMODE_Falling,
 };
 
 struct KMGAME_API FKMBlockReflectionData
@@ -52,7 +51,7 @@ public:
 
 	float FallTime = 0.f;
 
-	EKMCustomMovementMode MovementModeEx;
+	EKMCustomMovementMode MovementModeEx = EKMCustomMovementMode::CMODE_None;
 
 	FVector LatestJumpInputDir = FVector::ZeroVector;
 
@@ -81,11 +80,6 @@ public:
 	void CustomJump();
 
 	virtual bool CustomMovement(const FVector& adjusted, float deltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	void PlayCurveWarping(UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ, bool bAutoEndingWalk);
-
-	void StartCurveEndingFalling(const class UCurveVector* curveVector, const FEMCurveWarpingInstance& curveWarpingInstance);
 
 	bool IsOnGround() const;
 	bool IsAir() const;
@@ -137,10 +131,7 @@ protected:
 	virtual void StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc) override;
 	
 	UFUNCTION()
-	void OnJumpInterrupt(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
-
-	void StartCustomFalling(const FVector& latestMoveDelta);
-	void UpdateCustomFalling(float deltaTime);
+	void OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
 
 	class AKMCharacter* GetOwnerCharacter() const;
 	class UKMCharacterInstance* GetOwnerCharacterInstance() const;

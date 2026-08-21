@@ -81,7 +81,9 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 		{
 			if (GFrameCounter - LasteLandedFrameCount > 1)
 			{
+				MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
 				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
+				GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::White, FString::Printf(TEXT("Landed=%s"), *GetName()));
 				LasteLandedFrameCount = GFrameCounter;
 			}
 		}

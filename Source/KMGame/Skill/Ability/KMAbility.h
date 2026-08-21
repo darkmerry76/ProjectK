@@ -4,6 +4,7 @@
 #include "EMMartialArts.h"
 #include "GameplayTagContainer.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Core/KMDefine.h"
 #include "KMAbility.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
@@ -154,7 +155,7 @@ public:
 	int32 GetMartialArtsHandle() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCurveWarpingInterrupt(const FVector& moveDelta, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
+	void OnCurveWarpingInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ForceComplate();
@@ -163,7 +164,7 @@ public:
 	void InverseDirection(bool bForce = false);
 
 protected:
-	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None);
+	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None, EKMAnimSlotType slotType = EKMAnimSlotType::DefaultSlot, float slotBlendTime = 0.1f);
 	void StopMontage(class UAnimMontage* montage);
 
 protected:
