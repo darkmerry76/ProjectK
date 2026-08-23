@@ -542,3 +542,25 @@ FAnimMontageInstance* UKMUtil::FindMontageInstaceTagByCharacter(const AKMCharact
 	
 	return animInstance->GetMontageInstanceForID(animInstance->GetMontageInstanceIdByTag(montageInstancetag));
 }
+
+FAnimMontageInstance* UKMUtil::GetActiveMontageInstance(const AKMCharacter* character)
+{
+	if (!IsValid(character))
+	{
+		return nullptr;
+	}
+
+	USkeletalMeshComponent* sketalMeshComponent = character->GetMesh();
+	if (!IsValid(sketalMeshComponent))
+	{
+		return nullptr;
+	}
+	
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(sketalMeshComponent->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return nullptr;
+	}
+	
+	return animInstance->GetActiveMontageInstance();
+}

@@ -38,7 +38,7 @@ void AKMCharacterMonster::Tick(float DeltaTime)
 			{
 				latestVelocity.Normalize();
 				float circularAngle = UKMUtil::GetCircularAngle2D(latestVelocity);
-				GetCharacterInstance()->SetCharacterDirection(circularAngle);
+				//GetCharacterInstance()->SetCharacterDirection(circularAngle);
 			}
 			
 			//animInstance->NextDirection = 0.5f + (GetActorForwardVector().X * 0.5f);			

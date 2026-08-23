@@ -32,6 +32,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	float VerticalPower = 100.f;
 
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadOnly)
+	FVector Impulse = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadOnly)
+	float ImpulseDuration = 0.2f;
+	
 	UPROPERTY(EditAnywhere, Category="Curve", DisplayName="ClearCurve", BlueprintReadWrite)
 	bool bIsClearCurve = false;
 

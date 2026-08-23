@@ -671,7 +671,7 @@ void UKMCharacterInstance::Stiff(float duration, bool bReset)
 	{
 		return;
 	}
-	
+
 	float newDuration = duration;
 	if (StiffTimerHandle.IsValid())
 	{

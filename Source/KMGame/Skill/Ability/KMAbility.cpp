@@ -86,16 +86,16 @@ void UKMAbility::Activate()
 	UEMMartialArts* martialArts = GetMartialArts();
 	check(IsValid(martialArts));
 
+	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	check(IsValid(curveWarping));
+
+	if (bIsClearCurve)
+	{
+		curveWarping->ClearCurveWarping();
+	}
+
 	if (IsValid(BlowCurve))
 	{
-		UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-		check(IsValid(curveWarping));
-
-		if (bIsClearCurve)
-		{
-			curveWarping->ClearCurveWarping();
-		}
-		
 		FVector actorForwardVector = ownerCharacter->GetActorForwardVector();
 		actorForwardVector.Z = 0.f;
 		actorForwardVector.Normalize();
@@ -108,6 +108,13 @@ void UKMAbility::Activate()
 		}
 		curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
 	}
+
+	if (!Impulse.IsNearlyZero())
+	{
+		FVector impulseTargetLocation = ownerCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * Impulse);
+		curveWarping->PlayLinearWarp(impulseTargetLocation, ImpulseDuration);
+	}
+	
 	OnActivated();
 }
 

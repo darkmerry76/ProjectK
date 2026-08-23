@@ -118,6 +118,7 @@ protected:
 	bool CustomMovementWalking(const FVector& adjusted, float deltaTime, int32 iterations);
 	
 	virtual void StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc) override;
+	virtual void PhysFalling(float deltaTime, int32 iterations ) override;
 
 	UFUNCTION()
 	void OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode newMovementMode);

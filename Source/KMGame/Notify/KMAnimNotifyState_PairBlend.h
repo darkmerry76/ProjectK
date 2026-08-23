@@ -46,10 +46,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(EditCondition="bIsStopBlend", AllowPrivateAccess=true, DisplayAfter="bIsStopBlend"))
 	float StopBlendTime = 0.1f;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="SlotType"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="BlockReflection", meta=(AllowPrivateAccess=true, DisplayAfter="StopBlendTime"))
+	bool bIsBlockReflection = false;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsBlockReflection"))
 	FName LeaderMontageInstanceTag = NAME_None;
 
-	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="MontageLeaderTag"))
+	UPROPERTY(EditAnywhere, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="LeaderMontageInstanceTag"))
 	FName FollowMontageInstanceTag = NAME_None;
 	
 	TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_Pair_Context>> PairContexts;

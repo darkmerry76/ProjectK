@@ -107,6 +107,8 @@ public:
 
 	static struct FAnimMontageInstance* FindMontageInstaceTagByCharacter(const class AKMCharacter* character, const FName& montageInstancetag);
 
+	static struct FAnimMontageInstance* GetActiveMontageInstance(const class AKMCharacter* character);
+
 protected:
 	static double GameElipsedStartTime;
 };

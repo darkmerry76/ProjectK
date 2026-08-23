@@ -66,8 +66,13 @@ void UKMAnimNotifyState_PairBlend::FollowAnimation(const USkeletalMeshComponent*
 				pairContext->LeaderCharacterInstance = characterItr->GetCharacterInstance();
 				pairContext->LeaderMontageInstance = leaderMontageInstance;
 			}
-			else if (FAnimMontageInstance* followMontageInstance = UKMUtil::FindMontageInstaceTagByCharacter(characterItr, FollowMontageInstanceTag))
+			else 
 			{
+				FAnimMontageInstance* followMontageInstance = UKMUtil::FindMontageInstaceTagByCharacter(characterItr, FollowMontageInstanceTag);
+				if (!followMontageInstance)
+				{
+					followMontageInstance = UKMUtil::GetActiveMontageInstance(characterItr);
+				}
 				pairContext->FollowerCharacterInstance = characterItr->GetCharacterInstance();
 				pairContext->FollowerMontageInstance = followMontageInstance;
 			}
@@ -110,27 +115,29 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 	TSharedPtr<FKMAnimNotifyState_Pair_Context> newPairContext = MakeShared<FKMAnimNotifyState_Pair_Context>();
 	PairContexts.Emplace(meshComp,newPairContext);
 
-	if (bIsStartBlend)
+	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
 	{
-		if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+		if (UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(martialArtsData->GetAbility()))
 		{
-			if (UKMAbilityPaired* abilityPaired = Cast<UKMAbilityPaired>(martialArtsData->GetAbility()))
+			AKMCharacter* casterCharacter = abilityEffect->GetCasterCharacter();
+			if (!IsValid(casterCharacter))
 			{
-				AKMCharacter* casterCharacter = abilityPaired->GetCasterCharacter();
-				if (!IsValid(casterCharacter))
-				{
-					return;
-				}
-				UKMCharacterMovementComponent* casterCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(casterCharacter->GetCharacterMovement());
-				if (!IsValid(casterCharacterMovementComponent))
-				{
-					return;
-				}
-				
+				return;
+			}
+			UKMCharacterMovementComponent* casterCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(casterCharacter->GetCharacterMovement());
+			if (!IsValid(casterCharacterMovementComponent))
+			{
+				return;
+			}
+
+			if (bIsStartBlend)
+			{
 				FVector warpLocation = casterCharacter->GetActorLocation() + (casterCharacter->GetActorForwardVector() * PairOffset.X) + (casterCharacter->GetActorRightVector() * PairOffset.Y);
 				curveWarpingComponent->PlayLinearWarp(warpLocation, 0.1f);
-
-				casterCharacterMovementComponent->RegisterMoveBlockReflection(ownerCharacter);			
+			}
+			if (bIsBlockReflection)
+			{
+				casterCharacterMovementComponent->RegisterMoveBlockReflection(ownerCharacter);
 			}
 		}
 	}
@@ -138,7 +145,7 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 void UKMAnimNotifyState_PairBlend::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (LeaderMontageInstanceTag != NAME_None && FollowMontageInstanceTag != NAME_None)
+	if (LeaderMontageInstanceTag != NAME_None)
 	{
 		FollowAnimation(meshComp, eventReference);
 	}
@@ -162,9 +169,9 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 
 	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
 	{
-		if (UKMAbilityPaired* abilityPaired = Cast<UKMAbilityPaired>(martialArtsData->GetAbility()))
+		if (UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(martialArtsData->GetAbility()))
 		{
-			AKMCharacter* casterCharacter = abilityPaired->GetCasterCharacter();
+			AKMCharacter* casterCharacter = abilityEffect->GetCasterCharacter();
 			if (!IsValid(casterCharacter))
 			{
 				return;
@@ -174,7 +181,10 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			{
 				return;
 			}
-			casterCharacterMovementComponent->UnregisterMoveBlockReflection(ownerCharacter);
+			if (bIsBlockReflection)
+			{
+				casterCharacterMovementComponent->UnregisterMoveBlockReflection(ownerCharacter);
+			}
 		}
 	}
 
