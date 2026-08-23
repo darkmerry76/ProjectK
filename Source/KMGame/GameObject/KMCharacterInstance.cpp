@@ -667,7 +667,7 @@ void UKMCharacterInstance::ShakeRoot(float newDistance, float newFrequency, floa
 
 void UKMCharacterInstance::Stiff(float duration, bool bReset)
 {
-	if (duration <= 0.f)
+	if (FMath::IsNearlyZero(duration))
 	{
 		return;
 	}
@@ -919,7 +919,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 		{
 			if (SkillHandler->CanUseSkill(dashSkillKey, nullptr))
 			{
-				SkillHandler->ClearActiveSkills();
+				SkillHandler->ClearActiveSkills(true);
 				TSharedPtr<FKMSkillInstance> cancelSkillInstance = SkillHandler->UseSkill(dashSkillKey, nullptr);
 				if (cancelSkillInstance.IsValid())
 				{
@@ -1134,7 +1134,12 @@ void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRot
 	{
 		return;
 	}
-	
+
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
+	{
+		return;
+	}
+
 	if (FMath::IsNearlyEqual(CharacterDirection, direction) && !bForceRotate)
 	{
 		return;

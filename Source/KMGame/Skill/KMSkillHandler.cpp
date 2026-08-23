@@ -37,7 +37,7 @@ void UKMSkillHandler::ClearResisterSkillSet()
 	CooltimeInstances.Empty();
 }
 
-void UKMSkillHandler::ClearActiveSkills()
+void UKMSkillHandler::ClearActiveSkills(bool bCancel)
 {
 	ComboData.Reset();
 	
@@ -56,6 +56,10 @@ void UKMSkillHandler::ClearActiveSkills()
 		if (TSharedPtr<FKMAbilityInstanceCooltime>* timerInstance = CooltimeInstances.Find(skillInstance->SkillKey))
 		{
 			(*timerInstance)->ForceReady();
+		}
+		if (bCancel)
+		{
+			skillInstance->Cancel();
 		}
 		skillInstance->SetForceComplete(true);
 	}

@@ -97,8 +97,8 @@ void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick ti
 	bHasResolvedBlockMove = false;
 	
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
-	
-	MoveBlockProcessing(deltaTime);
+
+	MoveBlockProcessing(deltaTime, 1);
 }
 
 void UKMCharacterMovementComponent::ProcessOverlapDamage(float deltaSeconds, const FVector& oldLocation, const FVector& newLocation)
@@ -192,16 +192,6 @@ void UKMCharacterMovementComponent::OnMovementUpdated(float deltaSeconds, const 
 	ProcessOverlapDamage(deltaSeconds, oldLocation, UpdatedComponent->GetComponentLocation());
 }
 
-void UKMCharacterMovementComponent::SetCustomMovementMode(EKMCustomMovementMode newCustomMovementMode)
-{
-	MovementModeEx = newCustomMovementMode;
-}
-
-bool UKMCharacterMovementComponent::IsCustomMovementMode(EKMCustomMovementMode customMovementMode) const
-{
-	return MovementModeEx == customMovementMode;
-}
-
 void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc)
 {
 	Super::StartFalling(iterations, remainingTime, timeTick, delta, subLoc);
@@ -217,8 +207,6 @@ void UKMCharacterMovementComponent::StartFalling(int32 iterations, float remaini
 void UKMCharacterMovementComponent::PhysCustom(float deltaTime, int32 iterations)
 {
 	Super::PhysCustom(deltaTime, iterations);
-
-	CustomMovementDelegate.Broadcast(deltaTime, iterations);
 }
 
 void UKMCharacterMovementComponent::SetCustomWalkingAnimation(UAnimSequence* animSequence)
@@ -274,7 +262,7 @@ void UKMCharacterMovementComponent::RegisterMoveBlockReflection(AKMCharacter* ta
 	BlockReflections.Emplace(newBlockReflectionData);
 }
 
-void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime)
+void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 iterations)
 {
 	for (auto blockReflection : BlockReflections)
 	{
@@ -303,7 +291,7 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime)
 			blockedDelta = targetCharacterMovement->BlockMoveDelta;
 		}
 		
-		CustomMovementWalking(FVector(blockedDelta.X * -1.f, blockedDelta.Y * -1.f, GetGravityZ() * deltaTime * 0.5f), deltaTime);
+		CustomMovementWalking(FVector(blockedDelta.X * -1.f, blockedDelta.Y * -1.f, GetGravityZ() * deltaTime * 0.5f), deltaTime, iterations);
 		targetCharacterMovement->BlockHitResult.Reset();
 	}
 }
@@ -366,7 +354,7 @@ void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iteration
 		FVector moveDirection = ownerCharacter->GetActorForwardVector() * rootMotion.GetLocation().Size2D() * (bRun ? 2.5f : 1.f) * movementInput;
 		
 		Velocity = ownerCharacter->GetActorForwardVector() * 700.f * movementInput;
-		CustomMovementWalking(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f), deltaTime);
+		CustomMovementWalking(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f), deltaTime, iterations);
 		return;
 	}
 	
@@ -391,9 +379,6 @@ void UKMCharacterMovementComponent::CustomJump()
 	{
 		return;
 	}
-	
-	SetCustomMovementMode(EKMCustomMovementMode::CMODE_Jump);
-	
 	LatestJumpInputDir = ownerCharacter->GetLastMovementInputVector();
 	LatestJumpInputDir.Normalize();
 
@@ -405,10 +390,10 @@ void UKMCharacterMovementComponent::CustomJump()
 	float zScale = JumpApexHeight / maxValue;
 
 	ownerCharacter->MontqagePlayTag(FKMGameplayTagName::Anim_Jump_0);
-	curveWarping->PlayCurveWarpjng(JumpCurve, targetLocation, JumpDuration,  zScale, false, false);
+	curveWarping->PlayCurveWarping(EEMCustomMovementMode::CMODE_Falling, JumpCurve, targetLocation, JumpDuration,  zScale, false);
 }
 
-void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode newMovementMode)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -428,51 +413,44 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 		return;
 	}
 	
-	switch (type)
+	if (newMovementMode == EEMCustomMovementMode::CMODE_Falling)
 	{
-	case EEMCurveWarpingInteruptType::Ending:
-		if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
+		if (interuptType == EEMCurveWarpingInteruptType::Landing)
 		{
-			Velocity = moveDelta * (1.f / deltaTime);
-			SetMovementMode(MOVE_Falling);
+			SetMovementMode(MOVE_Walking);
 		}
 		else
 		{
-			SetMovementMode(MOVE_Walking);
+			Velocity = moveDelta / (FMath::IsNearlyZero(deltaTime) ? 1.f : deltaTime);
+			SetMovementMode(MOVE_Falling);
 		}
-		SetCustomMovementMode(EKMCustomMovementMode::CMODE_None);
-		break;
-	case EEMCurveWarpingInteruptType::Landing:
-		{
-			FHitResult hitResult;
-			hitResult.ImpactPoint = ownerCharacter->GetActorLocation();
-			ownerCharacter->Landed(hitResult);
-
-			SetMovementMode(MOVE_Walking);
-		}
-		SetCustomMovementMode(EKMCustomMovementMode::CMODE_None);
-		break;
-	default: break;
 	}
 }
 
-bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, float deltaTime)
+void UKMCharacterMovementComponent::StartNewPhysics(float deltaTime, int32 iterations)
+{
+	Super::StartNewPhysics(deltaTime, iterations);
+	CustomMovementDelegate.Broadcast(deltaTime, iterations);
+}
+
+bool UKMCharacterMovementComponent::CustomMovement(EEMCustomMovementMode movementMode, const FVector& adjusted, float deltaTime, int32 iterations)
 {
 	FVector startLocation = UpdatedComponent->GetComponentLocation();
 
 	bool bResult = true;
-	if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Walking))
+	if (movementMode == EEMCustomMovementMode::CMODE_Walking)
 	{
-		bResult = CustomMovementWalking(adjusted, deltaTime);
+		bResult = CustomMovementWalking(adjusted, deltaTime, iterations);
 	}
-	else if (IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump))
+	else if (movementMode == EEMCustomMovementMode::CMODE_Falling)
 	{
-		bResult = CustomMovementFalling(adjusted, deltaTime);
+		bResult = CustomMovementFalling(adjusted, deltaTime, iterations);
 	}
-	else
+	else if (movementMode == EEMCustomMovementMode::CMODE_Flying)
 	{
-		bResult = CustomMovementFlying(adjusted, deltaTime);
+		bResult = CustomMovementFlying(adjusted, deltaTime, iterations);
 	}
+
 	FVector actualDelta = UpdatedComponent->GetComponentLocation() - startLocation;
 	BlockMoveDelta = FVector(adjusted.X - actualDelta.X,adjusted.Y - actualDelta.Y,0.f);
 	bHasResolvedBlockMove = true;
@@ -480,110 +458,126 @@ bool UKMCharacterMovementComponent::CustomMovement(const FVector& adjusted, floa
 	return bResult;
 }
 
-bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjusted, float deltaTime)
+bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjusted, float deltaTime, int32 iterations)
 {
 	FHitResult hitResult;
-	FVector finalAdjusted = FVector(adjusted.X, adjusted.Y, GetGravityZ() * deltaTime * 0.5f);
+	FVector finalAdjusted = FVector(adjusted.X, adjusted.Y, adjusted.Z);
 	SafeMoveUpdatedComponent(finalAdjusted, UpdatedComponent->GetComponentRotation(), true, hitResult);
 	if (hitResult.bBlockingHit)
 	{
 		FVector gravDir = FVector(0.f, 0.f, -1.f); 
         
-		if (!StepUp(gravDir, adjusted, hitResult, nullptr))
+		if (!StepUp(gravDir, finalAdjusted, hitResult, nullptr))
 		{
-			SlideAlongSurface(adjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
+			SlideAlongSurface(finalAdjusted, 1.f - hitResult.Time, hitResult.Normal, hitResult, true);
 		}
 	}
 	return true;
 }
 
-bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjusted, float deltaTime)
+void UKMCharacterMovementComponent::ProcessLanded(const FHitResult& hit, float remainingTime, int32 iterations)
+{
+	Super::ProcessLanded(hit, remainingTime, iterations);
+}
+
+bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjusted, float deltaTime, int32 iterations)
 {
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
 	if (!IsValid(ownerCharacter))
 	{
 		return false;
 	}
-	FHitResult hitResult;
-	SafeMoveUpdatedComponent(adjusted, UpdatedComponent->GetComponentRotation(), true, hitResult);
-
-	float subTimeTickRemaining = deltaTime * (1.f - hitResult.Time);
-	float lastMoveTimeSlice = deltaTime;
-	if (hitResult.bBlockingHit)
+	float remainingTime = deltaTime;
+	int32 Iterations = 0.f;
+	while( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) )
 	{
-		if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
-		{
-			ownerCharacter->Landed(hitResult);
-			return false;	
-		}
-		else
-		{
-			if (!hitResult.bStartPenetrating && ShouldCheckForValidLandingSpot(deltaTime, adjusted, hitResult))
-			{
-				const FVector pawnLocation = UpdatedComponent->GetComponentLocation();
-				FFindFloorResult floorResult;
-				FindFloor(pawnLocation, floorResult, false);
+		Iterations++;
+		float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
+		remainingTime -= timeTick;
 
-				if (!floorResult.bLineTrace && adjusted.Z < 0.f && floorResult.IsWalkableFloor() && IsValidLandingSpot(pawnLocation, floorResult.HitResult))
-				{
-					ownerCharacter->Landed(floorResult.HitResult);
-					return false;
-				}
+		FVector finalAdjusted = adjusted * (timeTick / deltaTime);
+		FHitResult hitResult;
+		SafeMoveUpdatedComponent(finalAdjusted, UpdatedComponent->GetComponentRotation(), true, hitResult);
+
+		float subTimeTickRemaining = deltaTime * (1.f - hitResult.Time);
+		float lastMoveTimeSlice = deltaTime;
+		if (hitResult.bBlockingHit)
+		{
+			if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
+			{
+				ProcessLanded(hitResult, remainingTime, Iterations);
+				return false;
 			}
-
-			const FVector oldHitNormal = hitResult.Normal;
-			const FVector oldHitImpactNormal = hitResult.ImpactNormal;				
-			FVector delta = ComputeSlideVector(adjusted, 1.f - hitResult.Time, oldHitNormal, hitResult);
-			if (subTimeTickRemaining > UE_KINDA_SMALL_NUMBER && (delta | adjusted) > 0.f)
+			else
 			{
-				SafeMoveUpdatedComponent( delta, UpdatedComponent->GetComponentRotation(), true, hitResult);
-				if (hitResult.bBlockingHit)
+				if (!hitResult.bStartPenetrating && ShouldCheckForValidLandingSpot(deltaTime, finalAdjusted, hitResult))
 				{
-					subTimeTickRemaining = subTimeTickRemaining * (1.f - hitResult.Time);
+					const FVector pawnLocation = UpdatedComponent->GetComponentLocation();
+					FFindFloorResult floorResult;
+					FindFloor(pawnLocation, floorResult, false);
 
-					if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
+					if (!floorResult.bLineTrace && finalAdjusted.Z < 0.f && floorResult.IsWalkableFloor() && IsValidLandingSpot(pawnLocation, floorResult.HitResult))
 					{
-						ownerCharacter->Landed(hitResult);
+						ProcessLanded(floorResult.HitResult, remainingTime, Iterations);
 						return false;
 					}
-					lastMoveTimeSlice = subTimeTickRemaining;
-					HandleImpact(hitResult, lastMoveTimeSlice, delta);
-					TwoWallAdjust(delta, hitResult, oldHitNormal);
+				}
 
-					bool bDitch = ( (GetGravitySpaceZ(oldHitImpactNormal) > 0.f) &&
-						(GetGravitySpaceZ(hitResult.ImpactNormal) > 0.f) && (FMath::Abs(GetGravitySpaceZ(delta)) <= UE_KINDA_SMALL_NUMBER) && ((hitResult.ImpactNormal | oldHitImpactNormal) < 0.f) );
-
+				const FVector oldHitNormal = hitResult.Normal;
+				const FVector oldHitImpactNormal = hitResult.ImpactNormal;				
+				FVector delta = ComputeSlideVector(finalAdjusted, 1.f - hitResult.Time, oldHitNormal, hitResult);
+				if (subTimeTickRemaining > UE_KINDA_SMALL_NUMBER && (delta | finalAdjusted) > 0.f)
+				{
 					SafeMoveUpdatedComponent( delta, UpdatedComponent->GetComponentRotation(), true, hitResult);
-					if (hitResult.Time == 0.f )
+					if (hitResult.bBlockingHit)
 					{
-						FVector sideDelta = ProjectToGravityFloor(oldHitNormal + hitResult.ImpactNormal).GetSafeNormal();
-						if(sideDelta.IsNearlyZero())
+						subTimeTickRemaining = subTimeTickRemaining * (1.f - hitResult.Time);
+
+						if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 						{
-							if (HasCustomGravity())
-							{
-								const FVector gravityRelativeHitNormal = RotateWorldToGravity(oldHitNormal);
-								sideDelta = RotateGravityToWorld(FVector(gravityRelativeHitNormal.Y, -gravityRelativeHitNormal.X, 0.f)).GetSafeNormal();
-							}
-							else
-							{
-								sideDelta = FVector(oldHitNormal.Y, -oldHitNormal.X, 0).GetSafeNormal();	
-							}
+							ProcessLanded(hitResult, remainingTime, Iterations);
+							return false;
 						}
-						SafeMoveUpdatedComponent(sideDelta, UpdatedComponent->GetComponentRotation(), true, hitResult);
-					}
-					if(bDitch || IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult) || hitResult.Time == 0.f)
-					{
-						ownerCharacter->Landed(hitResult);
-						return false;
+						lastMoveTimeSlice = subTimeTickRemaining;
+						HandleImpact(hitResult, lastMoveTimeSlice, delta);
+						TwoWallAdjust(delta, hitResult, oldHitNormal);
+
+						bool bDitch = ( (GetGravitySpaceZ(oldHitImpactNormal) > 0.f) &&
+							(GetGravitySpaceZ(hitResult.ImpactNormal) > 0.f) && (FMath::Abs(GetGravitySpaceZ(delta)) <= UE_KINDA_SMALL_NUMBER) && ((hitResult.ImpactNormal | oldHitImpactNormal) < 0.f) );
+
+						SafeMoveUpdatedComponent( delta, UpdatedComponent->GetComponentRotation(), true, hitResult);
+						if (hitResult.Time == 0.f )
+						{
+							FVector sideDelta = ProjectToGravityFloor(oldHitNormal + hitResult.ImpactNormal).GetSafeNormal();
+							if(sideDelta.IsNearlyZero())
+							{
+								if (HasCustomGravity())
+								{
+									const FVector gravityRelativeHitNormal = RotateWorldToGravity(oldHitNormal);
+									sideDelta = RotateGravityToWorld(FVector(gravityRelativeHitNormal.Y, -gravityRelativeHitNormal.X, 0.f)).GetSafeNormal();
+								}
+								else
+								{
+									sideDelta = FVector(oldHitNormal.Y, -oldHitNormal.X, 0).GetSafeNormal();	
+								}
+							}
+							SafeMoveUpdatedComponent(sideDelta, UpdatedComponent->GetComponentRotation(), true, hitResult);
+						}
+						if(bDitch || IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult) || hitResult.Time == 0.f)
+						{
+							ProcessLanded(hitResult, remainingTime, Iterations);
+							return false;
+						}
 					}
 				}
 			}
 		}
 	}
+
 	return true;
 }
 
-bool UKMCharacterMovementComponent::CustomMovementFlying(const FVector& adjusted, float deltaTime)
+bool UKMCharacterMovementComponent::CustomMovementFlying(const FVector& adjusted, float deltaTime, int32 iterations)
 {
     ACharacter* ownerCharacter = Cast<ACharacter>(GetOwner());
     if (!IsValid(ownerCharacter)) return true;

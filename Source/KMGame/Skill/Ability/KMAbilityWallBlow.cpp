@@ -12,7 +12,7 @@ void UKMAbilityWallBlow::Activate()
 	Super::Activate();
 }
 
-void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode movementMode)
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	check(IsValid(ownerCharacter));
@@ -20,9 +20,9 @@ void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& m
 	UKMSkillHandler* skillHandler = ownerCharacter->GetCharacterInstance()->GetSkillHandler();
 	if (IsValid(skillHandler))
 	{
-		switch(type)
+		switch(movementMode)
 		{
-		case EEMCurveWarpingInteruptType::Ending: skillHandler->TriggerTransitionSkillEffect(FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
+		case EEMCustomMovementMode::CMODE_Falling: skillHandler->TriggerTransitionSkillEffect(FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
 		default:break;
 		}
 	}

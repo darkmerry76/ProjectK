@@ -102,22 +102,11 @@ void UKMAbility::Activate()
 
 		FVector targetLocation = ownerCharacter->GetActorLocation() + (HorizontalPower * ownerCharacter->GetActorForwardVector() * -1.f);
 		
-		if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement()))
-		{
-			if (CustomMovementMode != EKMCustomMovementMode::CMODE_None)
-			{
-				if (!(characterMovement->IsCustomMovementMode(EKMCustomMovementMode::CMODE_Jump) && CustomMovementMode == EKMCustomMovementMode::CMODE_Walking))
-				{
-					characterMovement->SetCustomMovementMode(CustomMovementMode);
-				}
-			}
-		}
-
 		if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
 		{
 			curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
 		}
-		curveWarping->PlayCurveWarpjng(BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false, false);
+		curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
 	}
 	OnActivated();
 }
@@ -140,7 +129,7 @@ void UKMAbility::OnTriggerEvent_Implementation(const FGameplayTag& eventTag)
 {
 }
 
-void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type)
+void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode movementMode)
 {
 }
 
@@ -268,7 +257,7 @@ void UKMAbility::Trigger(const FGameplayTag& eventTag)
 	OnTriggerEvent(eventTag);
 }
 
-FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float playRate, FName startSectionName, EKMAnimSlotType slotType, float slotBlendTime)
+FAnimMontageInstance* UKMAbility::PlayMontage(UAnimMontage* montage, float playRate, FName startSectionName, EKMAnimSlotType slotType, float slotBlendTime)
 {
 	UAnimMontage* usedMontage = FEMMontageCacheManager::Get().GetMontageBySlot(montage, UKMUtil::GetAnimSlotName(slotType));
 	if (!IsValid(usedMontage))
@@ -295,6 +284,57 @@ FAnimMontageInstance* UKMAbility::PlayerMontage(UAnimMontage* montage, float pla
 void UKMAbility::StopMontage(UAnimMontage* montage)
 {
 	GetOwnerCharacter()->StopAnimMontage(montage);
+}
+
+FAnimMontageInstance* UKMAbility::GetMontageInstanceByTag(AKMCharacter* character, const FName& tag) const
+{
+	if (!IsValid(character))
+	{
+		return nullptr;
+	}
+	
+	USkeletalMeshComponent* skeletalMeshComponent = character->GetMesh();
+	if (!IsValid(skeletalMeshComponent))
+	{
+		return nullptr;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(skeletalMeshComponent->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return nullptr;
+	}
+
+	int32 montageId = animInstance->GetMontageInstanceIdByTag(tag);
+	if (montageId == INDEX_NONE)
+	{
+		return nullptr;
+	}
+	
+	return animInstance->GetMontageInstanceForID(montageId);
+}
+
+bool UKMAbility::SetMontageRateByTag(AKMCharacter* character, FName tag, float newRate)
+{
+	FAnimMontageInstance* montageInstance = GetMontageInstanceByTag(character, tag);
+	if (!montageInstance)
+	{
+		return false;
+	}
+	
+	montageInstance->SetPlayRate(newRate);
+	return true;
+}
+
+float UKMAbility::GetMontageRateByTag(AKMCharacter* character, FName tag) const
+{
+	const FAnimMontageInstance* montageInstance = GetMontageInstanceByTag(character, tag);
+	if (!montageInstance)
+	{
+		return 1.f;
+	}
+	
+	return montageInstance->GetPlayRate();
 }
 
 void UKMAbility::SetLockOnCluster(TSharedPtr<FKMLockOnCluster> newLockOnCluster)
@@ -440,7 +480,7 @@ void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetL
 	curveWarping->AddOrUpdateWarpTargetFromLocation(targetName, targetLocation);
 }
 
-void UKMAbility::PlayOwnerCurveWarping(UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ, bool bAutoEndingWalk)
+void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ)
 {
 	AKMCharacter* character = GetOwnerCharacter();
 	check(IsValid(character));
@@ -448,7 +488,7 @@ void UKMAbility::PlayOwnerCurveWarping(UCurveBase* newCurveAsset, FVector newTar
 	UEMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
 	check(IsValid(curveWarping));
 
-	curveWarping->PlayCurveWarpjng(newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ, bAutoEndingWalk);
+	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
 }
 
 UAnimMontage* UKMAbility::GetOwnerAnimationTag(FGameplayTag tag) const

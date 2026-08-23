@@ -66,7 +66,7 @@ public:
 	bool IsReadyCooltime(const FKMSkillKey& skillKey) const;
 	bool ResetCooltime(const FKMSkillKey& skillKey);
 
-	void ClearActiveSkills();
+	void ClearActiveSkills(bool bCancel = false);
 	void ClearPassiveSkills();
 	void ClearAllSkills();
 	

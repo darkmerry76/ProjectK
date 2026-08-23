@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EMCurveWarpingInterface.h"
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_CurveWarping.generated.h"
 
@@ -18,6 +19,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="TargetLocationName"))
 	float JumpScale = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="JumpScale"))
+	EEMCustomMovementMode CustomMovementMode = EEMCustomMovementMode::CMODE_Falling; 
 
 protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;

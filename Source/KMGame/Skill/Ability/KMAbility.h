@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EMCurveWarpingComponent.h"
 #include "EMMartialArts.h"
 #include "GameplayTagContainer.h"
 #include "Component/KMCharacterMovementComponent.h"
@@ -35,7 +36,7 @@ public:
 	bool bIsClearCurve = false;
 
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
-	EKMCustomMovementMode CustomMovementMode = EKMCustomMovementMode::CMODE_Jump;  
+	EEMCustomMovementMode CustomMovementMode = EEMCustomMovementMode::CMODE_Falling;  
 
 	UPROPERTY()
 	class UAnimMontage* Montage = nullptr;
@@ -145,8 +146,8 @@ public:
 	void AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayOwnerCurveWarping(class UCurveBase* newCurveAsset, FVector newTargetLocation,
-		float newPlayLength = 1.f, float newZScale = 1.f, bool bIgnoreZ = false, bool bAutoEndingWalk = true);
+	void PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, class UCurveBase* newCurveAsset, FVector newTargetLocation,
+		float newPlayLength = 1.f, float newZScale = 1.f, bool bIgnoreZ = false);
 
 	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetOwnerAnimationTag(FGameplayTag tag) const;
@@ -155,7 +156,7 @@ public:
 	int32 GetMartialArtsHandle() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCurveWarpingInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
+	void OnCurveWarpingInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode movementMode);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ForceComplate();
@@ -163,9 +164,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InverseDirection(bool bForce = false);
 
+	UFUNCTION(BlueprintCallable)
+	bool SetMontageRateByTag(class AKMCharacter* character, FName tag, float newRate = 1.f);
+
+	UFUNCTION(BlueprintPure)
+	float GetMontageRateByTag(class AKMCharacter* character, FName tag) const;
+
 protected:
-	struct FAnimMontageInstance* PlayerMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None, EKMAnimSlotType slotType = EKMAnimSlotType::DefaultSlot, float slotBlendTime = 0.1f);
+	struct FAnimMontageInstance* PlayMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None, EKMAnimSlotType slotType = EKMAnimSlotType::DefaultSlot, float slotBlendTime = 0.1f);
 	void StopMontage(class UAnimMontage* montage);
+
+	struct FAnimMontageInstance* GetMontageInstanceByTag(class AKMCharacter* character, const FName& tag) const;
 
 protected:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;

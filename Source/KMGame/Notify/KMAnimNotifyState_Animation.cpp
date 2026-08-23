@@ -82,7 +82,6 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 	}
 
 	Context.Emplace(targetMeshComp, newContext);
-	
 	if (IsValid(newContext->ActivatedMontage) && IsValid(ownerCharacter))
 	{
 		if (bIsOverrideMovementAnimSet)

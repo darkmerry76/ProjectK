@@ -3,16 +3,8 @@
 #include "CoreMinimal.h"
 #include "EMCurveWarpingInterface.h"
 #include "Component/EMCharacterMovementComponent.h"
+#include "EMCurveWarpingComponent.h"
 #include "KMCharacterMovementComponent.generated.h"
-
-UENUM(BlueprintType)
-enum class EKMCustomMovementMode : uint8
-{
-	CMODE_None,
-	CMODE_Walking,
-	CMODE_Flying,
-	CMODE_Jump,
-};
 
 struct KMGAME_API FKMBlockReflectionData
 {
@@ -51,8 +43,6 @@ public:
 
 	float FallTime = 0.f;
 
-	EKMCustomMovementMode MovementModeEx = EKMCustomMovementMode::CMODE_None;
-
 	FVector LatestJumpInputDir = FVector::ZeroVector;
 
 	FKMSweepPawnHitDelegate SweepPawnHitDelegate;
@@ -74,12 +64,9 @@ protected:
 	class AActor* FollowActor = nullptr;
 
 public:
-	void SetCustomMovementMode(EKMCustomMovementMode newCustomMovementMode);
-	bool IsCustomMovementMode(EKMCustomMovementMode customMovementMode) const;
-
 	void CustomJump();
 
-	virtual bool CustomMovement(const FVector& adjusted, float deltaTime) override;
+	virtual bool CustomMovement(EEMCustomMovementMode movementMode, const FVector& adjusted, float deltaTime, int32 iterations) override;
 
 	bool IsOnGround() const;
 	bool IsAir() const;
@@ -121,17 +108,19 @@ protected:
 	virtual void PhysCustom(float deltaTime, int32 iterations) override;
 	virtual void PhysWalking(float deltaTime, int32 iterations) override;
 	virtual void HandleImpact(const FHitResult& impact, float timeSlice, const FVector& moveDelta) override;
-	virtual void MoveBlockProcessing(float deltaTime);
+	virtual void MoveBlockProcessing(float deltaTime, int32 iterations);
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
+	virtual void ProcessLanded(const FHitResult& hit, float remainingTime, int32 iterations) override;
+	virtual void StartNewPhysics(float deltaTime, int32 iterations) override;
 
-	bool CustomMovementFalling(const FVector& adjusted, float deltaTime);
-	bool CustomMovementFlying(const FVector& adjusted, float deltaTime);
-	bool CustomMovementWalking(const FVector& adjusted, float deltaTime);
+	bool CustomMovementFalling(const FVector& adjusted, float deltaTime, int32 iterations);
+	bool CustomMovementFlying(const FVector& adjusted, float deltaTime, int32 iterations);
+	bool CustomMovementWalking(const FVector& adjusted, float deltaTime, int32 iterations);
 	
 	virtual void StartFalling(int32 iterations, float remainingTime, float timeTick, const FVector& delta, const FVector& subLoc) override;
-	
+
 	UFUNCTION()
-	void OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType type);
+	void OnJumpInterrupt(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode newMovementMode);
 
 	class AKMCharacter* GetOwnerCharacter() const;
 	class UKMCharacterInstance* GetOwnerCharacterInstance() const;

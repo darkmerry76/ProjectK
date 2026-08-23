@@ -30,7 +30,7 @@ void UKMAnimNotifyState_CurveWarping::NotifyBegin(USkeletalMeshComponent* meshCo
 	check(IsValid(curveWarping));
 
 	FTransform curveWarpingTransform = curveWarping->GetCurveWarpingTargetTransform(TargetLocationName);
-	curveWarping->PlayCurveWarpjng(Curve, curveWarpingTransform.GetLocation(), eventReference.GetNotify()->Duration, JumpScale, false, false);
+	curveWarping->PlayCurveWarping(CustomMovementMode, Curve, curveWarpingTransform.GetLocation(), eventReference.GetNotify()->Duration, JumpScale, false);
 }
 
 void UKMAnimNotifyState_CurveWarping::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)

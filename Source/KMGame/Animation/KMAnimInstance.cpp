@@ -322,7 +322,6 @@ int32 UKMAnimInstance::GetMontageInstanceIdByTag(const FName& tag) const
 void UKMAnimInstance::OnMontageStarted_Internal(UAnimMontage* montage)
 {
 	LastPlayedMontageInstanceId = INDEX_NONE;
-	
 	if (!MontageInstances.IsEmpty())
 	{
 		if (MontageInstances.Last()->IsValid())
