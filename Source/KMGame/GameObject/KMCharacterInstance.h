@@ -186,8 +186,6 @@ protected:
 	float MoveAccelate = 0.f;
 	float CharacterDirection = 1.f;
 	
-	FTimerHandle StiffTimerHandle;
-	
 	FEMTickerHandle GoodCancelTimerHandle;
 	FEMTickerHandle GreatCancelTimerHandle;
 	FEMTickerHandle PerfectCancelTimerHandle;
