@@ -62,12 +62,7 @@ void UKMHUD_NPCStatusWidget::OnStatChange(UKMGameObjectInstance* gameObjectInsta
 	{
 		return;
 	}
-
-	if (!gameObjectInstance->IsA<UKMMonsterInstance>())
-	{
-		return;		
-	}
-		
+	
 	check(gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp() > 0.f);
 
 	float prevHpPercent = prevValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp();

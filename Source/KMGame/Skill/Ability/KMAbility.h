@@ -96,8 +96,14 @@ public:
 	void MontageJump(FName sectionName);
 
 	UFUNCTION(BlueprintPure)
+	class UKMGameObjectInstance* GetOwnerGameObjectInstance() const;
+
+	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetOwnerCharacterInstance() const;
 
+	UFUNCTION(BlueprintPure)
+	class AActor* GetOwnerActor() const;
+	
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetOwnerCharacter() const;
 	

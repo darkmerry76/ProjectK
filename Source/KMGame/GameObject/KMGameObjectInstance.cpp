@@ -67,6 +67,15 @@ FString UKMGameObjectInstance::GetObjectName() const
 	return ObjectTable->Name;
 }
 
+FTransform UKMGameObjectInstance::GetTransform() const
+{
+	if (!IsValid(GetOwnerActor()))
+	{
+		return FTransform::Identity;
+	}
+	return GetOwnerActor()->GetTransform();
+}
+
 void UKMGameObjectInstance::SetOwnerActor(AActor* newOwnerActor)
 {
 	OwnerActor = newOwnerActor;

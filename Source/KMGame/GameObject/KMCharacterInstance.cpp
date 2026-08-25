@@ -392,7 +392,7 @@ void UKMCharacterInstance::SetTransform(const FTransform& newTransform)
 	Transform = newTransform;
 }
 
-const FTransform& UKMCharacterInstance::GetTransform() const
+FTransform UKMCharacterInstance::GetTransform() const
 {
 	return Transform;
 }
@@ -495,32 +495,7 @@ float UKMCharacterInstance::GetMoveAccelate() const
 
 void UKMCharacterInstance::OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue)
 {
-	if (GetGlobalStatChangeEvent().IsBound())
-	{
-		GetGlobalStatChangeEvent().Broadcast(this, factorType, prevValue, newValue);
-	}
-
-	if (StatChangeEvent.IsBound())
-	{
-		StatChangeEvent.Broadcast(this, factorType, prevValue, newValue);
-	}
-	
-	if (factorType == EKMStatFactorType::HpCurr)
-	{
-		if (!IsDead())
-		{
-			if (newValue <= 0)
-			{
-				check(!IsDead());
-				OnDeath();
-			}
-		}
-	}
-
-	if (EKMStatFactorType::Damage <= factorType && factorType <= EKMStatFactorType::DamageMax)
-	{
-		ShowDamage(factorType, newValue);
-	}
+	Super::OnStatChange(factorType, newValue, prevValue);
 }
 
 void UKMCharacterInstance::BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent)
@@ -917,26 +892,26 @@ void UKMCharacterInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 	LockonTarget->Targets.Empty();
 	for (auto actorItr = resultActors.CreateConstIterator(); actorItr; ++actorItr)
 	{
-		AKMCharacter* targetCharacter = Cast<AKMCharacter>(*actorItr);
-		if (!IsValid(targetCharacter))
+		IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(*actorItr);
+		if (!pawnInterface)
 		{
 			continue;
 		}
 
-		UKMCharacterInstance* targetCharacterInstance = targetCharacter->GetCharacterInstance();
-		if (!IsValid(targetCharacterInstance))
+		UKMGameObjectInstance* targetGameObjectInstance = pawnInterface->GetGameObjectInstance();
+		if (!IsValid(targetGameObjectInstance))
 		{
 			continue;
 		}
 
-		if (targetCharacterInstance->IsDead() ||
-			targetCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Bound_Tag) ||
-			targetCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
+		if (targetGameObjectInstance->IsDead() ||
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Bound_Tag) ||
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
 		{
 			continue;
 		}
 		
-		LockonTarget->Targets.Emplace(targetCharacterInstance->GetId());
+		LockonTarget->Targets.Emplace(targetGameObjectInstance->GetId());
 		break;
 	}
 }

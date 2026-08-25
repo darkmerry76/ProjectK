@@ -452,13 +452,13 @@ void FKMSkillEffectInstance::InitAbilityAsset(bool bAutoActivate)
 		return;
 	}
 
-	UKMCharacterInstance* targetCharacterInstance = Cast<UKMCharacterInstance>(OwnerObject->GetTypedOuter<UKMCharacterInstance>());
-	check(IsValid(targetCharacterInstance));
+	UKMGameObjectInstance* targetGameObjectInstance = Cast<UKMGameObjectInstance>(OwnerObject->GetTypedOuter<UKMGameObjectInstance>());
+	check(IsValid(targetGameObjectInstance));
 
-	UKMStatModifierBase* targetStat = targetCharacterInstance->GetStatModifier();
+	UKMStatModifierBase* targetStat = targetGameObjectInstance->GetStatModifier();
 	check(IsValid(targetStat));
 
-	check(targetCharacterInstance == targetStat->GetTypedOuter<UKMCharacterInstance>());
+	check(targetGameObjectInstance == targetStat->GetTypedOuter<UKMGameObjectInstance>());
 
 	if (UKMAbilityEffect* newEffectAbility = Cast<UKMAbilityEffect>(AddAbillityAsset(EffectTableRecord->Ability.PdaKey)))
 	{

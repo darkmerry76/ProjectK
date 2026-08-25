@@ -13,6 +13,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USceneComponent> RootScene;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
+
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class UKMInteractiveInstance> InteractiveInstance;
 
@@ -21,6 +24,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class UKMInteractiveInstance* GetInteractiveInstance() const;
+
+	UFUNCTION(BlueprintPure)
+	class UKMMartialArtsComponent* GetMartialArtsComponent() const;
 
 protected:
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;

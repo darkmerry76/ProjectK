@@ -20,7 +20,7 @@ FName UKMAnimNotifyState_Parameter::GetLayerName() const
 
 void UKMAnimNotifyState_Parameter::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{
@@ -41,7 +41,7 @@ void UKMAnimNotifyState_Parameter::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 void UKMAnimNotifyState_Parameter::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{
@@ -55,7 +55,7 @@ void UKMAnimNotifyState_Parameter::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_Parameter::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	if (UKMParameterLayerSubsystem* parameterLayerSubsystem = UKMParameterLayerSubsystem::GetParameterLayerSubsystem(targetMeshComp))
 	{

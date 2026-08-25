@@ -22,7 +22,7 @@ FString UKMAnimNotifyState_NiagaraFX::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_NiagaraFX::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(targetMeshComp);
 	if (niagaraFXData && !niagaraFXData->NiagaraComponents.IsEmpty())
 	{
@@ -46,7 +46,7 @@ void UKMAnimNotifyState_NiagaraFX::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(targetMeshComp);
 	
 	if (!bIsContinue && niagaraFXData && !niagaraFXData->NiagaraComponents.IsEmpty())
@@ -65,7 +65,7 @@ void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, U
 
 UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	UNiagaraComponent* returnComp = nullptr;
 	if (IsValid(Template))

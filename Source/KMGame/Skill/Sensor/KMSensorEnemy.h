@@ -30,5 +30,8 @@ public:
 	
 	void SetRadius(float newRadius);
 	float GetRadius() const;
+
+protected:
+	virtual void Init() override;
 };
 	

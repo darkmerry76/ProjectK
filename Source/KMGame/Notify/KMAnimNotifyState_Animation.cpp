@@ -55,7 +55,7 @@ float UKMAnimNotifyState_Animation::GetCustomDuration() const
 
 void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 
 	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
 	if (!IsValid(ownerCharacter))
@@ -170,7 +170,7 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp))
 	{
@@ -180,7 +180,7 @@ void UKMAnimNotifyState_Animation::NotifyTick(USkeletalMeshComponent* meshComp, 
 
 void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	
 	TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp);
 	if (!currContext)
@@ -233,9 +233,9 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 }
 
 #if WITH_EDITOR
-void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+void UKMAnimNotifyState_Animation::SetEditorPosition(USkeletalMeshComponent* meshComp, UEMMartialArts* martialArts, float currentTime, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetMeshComp(meshComp);
+	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
 	if (TSharedPtr<FKMAnimNotifyState_Animation_Context>* currContext = Context.Find(targetMeshComp))
 	{
 		if (UAnimInstance* animInstance = targetMeshComp->GetAnimInstance())

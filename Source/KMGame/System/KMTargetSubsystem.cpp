@@ -10,14 +10,14 @@ FKMLockOnCluster::FKMLockOnCluster(const FKMLockOnCluster& source)
 	Targets = source.Targets;
 }
 
-UKMCharacterInstance* FKMLockOnCluster::GetBestTarget() const
+UKMGameObjectInstance* FKMLockOnCluster::GetBestTarget() const
 {
 	check(OwnerObject.IsValid());
 	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
 	check(IsValid(gameObjectSubsystem));
 
-	return Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(GetBestTargetKey()));
+	return Cast<UKMGameObjectInstance>(gameObjectSubsystem->GetGameObject(GetBestTargetKey()));
 }
 
 FKMObjectKey FKMLockOnCluster::GetBestTargetKey() const
@@ -31,7 +31,7 @@ FKMObjectKey FKMLockOnCluster::GetBestTargetKey() const
 
 FTransform FKMLockOnCluster::GetTargetTransform() const
 {
-	UKMCharacterInstance* characterInstance = GetBestTarget();
+	UKMGameObjectInstance* characterInstance = GetBestTarget();
 	if (!IsValid(characterInstance))
 	{
 		return FTransform::Identity;
@@ -42,13 +42,13 @@ FTransform FKMLockOnCluster::GetTargetTransform() const
 
 bool FKMLockOnCluster::IsBestTargetAvailable() const
 {
-	UKMCharacterInstance* characterInstance = GetBestTarget();
-	if (!IsValid(characterInstance))
+	UKMGameObjectInstance* gameObjectInstance = GetBestTarget();
+	if (!IsValid(gameObjectInstance))
 	{
 		return false;
 	}
 	
-	if (characterInstance->IsDead())
+	if (gameObjectInstance->IsDead())
 	{
 		return false;
 	}
@@ -64,7 +64,7 @@ UKMGameObjectInstance* FKMLockOnCluster::GetTargetByIndex(int32 index) const
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
 	check(IsValid(gameObjectSubsystem));
 
-	return Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(Targets[index]));
+	return Cast<UKMGameObjectInstance>(gameObjectSubsystem->GetGameObject(Targets[index]));
 }
 
 void FKMLockOnCluster::AddReferencedObjects(FReferenceCollector& referenceCollector)

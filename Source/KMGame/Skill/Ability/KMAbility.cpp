@@ -33,16 +33,30 @@ FPrimaryAssetId UKMAbility::GetPrimaryAssetId() const
 	return FPrimaryAssetId("KMAbility", FName(*assetName));
 }
 
+UKMGameObjectInstance* UKMAbility::GetOwnerGameObjectInstance() const
+{
+	return GetTypedOuter<UKMGameObjectInstance>();
+}
+
 UKMCharacterInstance* UKMAbility::GetOwnerCharacterInstance() const
 {
-	return GetTypedOuter<UKMCharacterInstance>();
+	return Cast<UKMCharacterInstance>(GetOwnerGameObjectInstance());
+}
+
+AActor* UKMAbility::GetOwnerActor() const
+{
+	UKMGameObjectInstance* gameGameObjectInstance = GetOwnerGameObjectInstance();
+	if(!IsValid(gameGameObjectInstance))
+	{
+		return nullptr;
+	}
+	
+	return gameGameObjectInstance->GetOwnerActor();
 }
 
 AKMCharacter* UKMAbility::GetOwnerCharacter() const
 {
-	UKMCharacterInstance* characterInstance = GetOwnerCharacterInstance();
-	check(IsValid(characterInstance));
-	return characterInstance->GetCharacter();
+	return Cast<AKMCharacter>(GetOwnerActor());
 }
 
 UKMCharacterInstance* UKMAbility::GetTargetCharacterInstance() const
@@ -51,7 +65,7 @@ UKMCharacterInstance* UKMAbility::GetTargetCharacterInstance() const
 	{
 		return nullptr;
 	}
-	return LockOnCluster->GetBestTarget();
+	return Cast<UKMCharacterInstance>(LockOnCluster->GetBestTarget());
 }
 
 UEMMartialArtsComponent* UKMAbility::GetMartialArtsComponent() const
@@ -66,15 +80,13 @@ UEMMartialArtsComponent* UKMAbility::GetMartialArtsComponent() const
 
 AKMCharacter* UKMAbility::GetTargetCharacter() const
 {
-	UKMCharacterInstance* targetCharacterInstance = GetTargetCharacterInstance();
-	if(!IsValid(targetCharacterInstance))
+	UKMGameObjectInstance* targetGameObjectInstance = GetTargetCharacterInstance();
+	if(!IsValid(targetGameObjectInstance))
 	{
 		return nullptr;
 	}
 
-	AKMCharacter* targetCharacter = targetCharacterInstance->GetCharacter();
-	check(IsValid(targetCharacter));
-
+	AKMCharacter* targetCharacter = Cast<AKMCharacter>(targetGameObjectInstance->GetOwnerActor());
 	return targetCharacter;
 }
 

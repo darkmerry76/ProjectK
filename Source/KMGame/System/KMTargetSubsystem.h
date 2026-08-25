@@ -23,7 +23,7 @@ public:
 
 	TArray<FKMObjectKey> Targets;
 	
-	class UKMCharacterInstance* GetBestTarget() const;
+	class UKMGameObjectInstance* GetBestTarget() const;
 	FKMObjectKey GetBestTargetKey() const;
 
 	FTransform GetTargetTransform() const;

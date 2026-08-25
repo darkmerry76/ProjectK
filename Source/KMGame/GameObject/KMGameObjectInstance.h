@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual FString GetObjectName() const;
 
+	UFUNCTION(BlueprintPure)
+	virtual FTransform GetTransform() const;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void AddGameplayTag(FGameplayTag newTag);
 

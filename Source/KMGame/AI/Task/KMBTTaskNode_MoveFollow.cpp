@@ -56,8 +56,8 @@ FVector UKMBTTaskNode_MoveFollow::FindNonOverlappingAttackPosition(
 FVector UKMBTTaskNode_MoveFollow::ComputeDesiredPosition(
 	const UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<FKMLockOnCluster>& lockOnCluster, float attackRange) const
 {
-	UKMCharacterInstance* targetCharacterInstance = lockOnCluster->GetBestTarget();
-	check(IsValid(targetCharacterInstance));
+	UKMGameObjectInstance* targetGameObjectInstance = lockOnCluster->GetBestTarget();
+	check(IsValid(targetGameObjectInstance));
 
 	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
 	check(IsValid(targetSubsystem));
@@ -92,7 +92,7 @@ FVector UKMBTTaskNode_MoveFollow::ComputeDesiredPosition(
 	}
 	
 	FVector ownerLocation = ownerCharacterInstance->GetTransform().GetLocation();
-	FVector targetLocation = targetCharacterInstance->GetTransform().GetLocation();
+	FVector targetLocation = targetGameObjectInstance->GetTransform().GetLocation();
 
 	return FindNonOverlappingAttackPosition(ownerLocation, targetLocation, occupiedPositions, attackRange, 150.f);
 }

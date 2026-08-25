@@ -1,4 +1,7 @@
 #include "KMAbilityEffect.h"
+
+#include <filesystem>
+
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
@@ -37,16 +40,16 @@ void UKMAbilityEffect::PostActivated()
 
 void UKMAbilityEffect::Impact(const FTransform& newImpactTransform)
 {
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
-
-	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-	check(IsValid(ownerCharacterInstance));
-
-	FVector targetToDirection = character->GetActorLocation() - newImpactTransform.GetLocation();
-	targetToDirection.Z = 0.0f;
-	targetToDirection.Normalize();
-	ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
+	if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+	{
+		if (AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter())
+		{
+			FVector targetToDirection = ownerCharacter->GetActorLocation() - newImpactTransform.GetLocation();
+			targetToDirection.Z = 0.0f;
+			targetToDirection.Normalize();
+			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
+		}
+	}
 	
 	Super::Impact(newImpactTransform);
 }

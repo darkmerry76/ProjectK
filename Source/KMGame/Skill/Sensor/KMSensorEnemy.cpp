@@ -1,5 +1,20 @@
 #include "KMSensorEnemy.h"
+
+#include "GameObject/KMCharacterInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
+
+void UKMSensorEnemy::Init()
+{
+	Super::Init();
+	
+	if (UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOuter()))
+	{
+		if (IsValid(ownerCharacterInstance->GetOwnerActor()))
+		{
+			ActorsToIgnore.Emplace(ownerCharacterInstance->GetOwnerActor());
+		}
+	}
+}
 
 void UKMSensorEnemy::DoSearch()
 {

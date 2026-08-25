@@ -21,5 +21,5 @@ protected:
 
 	virtual FString GetNotifyName_Implementation() const override;
 
-	virtual EEMNotifyGroupType GetGroupType() override { return GroupType; };
+	virtual EEMNotifyGroupType GetGroupType() const override { return GroupType; };
 };

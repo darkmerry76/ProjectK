@@ -62,7 +62,7 @@ public:
 	void SetRotation(const FRotator& newRotation);
 
 	void SetTransform(const FTransform& newTransform);
-	const FTransform& GetTransform() const;
+	virtual FTransform GetTransform() const override;
 	
 	UFUNCTION(BlueprintCallable)
 	bool UseSkill(const FName skillName, int32 skillLevel);
