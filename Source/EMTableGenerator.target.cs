@@ -8,7 +8,8 @@ public class EMTableGeneratorTarget : TargetRules
 		Type = TargetType.Program;
 		LinkType = TargetLinkType.Modular;
 		LaunchModuleName = "EMTableGenerator";
-//		BuildEnvironment = TargetBuildEnvironment.Shared;
+		// 테이블제네레이터 빌드 할때 반드시 주석처리
+		BuildEnvironment = TargetBuildEnvironment.Shared;
 		bCompileAgainstEngine = false;
 		bBuildDeveloperTools = false;
 		bIsBuildingConsoleApplication = true;
