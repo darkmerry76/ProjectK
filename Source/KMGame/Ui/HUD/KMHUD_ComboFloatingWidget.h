@@ -31,5 +31,5 @@ public:
 	void OnHideHitMessage();
 
 protected:
-	void OnPlayerInflict(int32 comboCount, class UKMCharacterInstance* victimCharacter);
+	void OnPlayerInflict(int32 comboCount, class UKMGameObjectInstance* victimGameObjectInstance);
 };

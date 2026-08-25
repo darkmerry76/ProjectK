@@ -1,6 +1,6 @@
 #include "KMMonsterInstance.h"
 #include "TimerManager.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Stat/KMMonsterStatModifier.h"
 #include "System/KMDropSubsystem.h"
 #include "Tables/Generated/KMTable_Character_Monster.h"

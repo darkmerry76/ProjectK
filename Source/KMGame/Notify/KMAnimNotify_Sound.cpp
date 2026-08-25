@@ -1,6 +1,6 @@
 #include "KMAnimNotify_Sound.h"
 #include "EMMartialArts.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/UObjectToken.h"
 

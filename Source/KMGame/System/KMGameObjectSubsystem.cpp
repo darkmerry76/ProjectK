@@ -1,14 +1,18 @@
 #include "KMGameObjectSubsystem.h"
+#include <Tables/Generated/KMTable_Interactive.h>
 #include <Tables/Generated/KMTable_Skill_Normal.h>
-#include "Actor/KMCameraActor.h"
-#include "Character/KMCharacter.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMCharacterPDA.h"
+#include "DataAsset/KMInteractivePDA.h"
+#include "GameActor/Camera/KMCameraActor.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameActor/Pawn/Interactive/KMInteractiveActorBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMActorInstance.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMMonsterInstance.h"
+#include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tables/Generated/KMTable_Character.h"
 #include "Tables/Generated/KMTable_Skill.h"
@@ -79,13 +83,39 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 	check(IsValid(newCharacter) == true);
 
 	newCharacter->SetMirror(bFlipY);
-	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
+	newCharacter->PossessedByGameObjectInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(transform, false);
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	AddGameObject(newCharacterInstance);
 
 	return newCharacterInstance;
+}
+
+UKMInteractiveInstance* UKMGameObjectSubsystem::SpawnInteractiveObject(FName interactiveTableId, const FTransform& transform)
+{
+	const FKMTable_InteractiveRow* interactiveTableRow = FKMTable_InteractiveRow::FindRowPtr(interactiveTableId);
+	check (interactiveTableRow);
+
+	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
+	check(IsValid(assetManager));
+	
+	UKMInteractivePDA* interactivePDA = Cast<UKMInteractivePDA>(assetManager->GetAsset(interactiveTableRow->AssetPda));
+	check(IsValid(interactivePDA));
+	
+	UKMInteractiveInstance* newInteractiveInstance = NewObject<UKMInteractiveInstance>(this, interactivePDA->InstanceClass);
+	newInteractiveInstance->SetTable(interactiveTableRow);
+
+	AKMInteractiveActorBase* newInteractiveActor = GetWorld()->SpawnActorDeferred<AKMInteractiveActorBase>(
+		interactivePDA->InteractiveClass, transform, nullptr, nullptr);
+	check(IsValid(newInteractiveActor));
+
+	newInteractiveActor->PossessedByGameObjectInstance(newInteractiveInstance);
+	newInteractiveActor->FinishSpawning(transform, false);
+	
+	AddGameObject(newInteractiveInstance);
+
+	return newInteractiveInstance;
 }
 
 UKMActorInstance* UKMGameObjectSubsystem::SpawnActorObject(TSubclassOf<AActor> actorClass, const FTransform& transform, int32 createdIndex, FKMOnActorInstancePreSpawn actorInstancePreSpawnDelegate)
@@ -191,11 +221,22 @@ int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 	return bestTargetIndex;
 }
 
-void UKMGameObjectSubsystem::Tick(float DeltaTime)
+void UKMGameObjectSubsystem::Tick(float deltaTime)
 {
+	float worldDeltaSeconds = GetWorld()->GetDeltaSeconds();
 	for (auto objectItr = GameObjectMap.CreateIterator(); objectItr; ++objectItr)
 	{
-		objectItr.Value()->Tick(GetWorld()->GetDeltaSeconds());	
+		float timeDilation = 1.f;
+		if (UKMGameObjectInstance* gameObjectInstance = Cast<UKMGameObjectInstance>(objectItr.Value()))
+		{
+			timeDilation = gameObjectInstance->GetTimeDilation();
+
+			if (AActor* ownerActor = gameObjectInstance->GetOwnerActor())
+			{
+				ownerActor->CustomTimeDilation = timeDilation;
+			}
+		}
+		objectItr.Value()->Tick(worldDeltaSeconds * timeDilation);	
 	}
 }
 

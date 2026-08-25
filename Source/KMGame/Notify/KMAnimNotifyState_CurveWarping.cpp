@@ -1,6 +1,6 @@
 #include "KMAnimNotifyState_CurveWarping.h"
 #include "EMCurveWarpingComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMAnimNotifyState_CurveWarping::UKMAnimNotifyState_CurveWarping(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {

@@ -1,8 +1,7 @@
 #include "KMBTTaskNode_SkillLoop.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
-#include "Skill/KMSkillTypes.h"
 #include "Util/KMUtil.h"
 
 UKMBTTaskNode_SkillLoop::UKMBTTaskNode_SkillLoop(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -11,28 +10,28 @@ UKMBTTaskNode_SkillLoop::UKMBTTaskNode_SkillLoop(const FObjectInitializer& objec
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UKMBTTaskNode_SkillLoop::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_SkillLoop::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
 	return EBTNodeResult::InProgress;
 }
 
-void UKMBTTaskNode_SkillLoop::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_SkillLoop::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 	
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 
 	FKMSkillKey skillKey = FKMSkillKey::CreateKey(
 		blackboardComponent->GetValueAsName(TEXT("SkillId")),
 		blackboardComponent->GetValueAsInt(TEXT("SkillLevel")));
 
-	if (skillHandler->IsSkillAvailable(skillKey) == true)
+	if (skillHandler->IsSkillAvailable(skillKey))
 	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		FinishLatentTask(ownerComp, EBTNodeResult::Succeeded);
 	}
 }

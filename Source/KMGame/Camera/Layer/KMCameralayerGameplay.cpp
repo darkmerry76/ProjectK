@@ -1,7 +1,7 @@
 #include "KMCameralayerGameplay.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/KMCameraActorBase.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMCameralayerGameplay::UKMCameralayerGameplay(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {

@@ -1,5 +1,5 @@
 #include "KMAnimNotify_Stiff.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMAnimNotify_Stiff::UKMAnimNotify_Stiff() : Super()
 {

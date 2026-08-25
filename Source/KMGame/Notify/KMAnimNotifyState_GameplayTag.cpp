@@ -1,6 +1,6 @@
 #include "KMAnimNotifyState_GameplayTag.h"
-#include "Character/KMCharacter.h"
-#include "Skill/KMSkillHandler.h"
+
+#include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMAnimNotifyState_GameplayTag::UKMAnimNotifyState_GameplayTag(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {

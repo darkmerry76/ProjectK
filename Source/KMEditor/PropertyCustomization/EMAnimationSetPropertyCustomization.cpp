@@ -1,14 +1,11 @@
 #include "EMAnimationSetPropertyCustomization.h"
 #include "DetailWidgetRow.h"
-#include "EMMartialArts.h"
 #include "EMOutlinerPublicTypes.h"
 #include "IPropertyUtilities.h"
-#include "Animation/AnimSet/KMAnimationSetTag.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "Character/KMCharacter.h"
 #include "Chooser/Tag/KMTagChooserOutlinerMode.h"
 #include "Chooser/Tag/KMTagChooserOutlinerTreeItem.h"
 #include "Chooser/Tag/SKMTagChooserOutliner.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "MartialArts/KMMartialArtsEditor.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
 
@@ -30,7 +27,6 @@ FKMChooserPropertyCustomization::~FKMChooserPropertyCustomization()
 
 void FKMChooserPropertyCustomization::OnChooserAddItem(TSharedPtr<IEMOutlinerTreeItem> item)
 {
-	
 	if (!IsValid(OwnerCharacter))
 	{
 		return;

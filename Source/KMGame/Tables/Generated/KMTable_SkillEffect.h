@@ -64,6 +64,9 @@ struct FKMTable_SkillEffectRow : public FEM_TableBaseRow
 	FName                OverlapGroup = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FName>        ClearGroups;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMSkillEffectOverlapType OverlapType = { EKMSkillEffectOverlapType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -85,7 +88,7 @@ struct FKMTable_SkillEffectRow : public FEM_TableBaseRow
 	inline static const FKMTable_SkillEffectRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 45;
+	static const int32   RefTableIndex = 47;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

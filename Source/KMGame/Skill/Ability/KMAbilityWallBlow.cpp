@@ -1,6 +1,6 @@
 #include "KMAbilityWallBlow.h"
 #include "EMCurveWarpingComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMAbilityWallBlow::UKMAbilityWallBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

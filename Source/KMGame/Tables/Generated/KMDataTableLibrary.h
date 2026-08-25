@@ -25,6 +25,8 @@
 #include "KMTable_GameConstant.h"
 #include "KMTable_GameEvent.h"
 #include "KMTable_InGameEvent.h"
+#include "KMTable_Interactive.h"
+#include "KMTable_Interactive_Breakable.h"
 #include "KMTable_Item.h"
 #include "KMTable_LocalizeText.h"
 #include "KMTable_LocalizeText_Desc.h"
@@ -301,6 +303,20 @@ public:
 	static const FKMTable_InGameEventRow& GetTableKMTable_InGameEventByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_InGameEventRow>(*FKMTable_InGameEventRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Interactive FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_InteractiveRow& GetTableKMTable_Interactive(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_InteractiveRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Interactive Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_InteractiveRow& GetTableKMTable_InteractiveByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_InteractiveRow>(*FKMTable_InteractiveRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_Item FName으로 검색되는 블루프린트 노출함수

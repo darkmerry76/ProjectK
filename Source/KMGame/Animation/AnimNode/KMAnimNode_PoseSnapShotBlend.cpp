@@ -1,7 +1,7 @@
 #include "KMAnimNode_PoseSnapShotBlend.h"
 #include "Animation/AnimInstanceProxy.h"
-#include "Character/KMChainAnimInstance.h"
 #include "Animation/AttributesRuntime.h"
+#include "GameActor/Pawn/Character/KMChainAnimInstance.h"
 
 void FKMAnimNode_PoseSnapShotBlend::Initialize_AnyThread(const FAnimationInitializeContext& context)
 {

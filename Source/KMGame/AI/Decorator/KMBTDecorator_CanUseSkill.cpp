@@ -1,33 +1,32 @@
 #include "KMBTDecorator_CanUseSkill.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMGameObjectSubsystem.h"
-#include "System/KMTargetSubsystem.h"
 
 UKMBTDecorator_CanUseSkill::UKMBTDecorator_CanUseSkill(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	NodeName = TEXT("CanUseSkill");
 }
 
-bool UKMBTDecorator_CanUseSkill::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UKMBTDecorator_CanUseSkill::CalculateRawConditionValue(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) const
 {
-	AAIController* aiController = OwnerComp.GetAIOwner();
-	check(IsValid(aiController) == true);
+	AAIController* aiController = ownerComp.GetAIOwner();
+	check(IsValid(aiController));
 	
 	AKMCharacter* character = Cast<AKMCharacter>(aiController->GetPawn());
-	check(IsValid(character) == true);
+	check(IsValid(character));
 	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(character->GetCharacterInstance());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 
 	UBlackboardComponent* blackboardComponent = aiController->GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	check(IsValid(blackboardComponent));
 
 	AKMCharacter* targetCharacter = Cast<AKMCharacter>(blackboardComponent->GetValueAsObject(TEXT("TargetActor")));
 	if (!IsValid(targetCharacter))
@@ -60,22 +59,22 @@ UKMBTDecorator_HasEnemy::UKMBTDecorator_HasEnemy(const FObjectInitializer& objec
 	bNotifyTick = true;
 }
 
-bool UKMBTDecorator_HasEnemy::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UKMBTDecorator_HasEnemy::CalculateRawConditionValue(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) const
 {
-	AAIController* aiController = OwnerComp.GetAIOwner();
-	check(IsValid(aiController) == true);
+	AAIController* aiController = ownerComp.GetAIOwner();
+	check(IsValid(aiController));
 	
 	AKMCharacter* character = Cast<AKMCharacter>(aiController->GetPawn());
-	check(IsValid(character) == true);
+	check(IsValid(character));
 	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(character->GetCharacterInstance());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 
 	UBlackboardComponent* blackboardComponent = aiController->GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	check(IsValid(blackboardComponent));
 
 	AKMCharacter* targetCharacter = Cast<AKMCharacter>(blackboardComponent->GetValueAsObject(TEXT("TargetActor")));
 	bool bResult = IsValid(targetCharacter) == !bIsInverse;
@@ -86,20 +85,20 @@ bool UKMBTDecorator_HasEnemy::CalculateRawConditionValue(UBehaviorTreeComponent&
 	return false;
 }
 
-void UKMBTDecorator_HasEnemy::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UKMBTDecorator_HasEnemy::OnBecomeRelevant(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+	Super::OnBecomeRelevant(ownerComp, nodeMemory);
 }
 
-EBlackboardNotificationResult UKMBTDecorator_HasEnemy::OnBlackboardKeyValueChange(const UBlackboardComponent& Blackboard, FBlackboard::FKey ChangedKeyID)
+EBlackboardNotificationResult UKMBTDecorator_HasEnemy::OnBlackboardKeyValueChange(const UBlackboardComponent& blackboard, FBlackboard::FKey changedKeyID)
 {
-	UBehaviorTreeComponent* BehaviorComp = (UBehaviorTreeComponent*)Blackboard.GetBrainComponent();
-	if (BehaviorComp == nullptr)
+	UBehaviorTreeComponent* BehaviorComp = Cast<UBehaviorTreeComponent>(blackboard.GetBrainComponent());
+	if (!IsValid(BehaviorComp))
 	{
 		return EBlackboardNotificationResult::RemoveObserver;
 	}
 
-	if (BlackboardKey.GetSelectedKeyID() == ChangedKeyID)
+	if (BlackboardKey.GetSelectedKeyID() == changedKeyID)
 	{
 		ConditionalFlowAbort(*BehaviorComp, EBTDecoratorAbortRequest::ConditionPassing);
 	}

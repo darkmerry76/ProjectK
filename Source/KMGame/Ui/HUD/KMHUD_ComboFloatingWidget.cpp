@@ -1,5 +1,5 @@
 #include "KMHUD_ComboFloatingWidget.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "UI/Component/EMTextBlock.h"
 
 UKMHUD_ComboFloatingWidget::UKMHUD_ComboFloatingWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -40,7 +40,7 @@ void UKMHUD_ComboFloatingWidget::ShowHitMessage(int32 newHitCount)
 	OnShowHitMessage(newHitCount);
 }
 
-void UKMHUD_ComboFloatingWidget::OnPlayerInflict(int32 comboCount, UKMCharacterInstance* victimCharacter)
+void UKMHUD_ComboFloatingWidget::OnPlayerInflict(int32 comboCount, UKMGameObjectInstance* victimGameObjectInstance)
 {
 	ShowHitMessage(comboCount);
 }

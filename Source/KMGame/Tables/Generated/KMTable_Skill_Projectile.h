@@ -35,7 +35,7 @@ struct FKMTable_Skill_ProjectileRow : public FKMTable_SkillRow
 	inline static const FKMTable_Skill_ProjectileRow& FindRow(FName IdKey, int32 LevelKey);
 	inline static FString MakeTableKeyToString(FName IdKey, int32 LevelKey);
 
-	static const int32   RefTableIndex = 43;
+	static const int32   RefTableIndex = 45;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

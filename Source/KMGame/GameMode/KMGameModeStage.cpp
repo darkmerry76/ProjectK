@@ -1,5 +1,5 @@
 #include "KMGameModeStage.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "System/KMNarrativeSubsystem.h"

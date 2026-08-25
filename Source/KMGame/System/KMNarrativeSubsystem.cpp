@@ -1,5 +1,4 @@
 #include "KMNarrativeSubsystem.h"
-#include "Character/KMCharacter.h"
 #include "Components/AudioComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMVoicePDA.h"
@@ -9,6 +8,8 @@
 #include "Tables/Generated/KMTable_Narrative_Dialog.h"
 #include "Tables/Generated/KMTable_Narrative_Prologue.h"
 #include <Tables/Generated/KMTable_Narrative_Movie.h>
+
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Tables/Generated/KMTable_Narrative_Event.h"
 #include "Nerrative/KMNarrativeNode.h"
 #include "Nerrative/KMNarrativeNodeDialog.h"

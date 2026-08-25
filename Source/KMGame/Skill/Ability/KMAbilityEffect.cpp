@@ -1,5 +1,6 @@
 #include "KMAbilityEffect.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "Util/KMUtil.h"

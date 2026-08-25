@@ -3,8 +3,10 @@
 #include "Animation/AnimNode_AssetPlayerBase.h"
 #include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
-#include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Core/KMGameplayTag.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Util/KMUtil.h"
 
 FKMAnimInstanceProxy::FKMAnimInstanceProxy(UAnimInstance* instance) : FAnimInstanceProxy(instance)

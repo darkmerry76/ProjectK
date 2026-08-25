@@ -1,7 +1,7 @@
 #include "KMAbilityBlow.h"
 #include "EMCurveWarpingComponent.h"
-#include "Character/KMCharacter.h"
-#include "Component/KMCharacterMovementComponent.h"
+#include "Core/KMGameplayTag.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMAbilityBlow::UKMAbilityBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

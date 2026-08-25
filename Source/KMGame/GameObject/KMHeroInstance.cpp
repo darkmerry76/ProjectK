@@ -1,9 +1,7 @@
 #include "KMHeroInstance.h"
-
-#include "Character/KMCharacterHero.h"
 #include "Engine/GameInstance.h"
+#include "GameActor/Pawn/Character/KMCharacterHero.h"
 #include "Skill/KMSkillHandler.h"
-#include "Skill/KMSkillTypes.h"
 #include "Stat/KMHeroStatModifier.h"
 #include "System/KMSkillSubsystem.h"
 #include "Util/KMUtil.h"
@@ -47,7 +45,7 @@ void UKMHeroInstance::ApplyPlayerSkill(const FName& skillId, int32 skillLevel)
 
 void UKMHeroInstance::OnHeroSelected_Implementation()
 {
-	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(Character))
+	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(GetOwnerActor()))
 	{
 		hero->OnHeroSelected();
 	}
@@ -55,7 +53,7 @@ void UKMHeroInstance::OnHeroSelected_Implementation()
 
 void UKMHeroInstance::OnEnterGame_Implementation()
 {
-	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(Character))
+	if (AKMCharacterHero* hero = Cast<AKMCharacterHero>(GetOwnerActor()))
 	{
 		hero->OnEnterGame();
 	}

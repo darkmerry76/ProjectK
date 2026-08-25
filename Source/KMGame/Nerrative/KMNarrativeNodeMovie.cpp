@@ -1,11 +1,11 @@
 #include "KMNarrativeNodeMovie.h"
 #include "EMMartialArts.h"
-#include "EMMartialArtsComponent.h"
-#include "Character/KMCharacter.h"
 #include "DataAsset/KMAssetManager.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "System/KMGameObjectSubsystem.h"
-#include <Tables/Generated/KMTable_Narrative_Movie.h>
+#include "Tables/Generated/KMTable_Narrative_Movie.h"
+#include "EMMartialArtsComponent.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
 UKMNarrativeNodeMovie::UKMNarrativeNodeMovie(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

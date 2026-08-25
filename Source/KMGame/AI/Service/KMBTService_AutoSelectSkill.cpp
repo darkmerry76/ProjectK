@@ -1,7 +1,8 @@
 #include "KMBTService_AutoSelectSkill.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
@@ -33,29 +34,29 @@ FKMSkillKey UKMBTService_AutoSelectSkill::EvaluateBestSkill(const UKMCharacterIn
 	return FKMSkillKey(bestSkillSet->Skills[0], 0);
 }
 
-void UKMBTService_AutoSelectSkill::OnSearchStartAI(AAIController* OwnerController, APawn* ControlledPawn)
+void UKMBTService_AutoSelectSkill::OnSearchStartAI(AAIController* ownerController, APawn* controlledPawn)
 {
-	Super::OnSearchStartAI(OwnerController, ControlledPawn);	
+	Super::OnSearchStartAI(ownerController, controlledPawn);	
 }
 
-void UKMBTService_AutoSelectSkill::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTService_AutoSelectSkill::TickNode(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	AAIController* aiController = OwnerComp.GetAIOwner();
-	check(IsValid(aiController) == true);
+	AAIController* aiController = ownerComp.GetAIOwner();
+	check(IsValid(aiController));
 	
-	check(IsValid(aiController) == true);
+	check(IsValid(aiController));
 	
 	AKMCharacter* character = Cast<AKMCharacter>(aiController->GetPawn());
-	check(IsValid(character) == true);
+	check(IsValid(character));
 
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(character->GetCharacterInstance());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 	
 /*	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
-	check(IsValid(targetSubsystem) == true);*/
+	check(IsValid(targetSubsystem));*/
 
 	UBlackboardComponent* blackboardComponent = aiController->GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	check(IsValid(blackboardComponent));
 
 	blackboardComponent->SetValueAsName(TEXT("SkillId"), NAME_None);
 	blackboardComponent->SetValueAsInt(TEXT("SkillLevel"), 0);
@@ -78,15 +79,15 @@ UKMBTService_PerceptionTarget::UKMBTService_PerceptionTarget(const FObjectInitia
 	bNotifyTick = true;
 }
 
-void UKMBTService_PerceptionTarget::OnSearchStartAI(AAIController* OwnerController, APawn* ControlledPawn)
+void UKMBTService_PerceptionTarget::OnSearchStartAI(AAIController* ownerController, APawn* controlledPawn)
 {
-	Super::OnSearchStartAI(OwnerController, ControlledPawn);
+	Super::OnSearchStartAI(ownerController, controlledPawn);
 }
 
-void UKMBTService_PerceptionTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTService_PerceptionTarget::TickNode(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	AAIController* aiController = OwnerComp.GetAIOwner();
-	check(IsValid(aiController) == true);
+	AAIController* aiController = ownerComp.GetAIOwner();
+	check(IsValid(aiController));
 	
 	AKMCharacter* character = Cast<AKMCharacter>(aiController->GetPawn());
 	if(!IsValid(character))
@@ -95,15 +96,15 @@ void UKMBTService_PerceptionTarget::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	}
 
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(character->GetCharacterInstance());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 	
 	//	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
-	//check(IsValid(targetSubsystem) == true);
+	//check(IsValid(targetSubsystem));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
 	check(IsValid(skillHandler) == true);
 
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
 	check(IsValid(blackboardComponent) == true);
 
 	const UKMCharacterInstance* aggroTarget = ownerCharacterInstance->GetBestAggroTarget();

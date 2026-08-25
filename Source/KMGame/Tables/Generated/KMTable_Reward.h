@@ -38,7 +38,7 @@ struct FKMTable_RewardRow : public FEM_TableBaseRow
 	inline static const FKMTable_RewardRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 38;
+	static const int32   RefTableIndex = 40;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

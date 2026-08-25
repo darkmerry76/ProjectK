@@ -1,6 +1,6 @@
 ﻿#include "KMItemAppearanceActor.h"
-#include "Character/KMChainAnimInstance.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMChainAnimInstance.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMItemAppearanceInstance::UKMItemAppearanceInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

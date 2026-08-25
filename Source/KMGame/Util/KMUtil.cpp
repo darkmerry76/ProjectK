@@ -3,11 +3,11 @@
 #include "AIController.h"
 #include "Animation/BlendSpace1D.h"
 #include "Animation/KMAnimInstance.h"
-#include "Character/KMCharacter.h"
 #include "Core/KMGameInstance.h"
 #include "Core/KMGameViewportClient.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMCharacterPDA.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMHeroInstance.h"
@@ -263,7 +263,7 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	newCharacterInstance->SetTransform(transform);
 	
 	newCharacter->bIsEditorPreviewActor = false;
-	newCharacter->PossessedByCharacterInstance(newCharacterInstance);
+	newCharacter->PossessedByGameObjectInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(transform, false);
 
 #if WITH_EDITOR

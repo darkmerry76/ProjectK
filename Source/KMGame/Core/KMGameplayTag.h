@@ -29,6 +29,7 @@ public:
 	static const FGameplayTag Event_Cancel_Available_Tag;
 	static const FGameplayTag Event_Cancel_Available_Perfect_Tag;
 	static const FGameplayTag Event_Move_Landing_Tag;
+	static const FGameplayTag Event_Blow_IgnoreLanded_Tag;
 	
 	static const FGameplayTag State_Tag;
 	static const FGameplayTag State_Dead_Tag;

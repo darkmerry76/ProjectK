@@ -1,7 +1,7 @@
 #include "KMAnimNotifyState_Animation.h"
 #include "EMMartialArts.h"
 #include "Animation/KMAnimInstance.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/Ability/KMAbilityEffect.h"
 #include "System/EMMontageCacheManager.h"
 #include "Util/KMUtil.h"

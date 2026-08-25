@@ -39,7 +39,7 @@ struct FKMTable_PlayerGrowthRow : public FEM_TableBaseRow
 	inline static const FKMTable_PlayerGrowthRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 35;
+	static const int32   RefTableIndex = 37;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

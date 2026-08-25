@@ -2,7 +2,8 @@
 #include "AIController.h"
 #include "AI/KMAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMTargetSubsystem.h"
@@ -14,19 +15,19 @@ UKMBTTaskNode_SkillCast::UKMBTTaskNode_SkillCast(const FObjectInitializer& objec
 	//bNotifyTick = true;
 }
 
-EBTNodeResult::Type UKMBTTaskNode_SkillCast::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_SkillCast::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 	
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 	
 //	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
-//	check(IsValid(targetSubsystem) == true);
+//	check(IsValid(targetSubsystem));
 
 	FKMSkillKey skillKey = FKMSkillKey::CreateKey(TEXT("sk_hugo_gigas"), 0);
 	
@@ -42,21 +43,21 @@ EBTNodeResult::Type UKMBTTaskNode_SkillCast::ExecuteTask(UBehaviorTreeComponent&
 	return EBTNodeResult::Succeeded;
 }
 
-void UKMBTTaskNode_SkillCast::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_SkillCast::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 	
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 
 	FKMSkillKey skillKey = FKMSkillKey::CreateKey(TEXT("sk_hugo_gigas"), 0);
 	if (!skillHandler->IsSkillAvailable(skillKey))
 	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		FinishLatentTask(ownerComp, EBTNodeResult::Succeeded);
 	}
 }
 
@@ -66,9 +67,9 @@ UKMBTTaskNode_Run::UKMBTTaskNode_Run(const FObjectInitializer& objectInitializer
 //	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UKMBTTaskNode_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_Run::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
 	check(IsValid(ownerCharacterInstance));
 
 	AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter();
@@ -77,7 +78,7 @@ EBTNodeResult::Type UKMBTTaskNode_Run::ExecuteTask(UBehaviorTreeComponent& Owner
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
 	check(IsValid(skillHandler));
 	
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
 	check(IsValid(blackboardComponent));
 
 	if (ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
@@ -120,21 +121,21 @@ EBTNodeResult::Type UKMBTTaskNode_Run::ExecuteTask(UBehaviorTreeComponent& Owner
 	return EBTNodeResult::Aborted;
 }
 
-void UKMBTTaskNode_Run::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_Run::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 	
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 
 	float targetToDistance = 0.f;
 	
 	AKMCharacter* targetCharacter = Cast<AKMCharacter>(blackboardComponent->GetValueAsObject(TEXT("TargetActor")));
-	if (targetCharacter)
+	if (IsValid(targetCharacter))
 	{
 		FVector directional = targetCharacter->GetActorLocation() - ownerCharacterInstance->GetCharacter()->GetActorLocation();
 		directional.Y = 0.f;
@@ -144,6 +145,6 @@ void UKMBTTaskNode_Run::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	
 	if (ownerCharacterInstance->IsDead() || !IsValid(targetCharacter) || targetToDistance < 150.f)
 	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		FinishLatentTask(ownerComp, EBTNodeResult::Succeeded);
 	}
 }

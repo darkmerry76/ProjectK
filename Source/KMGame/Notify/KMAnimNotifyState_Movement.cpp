@@ -1,5 +1,5 @@
 #include "KMAnimNotifyState_Movement.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UKMAnimNotifyState_Movement::UKMAnimNotifyState_Movement(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

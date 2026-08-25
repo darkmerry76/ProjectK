@@ -1,14 +1,9 @@
 ﻿#include "KMGameInstance.h"
-
-#include "EMMartialArtsModule.h"
-#include "Actor/KMCameraActor.h"
-#include "Components/Viewport.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
-#include "GameObject/KMCharacterInstance.h"
+#include "GameActor/Camera/KMCameraActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sequencer/EMCameraCacheManager.h"
-#include "System/KMUiSubsystem.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMGameInstance

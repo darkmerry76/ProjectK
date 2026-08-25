@@ -1,7 +1,7 @@
 #include "KMHUD_EmpGaugeWidget.h"
 #include "KMHUD_FloorGaugeWidget.h"
-#include "Character/KMCharacter.h"
 #include "Core/EMDefine.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "System/EMTweener.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "UI/Component/EMTextBlock.h"
@@ -73,16 +73,16 @@ void UKMHUD_EmpGaugeWidget::SetEmpPhaseCurr(int32 empPhaseCurr)
 	OnSetEmpPhaseCurr(empPhaseCurr);
 }
 
-void UKMHUD_EmpGaugeWidget::OnStatChange(UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue)
+void UKMHUD_EmpGaugeWidget::OnStatChange(UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue)
 {
-	check(IsValid(characterInstance));
+	check(IsValid(gameObjectInstance));
 
 	if (factorType == EKMStatFactorType::EmpCurr)
 	{
-		check(characterInstance->GetStatModifier()->GetEffectiveStat().GetEmp() > 0.f);
+		check(gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetEmp() > 0.f);
 
-		float prevEmpPercent = prevValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetEmp();
-		float nextEmpPercent = newValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetEmp();
+		float prevEmpPercent = prevValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetEmp();
+		float nextEmpPercent = newValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetEmp();
 		
 		GaugeTweener->Play(prevEmpPercent, nextEmpPercent, 0.2f);
 	}

@@ -10,8 +10,8 @@ class KMGAME_API UKMBTTaskNode_MoveFollow : public UKMBTTaskNode
 	GENERATED_UCLASS_BODY()
 	
 protected:
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) override;
+	virtual void TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds) override;
 
 	FVector ComputeDesiredPosition(const class UKMCharacterInstance* ownerCharacterInstance,
 		const TSharedPtr<class FKMLockOnCluster>& lockOnCluster, float attackRange) const;

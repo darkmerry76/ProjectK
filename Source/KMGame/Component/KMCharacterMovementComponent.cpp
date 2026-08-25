@@ -2,9 +2,9 @@
 #include "EMCurveWarpingComponent.h"
 #include "Animation/AnimSequenceHelpers.h"
 #include "Animation/KMAnimInstance.h"
-#include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 const float MIN_TICK_DIST = 1.f;
@@ -78,17 +78,6 @@ void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 
 void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
 {
-/*	if (MovementMode == MOVE_Custom && newMovementMode != MOVE_Custom)
-	{
-		if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner()))
-		{
-			if (UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping())
-			{
-				curveWarping->ClearCurveWarping();
-			}
-		}
-	}*/
-	
 	Super::SetMovementMode(newMovementMode, newCustomMode);
 }
 
@@ -105,7 +94,6 @@ void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick ti
 	const FVector adjusted = Velocity * deltaTime;
 	FVector actualDelta = UpdatedComponent->GetComponentLocation() - startLocation;
 	BlockMoveDelta = FVector(adjusted.X - actualDelta.X,adjusted.Y - actualDelta.Y,0.f);
-	bHasResolvedBlockMove = true;
 
 	MoveBlockProcessing(deltaTime, 1);
 }
@@ -252,7 +240,7 @@ void UKMCharacterMovementComponent::HandleImpact(const FHitResult& impact, float
 {
 	Super::HandleImpact(impact, timeSlice, moveDelta);
 
-	if (!impact.bBlockingHit || IsWalkable(impact))
+	if (!impact.bBlockingHit)
 	{
 		return;
 	}
@@ -261,19 +249,22 @@ void UKMCharacterMovementComponent::HandleImpact(const FHitResult& impact, float
 
 void UKMCharacterMovementComponent::RegisterMoveBlockReflection(AKMCharacter* targetCharacter)
 {
-	TSharedPtr<FKMBlockReflectionData> newBlockReflectionData = MakeShared<FKMBlockReflectionData>();
-	newBlockReflectionData->Character = targetCharacter;
-	
-	bool bExist = BlockReflections.ContainsByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
+	TSharedPtr<FKMBlockReflectionData>* existBlockReflectData = BlockReflections.FindByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
 	{
 		return blockReflectionData->Character == targetCharacter;
 	});
 
-	if (bExist)
+	if (existBlockReflectData && (*existBlockReflectData).IsValid())
 	{
-		return;
+		(*existBlockReflectData)->RefCount++;
 	}
-	BlockReflections.Emplace(newBlockReflectionData);
+	else
+	{
+		TSharedPtr<FKMBlockReflectionData> newBlockReflectionData = MakeShared<FKMBlockReflectionData>();
+		newBlockReflectionData->Character = targetCharacter;
+
+		BlockReflections.Emplace(newBlockReflectionData);
+	}
 }
 
 void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 iterations)
@@ -302,8 +293,23 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 i
 		return;
 	}
 
+	UCapsuleComponent* ownerCapsuleComponent = ownerCharacter->GetCapsuleComponent();
+	if (!IsValid(ownerCapsuleComponent))
+	{
+		return;
+	}
+
+	TArray<AActor*> ignoreActors;
+	ignoreActors.Emplace(ownerCharacter);
+
+	TArray<AActor*> overlapActors;
+	UKismetSystemLibrary::CapsuleOverlapActors(ownerCharacter,ownerCapsuleComponent->GetComponentLocation(),
+		ownerCapsuleComponent->GetScaledCapsuleRadius(), ownerCapsuleComponent->GetScaledCapsuleHalfHeight(),{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
+		AKMCharacter::StaticClass(), ignoreActors,overlapActors);
+
 	FVector totalMoveDalta = FVector::ZeroVector;
 	int32 numBlocked = 0;
+	bool bIsOverlap = false;
 	for (auto blockReflection : BlockReflections)
 	{
 		if (!blockReflection->Character.IsValid())
@@ -321,10 +327,20 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 i
 		{
 			continue;
 		}
+
+		if (overlapActors.Contains(blockReflection->Character))
+		{
+			bIsOverlap = true;
+			blockReflection->bHasResolvedBlockMove = true;
+		}
+
+		if (!blockReflection->bHasResolvedBlockMove)
+		{
+			continue;
+		}
 		
 		FVector blockedDelta = targetCharacterMovement->BlockMoveDelta;
 		targetCharacterMovement->BlockHitResult.Reset();
-		targetCharacterMovement->bHasResolvedBlockMove = false;
 
 		totalMoveDalta += blockedDelta * -1.f;
 
@@ -333,9 +349,13 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 i
 	
 	if (!totalMoveDalta.IsNearlyZero())
 	{
+		if (bIsOverlap)
+		{
+			ownerCurveWarping->RemoveAllWarpTargets();
+		}
+		
 		totalMoveDalta /= static_cast<float>(numBlocked);
 		CustomMovementWalking(FVector(totalMoveDalta.X, totalMoveDalta.Y, 0.f), deltaTime, iterations);
-		ownerCurveWarping->RemoveAllWarpTargets();
 	}
 }
 
@@ -345,33 +365,17 @@ void UKMCharacterMovementComponent::UnregisterMoveBlockReflection(AKMCharacter* 
 	{
 		return blockReflectionData->Character == targetCharacter;
 	});
-	if (existIndex == INDEX_NONE)
+	
+	if (existIndex == INDEX_NONE || !BlockReflections[existIndex].IsValid())
+	{
+		return;
+	}
+	if (--BlockReflections[existIndex]->RefCount > 0)
 	{
 		return;
 	}
 	
 	BlockReflections.RemoveAt(existIndex);
-
-	if (BlockReflections.IsEmpty())
-	{
-		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-		if (!IsValid(ownerCharacter))
-		{
-			return;
-		}
-		
-		USkeletalMeshComponent* ownerSkeletalMeshComponent = ownerCharacter->GetMesh();
-		if (!IsValid(ownerSkeletalMeshComponent))
-		{
-			return;
-		}
-
-		UKMAnimInstance* ownerAnimInstance = Cast<UKMAnimInstance>(ownerSkeletalMeshComponent->GetAnimInstance());
-		if (!IsValid(ownerAnimInstance))
-		{
-			return;
-		}
-	}
 }
 
 void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iterations)
@@ -477,10 +481,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 	{
 		return;
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("OnJumpInterrupt moveDelta=%s interuptType=%d newMovementMode=%d"), *moveDelta.ToString(), interuptType, newMovementMode));
-	UE_LOG(LogTemp, Display, TEXT("OnJumpInterrupt moveDelta=%s interuptType=%d newMovementMode=%d"), *moveDelta.ToString(), interuptType, newMovementMode);
-
+	
 	if (newMovementMode == EEMCustomMovementMode::CMODE_Falling)
 	{
 		if (interuptType == EEMCurveWarpingInteruptType::Landing)
@@ -489,6 +490,9 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 		}
 		else
 		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("OnJumpInterrupt deltaTime=%.3f moveDelta=%s interuptType=%d newMovementMode=%d"), deltaTime, *moveDelta.ToString(), interuptType, newMovementMode));
+			//UE_LOG(LogTemp, Display, TEXT("OnJumpInterrupt deltaTime=%.3f moveDelta=%s interuptType=%d newMovementMode=%d"), deltaTime, *moveDelta.ToString(), interuptType, newMovementMode);
+
 			Velocity = moveDelta * (FMath::IsNearlyZero(deltaTime) ? 0.f : (1.f / deltaTime));
 			SetMovementMode(MOVE_Falling);
 		}
@@ -528,8 +532,8 @@ bool UKMCharacterMovementComponent::CustomMovement(EEMCustomMovementMode movemen
 
 	//if (Velocity.Z < 0.f)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("%d Adjusted=%s Velocity=%s deltaTime=%.3f"), movementMode, *adjusted.ToString(), *Velocity.ToCompactString(), deltaTime));
-		UE_LOG(LogTemp, Display, TEXT("%d Adjusted=%s Velocity=%s deltaTime=%.3f"), movementMode, *adjusted.ToString(), *Velocity.ToCompactString(), deltaTime);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("%d Adjusted=%s Velocity=%s deltaTime=%.3f"), movementMode, *adjusted.ToString(), *Velocity.ToCompactString(), deltaTime));
+		//UE_LOG(LogTemp, Display, TEXT("%d Adjusted=%s Velocity=%s deltaTime=%.3f"), movementMode, *adjusted.ToString(), *Velocity.ToCompactString(), deltaTime);
 	}
 
 	return bResult;
@@ -564,6 +568,15 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 	{
 		return false;
 	}
+
+	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
+	if (!IsValid(ownerCharacterInstance))
+	{
+		return false;
+	}
+
+	bool bIgnoreLanded = ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Event_Blow_IgnoreLanded_Tag);
+
 	float remainingTime = deltaTime;
 	int32 Iterations = 0.f;
 	while( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) )
@@ -578,7 +591,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 
 		float subTimeTickRemaining = deltaTime * (1.f - hitResult.Time);
 		float lastMoveTimeSlice = deltaTime;
-		if (hitResult.bBlockingHit)
+		if (hitResult.bBlockingHit && !bIgnoreLanded)
 		{
 			if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 			{
@@ -664,6 +677,14 @@ bool UKMCharacterMovementComponent::CustomMovementFlying(const FVector& adjusted
 	
 	if (hitResult.IsValidBlockingHit())
 	{
+		FVector moveDirection = FVector(adjusted.X, adjusted.Y, 0.f).GetSafeNormal();
+		FVector impactNormal = FVector(hitResult.ImpactNormal.X, hitResult.ImpactNormal.Y, 0.f).GetSafeNormal();
+
+		if (FVector::DotProduct(moveDirection, impactNormal) < -UE_KINDA_SMALL_NUMBER)
+		{
+			BlockHitResult = hitResult;
+		}
+
 		FVector gravDir = FVector(0.f, 0.f, -1.f); 
         
 		if (!StepUp(gravDir, adjusted, hitResult, nullptr))

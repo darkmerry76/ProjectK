@@ -36,5 +36,5 @@ protected:
 	void OnSetEmpPhaseCurr(int32 empPhaseCurr);
 
 	UFUNCTION()
-	void OnStatChange(UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue);
+	void OnStatChange(class UKMGameObjectInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue);
 };

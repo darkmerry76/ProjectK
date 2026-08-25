@@ -11,10 +11,6 @@
 #include "Templates/SubclassOf.h"
 #include "KMCharacterInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FKMCharacterDeathDelegate, class UKMCharacterInstance* character);
-DECLARE_MULTICAST_DELEGATE_FourParams(FKMCharacterStatChangeDelegate, class UKMCharacterInstance* character, EKMStatFactorType factorType, float prevValue, float newValue);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FKMCharacterInflictDelegate, int32 comboCount, class UKMCharacterInstance* victimCharacter);
-DECLARE_MULTICAST_DELEGATE_OneParam(FKMCharacterDamageDelegate, const FKMDamageEvent& newDamageEvent);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterCommbatMessageDelegate, const class UKMCharacterInstance* character, EKMCommbatMessageType messageType, const FString& newMessage);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterSkillMessageDelegate, const class UKMCharacterInstance* character, TSharedPtr<FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
 
@@ -26,8 +22,6 @@ class KMGAME_API UKMCharacterInstance : public UKMGameObjectInstance
 public:
 	virtual FName GetRecordKey() const;
 	virtual FName GetRecordStatKey() const;
-	
-	void SetCharacter(class AKMCharacter* newCharacter);
 
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetCharacter() const;
@@ -124,39 +118,25 @@ public:
 	UFUNCTION(BlueprintPure)
 	const class UKMCharacterInstance* GetBestAggroTarget() const;
 
-	void OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue);
-	void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
-	
-	virtual void OnDeath();
-
-	UFUNCTION(BlueprintPure)
-	virtual bool IsDead() const;
+	virtual void OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue) override;
+	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent) override;
+	virtual void OnDeath() override;
+	virtual bool IsDead() const override;
 
 	virtual bool CanLockOn() const { return false; };
 	virtual bool CanBeTargeted() const { return true; };
 	virtual bool CanReceiveReward() const { return true; }
-
-	class UKMSkillHandler* GetSkillHandler() const;
-	class UKMStatModifierBase* GetStatModifier() const;
-
+	
 	void StartForceMove(const float& newDirection);
 
 	UFUNCTION(BlueprintPure)
 	TSubclassOf<class UCameraShakeBase> GetCameraShakeByPowerType(EKMDamagePowerType powerType) const;
 	
 	UFUNCTION(BlueprintCallable)
-	void Inflict(class UKMCharacterInstance* victimCharacter);
-
-	UFUNCTION(BlueprintCallable)
-	void Stiff(float duration = 0.2f, bool bReset = false);
-
-	UFUNCTION(BlueprintCallable)
 	void ShakeRoot(float newDistance, float newFrequency, float newDuration = 0.2f);
 
-	void Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
+	virtual void Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 	
-	void OnStiffRelease();
-
 	UFUNCTION(BlueprintCallable)
 	float GetMoveAccelate() const;
 	
@@ -164,69 +144,21 @@ public:
 	
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
-	void HitCheckClear();
-	void BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
-		const FTransform& prevOrientationTransform, const FTransform& orientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
-
-	void SphereHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
-		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
-
-	UFUNCTION(BlueprintCallable)
-	void SetTimeDilation(const FName& layerName, float newTimeDilation = 1.f);
-
-	UFUNCTION(BlueprintPure)
-	float GetTimeDilation() const;
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveTimeDilation(const FName& layerName);
-
 protected:
-	void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
-		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
-
-	void HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
+	virtual void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag) override;
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;
-
+	virtual void Inflict(class UKMGameObjectInstance* victimGameObject) override;
+	virtual void ShowDamage(EKMStatFactorType factorType, int32 damage) override;
+	
 	UFUNCTION()
 	void OnUpdatePawnThrowOverlapResults(const TArray<FHitResult>& hitResults);
 
 	void ChangeSkillSet(const FName& ownerId);
-	
-private:
-	void ShowDamage(EKMStatFactorType factorType, int32 damage);
 
 public:
-	static FKMCharacterDeathDelegate& GetCharacterDeathDelegate()
-	{
-		static FKMCharacterDeathDelegate deathDelegate;
-		return deathDelegate;
-	}
-
-	static FKMCharacterStatChangeDelegate& GetGlobalStatChangeEvent()
-	{
-		static FKMCharacterStatChangeDelegate statChangeEvent;
-		return statChangeEvent;
-	}
-
-	FKMCharacterDamageDelegate& GetDamageDelegate()
-	{
-		return DamageDelegate;
-	}
-
-	FKMCharacterStatChangeDelegate& GetStatChangeEvent()
-	{
-		return StatChangeEvent;
-	}
-
-	FKMCharacterInflictDelegate& GetInflictDelegate()
-	{
-		return InflictDelegate;
-	}
-
 	FKMCharacterCommbatMessageDelegate& GetCombatMessageDelegate()
 	{
 		return CombatMessageDelegate;
@@ -239,13 +171,7 @@ public:
 	}
 	
 protected:
-	FKMCharacterInflictDelegate InflictDelegate;
-	FKMCharacterStatChangeDelegate StatChangeEvent;
-	FKMCharacterDamageDelegate DamageDelegate;
 	FKMCharacterCommbatMessageDelegate CombatMessageDelegate;
-	
-	UPROPERTY(Transient)
-	TWeakObjectPtr<class AKMCharacter> Character = nullptr;
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<class AKMCharacterBeast> Beast = nullptr;
@@ -264,19 +190,7 @@ protected:
 	FTimerHandle SensorHandle;
 
 	TSharedPtr<FKMLockOnCluster> LockonTarget;
-
-	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "CharacterInstance", meta=(AllowPrivateAccess=true))
-	TSubclassOf<class UKMSkillHandler> SkillHandlerClass;
-
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "CharacterInstance", meta=(AllowPrivateAccess=true))
-	TObjectPtr<class UKMSkillHandler> SkillHandler = nullptr;
-
-	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "CharacterInstance", meta=(AllowPrivateAccess=true))
-	TSubclassOf<class UKMStatModifierBase> StatModifierClass;
-
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "CharacterInstance", meta=(AllowPrivateAccess=true))
-	TObjectPtr<class UKMStatModifierBase> StatModifier;
-
+	
 	UPROPERTY()
 	TSet<TWeakObjectPtr<UKMCharacterInstance>> AggroTarget;
 
@@ -299,18 +213,12 @@ protected:
 	FEMTickerHandle GoodCancelTimerHandle;
 	FEMTickerHandle GreatCancelTimerHandle;
 	FEMTickerHandle PerfectCancelTimerHandle;
-	int32 ComboCount = 0;
-
-	FKMHitCheckData HitCheckData;
+	
+	int32 ComboCount = 0;	
 
 	FName BeastId = NAME_None;
 	const struct FKMTable_BeastRow* BeastTableRow = nullptr;
 	const struct FKMTable_BaseStat_BeastRow* BeastStatTableRow = nullptr;
 	
 	bool bIsBeast = false;
-
-	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
-	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
-
-	TMap<FName, float> TimeDilations;
 };

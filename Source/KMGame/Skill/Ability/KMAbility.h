@@ -39,13 +39,16 @@ public:
 	float ImpulseDuration = 0.2f;
 	
 	UPROPERTY(EditAnywhere, Category="Curve", DisplayName="ClearCurve", BlueprintReadWrite)
-	bool bIsClearCurve = false;
+	bool bIsClearCurve = true;
 
 	UPROPERTY(EditAnywhere, Category="Curve", BlueprintReadWrite)
 	EEMCustomMovementMode CustomMovementMode = EEMCustomMovementMode::CMODE_Falling;  
 
 	UPROPERTY()
 	class UAnimMontage* Montage = nullptr;
+
+	int32 CurveWapingInstanceId = INDEX_NONE;
+	int32 ImpulseInstanceId = INDEX_NONE; 
 
 protected:
 	TSharedPtr<class FKMLockOnCluster> LockOnCluster;

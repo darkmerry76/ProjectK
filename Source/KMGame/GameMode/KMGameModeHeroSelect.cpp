@@ -1,6 +1,6 @@
 #include "KMGameModeHeroSelect.h"
-#include "Character/KMCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"

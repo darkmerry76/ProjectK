@@ -1,7 +1,6 @@
 #include "KMSkillHandler.h"
 #include <Tables/Generated/KMTable_SkillEffectTransition.h>
 #include <Tables/Generated/KMTable_SkillSet_Hero.h>
-#include "Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Stat/KMStatModifierBase.h"
@@ -11,9 +10,9 @@
 #include "Tables/Generated/KMTable_SkillEffect.h"
 #include "Animation/AnimSequence.h"
 #include "Component/KMCharacterMovementComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Animation/AnimSequence.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
 UKMSkillHandler::UKMSkillHandler(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -1056,6 +1055,21 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 			break;
 		default:
 			return nullptr;
+		}
+	}
+
+	if (!skillEffectTable->ClearGroups.IsEmpty())
+	{
+		for (auto skillEffectItr : EffectInstances)
+		{
+			if (skillEffectItr.Value->IsComplete())
+			{
+				continue;;
+			}
+			if (skillEffectTable->ClearGroups.Contains(skillEffectItr.Value->GetEffectTableRecord()->OverlapGroup))
+			{
+				skillEffectItr.Value->SetForceComplete(true);
+			}
 		}
 	}
 	

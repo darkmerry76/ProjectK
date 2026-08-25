@@ -43,7 +43,7 @@ struct FKMTable_SkillSetRow : public FEM_TableBaseRow
 	inline static const FKMTable_SkillSetRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 49;
+	static const int32   RefTableIndex = 51;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

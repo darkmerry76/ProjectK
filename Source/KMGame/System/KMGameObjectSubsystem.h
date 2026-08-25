@@ -23,6 +23,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	class UKMCharacterInstance* SpawnCharacterObject(FName characterTableId, const FTransform& transform, bool bFlipY = false);
+
+	UFUNCTION(BlueprintCallable)
+	class UKMInteractiveInstance* SpawnInteractiveObject(FName interactiveTableId, const FTransform& transform);
+	
 	class UKMActorInstance* SpawnActorObject(TSubclassOf<class AActor> actorClass,
 		const FTransform& transform, int32 createdIndex = 0, FKMOnActorInstancePreSpawn actorInstancePreSpawnDelegate = FKMOnActorInstancePreSpawn());
 

@@ -79,28 +79,28 @@ void UKMHUD_PlayerStatusWidget::Refresh()
 	StatusMessageTextBlock->SetText(FText::FromString(playerAccount->BaseInfo.StatusMessage));
 }
 
-void UKMHUD_PlayerStatusWidget::OnStatChange(UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue)
+void UKMHUD_PlayerStatusWidget::OnStatChange(UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue)
 {
-	check(IsValid(characterInstance));
+	check(IsValid(gameObjectInstance));
 
 	if (factorType == EKMStatFactorType::TempoCurr)
 	{
-		if(characterInstance->GetStatModifier()->GetEffectiveStat().GetTempo() <= 0.0001f)
+		if(gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetTempo() <= 0.0001f)
 		{
 			return;
 		}
 
-		float prevTempoPercent = prevValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetTempo();
-		float nextTempoPercent = newValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetTempo();
+		float prevTempoPercent = prevValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetTempo();
+		float nextTempoPercent = newValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetTempo();
 		
 		TempoGaugeTweener->Play(prevTempoPercent, nextTempoPercent, 0.2f);
 	}
 	else if (factorType == EKMStatFactorType::HpCurr)
 	{
-		check(characterInstance->GetStatModifier()->GetEffectiveStat().GetHp() > 0.f);
+		check(gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp() > 0.f);
 
-		float prevHpPercent = prevValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetHp();
-		float nextHpPercent = newValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetHp();
+		float prevHpPercent = prevValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp();
+		float nextHpPercent = newValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp();
 		
 		HpGaugeTweener->Play(prevHpPercent, nextHpPercent, 0.2f);
 	}

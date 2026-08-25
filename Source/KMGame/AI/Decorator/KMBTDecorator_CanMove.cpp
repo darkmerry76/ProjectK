@@ -1,9 +1,8 @@
 #include "KMBTDecorator_CanMove.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMMonsterInstance.h"
-#include "Skill/KMSkillTypes.h"
 
 UKMBTDecorator_CanMove::UKMBTDecorator_CanMove(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {

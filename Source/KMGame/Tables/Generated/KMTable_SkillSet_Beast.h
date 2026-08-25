@@ -23,7 +23,7 @@ struct FKMTable_SkillSet_BeastRow : public FKMTable_SkillSetRow
 	inline static const FKMTable_SkillSet_BeastRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 50;
+	static const int32   RefTableIndex = 52;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

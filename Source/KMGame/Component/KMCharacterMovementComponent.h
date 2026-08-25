@@ -8,6 +8,8 @@
 
 struct KMGAME_API FKMBlockReflectionData
 {
+	int32 RefCount = 1;
+	bool bHasResolvedBlockMove = false;
 	TWeakObjectPtr<class AKMCharacter> Character;
 };
 
@@ -55,8 +57,6 @@ public:
 	TArray<TSharedPtr<FKMBlockReflectionData>> BlockReflections;
 
 	FHitResult BlockHitResult;
-
-	bool bHasResolvedBlockMove = false;
 	FVector BlockMoveDelta = FVector::ZeroVector;
 
 protected:

@@ -1,21 +1,16 @@
 #include "KMSpawnSubsystem.h"
-
 #include <Tables/Generated/KMTable_Skill_Projectile.h>
-
 #include "KMGameObjectSubsystem.h"
 #include "KMPlayerSubsystem.h"
 #include "KMTargetSubsystem.h"
 #include "Account/KMPlayerAccount.h"
-#include "Actor/KMProjectileHomingActor.h"
-#include "Character/KMCharacter.h"
-#include "Component/KMProjectileMovementComponent.h"
 #include "DataAsset/KMAssetManager.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameActor/Projectile/KMProjectileActorBase.h"
 #include "GameObject/KMActorInstance.h"
 #include "GameObject/KMGameObjectInstance.h"
-#include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
-#include "Kismet/GameplayStatics.h"
 #include "Skill/KMSkillHandler.h"
 #include "Tables/Generated/KMTable_Skill.h"
 
@@ -36,7 +31,7 @@ void UKMSpawnSubsystem::Deinitialize()
 	Super::Deinitialize();
 
 	UKMMonsterInstance::GetSpawnPurifyDelegate().RemoveAll(this);
-	UKMCharacterInstance::GetCharacterDeathDelegate().RemoveAll(this);
+	UKMGameObjectInstance::GetDeathDelegate().RemoveAll(this);
 	UKMSkillHandler::GetProjectileTriggerDelegate().RemoveAll(this);
 }
 

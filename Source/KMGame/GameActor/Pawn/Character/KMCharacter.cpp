@@ -1,5 +1,4 @@
 #include "KMCharacter.h"
-#include "Actor/KMItemAppearanceActor.h"
 #include "Animation/AnimSet/KMAnimationSetTag.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
@@ -9,12 +8,12 @@
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
 #include "DataAsset/KMItemPDA.h"
+#include "GameActor/Item/KMItemAppearanceActor.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "Sound/KMSoundSetTag.h"
 #include "Tables/Generated/KMTable_Item.h"
-#include "Util/KMUtil.h"
 
 AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 	Super(objectInitializer.SetDefaultSubobjectClass<UKMSkeletalMeshComponent>(ACharacter::MeshComponentName).
@@ -116,18 +115,23 @@ const FVector& AKMCharacter::GetLatestMoveInputVelocity() const
 
 UKMCharacterInstance* AKMCharacter::GetCharacterInstance() const
 {
-	return Cast<UKMCharacterInstance>(GetCharacterInstanceInternal());
+	return Cast<UKMCharacterInstance>(GetGameObjectInstance());
 }
 
-void AKMCharacter::PossessedByCharacterInstance(UEMGameObjectInstance* newCharacterInstance)
+UKMGameObjectInstance* AKMCharacter::GetGameObjectInstance() const
 {
-	Super::PossessedByCharacterInstance(newCharacterInstance);
-
-	if (UKMCharacterInstance* characterInstance = Cast<UKMCharacterInstance>(newCharacterInstance))
+	if (CharacterInstance.IsValid())
 	{
-		characterInstance->SetCharacter(this);
-		characterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(GetActorForwardVector())), true);
+		return nullptr;
 	}
+	return CharacterInstance.Get();
+};
+
+void AKMCharacter::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
+{
+	CharacterInstance = Cast<UKMCharacterInstance>(newGameObjectInstance);
+	check(CharacterInstance.IsValid());
+	CharacterInstance->SetOwnerActor(this);
 }
 
 UAnimMontage* AKMCharacter::GetAnimationTagOriginal(FGameplayTag tag) const

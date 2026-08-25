@@ -55,27 +55,27 @@ void UKMHUD_NPCStatusWidget::NativeDestruct()
 	}
 }
 
-void UKMHUD_NPCStatusWidget::OnStatChange(UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue)
+void UKMHUD_NPCStatusWidget::OnStatChange(UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue)
 {
-	check(IsValid(characterInstance));
+	check(IsValid(gameObjectInstance));
 
 	if (factorType != EKMStatFactorType::HpCurr)
 	{
 		return;
 	}
 
-	if (!characterInstance->IsA<UKMMonsterInstance>())
+	if (!gameObjectInstance->IsA<UKMMonsterInstance>())
 	{
 		return;		
 	}
 		
-	check(characterInstance->GetStatModifier()->GetEffectiveStat().GetHp() > 0.f);
+	check(gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp() > 0.f);
 
-	float prevHpPercent = prevValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetHp();
-	float nextHpPercent = newValue / characterInstance->GetStatModifier()->GetEffectiveStat().GetHp();
+	float prevHpPercent = prevValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp();
+	float nextHpPercent = newValue / gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp();
 	
 	GaugeTweener->Play(prevHpPercent, nextHpPercent, 1.2f);
-	NameTextBlock->SetText(FText::FromString(FString::Printf(TEXT("%s"), *characterInstance->GetTable()->Name)));
+	NameTextBlock->SetText(FText::FromString(FString::Printf(TEXT("%s"), *gameObjectInstance->GetObjectName())));
 
-	OnShowHp(characterInstance, newValue, characterInstance->GetStatModifier()->GetEffectiveStat().GetHp());
+	OnShowHp(gameObjectInstance, newValue, gameObjectInstance->GetStatModifier()->GetEffectiveStat().GetHp());
 }

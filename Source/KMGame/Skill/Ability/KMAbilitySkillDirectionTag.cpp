@@ -1,6 +1,6 @@
 #include "KMAbilitySkillDirectionTag.h"
 #include "Animation/AnimSet/KMAnimationSetTag.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 
 UKMAbilitySkillDirectionTag::UKMAbilitySkillDirectionTag(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

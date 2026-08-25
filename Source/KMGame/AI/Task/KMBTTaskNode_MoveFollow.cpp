@@ -1,7 +1,6 @@
 #include "KMBTTaskNode_MoveFollow.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
-#include "Skill/KMSkillTypes.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_Skill.h"
@@ -45,7 +44,7 @@ FVector UKMBTTaskNode_MoveFollow::FindNonOverlappingAttackPosition(
 			}
 		}
 
-		if (bOverlap == false)
+		if (!bOverlap)
 		{
 			bestPos = candidatePos;
 			break;
@@ -58,32 +57,33 @@ FVector UKMBTTaskNode_MoveFollow::ComputeDesiredPosition(
 	const UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<FKMLockOnCluster>& lockOnCluster, float attackRange) const
 {
 	UKMCharacterInstance* targetCharacterInstance = lockOnCluster->GetBestTarget();
-	check(IsValid(targetCharacterInstance) == true);
+	check(IsValid(targetCharacterInstance));
 
 	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
-	check(IsValid(targetSubsystem) == true);
+	check(IsValid(targetSubsystem));
 	
-	check(lockOnCluster->Targets.Num() > 0);
+	check(!lockOnCluster->Targets.IsEmpty());
 
 	TSharedPtr<FKMTargetCluster> targetCluster = targetSubsystem->GetTargetCluster(lockOnCluster->GetBestTargetKey());
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 	
 	TArray<FVector> occupiedPositions;
 	for (auto attacker : targetCluster->Attackers)
 	{
 		UKMCharacterInstance* otherAttackerInstance = Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(attacker));
-		if(IsValid(otherAttackerInstance) == false)
+		if(!IsValid(otherAttackerInstance))
 		{
 			continue;
 		}
 
 		if (ownerCharacterInstance == otherAttackerInstance)
+		{
 			continue;
-
+		}
 /*		TSharedPtr<FKMMovementTarget> moveTarget = otherAttackerInstance->GetMovementTarget();
-		if (moveTarget.IsValid() == false)
+		if (!moveTarget.IsValid())
 		{
 			continue;
 		}
@@ -97,16 +97,16 @@ FVector UKMBTTaskNode_MoveFollow::ComputeDesiredPosition(
 	return FindNonOverlappingAttackPosition(ownerLocation, targetLocation, occupiedPositions, attackRange, 150.f);
 }
 
-EBTNodeResult::Type UKMBTTaskNode_MoveFollow::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_MoveFollow::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 
 	FKMSkillKey skillKey = FKMSkillKey::CreateKey(
 		blackboardComponent->GetValueAsName(TEXT("SkillId")),
 		blackboardComponent->GetValueAsInt(TEXT("SkillLevel")));
 
-	if (skillKey.IsValid() == false)
+	if (!skillKey.IsValid())
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -116,14 +116,14 @@ EBTNodeResult::Type UKMBTTaskNode_MoveFollow::ExecuteTask(UBehaviorTreeComponent
 		return EBTNodeResult::Failed;
 	}
 
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 	
 	UKMTargetSubsystem* targetSubsystem = UKMTargetSubsystem::GetTargetSubsystem(this);
-	check(IsValid(targetSubsystem) == true);
+	check(IsValid(targetSubsystem));
 
 	TSharedPtr<FKMLockOnCluster> lockOnCluster = targetSubsystem->GetLockOnCluster(ownerCharacterInstance->GetId());
-	if (lockOnCluster.IsValid() == false || lockOnCluster->IsBestTargetAvailable() == false)
+	if (!lockOnCluster.IsValid() || !lockOnCluster->IsBestTargetAvailable())
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -131,7 +131,7 @@ EBTNodeResult::Type UKMBTTaskNode_MoveFollow::ExecuteTask(UBehaviorTreeComponent
 	FTransform destinationTransform;
 	destinationTransform.SetLocation(ComputeDesiredPosition(ownerCharacterInstance, lockOnCluster, skillKey.TableRecord->Range));
 	
-/*	if (ownerCharacterInstance->MoveTo(destinationTransform) == false)
+/*	if (!ownerCharacterInstance->MoveTo(destinationTransform))
 	{
 		return EBTNodeResult::Failed;
 	}*/
@@ -139,12 +139,12 @@ EBTNodeResult::Type UKMBTTaskNode_MoveFollow::ExecuteTask(UBehaviorTreeComponent
 	return EBTNodeResult::InProgress;
 }
 
-void UKMBTTaskNode_MoveFollow::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_MoveFollow::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* sourceCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(sourceCharacterInstance) == true);
+	UKMCharacterInstance* sourceCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(sourceCharacterInstance));
 
-/*	if (sourceCharacterInstance->IsMoving() == false)
+/*	if (!sourceCharacterInstance->IsMoving())
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}*/

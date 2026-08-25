@@ -1,7 +1,7 @@
 #include "KMAnimNotifyState_Hit.h"
-#include "Character/KMCharacter.h"
 #include "Component/KMEditorDrawDebugComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityEffect.h"
@@ -9,9 +9,6 @@
 
 UKMAnimNotifyState_Hit::UKMAnimNotifyState_Hit(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	ObjectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Damage));
-	ActorClassFilter = ACharacter::StaticClass();
-
 	SetGroupType(EEMNotifyGroupType::Plan);
 }
 

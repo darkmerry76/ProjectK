@@ -1,5 +1,5 @@
 #include "KMAbilitySkill.h"
-#include "Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 #include "Util/KMUtil.h"
 

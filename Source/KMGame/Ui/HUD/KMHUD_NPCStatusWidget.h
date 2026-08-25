@@ -27,10 +27,10 @@ public:
 	UKMHUD_NPCStatusWidget(const FObjectInitializer& objectInitializer);
 
 protected:
-	void OnStatChange(class UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue);
+	void OnStatChange(class UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue);
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnShowHp(class UKMCharacterInstance* characterInstance, float currHp, float maxHp);
+	void OnShowHp(class UKMGameObjectInstance* gameObjectInstance, float currHp, float maxHp);
 };

@@ -1,6 +1,6 @@
 #include "KMBTTaskNode_Patrol.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Util/KMUtil.h"
 
 UKMBTTaskNode_Patrol::UKMBTTaskNode_Patrol(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -8,10 +8,10 @@ UKMBTTaskNode_Patrol::UKMBTTaskNode_Patrol(const FObjectInitializer& objectIniti
 	NodeName = "Patrol";
 }
 
-EBTNodeResult::Type UKMBTTaskNode_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_Patrol::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	if (ownerCharacterInstance->IsDead())
 	{
@@ -24,16 +24,16 @@ EBTNodeResult::Type UKMBTTaskNode_Patrol::ExecuteTask(UBehaviorTreeComponent& Ow
 	return EBTNodeResult::Succeeded;
 }
 
-void UKMBTTaskNode_Patrol::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_Patrol::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
 
 	if (ownerCharacterInstance->IsDead())
 	{
 		ownerCharacterInstance->StartForceMove(0.f);
-		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
+		FinishLatentTask(ownerComp, EBTNodeResult::Aborted);
 	}
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 }
 
 UKMBTTaskNode_MoveStop::UKMBTTaskNode_MoveStop(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -41,10 +41,10 @@ UKMBTTaskNode_MoveStop::UKMBTTaskNode_MoveStop(const FObjectInitializer& objectI
 	NodeName = "MoveStop";
 }
 
-EBTNodeResult::Type UKMBTTaskNode_MoveStop::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_MoveStop::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(ownerCharacterInstance) == true);
+	UKMCharacterInstance* ownerCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(ownerCharacterInstance));
 
 	ownerCharacterInstance->StartForceMove(0.f);
 

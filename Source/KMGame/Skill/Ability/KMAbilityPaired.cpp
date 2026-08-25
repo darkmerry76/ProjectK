@@ -1,5 +1,7 @@
 #include "KMAbilityPaired.h"
-#include "Character/KMCharacter.h"
+
+#include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameObject/KMCharacterInstance.h"
 #include "Util/KMUtil.h"
 
 UKMAbilityPaired::UKMAbilityPaired(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

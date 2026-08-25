@@ -47,5 +47,5 @@ protected:
 
 	void Refresh();
 
-	void OnStatChange(class UKMCharacterInstance* characterInstance, EKMStatFactorType factorType, float prevValue, float newValue);
+	void OnStatChange(class UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue);
 };

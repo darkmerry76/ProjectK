@@ -1,15 +1,13 @@
 #include "KMCharacterInstance.h"
-
-#include "KMHeroInstance.h"
-#include "Actor/KMItemAppearanceActor.h"
 #include "Animation/KMAnimInstance.h"
 #include "Camera/KMPlayerCameraManager.h"
-#include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
+#include "GameActor/Item/KMItemAppearanceActor.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
@@ -22,7 +20,6 @@
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
 #include "Tables/Generated/KMTable_Beast.h"
 #include "Tables/Generated/KMTable_Character.h"
-#include "Tables/Generated/KMTable_SkillEffect_Normal.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
 
@@ -30,8 +27,6 @@ const FName LeaveSkeletalMeshCompTag = TEXT("LeaveSkeletalMeshComp");
 
 UKMCharacterInstance::UKMCharacterInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	SkillHandlerClass = UKMSkillHandler::StaticClass();
-	StatModifierClass = UKMStatModifierBase::StaticClass();
 	SensorClass = UKMSensor::StaticClass();
 }
 
@@ -49,11 +44,6 @@ FName UKMCharacterInstance::GetRecordStatKey() const
 	}
 	check(Table != nullptr);
 	return Table->StatId;	
-}
-
-UKMStatModifierBase* UKMCharacterInstance::GetStatModifier() const
-{
-	return StatModifier;
 }
 
 void UKMCharacterInstance::ChangeSkillSet(const FName& ownerId)
@@ -83,12 +73,6 @@ void UKMCharacterInstance::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StatModifier = NewObject<UKMStatModifierBase>(this, StatModifierClass, TEXT("StatModifier"));
-	StatModifier->GetEffectiveStat().StatChange.AddUObject(this, &ThisClass::OnStatChange);
-	StatModifier->Init();
-
-	SkillHandler = NewObject<UKMSkillHandler>(this, SkillHandlerClass, TEXT("SkillHandler"));
-
 	ChangeSkillSet(Table->Id);
 	
 	SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
@@ -101,33 +85,22 @@ void UKMCharacterInstance::BeginPlay()
 
 void UKMCharacterInstance::EndPlay()
 {
-	Super::EndPlay();
-
 	if (IsValid(StatModifier))
 	{
 		StatModifier->GetEffectiveStat().StatChange.RemoveAll(this);
 	}
 
-	if (Character.IsValid())
+	if (AKMCharacter* ownerCharacter = GetCharacter())
 	{
-		Character->Destroy();
-		Character = nullptr;
+		ownerCharacter->Destroy();
 	}
-}
 
-void UKMCharacterInstance::SetCharacter(AKMCharacter* newCharacter)
-{
-	Character = newCharacter;
+	Super::EndPlay();
 }
 
 AKMCharacter* UKMCharacterInstance::GetCharacter() const
 {
-	if (Character.IsValid() == false)
-	{
-		return nullptr;
-	}
-	
-	return Character.Get();
+	return Cast<AKMCharacter>(OwnerActor);
 }
 
 void UKMCharacterInstance::SetBeastTableId(FName newBeatId)
@@ -430,7 +403,7 @@ const FTransform& UKMCharacterInstance::GetTransform() const
 
 void UKMCharacterInstance::UpdateTransform()
 {
-	AKMCharacter* character = Cast<AKMCharacter>(Character);
+	AKMCharacter* character = Cast<AKMCharacter>(GetCharacter());
 	if (IsValid(character) == false)
 	{
 		return;
@@ -447,134 +420,19 @@ void UKMCharacterInstance::UpdateTransform()
 
 void UKMCharacterInstance::StartForceMove(const float& newDirection)
 {
-	AKMCharacter* character = Cast<AKMCharacter>(Character);
+	AKMCharacter* character = Cast<AKMCharacter>(OwnerActor);
 	if (IsValid(character) == false)
 	{
 		return;
 	}
+	
 	MoveAccelate = newDirection;
-}
-
-void UKMCharacterInstance::HitCheckClear()
-{
-	HitCheckData.Actors.Empty();	
 }
 
 void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
 {
-	if (GetCharacter() == hitActor)
-	{
-		return;
-	}
-
-	if (!adjustSkillInstance.IsValid())
-	{
-		return;
-	}
-
-	if (HitCheckData.Actors.Contains(hitActor))
-	{
-		return;
-	}
-
-	AKMCharacter* hitCharacter = Cast<AKMCharacter>(hitActor);
-	if (!IsValid(hitCharacter))
-	{
-		return;
-	}
-
-	UKMCharacterInstance* hitCharacterInstance = hitCharacter->GetCharacterInstance();
-	check(IsValid(hitCharacterInstance));
-
-	if (hitCharacterInstance->IsDead() || hitCharacterInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
-	{
-		return;
-	}
-
-	HitCheckData.Actors.FindOrAdd(hitActor);
-
-	Inflict(hitCharacterInstance);
-	
-	UPrimitiveComponent* rootComp = Cast<UPrimitiveComponent>(hitCharacter->GetRootComponent());
-	FVector closestPoint;
-	rootComp->GetClosestPointOnCollision(hitLocation, closestPoint);
-
-	if (adjustSkillInstance.IsValid())
-	{
-		TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get()); 
-		duplicatSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
-		duplicatSkillInstance->Target->Targets.Emplace(hitCharacter->GetCharacterInstance()->GetId());
-				
-		UKMSkillHandler* hitCharacterSkillHandler = hitCharacterInstance->GetSkillHandler();
-		check(IsValid(hitCharacterSkillHandler));
-
-		hitCharacterInstance->Hit(this, duplicatSkillInstance, closestPoint, hitTag);
-	}
-}
-
-void UKMCharacterInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag)
-{
-	for (const FHitResult& hitResult : hitResults)
-	{
-		if (AActor* actor = hitResult.GetActor())
-		{
-			if (!actor->IsA(actorClassFilter))
-			{
-				continue;
-			}
-			HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
-		}
-	}
-}
-
-void UKMCharacterInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
-	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
-{
-	if (objectTypeQuery.IsEmpty())
-	{
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Damage));
-	}
-	if (!IsValid(actorClassFilter))
-	{
-		actorClassFilter = ACharacter::StaticClass();
-	}
-	
-	TArray<FHitResult> hitResults;
-	FCollisionQueryParams queryParams;
-	queryParams.AddIgnoredActor(GetCharacter());
-
-	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),
-	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
-	{
-		HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
-	}
-}
-
-void UKMCharacterInstance::SphereHitImpact(
-	const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
-	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag)
-{
-	if (objectTypeQuery.IsEmpty())
-	{
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Damage));
-	}
-	if (!IsValid(actorClassFilter))
-	{
-		actorClassFilter = ACharacter::StaticClass();
-	}
-
-	TArray<FHitResult> hitResults;
-	FCollisionQueryParams queryParams;
-	queryParams.AddIgnoredActor(GetCharacter());
-	
-	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
-	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
-	{
-		HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
-	}
+	Super::HitCollection(adjustSkillInstance, hitActor, hitLocation, hitNormal, hitTag);
 }
 
 TSubclassOf<UCameraShakeBase> UKMCharacterInstance::GetCameraShakeByPowerType(EKMDamagePowerType powerType) const
@@ -587,9 +445,9 @@ TSubclassOf<UCameraShakeBase> UKMCharacterInstance::GetCameraShakeByPowerType(EK
 	return *existCameraShakeClass; 
 }
 
-void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
+void UKMCharacterInstance::Inflict(UKMGameObjectInstance* victimGameObject)
 {
-	if (IsValid(victimCharacter) && !victimCharacter->HasGameplayTag(FKMGameplayTagName::State_Parry_Tag))
+	if (IsValid(victimGameObject) && !victimGameObject->HasGameplayTag(FKMGameplayTagName::State_Parry_Tag))
 	{
 		Stiff(0.1f);
 	}
@@ -600,10 +458,10 @@ void UKMCharacterInstance::Inflict(UKMCharacterInstance* victimCharacter)
 		TimingCancel = MakeShared<FKMTimingCancel>(this);
 		TimingCancel->SetLatestSkillInstance(SkillHandler->GetLatestActiveSkillInstance());
 	}
-	InflictDelegate.Broadcast(++ComboCount, victimCharacter);
+	InflictDelegate.Broadcast(++ComboCount, victimGameObject);
 }
 
-void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
+void UKMCharacterInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
 {
 	if (UseParrySkill())
 	{
@@ -641,9 +499,9 @@ void UKMCharacterInstance::Hit(UKMCharacterInstance* attackerCharacterInstance, 
 		{
 			HitPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
 		}
-		if (attackerCharacterInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		if (attackerGameObjectInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
 		{
-			attackerCharacterInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+			attackerGameObjectInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
 		}
 	}
 }
@@ -663,68 +521,6 @@ void UKMCharacterInstance::ShakeRoot(float newDistance, float newFrequency, floa
 	}
 
 	animInstance->StartShake(newDistance, newFrequency, newDuration);
-}
-
-void UKMCharacterInstance::Stiff(float duration, bool bReset)
-{
-	if (FMath::IsNearlyZero(duration))
-	{
-		return;
-	}
-
-	float newDuration = duration;
-	if (StiffTimerHandle.IsValid())
-	{
-		if (!bReset)
-		{
-			newDuration = duration - GetWorld()->GetTimerManager().GetTimerRemaining(StiffTimerHandle);
-		}
-		if (newDuration <= 0.f)
-		{
-			return;
-		}
-		else
-		{
-			GetWorld()->GetTimerManager().ClearTimer(StiffTimerHandle);
-		}
-	}
-	else
-	{
-		//GetCharacter()->GetMesh()->bPauseAnims = true;
-		//GetCharacter()->GetMesh()->SuspendClothingSimulation();
-
-		SetTimeDilation(TEXT("HitStop"), 0.f);
-	}
-	GetWorld()->GetTimerManager().SetTimer(StiffTimerHandle, FTimerDelegate::CreateUObject(this, &UKMCharacterInstance::OnStiffRelease), newDuration, false);
-}
-
-void UKMCharacterInstance::OnStiffRelease()
-{
-	RemoveTimeDilation(TEXT("HitStop"));
-	//GetCharacter()->GetMesh()->bPauseAnims = false;
-	//GetCharacter()->GetMesh()->ResumeClothingSimulation();
-	GetWorld()->GetTimerManager().ClearTimer(StiffTimerHandle);
-}
-
-float UKMCharacterInstance::GetTimeDilation() const
-{
-	float timeDilation = 1.f;
-	for (auto timeDilationItr : TimeDilations)
-	{
-		timeDilation *= timeDilationItr.Value;
-	}
-
-	return timeDilation;
-}
-
-void UKMCharacterInstance::SetTimeDilation(const FName& layerName, float newTimeDilation)
-{
-	TimeDilations.Add(layerName, newTimeDilation);
-}
-
-void UKMCharacterInstance::RemoveTimeDilation(const FName& layerName)
-{
-	TimeDilations.Remove(layerName);
 }
 
 float UKMCharacterInstance::GetMoveAccelate() const
@@ -768,10 +564,7 @@ void UKMCharacterInstance::OnStatChange(EKMStatFactorType factorType, float prev
 
 void UKMCharacterInstance::BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent)
 {
-	if (DamageDelegate.IsBound())
-	{
-		DamageDelegate.Broadcast(newDamageEvent);
-	}
+	Super::BroadCastDamageEvent(newDamageEvent);
 
 	if (CombatMessageDelegate.IsBound())
 	{
@@ -784,26 +577,13 @@ void UKMCharacterInstance::BroadCastDamageEvent(const FKMDamageEvent& newDamageE
 
 void UKMCharacterInstance::OnDeath()
 {
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter());
-	if (IsValid(ownerCharacter) == true)
+	Super::OnDeath();
+
+	if (AKMCharacter* ownerCharacter = GetCharacter())
 	{
-		GameplayTagContainer.AddTag(FKMGameplayTagName::State_Dead_Tag);
-		GameplayTagContainer.AddTag(FKMGameplayTagName::Block_Control_Tag);
-		if (!GameplayTagContainer.HasTag(FKMGameplayTagName::State_Blow_Tag))
-		{
-			if (const FKMTable_SkillEffect_NormalRow* skillEffectDieTableRow = FKMTable_SkillEffect_NormalRow::FindRowPtr(TEXT("eff_die")))
-			{
-				//if (UKMAbility* deathAbility = Cast<UKMAbility>(GetStatModifier()->ApplyEffectiveAnimation(skillEffectDieTableRow->Ability.PdaKey)))
-				//{
-					//deathAbility->Activate();
-				//}
-			}
-		}
 		ownerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	}
 	StartForceMove(0.f);
-
-	GetCharacterDeathDelegate().Broadcast(this);
 }
 
 bool UKMCharacterInstance::IsDead() const
@@ -818,21 +598,14 @@ bool UKMCharacterInstance::IsDead() const
 
 void UKMCharacterInstance::Tick(float deltaSeconds)
 {
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	float resultTimeDilation = GetTimeDilation();
-	
-	GetCharacter()->CustomTimeDilation = resultTimeDilation;
-	
-	deltaSeconds *= resultTimeDilation;
-	
 	Super::Tick(deltaSeconds);
-	
-	if (IsValid(GetCharacter()))
+
+	StatModifier->ComputePreEffectStat();
+	SkillHandler->Tick(deltaSeconds);
+	StatModifier->ComputePostEffectStat();
+
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (IsValid(ownerCharacter))
 	{
 		if (IsRun())
 		{
@@ -842,26 +615,22 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 		{
 			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
 		}
-	}
+		SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
 
-	StatModifier->ComputePreEffectStat();
-	SkillHandler->Tick(deltaSeconds);
-	StatModifier->ComputePostEffectStat();
-	SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
-
-	if (InflectPowerType != EKMDamagePowerType::None)
-	{
-		if (AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
+		if (InflectPowerType != EKMDamagePowerType::None)
 		{
-			TSubclassOf<UCameraShakeBase> cameraShakeClass = GetCameraShakeByPowerType(InflectPowerType);
-			if (!IsValid(cameraShakeClass))
+			if (AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
 			{
-				cameraShakeClass = GetCameraShakeByPowerType(EKMDamagePowerType::Default);
-			}
-			
-			if (IsValid(cameraShakeClass))
-			{
-				playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+				TSubclassOf<UCameraShakeBase> cameraShakeClass = GetCameraShakeByPowerType(InflectPowerType);
+				if (!IsValid(cameraShakeClass))
+				{
+					cameraShakeClass = GetCameraShakeByPowerType(EKMDamagePowerType::Default);
+				}
+				
+				if (IsValid(cameraShakeClass))
+				{
+					playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+				}
 			}
 		}
 	}
@@ -1049,11 +818,6 @@ bool UKMCharacterInstance::UseGuardSkill_Release()
 void UKMCharacterInstance::ShowDamage(EKMStatFactorType factorType, int32 damage)
 {
 	if (damage <= 0) return;
-}
-
-UKMSkillHandler* UKMCharacterInstance::GetSkillHandler() const
-{
-	return SkillHandler;
 }
 
 void UKMCharacterInstance::AddAggroTarget(UKMCharacterInstance* attacker)

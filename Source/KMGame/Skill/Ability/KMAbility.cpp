@@ -3,11 +3,11 @@
 #include "EMMartialArtsComponent.h"
 #include "KMAbilityBlow.h"
 #include "Animation/KMAnimInstance.h"
-#include "Character/KMCharacter.h"
 #include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/EMMontageCacheManager.h"
@@ -88,12 +88,7 @@ void UKMAbility::Activate()
 
 	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	check(IsValid(curveWarping));
-
-	if (bIsClearCurve)
-	{
-		curveWarping->ClearCurveWarping();
-	}
-
+	
 	if (IsValid(BlowCurve))
 	{
 		FVector actorForwardVector = ownerCharacter->GetActorForwardVector();
@@ -106,13 +101,13 @@ void UKMAbility::Activate()
 		{
 			curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
 		}
-		curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
+		CurveWapingInstanceId = curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
 	}
 
 	if (!Impulse.IsNearlyZero())
 	{
-		FVector impulseTargetLocation = ownerCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * Impulse);
-		curveWarping->PlayLinearWarp(impulseTargetLocation, ImpulseDuration);
+		FVector impulseTargetLocation = ownerCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * Impulse.X) + (ownerCharacter->GetActorRightVector() * Impulse.Y);
+		ImpulseInstanceId = curveWarping->PlayLinearWarp(impulseTargetLocation, ImpulseDuration);
 	}
 	
 	OnActivated();
@@ -124,7 +119,29 @@ void UKMAbility::OnActivated_Implementation()
 
 void UKMAbility::Deactivate(bool bCancel)
 {
+	AKMCharacter* ownerCharacter = GetOwnerCharacter();
+	check(IsValid(ownerCharacter));
+
+	UEMMartialArts* martialArts = GetMartialArts();
+	check(IsValid(martialArts));
+
+	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	check(IsValid(curveWarping));
+
 	StopMartialArts();
+
+	if (bIsClearCurve)
+	{
+		if (CurveWapingInstanceId != INDEX_NONE)
+		{
+			curveWarping->ClearCurveWarping(CustomMovementMode, CurveWapingInstanceId);
+		}
+
+		if (ImpulseInstanceId != INDEX_NONE)
+		{
+			curveWarping->StopLinearWarp(ImpulseInstanceId);
+		}
+	}
 	OnDeacivated(bCancel);
 }
 

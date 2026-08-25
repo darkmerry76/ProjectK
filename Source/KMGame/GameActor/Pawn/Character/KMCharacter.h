@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Character/EMCharacterBase.h"
-#include "Components/WidgetComponent.h"
+#include "GameActor/Pawn/KMPawnInterface.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "KMCharacter.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, abstract)
-class KMGAME_API AKMCharacter : public AEMCharacterBase
+class KMGAME_API AKMCharacter : public AEMCharacterBase, public IKMPawnInterface
 {
 	GENERATED_UCLASS_BODY()
 
@@ -30,17 +30,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	TObjectPtr<class UKMItemAppearanceInstance> WeaponInstance;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> AnimOverrideMontageMap;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	FVector InputVelocity = FVector::ZeroVector;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	FVector LastetMoveInputVelocity = FVector::ZeroVector;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<class UKMCharacterInstance> CharacterInstance = nullptr;
 
 	UPROPERTY(Transient)
 	const class UKMBeastPDA* BeastPDA = nullptr;
@@ -49,7 +52,8 @@ protected:
 
 public:
 	class UKMCharacterInstance* GetCharacterInstance() const;
-	virtual void PossessedByCharacterInstance(class UEMGameObjectInstance* newCharacterInstance) override;
+
+	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
 
 	class UEMMartialArtsComponent* GetMartialArtsComponent() const;
 
@@ -101,6 +105,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+
+	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
 
 protected:
 	bool bIsMirror = false;

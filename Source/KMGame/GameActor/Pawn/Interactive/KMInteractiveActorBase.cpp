@@ -1,0 +1,32 @@
+#include "KMInteractiveActorBase.h"
+#include "GameObject/Interactive/KMInteractiveInstance.h"
+
+AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+{
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("RootScene")));
+}
+
+UKMInteractiveInstance* AKMInteractiveActorBase::GetInteractiveInstance() const
+{
+	if (InteractiveInstance.IsValid())
+	{
+		return nullptr;
+	}
+	return InteractiveInstance.Get();
+}
+
+UKMGameObjectInstance* AKMInteractiveActorBase::GetGameObjectInstance() const
+{
+	if (InteractiveInstance.IsValid())
+	{
+		return nullptr;
+	}
+	return InteractiveInstance.Get();
+};
+
+void AKMInteractiveActorBase::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
+{
+	InteractiveInstance = Cast<UKMInteractiveInstance>(newGameObjectInstance);
+	check(InteractiveInstance.IsValid());
+	InteractiveInstance->SetOwnerActor(this);
+}
