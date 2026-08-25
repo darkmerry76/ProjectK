@@ -79,9 +79,9 @@ void UKMHUD_CombatMessageWidget::AddMessage(const FText& messageText, EKMCommbat
 	
 }
 
-void UKMHUD_CombatMessageWidget::OnCommbatMessage(const UKMCharacterInstance* characterInstance, EKMCommbatMessageType messageType, const FString& newMessage)
+void UKMHUD_CombatMessageWidget::OnCommbatMessage(const UKMGameObjectInstance* gameObjectInstance, EKMCommbatMessageType messageType, const FString& newMessage)
 {
-	check(IsValid(characterInstance));
+	check(IsValid(gameObjectInstance));
 
 	if (messageType == EKMCommbatMessageType::Critical)
 	{

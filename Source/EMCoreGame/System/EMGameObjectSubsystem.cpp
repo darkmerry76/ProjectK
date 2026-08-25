@@ -32,7 +32,7 @@ int32 UEMGameObjectSubsystem::AddGameObject(UEMGameObjectInstance* newGameObject
 UEMGameObjectInstance* UEMGameObjectSubsystem::GetGameObject(int32 gameObjectId)
 {
 	TObjectPtr<UEMGameObjectInstance>* resultObject = GameObjectMap.Find(gameObjectId);
-	if (resultObject == nullptr || (*resultObject) == nullptr)
+	if (!resultObject  || !(*resultObject))
 	{
 		return nullptr;
 	}
@@ -48,7 +48,7 @@ bool UEMGameObjectSubsystem::HasGameObject(int32 gameObjectId) const
 bool UEMGameObjectSubsystem::RemoveGameObject(int32 gameObjectId)
 {
 	TObjectPtr<UEMGameObjectInstance> gameObjectInstance = GetGameObject(gameObjectId);
-	if (IsValid(gameObjectInstance) == false)
+	if (!IsValid(gameObjectInstance))
 	{
 		return false;
 	}
@@ -70,7 +70,7 @@ void UEMGameObjectSubsystem::RemoveAllGameObjects(const TArray<TSubclassOf<UEMGa
 		{
 			for (auto classItr : ignoreInstanceClasses)
 			{
-				if (objectItr.Value()->IsA(classItr) == true)
+				if (objectItr.Value()->IsA(classItr))
 				{
 					isIgnoreClass = true;
 					break;
@@ -78,7 +78,7 @@ void UEMGameObjectSubsystem::RemoveAllGameObjects(const TArray<TSubclassOf<UEMGa
 			}
 		}
 
-		if (isIgnoreClass == false)
+		if (!isIgnoreClass)
 		{
 			objectItr.Value()->EndPlay();
 			objectItr.RemoveCurrent();

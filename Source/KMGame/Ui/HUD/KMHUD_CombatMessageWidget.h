@@ -29,7 +29,7 @@ protected:
 
 	void Refresh();
 
-	void OnCommbatMessage(const class UKMCharacterInstance* characterInstance, EKMCommbatMessageType messageType, const FString& newMessage);
+	void OnCommbatMessage(const class UKMGameObjectInstance* gameObjectInstance, EKMCommbatMessageType messageType, const FString& newMessage);
 	void AddMessage(const FText& messageText, EKMCommbatMessageType messageType, const FLinearColor& fontColor, float fontSize, float duration);
 
 	virtual void NativeTick(const FGeometry& myGeometry, float deltaTime) override;

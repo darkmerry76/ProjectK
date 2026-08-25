@@ -9,15 +9,12 @@
 #include "KMTable_BaseStat.h"
 #include "KMTable_BaseStat_Beast.h"
 #include "KMTable_BaseStat_Hero.h"
+#include "KMTable_BaseStat_Interactive.h"
 #include "KMTable_BaseStat_Monster.h"
-#include "KMTable_Beast.h"
 #include "KMTable_Chapter.h"
 #include "KMTable_Chapter_Dungeon.h"
 #include "KMTable_Chapter_Raid.h"
-#include "KMTable_Character.h"
 #include "KMTable_Character_DropRate.h"
-#include "KMTable_Character_Hero.h"
-#include "KMTable_Character_Monster.h"
 #include "KMTable_Drop.h"
 #include "KMTable_Drop_InGameEvent.h"
 #include "KMTable_Drop_InGameSkill.h"
@@ -25,8 +22,6 @@
 #include "KMTable_GameConstant.h"
 #include "KMTable_GameEvent.h"
 #include "KMTable_InGameEvent.h"
-#include "KMTable_Interactive.h"
-#include "KMTable_Interactive_Breakable.h"
 #include "KMTable_Item.h"
 #include "KMTable_LocalizeText.h"
 #include "KMTable_LocalizeText_Desc.h"
@@ -40,6 +35,13 @@
 #include "KMTable_Narrative_Movie.h"
 #include "KMTable_Narrative_Prologue.h"
 #include "KMTable_Narrative_Sequence.h"
+#include "KMTable_Object.h"
+#include "KMTable_Object_Beast.h"
+#include "KMTable_Object_Character.h"
+#include "KMTable_Object_Character_Hero.h"
+#include "KMTable_Object_Character_Monster.h"
+#include "KMTable_Object_Interactive.h"
+#include "KMTable_Object_Interactive_Breakable.h"
 #include "KMTable_OutLevelupCost.h"
 #include "KMTable_PlayerGrowth.h"
 #include "KMTable_PlayerLevel.h"
@@ -123,20 +125,6 @@ public:
 		return *GetTableEM<FKMTable_BaseStatRow>(*FKMTable_BaseStatRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
-	// KMTable_Beast FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_BeastRow& GetTableKMTable_Beast(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_BeastRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Beast Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_BeastRow& GetTableKMTable_BeastByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_BeastRow>(*FKMTable_BeastRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
 	// KMTable_Chapter FName으로 검색되는 블루프린트 노출함수
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static const FKMTable_ChapterRow& GetTableKMTable_Chapter(FName IndexName, bool& IsFind)
@@ -151,20 +139,6 @@ public:
 		return *GetTableEM<FKMTable_ChapterRow>(*FKMTable_ChapterRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
-	// KMTable_Character FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_CharacterRow& GetTableKMTable_Character(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_CharacterRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Character Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_CharacterRow& GetTableKMTable_CharacterByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_CharacterRow>(*FKMTable_CharacterRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
 	// KMTable_Character_DropRate FName으로 검색되는 블루프린트 노출함수
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static const FKMTable_Character_DropRateRow& GetTableKMTable_Character_DropRate(FName IndexName, bool& IsFind)
@@ -177,34 +151,6 @@ public:
 	static const FKMTable_Character_DropRateRow& GetTableKMTable_Character_DropRateByKey(FName idKey, FName characterIdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_Character_DropRateRow>(*FKMTable_Character_DropRateRow::MakeTableKeyToString(idKey, characterIdKey), IsFind);
-	}
-
-	// KMTable_Character_Hero FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Character_HeroRow& GetTableKMTable_Character_Hero(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Character_HeroRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Character_Hero Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Character_HeroRow& GetTableKMTable_Character_HeroByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Character_HeroRow>(*FKMTable_Character_HeroRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
-	// KMTable_Character_Monster FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Character_MonsterRow& GetTableKMTable_Character_Monster(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Character_MonsterRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Character_Monster Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_Character_MonsterRow& GetTableKMTable_Character_MonsterByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_Character_MonsterRow>(*FKMTable_Character_MonsterRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_Drop FName으로 검색되는 블루프린트 노출함수
@@ -303,20 +249,6 @@ public:
 	static const FKMTable_InGameEventRow& GetTableKMTable_InGameEventByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_InGameEventRow>(*FKMTable_InGameEventRow::MakeTableKeyToString(IdKey), IsFind);
-	}
-
-	// KMTable_Interactive FName으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_InteractiveRow& GetTableKMTable_Interactive(FName IndexName, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_InteractiveRow>(IndexName, IsFind);
-	}
-
-	// KMTable_Interactive Key값으로 검색되는 블루프린트 노출함수
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static const FKMTable_InteractiveRow& GetTableKMTable_InteractiveByKey(FName IdKey, bool& IsFind)
-	{
-		return *GetTableEM<FKMTable_InteractiveRow>(*FKMTable_InteractiveRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_Item FName으로 검색되는 블루프린트 노출함수
@@ -443,6 +375,90 @@ public:
 	static const FKMTable_Narrative_SequenceRow& GetTableKMTable_Narrative_SequenceByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_Narrative_SequenceRow>(*FKMTable_Narrative_SequenceRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_ObjectRow& GetTableKMTable_Object(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_ObjectRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_ObjectRow& GetTableKMTable_ObjectByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_ObjectRow>(*FKMTable_ObjectRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object_Beast FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_BeastRow& GetTableKMTable_Object_Beast(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_BeastRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object_Beast Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_BeastRow& GetTableKMTable_Object_BeastByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_BeastRow>(*FKMTable_Object_BeastRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object_Character FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_CharacterRow& GetTableKMTable_Object_Character(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_CharacterRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object_Character Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_CharacterRow& GetTableKMTable_Object_CharacterByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_CharacterRow>(*FKMTable_Object_CharacterRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object_Character_Hero FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_Character_HeroRow& GetTableKMTable_Object_Character_Hero(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_Character_HeroRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object_Character_Hero Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_Character_HeroRow& GetTableKMTable_Object_Character_HeroByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_Character_HeroRow>(*FKMTable_Object_Character_HeroRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object_Character_Monster FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_Character_MonsterRow& GetTableKMTable_Object_Character_Monster(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_Character_MonsterRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object_Character_Monster Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_Character_MonsterRow& GetTableKMTable_Object_Character_MonsterByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_Character_MonsterRow>(*FKMTable_Object_Character_MonsterRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_Object_Interactive FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_InteractiveRow& GetTableKMTable_Object_Interactive(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_InteractiveRow>(IndexName, IsFind);
+	}
+
+	// KMTable_Object_Interactive Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_Object_InteractiveRow& GetTableKMTable_Object_InteractiveByKey(FName IdKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_Object_InteractiveRow>(*FKMTable_Object_InteractiveRow::MakeTableKeyToString(IdKey), IsFind);
 	}
 
 	// KMTable_OutLevelupCost FName으로 검색되는 블루프린트 노출함수

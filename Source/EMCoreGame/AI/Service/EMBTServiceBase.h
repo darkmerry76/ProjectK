@@ -14,16 +14,16 @@ protected:
 	virtual bool UsesBlueprint() const override;
 #endif
 
-	virtual void OnSearchStart(FBehaviorTreeSearchData& SearchData) override;
-	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual void OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual void OnSearchStart(FBehaviorTreeSearchData& searchData) override;
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) override;
+	virtual void OnCeaseRelevant(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) override;
 	
-	virtual void OnActivationAI(class AAIController* OwnerController, class APawn* ControlledPawn);
-	virtual void OnActivation(class AActor* OwnerActor);
+	virtual void OnActivationAI(class AAIController* ownerController, class APawn* controlledPawn);
+	virtual void OnActivation(class AActor* ownerActor);
 	
-	virtual void OnDeactivationAI(class AAIController* OwnerController, class APawn* ControlledPawn);
-	virtual void OnDeactivation(class AActor* OwnerActor);
+	virtual void OnDeactivationAI(class AAIController* ownerController, class APawn* controlledPawn);
+	virtual void OnDeactivation(class AActor* ownerActor);
 
-	virtual void OnSearchStartAI(class AAIController* OwnerController, class APawn* ControlledPawn);
-	virtual void OnSearchStart(class AActor* OwnerActor);
+	virtual void OnSearchStartAI(class AAIController* ownerController, class APawn* controlledPawn);
+	virtual void OnSearchStart(class AActor* ownerActor);
 };

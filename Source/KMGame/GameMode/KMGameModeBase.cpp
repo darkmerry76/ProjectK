@@ -21,7 +21,7 @@ void AKMGameModeBase::EndPlay(const EEndPlayReason::Type endPlayReason)
 
 bool AKMGameModeBase::IsInitMap(const UWorld* otherWorld) const
 {
-	if (IsValid(otherWorld) == false)
+	if (IsValid(otherWorld))
 	{
 		return false;
 	}

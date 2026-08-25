@@ -45,13 +45,24 @@ struct EMExcelFileSection
 	FString Path;
 	TArray<FString> Files;
 	TArray<FString> IgnoreFiles;
+	TMap<FString,FString> SheetRenames;
 
-	const FString GetFinalFilesname(int32 Index) const {
+	FString GetFinalFilesname(int32 Index) const {
 		return FString::Printf(TEXT("%s/%s"), *Path, *Files[Index]);
 	};
-	const FString GetFinalIgnoreFilesname(int32 Index) const {
+	FString GetFinalIgnoreFilesname(int32 Index) const {
 		return FString::Printf(TEXT("%s/%s"), *Path, *IgnoreFiles[Index]);
 	};
+
+	FString GetFinalSheetName(const FString& originName) const
+	{
+		const FString* existName = SheetRenames.Find(originName);
+		if (!existName || (*existName).IsEmpty())
+		{
+			return originName;
+		}
+		return *existName;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +215,7 @@ public:
 	}
 
 public:
-	const EMGenericSection&			GetGenericSection() const { return GenericSection; };
+	const EMGenericSection&				GetGenericSection() const { return GenericSection; };
 	const EMSchemaSection&				GetSchemaSection() const { return SchemaSection; };
 	const EMExcelFileSection&			GetExcelFileSection() const { return ExcelFileSection; };
 	const EMBinaryExportSection&		GetBinaryExportSection() const { return BinaryExportSection; }

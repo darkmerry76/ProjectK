@@ -196,7 +196,6 @@ TSharedPtr<FJsonObject> LoadJsonObject(const FString& Filename)
 	{
 		return nullptr;
 	}
-
 	
 	TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(UTF8_TO_TCHAR(reinterpret_cast<CHAR*>(JsonArray.GetData())));
 	TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();

@@ -6,17 +6,18 @@
 
 // 역할
 UENUM(BlueprintType)
-enum class EKMCharacterType : uint8
+enum class EKMObjectType : uint8
 {
 	Hero = 0 , // 플레이어
 	Npc = 1 , // NPC
 	Monster = 2 , // 몬스터
 	Beast = 3 , // 비스트
+	Breakable = 4 , // 부서지는물체
 };
 
 // 역할
 UENUM(BlueprintType)
-enum class EKMCharacterBattleRole : uint8
+enum class EKMBattleRoleType : uint8
 {
 	None = 0 , // 미지정
 	Tanker = 1 , // 탱커
@@ -27,7 +28,7 @@ enum class EKMCharacterBattleRole : uint8
 
 // 캐릭터 위치 타입(StageSpawn,Character)에서 사용중
 UENUM(BlueprintType)
-enum class EKMCharacterLocationType : uint8
+enum class EKMLocationType : uint8
 {
 	None = 0 , // 미지정
 	Ground = 1 , // 지상
@@ -38,7 +39,7 @@ enum class EKMCharacterLocationType : uint8
 
 // 히어로 등급 에서 사용
 UENUM(BlueprintType)
-enum class EKMHeroGrade : uint8
+enum class EKMHeroGradeType : uint8
 {
 	None = 0 , // 미지정
 	Common = 1 , // 일반 (회색)
@@ -49,7 +50,7 @@ enum class EKMHeroGrade : uint8
 
 // 몬스터 등급 에서 사용
 UENUM(BlueprintType)
-enum class EKMMonsterGrade : uint8
+enum class EKMMonsterGradeType : uint8
 {
 	None = 0 , // 미지정
 	Normal = 1 , // 일반
@@ -86,8 +87,7 @@ enum class EKMSkillTargetType : uint8
 	None = 0 , // 없음
 	Self = 1 , // 자신
 	Hero = 2 , // 히어로
-	Monster = 3 , // 악귀
-	Ghost = 4 , // 선령
+	Monster = 3 , // 몬스터
 };
 
 // 스킬 적용대상
@@ -132,7 +132,7 @@ enum class EKMSkillRangeType : uint8
 
 // 스킬이펙트거리타잎
 UENUM(BlueprintType)
-enum class EKMSkillTransitionBehavior : uint8
+enum class EKMSkillTransitionBehaviorType : uint8
 {
 	None = 0 , // 없음
 	Disable = 1 , // 기능멈춤
@@ -221,7 +221,7 @@ enum class EKMStatParameterType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EKMLocomotionState : uint8
+enum class EKMLocomotionStateType : uint8
 {
 	None = 0 , // 없음
 	Land = 1 , 

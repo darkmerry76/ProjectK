@@ -2,8 +2,7 @@
 #include "TimerManager.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Stat/KMMonsterStatModifier.h"
-#include "System/KMDropSubsystem.h"
-#include "Tables/Generated/KMTable_Character_Monster.h"
+#include "Tables/Generated/KMTable_Object_Character_Monster.h"
 
 UKMMonsterInstance::UKMMonsterInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -52,7 +51,7 @@ bool UKMMonsterInstance::CanBeTargeted() const
 
 bool UKMMonsterInstance::CanReceiveReward() const
 {
-	const FKMTable_Character_MonsterRow* monsterTable = CastRow<FKMTable_Character_MonsterRow>(GetTable());
+	const FKMTable_Object_Character_MonsterRow* monsterTable = CastRow<FKMTable_Object_Character_MonsterRow>(GetTable());
 	check(monsterTable != nullptr);
 	
 	return monsterTable->NeedInLvUp;

@@ -23,7 +23,7 @@ struct FKMTable_SkillSet_HeroRow : public FKMTable_SkillSetRow
 	inline static const FKMTable_SkillSet_HeroRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 53;
+	static const int32   RefTableIndex = 55;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

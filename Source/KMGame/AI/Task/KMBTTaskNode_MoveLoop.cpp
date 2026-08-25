@@ -9,17 +9,17 @@ UKMBTTaskNode_MoveLoop::UKMBTTaskNode_MoveLoop(const FObjectInitializer& objectI
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UKMBTTaskNode_MoveLoop::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_MoveLoop::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
 	return EBTNodeResult::InProgress;
 }
 
-void UKMBTTaskNode_MoveLoop::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UKMBTTaskNode_MoveLoop::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory, float deltaSeconds)
 {
-	UKMCharacterInstance* sourceCharacterInstance = UKMUtil::GetCharacterInstanceByController(OwnerComp.GetAIOwner());
-	check(IsValid(sourceCharacterInstance) == true);
+	UKMCharacterInstance* sourceCharacterInstance = UKMUtil::GetCharacterInstanceByController(ownerComp.GetAIOwner());
+	check(IsValid(sourceCharacterInstance));
 
-/*	if (sourceCharacterInstance->IsMoving() == false)
+/*	if (!sourceCharacterInstance->IsMoving())
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}*/

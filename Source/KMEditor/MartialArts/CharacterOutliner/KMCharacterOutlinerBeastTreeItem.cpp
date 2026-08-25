@@ -13,12 +13,12 @@ TSharedRef<SWidget> FKMCharacterOutlinerBeastTreeItem::GenerateLabelWidget(IEMOu
 	return SNew(SKMCharacterOutlinerBeastTreeItem, *this, outliner, row);
 }
 
-void FKMCharacterOutlinerBeastTreeItem::SetBeastTable(const FKMTable_BeastRow* newBeastTable)
+void FKMCharacterOutlinerBeastTreeItem::SetBeastTable(const FKMTable_Object_BeastRow* newBeastTable)
 {
 	BeastTable = newBeastTable;
 }
 
-const FKMTable_BeastRow* FKMCharacterOutlinerBeastTreeItem::GetBeastTable() const
+const FKMTable_Object_BeastRow* FKMCharacterOutlinerBeastTreeItem::GetBeastTable() const
 {
 	return BeastTable;
 }

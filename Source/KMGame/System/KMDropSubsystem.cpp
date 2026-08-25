@@ -20,7 +20,10 @@ void UKMDropSubsystem::Deinitialize()
 void UKMDropSubsystem::RequestCheckDrop(const FName& dropItemDataId)
 {
 	auto dropData = FKMTable_DropRow::FindRowPtr(dropItemDataId);
-	if (dropData == nullptr) return;
+	if (!dropData)
+	{
+		return;
+	}
 
 	if (auto dropItemData = FKMTable_Drop_ItemRow::FindRowPtr(dropItemDataId))
 	{

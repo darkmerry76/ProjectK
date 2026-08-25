@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EMTableGenerator.h"
+#include "Config/EMTableConfig.h"
 #include "SheetBuilder/EMSheet.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +22,7 @@ protected:
 	{
 		check(Analizer.IsValid());
 
-		FString finalSheetName = SheetName;
+		FString finalSheetName = EMTableConfig::Get().GetExcelFileSection().GetFinalSheetName(SheetName);;
 
 		int32 hashIndex;
 

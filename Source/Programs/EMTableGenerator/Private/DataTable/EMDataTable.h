@@ -17,6 +17,7 @@ struct TPrettyJsonPrintPolicy;
 template <class CharType, class PrintPolicy>
 class TJsonWriter;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogDataTable, Log, All);
 
 /**
  * Base class for all table row structs to inherit from.

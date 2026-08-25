@@ -9,6 +9,7 @@ public class EMTableGenerator : ModuleRules
 	{
 		//OptimizeCode = CodeOptimization.Never;
 		
+		CppStandard = CppStandardVersion.Cpp20;
 		PrivatePCHHeaderFile = "Private/EMTableGenerator.h";
 			
 		string enginePath = Path.GetFullPath(Target.RelativeEnginePath);

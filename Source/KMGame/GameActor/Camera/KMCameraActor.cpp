@@ -21,7 +21,7 @@ void AKMCameraActor::BeginPlay()
 
 void AKMCameraActor::SetViewportOnAspectRatio(FViewport* viewport)
 {
-	if (viewport == nullptr)
+	if (!viewport)
 	{
 		return;
 	}
@@ -32,7 +32,7 @@ void AKMCameraActor::SetViewportOnAspectRatio(FViewport* viewport)
 	}
 
 	UCameraComponent* cameraComponent = GetCameraComponent();
-	if (IsValid(cameraComponent) == false)
+	if (!IsValid(cameraComponent))
 	{
 		return;
 	}

@@ -9,24 +9,24 @@ UKMBTDecorator_CanMove::UKMBTDecorator_CanMove(const FObjectInitializer& objectI
 	NodeName = TEXT("CanMove");
 }
 
-bool UKMBTDecorator_CanMove::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UKMBTDecorator_CanMove::CalculateRawConditionValue(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) const
 {
-	AAIController* aiController = OwnerComp.GetAIOwner();
-	check(IsValid(aiController) == true);
+	AAIController* aiController = ownerComp.GetAIOwner();
+	check(IsValid(aiController));
 	
 	AKMCharacter* character = Cast<AKMCharacter>(aiController->GetPawn());
-	check(IsValid(character) == true);
+	check(IsValid(character));
 	
 	UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(character->GetCharacterInstance());
-	check(IsValid(ownerCharacterInstance) == true);
+	check(IsValid(ownerCharacterInstance));
 
-	UBlackboardComponent* blackboardComponent = OwnerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
+	check(IsValid(blackboardComponent));
 	
 	FKMSkillKey skillKey = FKMSkillKey::CreateKey(
 		blackboardComponent->GetValueAsName(TEXT("SkillId")),
 		blackboardComponent->GetValueAsInt(TEXT("SkillLevel")));
-	if (skillKey.IsValid() == false)
+	if (!skillKey.IsValid())
 	{
 		return false;
 	}

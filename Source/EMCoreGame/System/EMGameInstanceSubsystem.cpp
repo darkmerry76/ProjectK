@@ -3,12 +3,12 @@
 
 UEMGameInstanceSubsystem* UEMGameInstanceSubsystem::GetSubsystem(const UObject* worldContextObject, TSubclassOf<UGameInstanceSubsystem> subsystemClass)
 {
-	check(IsValid(worldContextObject) == true);
+	check(IsValid(worldContextObject));
 	
 	UWorld* world = worldContextObject->GetWorld();
-	check(IsValid(world) == true);
+	check(IsValid(world));
 	UGameInstance* instance = world->GetGameInstance();
-	check(IsValid(instance) == true);
+	check(IsValid(instance));
 
 	return Cast<UEMGameInstanceSubsystem>(world->GetGameInstance()->GetSubsystemBase(subsystemClass));
 }

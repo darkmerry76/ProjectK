@@ -55,11 +55,11 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	FName                TransitionSkill = { NAME_None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMSkillTransitionBehavior TransitionSkillBehavior = { EKMSkillTransitionBehavior::None };
+	EKMSkillTransitionBehaviorType TransitionSkillBehavior = { EKMSkillTransitionBehaviorType::None };
 
 	// 스킬발동 로코모션
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMLocomotionState   LocomotionState = { EKMLocomotionState::None };
+	EKMLocomotionStateType LocomotionState = { EKMLocomotionStateType::None };
 
 	// 스킬발동 최대거리
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -108,7 +108,7 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	inline static const FKMTable_SkillConditionRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 46;
+	static const int32   RefTableIndex = 48;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

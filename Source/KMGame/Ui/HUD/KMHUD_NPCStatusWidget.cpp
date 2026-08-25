@@ -3,7 +3,6 @@
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "System/EMTweener.h"
-#include "Tables/Generated/KMTable_Character.h"
 #include "UI/Component/EMTextBlock.h"
 
 UKMHUD_NPCStatusWidget::UKMHUD_NPCStatusWidget(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

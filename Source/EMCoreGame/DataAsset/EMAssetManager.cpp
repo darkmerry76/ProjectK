@@ -31,13 +31,13 @@ UObject* UEMAssetManager::GetAsset(const FName& assetId)
 
 UObject* UEMAssetManager::GetAsset(const FPrimaryAssetId& assetId)
 {
-	if (assetId.IsValid() == false)
+	if (!assetId.IsValid())
 	{
 		return nullptr;
 	}
 	
 	TObjectPtr<UObject>* resultAsset = Assets.Find(assetId);
-	if (resultAsset != nullptr && (*resultAsset) != nullptr)
+	if (resultAsset && (*resultAsset))
 	{
 		return *resultAsset;
 	}
@@ -46,14 +46,14 @@ UObject* UEMAssetManager::GetAsset(const FPrimaryAssetId& assetId)
 		UAssetManager::Get().GetPrimaryAssetPath(assetId);
 	
 	TSharedPtr<FStreamableHandle> handle = LoadPrimaryAsset(assetId, TArray<FName>(), nullptr);
-	if (handle.IsValid() == true)
+	if (handle.IsValid())
 	{
 		handle->WaitUntilComplete();
 	}
 
 	UObject* result = path.TryLoad();
 	UObject* newObject = GetPrimaryAssetObject(assetId);
-	if(::IsValid(newObject) == false)
+	if(!::IsValid(newObject))
 	{
 		
 		return nullptr;
@@ -70,7 +70,7 @@ bool UEMAssetManager::RemoveAssetByString(const FString& stringId)
 
 bool UEMAssetManager::RemoveAssetById(const FPrimaryAssetId& assetId)
 {
-	if (Assets.Contains(assetId) == false)
+	if (!Assets.Contains(assetId))
 	{
 		return false;
 	}

@@ -5,19 +5,19 @@
 #include "EMDataTable.h"
 #include "KMTableEnums.h"
 #include "KMTableStructures.h"
-#include "KMTable_Character.h"
-#include "KMTable_Character_Monster.generated.h"
+#include "KMTable_Object_Character.h"
+#include "KMTable_Object_Character_Monster.generated.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FKMTable_Character_MonsterRow
+// FKMTable_Object_Character_MonsterRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USTRUCT(BlueprintType)
-struct FKMTable_Character_MonsterRow : public FKMTable_CharacterRow
+struct FKMTable_Object_Character_MonsterRow : public FKMTable_Object_CharacterRow
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMMonsterGrade      MonsterGrade = { EKMMonsterGrade::None };
+	EKMMonsterGradeType  MonsterGrade = { EKMMonsterGradeType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32                DefaultLevel = { 0 };
@@ -38,32 +38,32 @@ struct FKMTable_Character_MonsterRow : public FKMTable_CharacterRow
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 
-	inline static const FKMTable_Character_MonsterRow* FindRowPtr(FName IdKey);
-	inline static const FKMTable_Character_MonsterRow& FindRow(FName IdKey);
+	inline static const FKMTable_Object_Character_MonsterRow* FindRowPtr(FName IdKey);
+	inline static const FKMTable_Object_Character_MonsterRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 13;
+	static const int32   RefTableIndex = 35;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// KMTable_Character_Monster Inline
+// KMTable_Object_Character_Monster Inline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void FKMTable_Character_MonsterRow::PostLoadRowTable()
+inline void FKMTable_Object_Character_MonsterRow::PostLoadRowTable()
 {
 	BaseScriptStruct = this->StaticStruct();
 }
 
-inline FString FKMTable_Character_MonsterRow::MakeTableKeyToString(FName IdKey)
+inline FString FKMTable_Object_Character_MonsterRow::MakeTableKeyToString(FName IdKey)
 {
 	return FEMDataTableHelper::Get().MakeTableIndexToString(IdKey);
 }
 
-inline const FKMTable_Character_MonsterRow* FKMTable_Character_MonsterRow::FindRowPtr(FName IdKey)
+inline const FKMTable_Object_Character_MonsterRow* FKMTable_Object_Character_MonsterRow::FindRowPtr(FName IdKey)
 {
-	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Character_MonsterRow>(*MakeTableKeyToString(IdKey));
+	return FEMDataTableHelper::Get().FindRowPtr<FKMTable_Object_Character_MonsterRow>(*MakeTableKeyToString(IdKey));
 }
 
-inline const FKMTable_Character_MonsterRow& FKMTable_Character_MonsterRow::FindRow(FName IdKey)
+inline const FKMTable_Object_Character_MonsterRow& FKMTable_Object_Character_MonsterRow::FindRow(FName IdKey)
 {
 	return *FindRowPtr(IdKey);
 }

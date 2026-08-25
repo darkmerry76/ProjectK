@@ -5,9 +5,8 @@
 #include "KMCharacterOutlinerGroupTreeItem.h"
 #include "KMCharacterOutlinerTreeItem.h"
 #include "Core/KMDefine.h"
-#include "Tables/Generated/KMTableEnums.h"
-#include "Tables/Generated/KMTable_Beast.h"
-#include "Tables/Generated/KMTable_Character.h"
+#include "Tables/Generated/KMTable_Object_Beast.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
 
 TArray<FEMOutlinerTreeItemPtr> FKMCharacterOutlinerHierarchy::RememberAllItems;
 TMap<TSharedPtr<IEMOutlinerTreeItem>, TSharedPtr<IEMOutlinerTreeItem>> FKMCharacterOutlinerHierarchy::RememberParentItems;
@@ -128,18 +127,18 @@ void FKMCharacterOutlinerHierarchy::Init()
 	{
 		FString characterEnumName = characterTypeEnum->GetNameStringByIndex(enumIndex);
 
-		EKMCharacterType characterType = static_cast<EKMCharacterType>(characterTypeEnum->GetValueByIndex(enumIndex));
+		EKMObjectType objectType = static_cast<EKMObjectType>(characterTypeEnum->GetValueByIndex(enumIndex));
 		
 		TSharedPtr<FKMCharacterOutlinerGroupTreeItem> characterGroupItem =
 			AddItem<FKMCharacterOutlinerGroupTreeItem>(FFolder(Mode->GetRootObject(), *characterEnumName),nullptr, true);
-		CharacterTypeItems.Emplace(characterType, characterGroupItem);
+		CharacterTypeItems.Emplace(objectType, characterGroupItem);
 	}
 
-	const TMap<FName, FKMTable_CharacterRow*> characterRows = FEMDataTableHelper::Get().GetRowMap<FKMTable_CharacterRow>();
+	const TMap<FName, FKMTable_Object_CharacterRow*> characterRows = FEMDataTableHelper::Get().GetRowMap<FKMTable_Object_CharacterRow>();
 	CharacterCount = characterRows.Num();
 	for (auto characterItr = characterRows.CreateConstIterator(); characterItr; ++characterItr)
 	{
-		const FKMTable_CharacterRow* characterTable = characterItr.Value();
+		const FKMTable_Object_CharacterRow* characterTable = characterItr.Value();
 		if (!characterTable)
 		{
 			continue;;
@@ -158,11 +157,11 @@ void FKMCharacterOutlinerHierarchy::Init()
 		}
 	}
 
-	const TMap<FName, FKMTable_BeastRow*> beastRows = FEMDataTableHelper::Get().GetRowMap<FKMTable_BeastRow>();
+	const TMap<FName, FKMTable_Object_BeastRow*> beastRows = FEMDataTableHelper::Get().GetRowMap<FKMTable_Object_BeastRow>();
 	CharacterCount += beastRows.Num();
 	for (auto beastItr = beastRows.CreateConstIterator(); beastItr; ++beastItr)
 	{
-		const FKMTable_BeastRow* beastTableRow = beastItr.Value();
+		const FKMTable_Object_BeastRow* beastTableRow = beastItr.Value();
 		if (!beastTableRow)
 		{
 			continue;;

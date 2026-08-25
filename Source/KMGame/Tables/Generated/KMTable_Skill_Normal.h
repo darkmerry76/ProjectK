@@ -41,7 +41,7 @@ struct FKMTable_Skill_NormalRow : public FKMTable_SkillRow
 	inline static const FKMTable_Skill_NormalRow& FindRow(FName IdKey, int32 LevelKey);
 	inline static FString MakeTableKeyToString(FName IdKey, int32 LevelKey);
 
-	static const int32   RefTableIndex = 44;
+	static const int32   RefTableIndex = 46;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

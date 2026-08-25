@@ -34,7 +34,7 @@ struct FKMTable_OutLevelupCostRow : public FEM_TableBaseRow
 	inline static const FKMTable_OutLevelupCostRow& FindRow(int32 IdKey);
 	inline static FString MakeTableKeyToString(int32 IdKey);
 
-	static const int32   RefTableIndex = 36;
+	static const int32   RefTableIndex = 38;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

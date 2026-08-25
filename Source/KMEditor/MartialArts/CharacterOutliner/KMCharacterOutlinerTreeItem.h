@@ -14,8 +14,8 @@ public:
 
 	FKMCharacterOutlinerTreeItem(const FText& text);
 
-	void SetCharacterTable(const struct FKMTable_CharacterRow* newCharacterTable);
-	const struct FKMTable_CharacterRow* GetCharacterTable() const;
+	void SetCharacterTable(const struct FKMTable_Object_CharacterRow* newCharacterTable);
+	const struct FKMTable_Object_CharacterRow* GetCharacterTable() const;
 
 	static FKMCharacterLabelCommttedDelgate& GetCharacterLabelCommttedDelgate();
 	static FKMCharacterVerifyItemLabelChangedDelgate& GetCharacterVerifyItemLabelChangedDelgate();
@@ -24,7 +24,7 @@ protected:
 	virtual TSharedRef<SWidget> GenerateLabelWidget(IEMOutliner& outliner, const STableRow<FEMOutlinerTreeItemPtr>& row) override;
 
 protected:
-	const struct FKMTable_CharacterRow* CharacterTable = nullptr;;
+	const struct FKMTable_Object_CharacterRow* CharacterTable = nullptr;;
 };
 
 struct SKMCharacterOutlinerTreeItem : public SEMOutlinerTextTreeItem

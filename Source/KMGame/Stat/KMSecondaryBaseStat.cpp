@@ -7,7 +7,7 @@
 
 void FKMBaseStat::Init(const FKMTable_BaseStatRow* baseStatTable)
 {
-	check(baseStatTable != nullptr);
+	check(baseStatTable);
 	
 	Hp = baseStatTable->Hp;
 	HpRps = baseStatTable->HpRps;
@@ -37,7 +37,7 @@ void FKMBaseStat::Init(const FKMTable_BaseStatRow* baseStatTable)
 
 void FKMBaseStat::Multiply(const FKMTable_Stat_InLevelUpRow* inLevelupTable)
 {
-	check(inLevelupTable != nullptr);
+	check(inLevelupTable);
 	
 	Hp *= inLevelupTable->Hp;
 	HpRps *= inLevelupTable->HpRps;
@@ -67,7 +67,7 @@ void FKMBaseStat::Multiply(const FKMTable_Stat_InLevelUpRow* inLevelupTable)
 
 void FKMBaseStat::Multiply(const FKMTable_Stat_OutLevelUpRow* outLevelTable)
 {
-	check(outLevelTable != nullptr);
+	check(outLevelTable);
 	
 	Hp *= outLevelTable->Hp;
 	HpRps *= outLevelTable->HpRps;
@@ -97,7 +97,7 @@ void FKMBaseStat::Multiply(const FKMTable_Stat_OutLevelUpRow* outLevelTable)
 
 void FKMBaseStat::Multiply(const FKMTable_PlayerLevelRow* playerLvelTable)
 {
-	check(playerLvelTable != nullptr);
+	check(playerLvelTable);
 	
 	Hp *= playerLvelTable->Hp;
 	HpRps *= playerLvelTable->HpRps;
@@ -127,6 +127,8 @@ void FKMBaseStat::Multiply(const FKMTable_PlayerLevelRow* playerLvelTable)
 
 void FKMBaseStat::DuplicateValue(const FKMBaseStat* otherStat)
 {
+	check(otherStat);
+	
 	Hp = otherStat->Hp;
 	HpRps = otherStat->HpRps;
 
@@ -156,7 +158,7 @@ void FKMBaseStat::DuplicateValue(const FKMBaseStat* otherStat)
 
 void FKMBaseStat::SetHp(double newHp, bool bBroadcast)
 {
-	if (bBroadcast == true && Hp != newHp)
+	if (bBroadcast && Hp != newHp)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Hp, Hp, newHp);
 	}
@@ -165,7 +167,7 @@ void FKMBaseStat::SetHp(double newHp, bool bBroadcast)
 
 void FKMBaseStat::SetHpRps(double newHpRps, bool bBroadcast)
 {
-	if (bBroadcast == true && HpRps != newHpRps)
+	if (bBroadcast && HpRps != newHpRps)
 	{
 		StatChange.Broadcast(EKMStatFactorType::HpRps, HpRps, newHpRps);
 	}
@@ -174,7 +176,7 @@ void FKMBaseStat::SetHpRps(double newHpRps, bool bBroadcast)
 
 void FKMBaseStat::SetSp(double newSp, bool bBroadcast)
 {
-	if (bBroadcast == true && Sp != newSp)
+	if (bBroadcast && Sp != newSp)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Sp, Sp, newSp);
 	}
@@ -183,7 +185,7 @@ void FKMBaseStat::SetSp(double newSp, bool bBroadcast)
 
 void FKMBaseStat::SetSpRps(double newSpRps, bool bBroadcast)
 {
-	if (bBroadcast == true && SpRps != newSpRps)
+	if (bBroadcast && SpRps != newSpRps)
 	{
 		StatChange.Broadcast(EKMStatFactorType::SpRps, SpRps, newSpRps);
 	}
@@ -192,7 +194,7 @@ void FKMBaseStat::SetSpRps(double newSpRps, bool bBroadcast)
 
 void FKMBaseStat::SetMp(double newMp, bool bBroadcast)
 {
-	if (bBroadcast == true && Mp != newMp)
+	if (bBroadcast && Mp != newMp)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Mp, Mp, newMp);
 	}
@@ -201,7 +203,7 @@ void FKMBaseStat::SetMp(double newMp, bool bBroadcast)
 
 void FKMBaseStat::SetMpRps(double newMpRps, bool bBroadcast)
 {
-	if (bBroadcast == true && MpRps != newMpRps)
+	if (bBroadcast && MpRps != newMpRps)
 	{
 		StatChange.Broadcast(EKMStatFactorType::MpRps, MpRps, newMpRps);
 	}
@@ -210,7 +212,7 @@ void FKMBaseStat::SetMpRps(double newMpRps, bool bBroadcast)
 
 void FKMBaseStat::SetAtk(double newAtk, bool bBroadcast)
 {
-	if (bBroadcast == true && Atk != newAtk)
+	if (bBroadcast && Atk != newAtk)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Atk, Atk, newAtk);
 	}
@@ -219,7 +221,7 @@ void FKMBaseStat::SetAtk(double newAtk, bool bBroadcast)
 
 void FKMBaseStat::SetAtkSpd(double newAtkSpd, bool bBroadcast)
 {
-	if (bBroadcast == true && AtkSpd != newAtkSpd)
+	if (bBroadcast && AtkSpd != newAtkSpd)
 	{
 		StatChange.Broadcast(EKMStatFactorType::AtkSpd, AtkSpd, newAtkSpd);
 	}
@@ -228,7 +230,7 @@ void FKMBaseStat::SetAtkSpd(double newAtkSpd, bool bBroadcast)
 	
 void FKMBaseStat::SetDex(double newDex, bool bBroadcast)
 {
-	if (bBroadcast == true && Dex != newDex)
+	if (bBroadcast && Dex != newDex)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Dex, Dex, newDex);
 	}
@@ -237,7 +239,7 @@ void FKMBaseStat::SetDex(double newDex, bool bBroadcast)
 
 void FKMBaseStat::SetDef(double newDef, bool bBroadcast)
 {
-	if (bBroadcast == true && Def != newDef)
+	if (bBroadcast && Def != newDef)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Def, Def, newDef);
 	}
@@ -246,7 +248,7 @@ void FKMBaseStat::SetDef(double newDef, bool bBroadcast)
 	
 void FKMBaseStat::SetCriChange(double newCriChange, bool bBroadcast)
 {
-	if (bBroadcast == true && !FMath::IsNearlyEqual(CriChance, newCriChange))
+	if (bBroadcast && !FMath::IsNearlyEqual(CriChance, newCriChange))
 	{
 		StatChange.Broadcast(EKMStatFactorType::CriChange, CriChance, newCriChange);
 	}
@@ -255,7 +257,7 @@ void FKMBaseStat::SetCriChange(double newCriChange, bool bBroadcast)
 	
 void FKMBaseStat::SetCri(double newCri, bool bBroadcast)
 {
-	if (bBroadcast == true && Cri != newCri)
+	if (bBroadcast && Cri != newCri)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Cri, Cri, newCri);
 	}
@@ -264,7 +266,7 @@ void FKMBaseStat::SetCri(double newCri, bool bBroadcast)
 	
 void FKMBaseStat::SetMov(double newMov, bool bBroadcast)
 {
-	if (bBroadcast == true && Mov != newMov)
+	if (bBroadcast && Mov != newMov)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Mov, Mov, newMov);
 	}
@@ -273,7 +275,7 @@ void FKMBaseStat::SetMov(double newMov, bool bBroadcast)
 
 void FKMBaseStat::SetRun(double newRun, bool bBroadcast)
 {
-	if (bBroadcast == true && Run != newRun)
+	if (bBroadcast && Run != newRun)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Run, Run, newRun);
 	}
@@ -282,7 +284,7 @@ void FKMBaseStat::SetRun(double newRun, bool bBroadcast)
 
 void FKMBaseStat::SetEmp(double newEmp, bool bBroadcast)
 {
-	if (bBroadcast == true && Emp != newEmp)
+	if (bBroadcast && Emp != newEmp)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Emp, Emp, newEmp);
 	}
@@ -291,7 +293,7 @@ void FKMBaseStat::SetEmp(double newEmp, bool bBroadcast)
 
 void FKMBaseStat::SetEmpPhase(int32 newEmpPhase, bool bBroadcast)
 {
-	if (bBroadcast == true && EmpPhase != newEmpPhase)
+	if (bBroadcast && EmpPhase != newEmpPhase)
 	{
 		StatChange.Broadcast(EKMStatFactorType::EmpPhase, EmpPhase, newEmpPhase);
 	}
@@ -300,7 +302,7 @@ void FKMBaseStat::SetEmpPhase(int32 newEmpPhase, bool bBroadcast)
 
 void FKMBaseStat::SetTempo(double newTempo, bool bBroadcast)
 {
-	if (bBroadcast == true && Tempo != newTempo)
+	if (bBroadcast && Tempo != newTempo)
 	{
 		StatChange.Broadcast(EKMStatFactorType::Tempo, Tempo, newTempo);
 	}
@@ -309,7 +311,7 @@ void FKMBaseStat::SetTempo(double newTempo, bool bBroadcast)
 
 void FKMBaseStat::SetTempoRps(double newTempoRps, bool bBroadcast)
 {
-	if (bBroadcast == true && TempoRps != newTempoRps)
+	if (bBroadcast && TempoRps != newTempoRps)
 	{
 		StatChange.Broadcast(EKMStatFactorType::TempoRps, TempoRps, newTempoRps);
 	}
@@ -341,7 +343,7 @@ void FKMSecondaryStat::ApplyDamage(double damage , bool bBroadcast)
 void FKMSecondaryStat::SetHpCurr(double newHpCurr, bool bBroadcast)
 {
 	newHpCurr = FMath::Clamp<double>(newHpCurr, 0.f, GetHp());
-	if (bBroadcast == true && HpCurr != newHpCurr)
+	if (bBroadcast && HpCurr != newHpCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::HpCurr, HpCurr, newHpCurr);
 	}
@@ -351,7 +353,7 @@ void FKMSecondaryStat::SetHpCurr(double newHpCurr, bool bBroadcast)
 void FKMSecondaryStat::SetSpCurr(double newSpCurr, bool bBroadcast)
 {
 	newSpCurr = FMath::Clamp<double>(newSpCurr, 0.f, GetSp());
-	if (bBroadcast == true && SpCurr != newSpCurr)
+	if (bBroadcast && SpCurr != newSpCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::SpCurr, SpCurr, newSpCurr);
 	}
@@ -362,7 +364,7 @@ void FKMSecondaryStat::SetMpCurr(double newMpCurr, bool bBroadcast)
 {
 	newMpCurr = FMath::Clamp<double>(newMpCurr, 0.f, GetMp());
 	
-	if (bBroadcast == true && MpCurr != newMpCurr)
+	if (bBroadcast && MpCurr != newMpCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::MpCurr, MpCurr, newMpCurr);
 	}
@@ -387,7 +389,7 @@ void FKMSecondaryStat::SetEmpCurr(double newEmpCurr, bool bBroadcast)
 	
 	newEmpCurr = FMath::Clamp<double>(newEmpCurr, 0.f, GetEmp());
 	
-	if (bBroadcast == true && EmpCurr != newEmpCurr)
+	if (bBroadcast && EmpCurr != newEmpCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::EmpCurr, EmpCurr, newEmpCurr);
 	}
@@ -398,7 +400,7 @@ void FKMSecondaryStat::SetEmpPhaseCurr(int32 newEmpPhaseCurr, bool bBroadcast)
 {
 	newEmpPhaseCurr = FMath::Clamp<int32>(newEmpPhaseCurr, 0, GetEmpPhase());
 
-	if (bBroadcast == true && EmpPhaseCurr != newEmpPhaseCurr)
+	if (bBroadcast && EmpPhaseCurr != newEmpPhaseCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::EmpPhaseCurr, static_cast<double>(EmpPhaseCurr), static_cast<double>(newEmpPhaseCurr));
 	}
@@ -409,7 +411,7 @@ void FKMSecondaryStat::SetTempoCurr(double newTempoCurr, bool bBroadcast)
 {
 	newTempoCurr = FMath::Clamp<double>(newTempoCurr, 0.f, GetTempo());
 	
-	if (bBroadcast == true && TempoCurr != newTempoCurr)
+	if (bBroadcast && TempoCurr != newTempoCurr)
 	{
 		StatChange.Broadcast(EKMStatFactorType::TempoCurr, TempoCurr, newTempoCurr);
 	}

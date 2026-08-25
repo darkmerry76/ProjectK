@@ -102,7 +102,7 @@ UKMAbility* FKMAbilityInstanceBase::AddAbillityAsset(const FName& pDAKey)
 	}
 	
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager) == true);
+	check(IsValid(assetManager));
 
 	UObject* assetObject = assetManager->GetAsset(pDAKey);
 

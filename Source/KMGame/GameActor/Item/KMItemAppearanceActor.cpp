@@ -9,9 +9,9 @@ UKMItemAppearanceInstance::UKMItemAppearanceInstance(const FObjectInitializer& o
 
 void UKMItemAppearanceInstance::Spawn()
 {
-	check(IsValid(SpawnedActor) == false);
+	check(!IsValid(SpawnedActor));
 	
-	if (AppearanceClass == nullptr)
+	if (!AppearanceClass)
 	{
 		return;
 	}
@@ -22,7 +22,7 @@ void UKMItemAppearanceInstance::Spawn()
 
 void UKMItemAppearanceInstance::Despawn()
 {
-	if (IsValid(SpawnedActor) == true)
+	if (IsValid(SpawnedActor))
 	{
 		SpawnedActor->Destroy();
 		SpawnedActor = nullptr;
@@ -50,7 +50,7 @@ UKMCharacterInstance* UKMItemAppearanceInstance::GetCharacterInstance() const
 
 void UKMItemAppearanceInstance::Equip(class USkeletalMeshComponent* meshComponent, FName socketName)
 {
-	if (SpawnedActor == nullptr)
+	if (!SpawnedActor)
 	{
 		return;
 	}

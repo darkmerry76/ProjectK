@@ -20,11 +20,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Spawn System")
 	class UKMHeroInstance* SpawnHero(const FName& heroId);
 
-	class UKMActorInstance* SpawnProjectile(TSubclassOf<class AActor> actorClass, FTransform transform);
+	class UKMActorInstance* SpawnProjectile(TSubclassOf<class AActor> actorClass, const FTransform& transform);
 
 protected:
 	void OnSkillProjectileTrigger(const TSharedPtr<class FKMSkillInstance>& skillInstance);
 	
 	UFUNCTION()
-	void OnSkillProjectileEvent(FGameplayTag eventTag, const FKMProjectileEventData& EventData);
+	void OnSkillProjectileEvent(FGameplayTag eventTag, const FKMProjectileEventData& eventData);
 };

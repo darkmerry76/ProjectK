@@ -30,9 +30,9 @@ bool UEMBTServiceBase::UsesBlueprint() const
 }
 #endif
 
-void UEMBTServiceBase::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UEMBTServiceBase::OnBecomeRelevant(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	if (AIOwner != nullptr && (ReceiveActivationImplementations & FBTNodeBPImplementationHelper::AISpecific))
+	if (IsValid(AIOwner) && (ReceiveActivationImplementations & FBTNodeBPImplementationHelper::AISpecific))
 	{
 		OnActivationAI(AIOwner, AIOwner->GetPawn());
 	}
@@ -41,25 +41,25 @@ void UEMBTServiceBase::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8
 		OnActivation(ActorOwner);
 	}
 
-	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+	Super::OnBecomeRelevant(ownerComp, nodeMemory);
 }
 
-void UEMBTServiceBase::OnActivationAI(AAIController* OwnerController, APawn* ControlledPawn)
+void UEMBTServiceBase::OnActivationAI(AAIController* ownerController, APawn* controlledPawn)
 {
 
 }
 
-void UEMBTServiceBase::OnActivation(AActor* OwnerActor)
+void UEMBTServiceBase::OnActivation(AActor* ownerActor)
 {
 }
 
-void UEMBTServiceBase::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UEMBTServiceBase::OnCeaseRelevant(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
-	if (!OwnerComp.HasAnyFlags(RF_BeginDestroyed) && OwnerComp.GetOwner())
+	if (!ownerComp.HasAnyFlags(RF_BeginDestroyed) && IsValid(ownerComp.GetOwner()))
 	{
-		BlueprintNodeHelpers::AbortLatentActions(OwnerComp, *this);
+		BlueprintNodeHelpers::AbortLatentActions(ownerComp, *this);
 
-		if (AIOwner != nullptr && (ReceiveDeactivationImplementations & FBTNodeBPImplementationHelper::AISpecific))
+		if (IsValid(AIOwner) && (ReceiveDeactivationImplementations & FBTNodeBPImplementationHelper::AISpecific))
 		{
 			OnDeactivationAI(AIOwner, AIOwner->GetPawn());
 		}
@@ -69,22 +69,22 @@ void UEMBTServiceBase::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 	}
 	
-	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
+	Super::OnCeaseRelevant(ownerComp, nodeMemory);
 }
 
-void UEMBTServiceBase::OnDeactivationAI(AAIController* OwnerController, APawn* ControlledPawn)
+void UEMBTServiceBase::OnDeactivationAI(AAIController* ownerController, APawn* controlledPawn)
 {
 }
 
-void UEMBTServiceBase::OnDeactivation(AActor* OwnerActor)
+void UEMBTServiceBase::OnDeactivation(AActor* ownerActor)
 {
 }
 
-void UEMBTServiceBase::OnSearchStart(FBehaviorTreeSearchData& SearchData)
+void UEMBTServiceBase::OnSearchStart(FBehaviorTreeSearchData& searchData)
 {
 	if (ReceiveSearchStartImplementations != 0)
 	{
-		if (AIOwner != nullptr && (ReceiveSearchStartImplementations & FBTNodeBPImplementationHelper::AISpecific))
+		if (IsValid(AIOwner) && (ReceiveSearchStartImplementations & FBTNodeBPImplementationHelper::AISpecific))
 		{
 			OnSearchStartAI(AIOwner, AIOwner->GetPawn());
 		}
@@ -94,13 +94,13 @@ void UEMBTServiceBase::OnSearchStart(FBehaviorTreeSearchData& SearchData)
 		}
 	}
 	
-	Super::OnSearchStart(SearchData);
+	Super::OnSearchStart(searchData);
 }
 
-void UEMBTServiceBase::OnSearchStartAI(AAIController* OwnerController, class APawn* ControlledPawn)
+void UEMBTServiceBase::OnSearchStartAI(AAIController* ownerController, APawn* controlledPawn)
 {
 }
 
-void UEMBTServiceBase::OnSearchStart(AActor* OwnerActor)
+void UEMBTServiceBase::OnSearchStart(AActor* ownerActor)
 {
 }

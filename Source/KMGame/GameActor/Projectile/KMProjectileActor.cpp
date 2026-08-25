@@ -62,7 +62,7 @@ FPrimaryAssetId AKMProjectileActor::GetPrimaryAssetId() const
 {
 	return Super::GetPrimaryAssetId();
 /*	UClass* assetClass = GetClass();
-	if (IsValid(assetClass) == false || IsValid(assetClass->ClassGeneratedBy) == false)
+	if (!IsValid(assetClass) || !IsValid(assetClass->ClassGeneratedBy))
 	{
 		return Super::GetPrimaryAssetId();
 	}

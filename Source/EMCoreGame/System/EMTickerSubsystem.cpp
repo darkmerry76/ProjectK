@@ -206,7 +206,7 @@ TStatId UEMTickerSubsystem::GetStatId() const
 
 bool UEMTickerSubsystem::IsTickable() const
 {
-	return (HasAnyFlags(RF_ClassDefaultObject) == false);
+	return !HasAnyFlags(RF_ClassDefaultObject);
 }
 
 ETickableTickType UEMTickerSubsystem::GetTickableTickType() const

@@ -35,7 +35,7 @@ struct FKMTable_SkillEffectTransitionRow : public FEM_TableBaseRow
 	inline static const FKMTable_SkillEffectTransitionRow& FindRow(FName IdKey, FName NameKey);
 	inline static FString MakeTableKeyToString(FName IdKey, FName NameKey);
 
-	static const int32   RefTableIndex = 50;
+	static const int32   RefTableIndex = 52;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

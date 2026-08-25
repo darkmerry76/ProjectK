@@ -13,6 +13,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FKMDeathDelegate, class UKMGameObjectInstanc
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMDamageDelegate, const FKMDamageEvent& newDamageEvent);
 DECLARE_MULTICAST_DELEGATE_FourParams(FKMStatChangeDelegate, class UKMGameObjectInstance* gameObjectInstance, EKMStatFactorType factorType, float prevValue, float newValue);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FKMInflictDelegate, int32 comboCount, class UKMGameObjectInstance* victimGameObjectInstance);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCommbatMessageDelegate, const class UKMGameObjectInstance* gameObjectInstance, EKMCommbatMessageType messageType, const FString& newMessage);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMSkillMessageDelegate, const class UKMGameObjectInstance* gameObjectInstance, TSharedPtr<class FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
 class KMGAME_API UKMGameObjectInstance : public UEMGameObjectInstance
@@ -38,7 +40,17 @@ protected:
 public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay() override;
-	
+
+	void SetTable(const struct FKMTable_ObjectRow* newObjectTable);
+	const struct FKMTable_ObjectRow* GetTable() const;
+
+	UFUNCTION(BlueprintPure)
+	virtual FName GetTableId() const;
+
+	UFUNCTION(BlueprintPure)
+	virtual FName GetStatTableId() const;
+
+	UFUNCTION(BlueprintPure)
 	virtual FString GetObjectName() const;
 
 	UFUNCTION(BlueprintCallable)
@@ -88,6 +100,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	virtual bool IsDead() const;
+
+	UFUNCTION(BlueprintPure)
+	virtual bool IsAir() const;
 	
 	virtual void Hit(class UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 
@@ -130,6 +145,17 @@ public:
 		return InflictDelegate;
 	}
 
+	FKMCommbatMessageDelegate& GetCombatMessageDelegate()
+	{
+		return CombatMessageDelegate;
+	}
+
+	static FKMSkillMessageDelegate& GetSkillMessageDelegate()
+	{
+		static FKMSkillMessageDelegate newSkillMessageDelegate;
+		return newSkillMessageDelegate;
+	}
+
 protected:
 	virtual void OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue);
 	virtual void OnDeath();
@@ -149,14 +175,16 @@ protected:
 	FKMStatChangeDelegate StatChangeEvent;
 	FKMDamageDelegate DamageDelegate;
 	FKMInflictDelegate InflictDelegate;
-
+	FKMCommbatMessageDelegate CombatMessageDelegate;
+	
 	FKMHitCheckData HitCheckData;
 
 	FTimerHandle StiffTimerHandle;
 
 	TMap<FName, float> TimeDilations;
 
-public:
+	const struct FKMTable_ObjectRow* ObjectTable = nullptr;
+	
 	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
 	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
 };

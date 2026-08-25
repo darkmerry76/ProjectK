@@ -24,14 +24,14 @@ FVector UKMProjectileMovementComponent::ComputeHomingAcceleration(const FVector&
 void UKMProjectileMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	FVector prevUpdatedLocation;
-	if (IsValid(UpdatedComponent) == true)
+	if (IsValid(UpdatedComponent))
 	{
 		prevUpdatedLocation = UpdatedComponent->GetComponentLocation();
 	}
 	
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (IsValid(UpdatedComponent) == true && HomingTargetComponent.IsValid() == true)
+	if (IsValid(UpdatedComponent) && HomingTargetComponent.IsValid())
 	{
 		FVector nextUpdatedLocation = UpdatedComponent->GetComponentLocation();
 		FVector targetLocation = HomingTargetComponent->GetComponentLocation();
@@ -45,10 +45,10 @@ void UKMProjectileMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 		if (FVector::DotProduct(ToTargetPrev, ToTargetNext) <= 0.f)
 		{
 			bool isPendingKill = IsGarbageEliminationEnabled();
-			if (isPendingKill == false)
+			if (!isPendingKill)
 			{
 				OnProjectileArrival.Broadcast(this);
-				if (IsArrivalDestroyActor == true)
+				if (IsArrivalDestroyActor)
 				{
 					GetOwner()->Destroy();
 				}

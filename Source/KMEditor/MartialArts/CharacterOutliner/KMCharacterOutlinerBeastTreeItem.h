@@ -14,8 +14,8 @@ public:
 
 	FKMCharacterOutlinerBeastTreeItem(const FText& text);
 
-	void SetBeastTable(const struct FKMTable_BeastRow* newBeastTable);
-	const struct FKMTable_BeastRow* GetBeastTable() const;
+	void SetBeastTable(const struct FKMTable_Object_BeastRow* newBeastTable);
+	const struct FKMTable_Object_BeastRow* GetBeastTable() const;
 
 	static FKMBeastLabelCommttedDelgate& GetBeastLabelCommttedDelgate();
 	static FKMBeastVerifyItemLabelChangedDelgate& GetBeastVerifyItemLabelChangedDelgate();
@@ -24,7 +24,7 @@ protected:
 	virtual TSharedRef<SWidget> GenerateLabelWidget(IEMOutliner& outliner, const STableRow<FEMOutlinerTreeItemPtr>& row) override;
 
 protected:
-	const struct FKMTable_BeastRow* BeastTable = nullptr;;
+	const struct FKMTable_Object_BeastRow* BeastTable = nullptr;;
 };
 
 struct SKMCharacterOutlinerBeastTreeItem : public SEMOutlinerTextTreeItem

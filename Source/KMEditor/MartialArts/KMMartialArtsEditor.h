@@ -18,12 +18,12 @@ protected:
 	virtual void AddReferencedObjects(FReferenceCollector& collector) override;
 	virtual FSphere GetCameraTargetSphere() const override;
 
-	void OnOwnerCharacterSelected(const struct FKMTable_CharacterRow* newCharacterTable);
-	void OnOwnerBeastSelected(const struct FKMTable_BeastRow* newBeastTable);
+	void OnOwnerCharacterSelected(const struct FKMTable_Object_CharacterRow* newCharacterTable);
+	void OnOwnerBeastSelected(const struct FKMTable_Object_BeastRow* newBeastTable);
 	
-	void AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable);
+	void AddTargetCharacterInstance(const struct FKMTable_Object_CharacterRow* newCharacterTable);
 
-	void SpawnOwnerCharacterInstance(const struct FEM_TableBaseRow* characterTableBase);
+	void SpawnOwnerCharacterInstance(const struct FKMTable_ObjectRow* characterTableBase);
 
 	virtual FName GetEditorName() const override
 	{
@@ -31,9 +31,9 @@ protected:
 	}
 
 protected:
-	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
+	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_Object_CharacterRow* characterTable, const FTransform& spawnedTransform = FTransform::Identity);
 	
-	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_BeastRow* beastTable, const FTransform& spawnedTransform = FTransform::Identity);
+	class UKMCharacterInstance* SpawnCharacterInstance(const struct FKMTable_Object_BeastRow* beastTable, const FTransform& spawnedTransform = FTransform::Identity);
 	
 	bool DestroyCharacterInstance(class UKMCharacterInstance* characterInstance);
 

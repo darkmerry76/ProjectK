@@ -8,7 +8,7 @@ public class EMTableGeneratorTarget : TargetRules
 		Type = TargetType.Program;
 		LinkType = TargetLinkType.Modular;
 		LaunchModuleName = "EMTableGenerator";
-		BuildEnvironment = TargetBuildEnvironment.Shared;
+//		BuildEnvironment = TargetBuildEnvironment.Shared;
 		bCompileAgainstEngine = false;
 		bBuildDeveloperTools = false;
 		bIsBuildingConsoleApplication = true;

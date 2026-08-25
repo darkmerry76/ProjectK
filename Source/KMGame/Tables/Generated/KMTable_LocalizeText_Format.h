@@ -23,7 +23,7 @@ struct FKMTable_LocalizeText_FormatRow : public FKMTable_LocalizeTextRow
 	inline static const FKMTable_LocalizeText_FormatRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 26;
+	static const int32   RefTableIndex = 21;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

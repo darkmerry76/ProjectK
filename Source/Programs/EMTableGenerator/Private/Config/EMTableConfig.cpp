@@ -126,6 +126,26 @@ bool EMTableConfig::Init(const FString& Filename)
 	ConfigFile.GetString(TEXT("ExcelFileSection"), TEXT("Path"), ExcelFileSection.Path);
 	ExcelFileSection.Path = FString::Printf(TEXT("%s%s"), *GWorkPath, *ExcelFileSection.Path);
 
+	TArray<FString> LocalSheetRenames;
+	ConfigFile.GetArray(TEXT("ExcelFileSection"), TEXT("SheetRename"), LocalSheetRenames);
+	for (int32 i = 0; i < LocalSheetRenames.Num(); i++)
+	{
+		TArray<FString> ParseStrings;
+		LocalSheetRenames[i].ParseIntoArray(ParseStrings, TEXT(","));
+		if (ParseStrings.Num() > 1)
+		{
+			FString originName = ParseStrings[0];
+			originName.ReplaceInline(TEXT(" "), TEXT(""));
+			originName.ReplaceInline(TEXT("\t"), TEXT(""));
+
+			FString targetName = ParseStrings[1];
+			targetName.ReplaceInline(TEXT(" "), TEXT(""));
+			targetName.ReplaceInline(TEXT("\t"), TEXT(""));
+			
+			ExcelFileSection.SheetRenames.Emplace(originName, targetName);
+		}
+	}
+
 	// SchemaSection
 	ConfigFile.GetArray(TEXT("SchemaSection"), TEXT("Files"), SchemaSection.Files);
 	ConfigFile.GetArray(TEXT("SchemaSection"), TEXT("IgnoreFiles"), SchemaSection.IgnoreFiles);

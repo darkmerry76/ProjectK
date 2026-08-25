@@ -22,16 +22,6 @@ void UKMInteractiveInstance::EndPlay()
 	}
 }
 
-void UKMInteractiveInstance::SetTable(const FKMTable_InteractiveRow* newInteractiveTableRow)
-{
-	InteractiveTableRow = newInteractiveTableRow;
-}
-
-const FKMTable_InteractiveRow* UKMInteractiveInstance::GetTable() const
-{
-	return InteractiveTableRow;
-}
-
 void UKMInteractiveInstance::SetInteractiveActor(AKMInteractiveActorBase* newInteractiveActor)
 {
 	Interactive = newInteractiveActor;

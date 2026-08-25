@@ -10,5 +10,5 @@ class KMGAME_API UKMBTDecorator_CanBattle : public UKMBTDecorator
 	GENERATED_UCLASS_BODY()
 	
 protected:
-	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) const override;
 };

@@ -1,4 +1,7 @@
 #include "KMCharacterInstance.h"
+
+#include <Tables/Generated/KMTable_Object_Beast.h>
+
 #include "Animation/KMAnimInstance.h"
 #include "Camera/KMPlayerCameraManager.h"
 #include "Component/KMCharacterMovementComponent.h"
@@ -18,8 +21,9 @@
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
-#include "Tables/Generated/KMTable_Beast.h"
-#include "Tables/Generated/KMTable_Character.h"
+#include "Tables/Generated/KMTable_Object.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
+#include "Tables/Generated/KMTable_SkillEffect.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
 
@@ -30,20 +34,9 @@ UKMCharacterInstance::UKMCharacterInstance(const FObjectInitializer& objectIniti
 	SensorClass = UKMSensor::StaticClass();
 }
 
-FName UKMCharacterInstance::GetRecordKey() const
+const FKMTable_Object_CharacterRow* UKMCharacterInstance::GetCharacterTable() const
 {
-	check(Table != nullptr);
-	return Table->Id;	
-}
-
-FName UKMCharacterInstance::GetRecordStatKey() const
-{
-	if (IsBeast())
-	{
-		return BeastTableRow->StatId;
-	}
-	check(Table != nullptr);
-	return Table->StatId;	
+	return CastRow<FKMTable_Object_CharacterRow>(GetTable());
 }
 
 void UKMCharacterInstance::ChangeSkillSet(const FName& ownerId)
@@ -73,14 +66,17 @@ void UKMCharacterInstance::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ChangeSkillSet(Table->Id);
+	const FKMTable_Object_CharacterRow* chracterTableRow = GetCharacterTable();
+	check(chracterTableRow);
+	
+	ChangeSkillSet(chracterTableRow->Id);
 	
 	SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
 	SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
 	SensorInstance->Init();
 	LockonTarget = MakeShared<FKMLockOnCluster>(this);
 
-	SetBeastTableId(GetTable()->DefaultBeast);
+	SetBeastTableId(chracterTableRow->DefaultBeast);
 }
 
 void UKMCharacterInstance::EndPlay()
@@ -103,11 +99,11 @@ AKMCharacter* UKMCharacterInstance::GetCharacter() const
 	return Cast<AKMCharacter>(OwnerActor);
 }
 
-void UKMCharacterInstance::SetBeastTableId(FName newBeatId)
+void UKMCharacterInstance::SetBeastTableId(FName newBeastId)
 {
-	BeastId = newBeatId;
+	BeastId = newBeastId;
 
-	BeastTableRow = FKMTable_BeastRow::FindRowPtr(BeastId);
+	BeastTableRow = FKMTable_Object_BeastRow::FindRowPtr(BeastId);
 	if (!BeastTableRow)
 	{
 		return;
@@ -185,13 +181,13 @@ void UKMCharacterInstance::RevertFromBest()
 		return;
 	}
 
-	const FKMTable_CharacterRow* characterTableRow = GetTable();
+	const FKMTable_Object_CharacterRow* characterTableRow = GetCharacterTable();
 	if (!characterTableRow)
 	{
 		return;
 	}
 
-	ChangeSkillSet(Table->Id);
+	ChangeSkillSet(GetTableId());
 
 	UKMSkeletalMeshComponent* leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(ownerCharacter->FindComponentByTag(UKMSkeletalMeshComponent::StaticClass(), LeaveSkeletalMeshCompTag));
 	if (!IsValid(leaveSkeletalMeshComponnent))
@@ -247,9 +243,15 @@ void UKMCharacterInstance::TransformToBeast()
 		return;
 	}
 
-	if (Table && IsValid(SkillHandler))
+	const FKMTable_Object_CharacterRow* characterTableRow = GetCharacterTable();
+	if (!characterTableRow)
 	{
-		if (SkillHandler->IsSkillActivated(FKMSkillKey(Table->TransformSkill, 0)))
+		return;
+	}
+
+	if (characterTableRow && IsValid(SkillHandler))
+	{
+		if (SkillHandler->IsSkillActivated(FKMSkillKey(characterTableRow->TransformSkill, 0)))
 		{
 			return;
 		}
@@ -344,23 +346,17 @@ void UKMCharacterInstance::OnTransformToBeast_Implementation()
 	
 }
 
-void UKMCharacterInstance::SetTable(const FKMTable_CharacterRow* newTable)
-{
-	Table = newTable;
-}
-
-const FKMTable_CharacterRow* UKMCharacterInstance::GetTable() const
-{
-	return Table;
-}
-
-FName UKMCharacterInstance::GetCharacterId() const
+FName UKMCharacterInstance::GetTableId() const
 {
 	if (IsBeast())
 	{
+		if (!BeastStatTableRow)
+		{
+			return NAME_None;
+		}
 		return BeastTableRow->Id;
 	}
-	return Table->Id;
+	return Super::GetTableId();
 }
 
 void UKMCharacterInstance::SetDepthSort(float newDepthSort)
@@ -404,7 +400,7 @@ const FTransform& UKMCharacterInstance::GetTransform() const
 void UKMCharacterInstance::UpdateTransform()
 {
 	AKMCharacter* character = Cast<AKMCharacter>(GetCharacter());
-	if (IsValid(character) == false)
+	if (!IsValid(character))
 	{
 		return;
 	}
@@ -421,7 +417,7 @@ void UKMCharacterInstance::UpdateTransform()
 void UKMCharacterInstance::StartForceMove(const float& newDirection)
 {
 	AKMCharacter* character = Cast<AKMCharacter>(OwnerActor);
-	if (IsValid(character) == false)
+	if (!IsValid(character))
 	{
 		return;
 	}
@@ -467,43 +463,8 @@ void UKMCharacterInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstance
 	{
 		return;
 	}
-
-	if (HasGameplayTag(FKMGameplayTagName::State_Invincible_Tag))
-	{
-		return;
-	}
-	SkillHandler->ClearActiveSkills();
-
-	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag, hitTag);
-	for (auto skillEffectItr : skillEffectInstances)
-	{
-		if (skillEffectItr->GetType() != FKMSkillEffectAbnormalInstance::TypeName())
-		{
-			continue;
-		}
-		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(skillEffectItr);
-		for (auto ability : skillEffectInstance->GetAbilitieAssets())
-		{
-			UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(ability);
-			if (!IsValid(abilityEffect))
-			{
-				continue;
-			}
 	
-			FTransform impactTransform;
-			impactTransform.SetLocation(hitClosestPoint);
-			abilityEffect->Impact(impactTransform);
-		}
-		
-		if (HitPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
-		{
-			HitPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
-		}
-		if (attackerGameObjectInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
-		{
-			attackerGameObjectInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
-		}
-	}
+	Super::Hit(attackerGameObjectInstance, latestSkillInstance, hitClosestPoint, hitTag);
 }
 
 void UKMCharacterInstance::ShakeRoot(float newDistance, float newFrequency, float newDuration)
@@ -546,11 +507,11 @@ void UKMCharacterInstance::OnStatChange(EKMStatFactorType factorType, float prev
 	
 	if (factorType == EKMStatFactorType::HpCurr)
 	{
-		if (IsDead() == false)
+		if (!IsDead())
 		{
 			if (newValue <= 0)
 			{
-				check(IsDead() == false);
+				check(!IsDead());
 				OnDeath();
 			}
 		}
@@ -594,6 +555,21 @@ bool UKMCharacterInstance::IsDead() const
 	}
 
 	return true;
+}
+
+bool UKMCharacterInstance::IsAir() const
+{
+	AKMCharacter* ownerCharacter = GetCharacter();
+	if (!IsValid(ownerCharacter))
+	{
+		return false;
+	}
+	UKMCharacterMovementComponent* ownerCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
+	if (!IsValid(ownerCharacterMovementComponent))
+	{
+		return false;
+	}
+	return ownerCharacterMovementComponent->IsAir();
 }
 
 void UKMCharacterInstance::Tick(float deltaSeconds)
@@ -883,7 +859,7 @@ void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bFo
 		if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(adjustSkeletalMeshComp->GetAnimInstance()))
 		{
 			animInstance->SetNextDirection(direction);
-			if (bForceRotate == true)
+			if (bForceRotate)
 			{
 				animInstance->SetCurrentDirection(direction);
 			}

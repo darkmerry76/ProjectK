@@ -46,9 +46,6 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	int32 NumMonster(bool bExcludeDead = true) const;
-	
-	UFUNCTION(BlueprintPure)
-	int32 NumGhost(bool bExcludeDead = true) const;
 
 	void InitializeActorFeatures();
 

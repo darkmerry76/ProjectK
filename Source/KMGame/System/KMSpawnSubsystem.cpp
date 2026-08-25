@@ -1,9 +1,7 @@
 #include "KMSpawnSubsystem.h"
-#include <Tables/Generated/KMTable_Skill_Projectile.h>
 #include "KMGameObjectSubsystem.h"
 #include "KMPlayerSubsystem.h"
 #include "KMTargetSubsystem.h"
-#include "Account/KMPlayerAccount.h"
 #include "DataAsset/KMAssetManager.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameActor/Projectile/KMProjectileActorBase.h"
@@ -12,7 +10,9 @@
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "Skill/KMSkillHandler.h"
+#include "Tables/Generated/KMTable_Object_Character_Hero.h"
 #include "Tables/Generated/KMTable_Skill.h"
+#include "Tables/Generated/KMTable_Skill_Projectile.h"
 
 UKMSpawnSubsystem* UKMSpawnSubsystem::GetSpawnSubsystem(const UObject* worldContextObject)
 {
@@ -38,21 +38,21 @@ void UKMSpawnSubsystem::Deinitialize()
 UKMHeroInstance* UKMSpawnSubsystem::SpawnHero(const FName& heroId)
 {
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 	
-	const FKMTable_Character_HeroRow* heroTable = FKMTable_Character_HeroRow::FindRowPtr(heroId);
-	check(heroTable != nullptr);
+	const FKMTable_Object_Character_HeroRow* heroTable = FKMTable_Object_Character_HeroRow::FindRowPtr(heroId);
+	check(heroTable);
 
 	UKMHeroInstance* heroInstance = Cast<UKMHeroInstance>(gameObjectSubsystem->SpawnCharacterObject(heroId, FTransform::Identity));
-	check(IsValid(heroInstance) == true);
+	check(IsValid(heroInstance));
 	
 	return heroInstance;
 }
 
-UKMActorInstance* UKMSpawnSubsystem::SpawnProjectile(TSubclassOf<AActor> actorClass, FTransform transform)
+UKMActorInstance* UKMSpawnSubsystem::SpawnProjectile(TSubclassOf<AActor> actorClass, const FTransform& transform)
 {
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	UKMActorInstance* actorInstance = Cast<UKMActorInstance>(gameObjectSubsystem->SpawnActorObject(actorClass, transform));
 
@@ -61,7 +61,7 @@ UKMActorInstance* UKMSpawnSubsystem::SpawnProjectile(TSubclassOf<AActor> actorCl
 
 void UKMSpawnSubsystem::OnSkillProjectileTrigger(const TSharedPtr<FKMSkillInstance>& skillInstance)
 {
-	if (skillInstance.IsValid() == false)
+	if (!skillInstance.IsValid())
 	{
 		return;
 	}
@@ -73,13 +73,13 @@ void UKMSpawnSubsystem::OnSkillProjectileTrigger(const TSharedPtr<FKMSkillInstan
 	}
 	
 	UKMAssetManager* AssetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(AssetManager) == true);
+	check(IsValid(AssetManager));
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	UClass* projectileClass = Cast<UClass>(AssetManager->GetAsset(projectileSkillTable->ProjectileBp));
-	if (IsValid(projectileClass) == false)
+	if (!IsValid(projectileClass))
 	{
 		return;
 	}
@@ -102,22 +102,22 @@ void UKMSpawnSubsystem::OnSkillProjectileTrigger(const TSharedPtr<FKMSkillInstan
 	
 	AKMProjectileActorBase* newProjectileActor = GetWorld()->SpawnActorDeferred<AKMProjectileActorBase>(
 		projectileClass, startTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	check(IsValid(newProjectileActor) == true);
+	check(IsValid(newProjectileActor));
 
 	newProjectileActor->FinishSpawning(startTransform);
 	newProjectileActor->SkillInstance = skillInstance;
 	newProjectileActor->TriggerDeletgate.AddDynamic(this, &ThisClass::OnSkillProjectileEvent);
 }
 
-void UKMSpawnSubsystem::OnSkillProjectileEvent(FGameplayTag eventTag, const FKMProjectileEventData& EventData)
+void UKMSpawnSubsystem::OnSkillProjectileEvent(FGameplayTag eventTag, const FKMProjectileEventData& eventData)
 {
-	check(EventData.movementComponent.IsValid());
+	check(eventData.movementComponent.IsValid());
 
-	AKMProjectileActorBase* projectileActor = Cast<AKMProjectileActorBase>(EventData.movementComponent->GetOwner());
+	AKMProjectileActorBase* projectileActor = Cast<AKMProjectileActorBase>(eventData.movementComponent->GetOwner());
 	check(IsValid(projectileActor));
 
 	check(projectileActor->SkillInstance);
-	check (projectileActor->SkillInstance->GetType() == FKMAssistSkillInstance::TypeName());
+	check(projectileActor->SkillInstance->GetType() == FKMAssistSkillInstance::TypeName());
 
 	TSharedPtr<FKMAssistSkillInstance> assistSkillInstance = StaticCastSharedPtr<FKMAssistSkillInstance>(projectileActor->SkillInstance); 
 
@@ -128,9 +128,9 @@ void UKMSpawnSubsystem::OnSkillProjectileEvent(FGameplayTag eventTag, const FKMP
 	check(IsValid(characterInstance));
 
 	UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 
-	AKMCharacter* targetCharacter = Cast<AKMCharacter>(EventData.TargetActor);
+	AKMCharacter* targetCharacter = Cast<AKMCharacter>(eventData.TargetActor);
 	if (IsValid(targetCharacter))
 	{
 		if (!targetCharacter->GetCharacterInstance()->IsDead())

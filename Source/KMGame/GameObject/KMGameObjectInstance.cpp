@@ -1,7 +1,9 @@
 #include "KMGameObjectInstance.h"
+#include "Tables/Generated/KMTable_Object.h"
 #include "GameActor/Pawn/KMPawnInterface.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
+#include "Skill/Ability/KMAbilityEffect.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
@@ -28,9 +30,41 @@ void UKMGameObjectInstance::EndPlay()
 	Super::EndPlay();
 }
 
+void UKMGameObjectInstance::SetTable(const FKMTable_ObjectRow* newObjectTable)
+{
+	ObjectTable = newObjectTable;
+}
+
+const FKMTable_ObjectRow* UKMGameObjectInstance::GetTable() const
+{
+	return ObjectTable;
+}
+
+FName UKMGameObjectInstance::GetTableId() const
+{
+	if (!ObjectTable)
+	{
+		return NAME_None;
+	}
+	return ObjectTable->Id;
+}
+
+FName UKMGameObjectInstance::GetStatTableId() const
+{
+	if (!ObjectTable)
+	{
+		return NAME_None;
+	}
+	return ObjectTable->StatId;
+}
+
 FString UKMGameObjectInstance::GetObjectName() const
 {
-	return TEXT("");
+	if (!ObjectTable)
+	{
+		return TEXT("");
+	}
+	return ObjectTable->Name;
 }
 
 void UKMGameObjectInstance::SetOwnerActor(AActor* newOwnerActor)
@@ -104,12 +138,53 @@ bool UKMGameObjectInstance::IsDead() const
 	return true;
 }
 
+bool UKMGameObjectInstance::IsAir() const
+{
+	return false;
+}
+
 void UKMGameObjectInstance::Inflict(UKMGameObjectInstance* victimGameObjectInstance)
 {
 }
 
 void UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
 {
+	if (HasGameplayTag(FKMGameplayTagName::State_Invincible_Tag))
+	{
+		return;
+	}
+	SkillHandler->ClearActiveSkills();
+
+	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag, hitTag);
+	for (auto skillEffectItr : skillEffectInstances)
+	{
+		if (skillEffectItr->GetType() != FKMSkillEffectAbnormalInstance::TypeName())
+		{
+			continue;
+		}
+		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(skillEffectItr);
+		for (auto ability : skillEffectInstance->GetAbilitieAssets())
+		{
+			UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(ability);
+			if (!IsValid(abilityEffect))
+			{
+				continue;
+			}
+	
+			FTransform impactTransform;
+			impactTransform.SetLocation(hitClosestPoint);
+			abilityEffect->Impact(impactTransform);
+		}
+		
+		if (HitPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		{
+			HitPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+		}
+		if (attackerGameObjectInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		{
+			attackerGameObjectInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+		}
+	}
 }
 
 void UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, AActor* hitActor, const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)

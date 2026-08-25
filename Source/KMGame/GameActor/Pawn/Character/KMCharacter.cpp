@@ -120,7 +120,7 @@ UKMCharacterInstance* AKMCharacter::GetCharacterInstance() const
 
 UKMGameObjectInstance* AKMCharacter::GetGameObjectInstance() const
 {
-	if (CharacterInstance.IsValid())
+	if (!CharacterInstance.IsValid())
 	{
 		return nullptr;
 	}

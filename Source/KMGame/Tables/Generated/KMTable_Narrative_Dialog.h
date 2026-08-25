@@ -63,7 +63,7 @@ struct FKMTable_Narrative_DialogRow : public FKMTable_NarrativeRow
 	inline static const FKMTable_Narrative_DialogRow& FindRow(FName IdKey, int32 subIdKey);
 	inline static FString MakeTableKeyToString(FName IdKey, int32 subIdKey);
 
-	static const int32   RefTableIndex = 30;
+	static const int32   RefTableIndex = 25;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

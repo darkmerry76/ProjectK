@@ -4,8 +4,8 @@
 #include "EMOutlinerHierarchy.h"
 #include "Tables/Generated/KMTableEnums.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FEMCharacterOutlinerSelectedDelegate, const struct FKMTable_CharacterRow* newCharacterTable)
-DECLARE_MULTICAST_DELEGATE_OneParam(FEMBeastOutlinerSelectedDelegate, const struct FKMTable_BeastRow* newBeastTable)
+DECLARE_MULTICAST_DELEGATE_OneParam(FEMCharacterOutlinerSelectedDelegate, const struct FKMTable_Object_CharacterRow* newCharacterTable)
+DECLARE_MULTICAST_DELEGATE_OneParam(FEMBeastOutlinerSelectedDelegate, const struct FKMTable_Object_BeastRow* newBeastTable)
 
 class FKMCharacterOutlinerHierarchy : public FEMOutlinerHierarchy
 {
@@ -39,6 +39,6 @@ protected:
 
 protected:
 	TMap<TSharedPtr<IEMOutlinerTreeItem>, TSharedPtr<IEMOutlinerTreeItem>> ParentItems;
-	TMap<EKMCharacterType, TSharedPtr<struct FKMCharacterOutlinerGroupTreeItem>> CharacterTypeItems;
+	TMap<EKMObjectType, TSharedPtr<struct FKMCharacterOutlinerGroupTreeItem>> CharacterTypeItems;
 	int32 CharacterCount = 0;
 };

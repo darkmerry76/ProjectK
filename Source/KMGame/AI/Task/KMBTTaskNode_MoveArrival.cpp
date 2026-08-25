@@ -6,7 +6,7 @@ UKMBTTaskNode_MoveArrival::UKMBTTaskNode_MoveArrival(const FObjectInitializer& o
 	NodeName = "MoveArrival";
 }
 
-EBTNodeResult::Type UKMBTTaskNode_MoveArrival::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UKMBTTaskNode_MoveArrival::ExecuteTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory)
 {
 	return EBTNodeResult::Succeeded;
 }

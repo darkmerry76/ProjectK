@@ -12,17 +12,17 @@ FKMLockOnCluster::FKMLockOnCluster(const FKMLockOnCluster& source)
 
 UKMCharacterInstance* FKMLockOnCluster::GetBestTarget() const
 {
-	check(OwnerObject.IsValid() == true);
+	check(OwnerObject.IsValid());
 	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	return Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(GetBestTargetKey()));
 }
 
 FKMObjectKey FKMLockOnCluster::GetBestTargetKey() const
 {
-	if (Targets.Num() == 0)
+	if (Targets.IsEmpty())
 	{
 		return INDEX_NONE;
 	}
@@ -32,7 +32,7 @@ FKMObjectKey FKMLockOnCluster::GetBestTargetKey() const
 FTransform FKMLockOnCluster::GetTargetTransform() const
 {
 	UKMCharacterInstance* characterInstance = GetBestTarget();
-	if (IsValid(characterInstance) == false)
+	if (!IsValid(characterInstance))
 	{
 		return FTransform::Identity;
 	}
@@ -43,12 +43,12 @@ FTransform FKMLockOnCluster::GetTargetTransform() const
 bool FKMLockOnCluster::IsBestTargetAvailable() const
 {
 	UKMCharacterInstance* characterInstance = GetBestTarget();
-	if (IsValid(characterInstance) == false)
+	if (!IsValid(characterInstance))
 	{
 		return false;
 	}
 	
-	if (characterInstance->IsDead() == true)
+	if (characterInstance->IsDead())
 	{
 		return false;
 	}
@@ -59,10 +59,10 @@ bool FKMLockOnCluster::IsBestTargetAvailable() const
 UKMGameObjectInstance* FKMLockOnCluster::GetTargetByIndex(int32 index) const
 {
 	check(Targets.Num() > index);
-	check(OwnerObject.IsValid() == true);
+	check(OwnerObject.IsValid());
 	
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	return Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(Targets[index]));
 }
@@ -95,7 +95,7 @@ bool UKMTargetSubsystem::IsCharacterLockOn(FKMObjectKey attackerKey) const
 TSharedPtr<FKMLockOnCluster> UKMTargetSubsystem::GetLockOnCluster(FKMObjectKey attackerKey) const
 {
 	const TSharedPtr<FKMLockOnCluster>* lockOnCluster = LockOnClusters.Find(attackerKey);
-	if (lockOnCluster == nullptr)
+	if (!lockOnCluster)
 	{
 		return nullptr;
 	}
@@ -105,7 +105,7 @@ TSharedPtr<FKMLockOnCluster> UKMTargetSubsystem::GetLockOnCluster(FKMObjectKey a
 TSharedPtr<FKMTargetCluster> UKMTargetSubsystem::GetTargetCluster(FKMObjectKey targetKey) const
 {
 	const TSharedPtr<FKMTargetCluster>* targetCluster = TargetClusters.Find(targetKey);
-	if (targetCluster == nullptr)
+	if (!targetCluster)
 	{
 		return nullptr;
 	}
@@ -114,14 +114,14 @@ TSharedPtr<FKMTargetCluster> UKMTargetSubsystem::GetTargetCluster(FKMObjectKey t
 
 bool UKMTargetSubsystem::CharacterLockOnTarget(const UKMCharacterInstance* attacker, const FKMSkillKey* skillKey)
 {
-	check(IsValid(attacker) == true);
-	if (attacker->CanLockOn() == false)
+	check(IsValid(attacker));
+	if (!attacker->CanLockOn())
 	{
 		return false;
 	}
 	
 	TSharedPtr<FKMLockOnCluster>* lockOnCluster = LockOnClusters.Find(attacker->GetId());
-	if (lockOnCluster != nullptr)
+	if (lockOnCluster && lockOnCluster->IsValid())
 	{
 		CharacterLockOnRelease(attacker);
 	}
@@ -140,7 +140,7 @@ bool UKMTargetSubsystem::CharacterLockOnTarget(const UKMCharacterInstance* attac
 	LockOnClusters.Emplace(attacker->GetId(), newLockOnCluster);
 
 	TSharedPtr<FKMTargetCluster>* targetCluster = TargetClusters.Find(newLockOnCluster->GetBestTargetKey());
-	if (targetCluster == nullptr)
+	if (!targetCluster)
 	{
 		TSharedPtr<FKMTargetCluster> newTargetCluster = MakeShared<FKMTargetCluster>(newLockOnCluster->GetBestTargetKey());
 		newTargetCluster->Attackers.Emplace(attacker->GetId());
@@ -148,7 +148,7 @@ bool UKMTargetSubsystem::CharacterLockOnTarget(const UKMCharacterInstance* attac
 	}
 	else
 	{
-		if((*targetCluster)->Attackers.Contains(attacker->GetId()) == false)
+		if(!(*targetCluster)->Attackers.Contains(attacker->GetId()))
 		{
 			(*targetCluster)->Attackers.Emplace(attacker->GetId());
 		}
@@ -160,31 +160,31 @@ bool UKMTargetSubsystem::CharacterLockOnTarget(const UKMCharacterInstance* attac
 bool UKMTargetSubsystem::CharacterLockOnRelease(const UKMCharacterInstance* attacker)
 {
 	TSharedPtr<FKMLockOnCluster>* lockOnCluster = LockOnClusters.Find(attacker->GetId());
-	if (lockOnCluster == nullptr)
+	if (!lockOnCluster || !lockOnCluster->IsValid())
 	{
 		return false;
 	}
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	bool bIsRemoveLockOnCluster = false;
 	for (auto targetItr = (*lockOnCluster)->Targets.CreateIterator(); targetItr; ++targetItr)
 	{
 		const UKMCharacterInstance* target = Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(*targetItr));
-		if (IsValid(target) == true)
+		if (IsValid(target))
 		{
-			if (target->IsDead() == false)
+			if (!target->IsDead())
 			{
 				continue;
 			}
 			TSharedPtr<FKMTargetCluster>* targetCluster = TargetClusters.Find(*targetItr);
-			if (targetCluster == nullptr)
+			if (!targetCluster || !targetCluster->IsValid())
 			{
 				continue;
 			}
 			(*targetCluster)->Attackers.Remove(attacker->GetId());
-			if ((*targetCluster)->Attackers.Num() == 0)
+			if ((*targetCluster)->Attackers.IsEmpty())
 			{
 				TargetClusters.Remove(*targetItr);
 			}
@@ -196,7 +196,7 @@ bool UKMTargetSubsystem::CharacterLockOnRelease(const UKMCharacterInstance* atta
 		targetItr.RemoveCurrent();
 	}
 	
-	if ((*lockOnCluster)->Targets.Num() == 0 || bIsRemoveLockOnCluster == true)
+	if ((*lockOnCluster)->Targets.IsEmpty() || bIsRemoveLockOnCluster)
 	{
 		LockOnClusters.Remove(attacker->GetId());
 	}
@@ -205,14 +205,14 @@ bool UKMTargetSubsystem::CharacterLockOnRelease(const UKMCharacterInstance* atta
 
 void UKMTargetSubsystem::Tick(float DeltaTime)
 {
-	check(IsValid(GetWorld()) == true);
-	if (GetWorld()->IsPaused() == true)
+	check(IsValid(GetWorld()));
+	if (GetWorld()->IsPaused())
 	{
 		return;
 	}
 
 /*	UKMBattleSubsystem* battleSubsystem = UKMBattleSubsystem::GetBattleSubsystem(this);
-	check(IsValid(battleSubsystem) == true);
+	check(IsValid(battleSubsystem));
 
 	if (battleSubsystem->GetBattleState() != EKMBattleState::Playing)
 	{
@@ -220,22 +220,22 @@ void UKMTargetSubsystem::Tick(float DeltaTime)
 	}*/
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	for (auto objectItr : gameObjectSubsystem->GetGameObjectMap())
 	{
 		UKMCharacterInstance* attacker = Cast<UKMCharacterInstance>(objectItr.Value);
-		if (IsValid(attacker) == false)
+		if (!IsValid(attacker))
 		{
 			continue;
 		}
 
-		if (attacker->CanLockOn() == false)
+		if (!attacker->CanLockOn())
 		{
 			continue;
 		}
 
-		if (IsCharacterLockOn(attacker->GetId()) == true)
+		if (IsCharacterLockOn(attacker->GetId()))
 		{
 			CharacterLockOnRelease(attacker);
 		}
@@ -254,5 +254,5 @@ ETickableTickType UKMTargetSubsystem::GetTickableTickType() const
 
 bool UKMTargetSubsystem::IsTickable() const
 {
-	return HasAnyFlags(RF_ClassDefaultObject) == false && GetWorld()->IsPaused() == false;
+	return !HasAnyFlags(RF_ClassDefaultObject) && !GetWorld()->IsPaused();
 }

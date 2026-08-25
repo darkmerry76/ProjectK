@@ -9,11 +9,11 @@
 #include "DataAsset/KMCharacterPDA.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "Tables/Generated/KMTable_Beast.h"
+#include "Tables/Generated/KMTable_Object_Beast.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
 
 double UKMUtil::GameElipsedStartTime = 0.f;
 
@@ -58,12 +58,6 @@ bool UKMUtil::IsInTargetType(const TArray<EKMSkillTargetType>& TargetType,
 
 		case EKMSkillTargetType::Monster:
 			if(IsValid(targetInstance) == true && targetInstance->IsA<UKMMonsterInstance>() == true)
-			{
-				return true;
-			}
-			break;
-		case EKMSkillTargetType::Ghost:
-			if(IsValid(targetInstance) == true && targetInstance->IsA<UKMGhostInstance>() == true)
 			{
 				return true;
 			}
@@ -226,13 +220,13 @@ FRotator UKMUtil::GetYawRotation(const FVector& baseDirection, float yawAngle)
 
 UKMCharacterInstance* UKMUtil::SpawnCharacterObjectById(UObject* worldContextObject, FName characterTableId, const FTransform transform)
 {
-	const FKMTable_CharacterRow* characterTable = FKMTable_CharacterRow::FindRowPtr(characterTableId);
+	const FKMTable_Object_CharacterRow* characterTable = FKMTable_Object_CharacterRow::FindRowPtr(characterTableId);
 	check (characterTable != nullptr);
 
 	return SpawnCharacterObjectByTable(worldContextObject, characterTable, transform);
 }
 
-UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContextObject, const FKMTable_CharacterRow* characterTable, const FTransform& transform)
+UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContextObject, const FKMTable_Object_CharacterRow* characterTable, const FTransform& transform)
 {
 	if (!characterTable)
 	{
@@ -278,7 +272,7 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	return newCharacterInstance;
 }
 
-UKMCharacterInstance* UKMUtil::SpawnBeastObjectByTable(UObject* worldContextObject, const FKMTable_CharacterRow* characterTable, const FKMTable_BeastRow* beastTable, const FTransform& transform)
+UKMCharacterInstance* UKMUtil::SpawnBeastObjectByTable(UObject* worldContextObject, const FKMTable_Object_CharacterRow* characterTable, const FKMTable_Object_BeastRow* beastTable, const FTransform& transform)
 {
 	if (!characterTable || !beastTable)
 	{

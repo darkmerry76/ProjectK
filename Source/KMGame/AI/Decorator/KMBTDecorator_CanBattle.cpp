@@ -7,10 +7,10 @@ UKMBTDecorator_CanBattle::UKMBTDecorator_CanBattle(const FObjectInitializer& obj
 	NodeName = TEXT("CanBattle");
 }
 
-bool UKMBTDecorator_CanBattle::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UKMBTDecorator_CanBattle::CalculateRawConditionValue(UBehaviorTreeComponent& ownerComp, uint8* nodeMemory) const
 {
 	UKMBattleSubsystem* battleSubsystem = UKMBattleSubsystem::GetBattleSubsystem(this);
-	check(IsValid(battleSubsystem) == true);
+	check(IsValid(battleSubsystem));
 
 	bool stateBattlePlaying = battleSubsystem->GetBattleState() == EKMBattleState::Playing; 
 	return stateBattlePlaying;

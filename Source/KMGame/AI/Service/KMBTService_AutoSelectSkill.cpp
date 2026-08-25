@@ -20,7 +20,7 @@ FKMSkillKey UKMBTService_AutoSelectSkill::EvaluateBestSkill(const UKMCharacterIn
 	UKMSkillHandler* ownerSkillHandler = casterCharacterInstance->GetSkillHandler();
 	check(IsValid(ownerSkillHandler));
 
-	const FKMTable_SkillSetRow* bestSkillSet = ownerSkillHandler->EvalurateSkillSet(targetCharacterInstance);
+	const FKMTable_SkillSetRow* bestSkillSet = ownerSkillHandler->EvaluateSkillSet(targetCharacterInstance);
 	if (!bestSkillSet)
 	{
 		return FKMSkillKey::Null();
@@ -102,10 +102,10 @@ void UKMBTService_PerceptionTarget::TickNode(UBehaviorTreeComponent& ownerComp, 
 	//check(IsValid(targetSubsystem));
 
 	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
-	check(IsValid(skillHandler) == true);
+	check(IsValid(skillHandler));
 
 	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
-	check(IsValid(blackboardComponent) == true);
+	check(IsValid(blackboardComponent));
 
 	const UKMCharacterInstance* aggroTarget = ownerCharacterInstance->GetBestAggroTarget();
 	if (IsValid(aggroTarget))

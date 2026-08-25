@@ -67,9 +67,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
 	static class UKMCharacterInstance* SpawnCharacterObjectById(UObject* worldContextObject, FName characterTableId, const FTransform transform = FTransform());
 	
-	static class UKMCharacterInstance* SpawnCharacterObjectByTable(UObject* worldContextObject, const struct FKMTable_CharacterRow* characterTable, const FTransform& transform = FTransform::Identity);
+	static class UKMCharacterInstance* SpawnCharacterObjectByTable(UObject* worldContextObject, const struct FKMTable_Object_CharacterRow* characterTable, const FTransform& transform = FTransform::Identity);
 
-	static class UKMCharacterInstance* SpawnBeastObjectByTable(UObject* worldContextObject, const struct FKMTable_CharacterRow* characterTable, const struct FKMTable_BeastRow* beastTable, const FTransform& transform);
+	static class UKMCharacterInstance* SpawnBeastObjectByTable(UObject* worldContextObject, const struct FKMTable_Object_CharacterRow* characterTable, const struct FKMTable_Object_BeastRow* beastTable, const FTransform& transform);
 
 	UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
 	static void PlaySlateFade(const UObject* worldContextObject, float startAlpha = 0, float endAlpha = 1.f, float duration = 1.f, FLinearColor fadeColor = FLinearColor::Black);

@@ -15,7 +15,7 @@ void UKMStatModifierBase::Init()
 	ApplyLevel(0);
 
 	const FKMTable_BaseStatRow* baseStatTable = FKMTable_BaseStatRow::FindRowPtr(GetBaseStatKey());
-	check(baseStatTable != nullptr);
+	check(baseStatTable);
 
 	EffectiveStat.SetHpCurr(LevelBaseStat.GetHp() * baseStatTable->HpCurr);
 	EffectiveStat.SetMpCurr(LevelBaseStat.GetMp() * baseStatTable->MpCurr);
@@ -28,7 +28,7 @@ void UKMStatModifierBase::Deinit()
 void UKMStatModifierBase::Compact()
 {
 	const FKMTable_BaseStatRow* baseStatTable = FKMTable_BaseStatRow::FindRowPtr(GetBaseStatKey());
-	check(baseStatTable != nullptr);
+	check(baseStatTable);
 	
 	LevelBaseStat.Init(baseStatTable);
 }
@@ -36,16 +36,16 @@ void UKMStatModifierBase::Compact()
 UKMGameObjectInstance* UKMStatModifierBase::GetOwner() const
 {
 	UKMGameObjectInstance* ownerGameObject = GetTypedOuter<UKMGameObjectInstance>();
-	check(IsValid(ownerGameObject) == true);
+	check(IsValid(ownerGameObject));
 
 	return ownerGameObject;
 }
 
 FName UKMStatModifierBase::GetBaseStatKey() const
 {
-	const UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(GetOwner());
-	check(IsValid(ownerCharacterInstance) == true);
-	return ownerCharacterInstance->GetRecordStatKey();
+	const UKMGameObjectInstance* ownerGameObjectInstance = GetOwner();
+	check(IsValid(ownerGameObjectInstance));
+	return ownerGameObjectInstance->GetStatTableId();
 }
 
 void UKMStatModifierBase::ApplyLevel(int32 newLevel, bool bCurrentFull)
@@ -56,7 +56,7 @@ void UKMStatModifierBase::ApplyLevel(int32 newLevel, bool bCurrentFull)
 
 	EffectiveStat.DuplicateValue(&LevelBaseStat);
 
-	if (bCurrentFull == true)
+	if (bCurrentFull)
 	{
 		EffectiveStat.SetHpCurr(EffectiveStat.GetHp());
 		EffectiveStat.SetMpCurr(EffectiveStat.GetMp());
@@ -67,7 +67,7 @@ void UKMStatModifierBase::ApplyLevel(int32 newLevel, bool bCurrentFull)
 void UKMStatModifierBase::ComputeEffectLevelStatInteral(int32 level)
 {
 	const FKMTable_BaseStatRow* baseStatTable = FKMTable_BaseStatRow::FindRowPtr(GetBaseStatKey());
-	check(baseStatTable != nullptr);
+	check(baseStatTable);
 
 	LevelBaseStat.Init(baseStatTable);
 }

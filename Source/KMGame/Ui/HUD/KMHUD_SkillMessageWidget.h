@@ -32,7 +32,7 @@ protected:
 
 	void Refresh();
 
-	void OnSkillMessage(const class UKMCharacterInstance* characterInstance, TSharedPtr<class FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
+	void OnSkillMessage(const class UKMGameObjectInstance* gameObjectInstance, TSharedPtr<class FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
 	void AddMessage(const FText& messageText, const FLinearColor& fontColor, float fontSize);
 
 	virtual void NativeTick(const FGeometry& myGeometry, float deltaTime) override;

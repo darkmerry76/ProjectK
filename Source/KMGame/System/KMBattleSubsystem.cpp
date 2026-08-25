@@ -21,7 +21,7 @@ void UKMBattleSubsystem::Initialize()
 	Super::Initialize();
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 	gameObjectSubsystem->RemoveGameObjectDelegate.AddUObject(this, &UKMBattleSubsystem::OnRemoveGameObject);
 
 	bIsBattleClear = false;
@@ -33,7 +33,7 @@ void UKMBattleSubsystem::Deinitialize()
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
 	
-	if(IsValid(gameObjectSubsystem) == true)
+	if(IsValid(gameObjectSubsystem))
 	{
 		gameObjectSubsystem->RemoveGameObjectDelegate.RemoveAll(this);
 	}
@@ -42,13 +42,13 @@ void UKMBattleSubsystem::Deinitialize()
 void UKMBattleSubsystem::OnRemoveGameObject(UEMGameObjectInstance* gameObjectInstance)
 {
 	UKMMonsterInstance* monsterInstance = Cast<UKMMonsterInstance>(gameObjectInstance);
-	if (IsValid(monsterInstance) == false)
+	if (!IsValid(monsterInstance))
 	{
 		return;
 	}
 
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 
 	if (gameObjectSubsystem->NumMonster() <= 0)
 	{
@@ -96,10 +96,10 @@ bool UKMBattleSubsystem::IsBattleClear() const
 void UKMBattleSubsystem::RemoveCurrentLevel()
 {
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem) == true);
+	check(IsValid(gameObjectSubsystem));
 	gameObjectSubsystem->RemoveAllGameObjects();
 
-	if (IsValid(CurrentLevel) == true && IsValid(CurrentLevel->GetLoadedLevel()) == true)
+	if (IsValid(CurrentLevel) && IsValid(CurrentLevel->GetLoadedLevel()))
 	{
 		CurrentLevel->SetShouldBeVisible(false);
 		CurrentLevel->SetShouldBeLoaded(false);

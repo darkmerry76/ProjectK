@@ -1,15 +1,13 @@
 ﻿#include "SKMCharacterOutliner.h"
-
 #include "EMOutlinerTextInfoColumn.h"
 #include "KMCharacterOutlinerBeastTreeItem.h"
-#include "KMCharacterOutlinerGroupTreeItem.h"
 #include "KMCharacterOutlinerItemColumn.h"
 #include "KMCharacterOutlinerMode.h"
 #include "KMCharacterOutlinerTreeItem.h"
 #include "SKMCharacterOutlinerTreeView.h"
 #include "Core/KMDefine.h"
-#include "Tables/Generated/KMTable_Beast.h"
-#include "Tables/Generated/KMTable_Character.h"
+#include "Tables/Generated/KMTable_Object_Beast.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
 
 SKMCharacterOutliner::SKMCharacterOutliner() : SEMOutliner()
 {
@@ -63,7 +61,7 @@ FString SKMCharacterOutliner::GetTypeRowText(const IEMOutlinerTreeItem& treeItem
 	}
 	else if (treeItem.IsA<FKMCharacterOutlinerBeastTreeItem>())
 	{
-		return characterTypeEnum->GetNameStringByValue(static_cast<int64>(EKMCharacterType::Beast));
+		return characterTypeEnum->GetNameStringByValue(static_cast<int64>(EKMObjectType::Beast));
 	}
 	return TEXT("");
 }

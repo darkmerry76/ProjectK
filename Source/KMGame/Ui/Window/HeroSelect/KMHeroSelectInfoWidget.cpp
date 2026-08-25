@@ -2,7 +2,7 @@
 #include "KMHeroSelectInfoItemWidget.h"
 #include "GameMode/KMGameModeHeroSelect.h"
 #include "Kismet/GameplayStatics.h"
-#include "Tables/Generated/KMTable_Character_Hero.h"
+#include "Tables/Generated/KMTable_Object_Character_Hero.h"
 #include "UI/Component/EMTextBlock.h"
 #include "UI/Component/EMVerticalBox.h"
 
@@ -39,7 +39,7 @@ void UKMHeroSelectInfoWidget::Refresh()
 
 void UKMHeroSelectInfoWidget::SelectHero(const FName& heroTableId)
 {
-	const FKMTable_Character_HeroRow* heroTableRow = FKMTable_Character_HeroRow::FindRowPtr(heroTableId);
+	const FKMTable_Object_Character_HeroRow* heroTableRow = FKMTable_Object_Character_HeroRow::FindRowPtr(heroTableId);
 	if (!heroTableRow)
 	{
 		return;

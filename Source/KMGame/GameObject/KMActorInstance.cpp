@@ -14,7 +14,7 @@ void UKMActorInstance::EndPlay()
 {
 	Super::EndPlay();
 
-	if (IsValid(Actor) == true)
+	if (IsValid(Actor))
 	{
 		ClearActor();
 	}
@@ -25,7 +25,7 @@ void UKMActorInstance::SetActor(AActor* newActor)
 	ClearActor();
 
 	Actor = newActor;
-	if (IsValid(Actor) == true)
+	if (IsValid(Actor))
 	{
 		Actor->OnDestroyed.AddDynamic(this, &ThisClass::OnActorDestroyed);
 	}
@@ -33,7 +33,7 @@ void UKMActorInstance::SetActor(AActor* newActor)
 
 void UKMActorInstance::ClearActor()
 {
-	if (IsValid(Actor) == true)
+	if (IsValid(Actor))
 	{
 		Actor->OnDestroyed.RemoveAll(this);
 		Actor->Destroy();
@@ -49,7 +49,7 @@ AActor* UKMActorInstance::GetActor() const
 
 void UKMActorInstance::OnActorDestroyed(AActor* destroyedActor)
 {
-	check(IsValid(destroyedActor) == true && destroyedActor == Actor);
+	check(IsValid(destroyedActor) && destroyedActor == Actor);
 
 	ActorInstanceDestroyedDelegate.ExecuteIfBound(this);
 }

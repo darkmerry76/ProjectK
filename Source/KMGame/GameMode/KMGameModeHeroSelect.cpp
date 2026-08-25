@@ -4,7 +4,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"
-#include "Tables/Generated/KMTable_Character.h"
 
 void AKMGameModeHeroSelect::BeginPlay()
 {
@@ -18,7 +17,7 @@ void AKMGameModeHeroSelect::SelectHero(AController* newPlayer, const FName& newC
 		return;
 	}
 
-	if (!bForce && (LatestHeroInstance.IsValid() && LatestHeroInstance->GetTable()->Id == newCharacterId))
+	if (!bForce && (LatestHeroInstance.IsValid() && LatestHeroInstance->GetTableId() == newCharacterId))
 	{
 		return;
 	}

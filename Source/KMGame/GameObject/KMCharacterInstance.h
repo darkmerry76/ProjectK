@@ -11,26 +11,22 @@
 #include "Templates/SubclassOf.h"
 #include "KMCharacterInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterCommbatMessageDelegate, const class UKMCharacterInstance* character, EKMCommbatMessageType messageType, const FString& newMessage);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FKMCharacterSkillMessageDelegate, const class UKMCharacterInstance* character, TSharedPtr<FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage);
-
 UCLASS(Blueprintable, BlueprintType, abstract)
 class KMGAME_API UKMCharacterInstance : public UKMGameObjectInstance
 {
 	GENERATED_UCLASS_BODY()
 	
 public:
-	virtual FName GetRecordKey() const;
-	virtual FName GetRecordStatKey() const;
-
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetCharacter() const;
 
 	UFUNCTION(BlueprintCallable)
-	void SetBeastTableId(FName beatId);
+	void SetBeastTableId(FName beastId);
 
 	UFUNCTION(BlueprintPure)
 	FName GetBeatId() const;
+
+	const struct FKMTable_Object_CharacterRow* GetCharacterTable() const;
 
 	UFUNCTION(BlueprintCallable)
 	void ToggleBeast();
@@ -55,11 +51,8 @@ public:
 
 	virtual void UpdateTransform();
 	virtual void Tick(float deltaSeconds) override;
-
-	void SetTable(const struct FKMTable_CharacterRow* newTable);
-	const struct FKMTable_CharacterRow* GetTable() const;
-
-	FName GetCharacterId() const;
+	
+	virtual FName GetTableId() const override;
 
 	void SetDepthSort(float newDepthSort);
 	float GetDepthSort() const;
@@ -122,7 +115,8 @@ public:
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent) override;
 	virtual void OnDeath() override;
 	virtual bool IsDead() const override;
-
+	virtual bool IsAir() const override;
+	
 	virtual bool CanLockOn() const { return false; };
 	virtual bool CanBeTargeted() const { return true; };
 	virtual bool CanReceiveReward() const { return true; }
@@ -158,25 +152,9 @@ protected:
 
 	void ChangeSkillSet(const FName& ownerId);
 
-public:
-	FKMCharacterCommbatMessageDelegate& GetCombatMessageDelegate()
-	{
-		return CombatMessageDelegate;
-	}
-
-	static FKMCharacterSkillMessageDelegate& GetSkillMessageDelegate()
-	{
-		static FKMCharacterSkillMessageDelegate newSkillMessageDelegate;
-		return newSkillMessageDelegate;
-	}
-	
 protected:
-	FKMCharacterCommbatMessageDelegate CombatMessageDelegate;
-
 	UPROPERTY(Transient)
 	TWeakObjectPtr<class AKMCharacterBeast> Beast = nullptr;
-
-	const struct FKMTable_CharacterRow* Table = nullptr;
 
 	TSharedPtr<class FKMTimingParry> TimingParry;
 	TSharedPtr<class FKMTimingCancel> TimingCancel;
@@ -217,7 +195,7 @@ protected:
 	int32 ComboCount = 0;	
 
 	FName BeastId = NAME_None;
-	const struct FKMTable_BeastRow* BeastTableRow = nullptr;
+	const struct FKMTable_Object_BeastRow* BeastTableRow = nullptr;
 	const struct FKMTable_BaseStat_BeastRow* BeastStatTableRow = nullptr;
 	
 	bool bIsBeast = false;

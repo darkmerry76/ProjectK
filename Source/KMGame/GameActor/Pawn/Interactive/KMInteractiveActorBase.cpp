@@ -8,7 +8,7 @@ AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objec
 
 UKMInteractiveInstance* AKMInteractiveActorBase::GetInteractiveInstance() const
 {
-	if (InteractiveInstance.IsValid())
+	if (!InteractiveInstance.IsValid())
 	{
 		return nullptr;
 	}
@@ -17,7 +17,7 @@ UKMInteractiveInstance* AKMInteractiveActorBase::GetInteractiveInstance() const
 
 UKMGameObjectInstance* AKMInteractiveActorBase::GetGameObjectInstance() const
 {
-	if (InteractiveInstance.IsValid())
+	if (!InteractiveInstance.IsValid())
 	{
 		return nullptr;
 	}

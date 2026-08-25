@@ -25,7 +25,7 @@ void AKMProjectileActorBase::TriggerEvent(FGameplayTag eventTag, const FKMProjec
 FPrimaryAssetId AKMProjectileActorBase::GetPrimaryAssetId() const
 {
 	const UClass* classPtr = GetClass();
-	if (classPtr == nullptr)
+	if (!IsValid(classPtr))
 	{
 		return Super::GetPrimaryAssetId();
 	}

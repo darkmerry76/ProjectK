@@ -13,12 +13,12 @@ TSharedRef<SWidget> FKMCharacterOutlinerTreeItem::GenerateLabelWidget(IEMOutline
 	return SNew(SKMCharacterOutlinerTreeItem, *this, outliner, row);
 }
 
-void FKMCharacterOutlinerTreeItem::SetCharacterTable(const FKMTable_CharacterRow* newCharacterTable)
+void FKMCharacterOutlinerTreeItem::SetCharacterTable(const FKMTable_Object_CharacterRow* newCharacterTable)
 {
 	CharacterTable = newCharacterTable;
 }
 
-const FKMTable_CharacterRow* FKMCharacterOutlinerTreeItem::GetCharacterTable() const
+const FKMTable_Object_CharacterRow* FKMCharacterOutlinerTreeItem::GetCharacterTable() const
 {
 	return CharacterTable;
 }

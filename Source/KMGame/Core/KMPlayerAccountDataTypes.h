@@ -1,10 +1,7 @@
 ﻿#pragma once
 
 #include <Tables/Generated/KMTable_Item.h>
-
 #include "CoreMinimal.h"
-#include "Tables/Generated/KMTable_Character_Hero.h"
-#include "Tables/Generated/KMTable_SkillEffect.h"
 #include "UObject/Object.h"
 #include "KMPlayerAccountDataTypes.generated.h"
 
@@ -23,7 +20,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 WaveLevel;
 };
-
 
 USTRUCT(BlueprintType)
 struct KMGAME_API FKMAccountHeroInfo
@@ -46,7 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 BattlePower;
 	
-	const FKMTable_Character_HeroRow* HeroRecord;
+	const struct FKMTable_Object_HeroRow* HeroRecord = nullptr;
 };
 
 USTRUCT(BlueprintType)

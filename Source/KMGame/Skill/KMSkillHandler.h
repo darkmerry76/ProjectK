@@ -102,9 +102,9 @@ public:
 	TSharedPtr<class FKMSkillInstance> GetLatestActiveSkillInstance() const;
 	
 	float GetConditionScore(const FName& skillConditionName, TSharedPtr<class FKMLockOnCluster> lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag ) const;
-	float GetConditionScore(const FName& skillConditionName, const UKMCharacterInstance* targetCharacter, const FGameplayTag& eventTag = FGameplayTag::EmptyTag) const;
-	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
-	const struct FKMTable_SkillSetRow* EvalurateSkillSet(const UKMCharacterInstance* targetCharacterInstance) const;
+	float GetConditionScore(const FName& skillConditionName, const class UKMGameObjectInstance* targetGameObjectInstance, const FGameplayTag& eventTag = FGameplayTag::EmptyTag) const;
+	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
+	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance) const;
 
 	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag = NAME_None);
 
@@ -142,7 +142,7 @@ protected:
 	
 	TSharedPtr<FKMSkillEffectInstance> ApplyEffectInternal(const TSharedPtr<class FKMSkillInstance>& skillInstance, const FName& effectName);
 	
-	TSharedPtr<FKMSkillInstance> UseSkillInternal(class UKMCharacterInstance* ownerCharacterInstance, const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
+	TSharedPtr<FKMSkillInstance> UseSkillInternal(class UKMGameObjectInstance* ownerGameObjectInstance, const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
 
 	bool UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& abilityInstance, float deltaSeconds);
 	

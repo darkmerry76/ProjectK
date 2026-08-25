@@ -88,16 +88,16 @@ void UKMHUD_SkillMessageWidget::AddMessage(const FText& messageText, const FLine
 	}
 }
 
-void UKMHUD_SkillMessageWidget::OnSkillMessage(const UKMCharacterInstance* characterInstance, TSharedPtr<FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage)
+void UKMHUD_SkillMessageWidget::OnSkillMessage(const UKMGameObjectInstance* gameObjectInstance, TSharedPtr<FKMAbilityInstanceBase> abilityInstance, const FString& prefixMessage)
 {
-	check(IsValid(characterInstance));
+	check(IsValid(gameObjectInstance));
 
 	if (!abilityInstance.IsValid())
 	{
 		return;
 	}
 
-	if (!CharacterCombo->GetSelectedOption().Equals(TEXT("All")) && !CharacterCombo->GetSelectedOption().Equals(characterInstance->GetName()))
+	if (!CharacterCombo->GetSelectedOption().Equals(TEXT("All")) && !CharacterCombo->GetSelectedOption().Equals(gameObjectInstance->GetName()))
 	{
 		return;
 	}
@@ -105,12 +105,12 @@ void UKMHUD_SkillMessageWidget::OnSkillMessage(const UKMCharacterInstance* chara
 	if (abilityInstance->IsA<FKMSkillInstance>())
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = StaticCastSharedPtr<FKMSkillInstance>(abilityInstance);
-		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *characterInstance->GetName(), *prefixMessage, *skillInstance->SkillKey.TableRecord->Id.ToString())), FLinearColor::White, 14.f);
+		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *gameObjectInstance->GetName(), *prefixMessage, *skillInstance->SkillKey.TableRecord->Id.ToString())), FLinearColor::White, 14.f);
 	}
 	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
 		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = StaticCastSharedPtr<FKMSkillEffectInstance>(abilityInstance);
-		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *characterInstance->GetName(), *prefixMessage, *skillEffectInstance->GetEffectTableRecord()->Id.ToString())), FLinearColor::Red, 14.f);
+		AddMessage(FText::FromString(FString::Printf(TEXT("%.3f [%s] %s%s"), GetWorld()->GetTimeSeconds(), *gameObjectInstance->GetName(), *prefixMessage, *skillEffectInstance->GetEffectTableRecord()->Id.ToString())), FLinearColor::Red, 14.f);
 	}
 }
 

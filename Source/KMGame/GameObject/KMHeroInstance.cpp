@@ -38,7 +38,7 @@ bool UKMHeroInstance::CanBeTargeted() const
 
 void UKMHeroInstance::ApplyPlayerSkill(const FName& skillId, int32 skillLevel)
 {
-	if (SkillHandler == nullptr) return;
+	if (!SkillHandler) return;
 	
 	SkillHandler->RegisterSkill(FKMSkillKey::CreateKey(skillId, skillLevel));
 }

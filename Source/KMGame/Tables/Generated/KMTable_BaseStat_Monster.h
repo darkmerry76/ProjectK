@@ -23,7 +23,7 @@ struct FKMTable_BaseStat_MonsterRow : public FKMTable_BaseStatRow
 	inline static const FKMTable_BaseStat_MonsterRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 5;
+	static const int32   RefTableIndex = 6;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

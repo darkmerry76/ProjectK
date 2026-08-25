@@ -38,7 +38,7 @@ struct FKMTable_RecommendContentRow : public FEM_TableBaseRow
 	inline static const FKMTable_RecommendContentRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 39;
+	static const int32   RefTableIndex = 41;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

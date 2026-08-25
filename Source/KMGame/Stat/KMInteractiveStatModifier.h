@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "KMStatModifierBase.h"
-#include "KMGhostStatModifier.generated.h"
+#include "KMInteractiveStatModifier.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew)
-class KMGAME_API UKMGhostStatModifier : public UKMStatModifierBase
+class KMGAME_API UKMInteractiveStatModifier : public UKMStatModifierBase
 {
 	GENERATED_UCLASS_BODY()
 

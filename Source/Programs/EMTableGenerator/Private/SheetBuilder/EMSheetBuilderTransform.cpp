@@ -393,7 +393,7 @@ bool EMSheetBuilderTransform::DoTransform(const TArray<TSharedPtr<EMSheetBuilder
 {
 	EM_LOG(EMLog, Display, TEXT("============ UDataTables[%d]로 변경 ============"), SheetBuilders.Num());
 
-	UObject* DefaultObjectOuter = (UDataTable::StaticClass()->ClassDefaultObject != nullptr) ? UDataTable::StaticClass()->ClassDefaultObject->GetOuter() : nullptr;
+	UObject* DefaultObjectOuter = (UDataTable::StaticClass()->GetDefaultObject<UDataTable>() != nullptr) ? UDataTable::StaticClass()->GetDefaultObject<UDataTable>()->GetOuter() : nullptr;
 	for (auto ItEnum = EMCppParser::Get().GetEnums().CreateConstIterator(); ItEnum; ++ItEnum)
 	{
 		const TSharedPtr<EMCppEnumNode>& CppEnumPtr = ItEnum->Value;

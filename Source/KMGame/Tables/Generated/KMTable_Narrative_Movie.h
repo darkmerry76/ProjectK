@@ -44,7 +44,7 @@ struct FKMTable_Narrative_MovieRow : public FKMTable_NarrativeRow
 	inline static const FKMTable_Narrative_MovieRow& FindRow(FName IdKey);
 	inline static FString MakeTableKeyToString(FName IdKey);
 
-	static const int32   RefTableIndex = 33;
+	static const int32   RefTableIndex = 28;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

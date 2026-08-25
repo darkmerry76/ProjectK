@@ -13,12 +13,7 @@ protected:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<class AKMInteractiveActorBase> Interactive;
 	
-	const struct FKMTable_InteractiveRow* InteractiveTableRow = nullptr;
-	
 public:
-	void SetTable(const struct FKMTable_InteractiveRow* newInteractiveTableRow);
-	const struct FKMTable_InteractiveRow* GetTable() const;
-
 	void SetInteractiveActor(class AKMInteractiveActorBase* newInteractiveActor);
 	class AKMInteractiveActorBase* GetInteractiveActor() const;
 

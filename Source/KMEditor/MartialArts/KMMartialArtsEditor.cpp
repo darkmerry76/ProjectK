@@ -10,8 +10,9 @@
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
-#include "Tables/Generated/KMTable_Beast.h"
 #include "Util/KMUtil.h"
+#include "Tables/Generated/KMTable_Object_Beast.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
 
 #define LOCTEXT_NAMESPACE "KMMartialArtsEditor"
 
@@ -84,7 +85,7 @@ AKMCharacter* FKMMartialArtsEditor::GetOwnerCharacter() const
 	return OwnerCharacterInstance->GetCharacter();
 }
 
-UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_CharacterRow* characterTable, const FTransform& spawnedTransform)
+UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_Object_CharacterRow* characterTable, const FTransform& spawnedTransform)
 {
 	UWorld* world = GetWorld();
 	if (!IsValid(world))
@@ -110,7 +111,7 @@ UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTabl
 	return spwnCharacterInstance;
 }
 
-UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_BeastRow* beastTable, const FTransform& spawnedTransform)
+UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTable_Object_BeastRow* beastTable, const FTransform& spawnedTransform)
 {
 	UWorld* world = GetWorld();
 	if (!IsValid(world))
@@ -119,7 +120,7 @@ UKMCharacterInstance* FKMMartialArtsEditor::SpawnCharacterInstance(const FKMTabl
 		return nullptr;
 	}
 
-	const FKMTable_CharacterRow* characterTable = FKMTable_CharacterRow::FindRowPtr(TEXT("H_RyuX"));
+	const FKMTable_Object_CharacterRow* characterTable = FKMTable_Object_CharacterRow::FindRowPtr(TEXT("H_RyuX"));
 	if (!characterTable)
 	{
 		return nullptr;
@@ -177,12 +178,12 @@ bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* charac
 	return true;
 }
 
-void FKMMartialArtsEditor::OnOwnerCharacterSelected(const FKMTable_CharacterRow* newCharacterTable)
+void FKMMartialArtsEditor::OnOwnerCharacterSelected(const FKMTable_Object_CharacterRow* newCharacterTable)
 {
 	SpawnOwnerCharacterInstance(newCharacterTable);	
 }
 
-void FKMMartialArtsEditor::OnOwnerBeastSelected(const FKMTable_BeastRow* newBeastTable)
+void FKMMartialArtsEditor::OnOwnerBeastSelected(const FKMTable_Object_BeastRow* newBeastTable)
 {
 	SpawnOwnerCharacterInstance(newBeastTable);
 }
@@ -202,7 +203,7 @@ FSphere FKMMartialArtsEditor::GetCameraTargetSphere() const
 	return character->GetMesh()->CalcBounds(FTransform::Identity).GetSphere();
 }
 
-void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* characterTableBase)
+void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_ObjectRow* characterTableBase)
 {
 	AEMAnimationEditorPreviewActor* previewActor = Cast<AEMAnimationEditorPreviewActor>(GetPreviewScene()->GetActor());
 	if (IsValid(OwnerCharacterInstance))
@@ -217,7 +218,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* c
 		}
 	}
 
-	if (const FKMTable_CharacterRow* characterTable = CastRow<FKMTable_CharacterRow>(characterTableBase))
+	if (const FKMTable_Object_CharacterRow* characterTable = CastRow<FKMTable_Object_CharacterRow>(characterTableBase))
 	{
 		UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(characterTable);
 		if (!IsValid(spawnCharacterInstance))
@@ -226,7 +227,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* c
 		}
 		OwnerCharacterInstance = spawnCharacterInstance;
 	}
-	else if (const FKMTable_BeastRow* beastTable = CastRow<FKMTable_BeastRow>(characterTableBase))
+	else if (const FKMTable_Object_BeastRow* beastTable = CastRow<FKMTable_Object_BeastRow>(characterTableBase))
 	{
 		UKMCharacterInstance* spawnCharacterInstance = SpawnCharacterInstance(beastTable);
 		if (!IsValid(spawnCharacterInstance))
@@ -261,7 +262,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FEM_TableBaseRow* c
 	FocusCamera();
 }
 
-void FKMMartialArtsEditor::AddTargetCharacterInstance(const struct FKMTable_CharacterRow* newCharacterTable)
+void FKMMartialArtsEditor::AddTargetCharacterInstance(const struct FKMTable_Object_CharacterRow* newCharacterTable)
 {
 	
 }

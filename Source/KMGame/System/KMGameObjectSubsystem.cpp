@@ -1,5 +1,4 @@
 #include "KMGameObjectSubsystem.h"
-#include <Tables/Generated/KMTable_Interactive.h>
 #include <Tables/Generated/KMTable_Skill_Normal.h>
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMCharacterPDA.h"
@@ -10,11 +9,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMActorInstance.h"
 #include "GameObject/KMCharacterInstance.h"
-#include "GameObject/KMGhostInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "Tables/Generated/KMTable_Character.h"
+#include "Tables/Generated/KMTable_Object_Character.h"
+#include "Tables/Generated/KMTable_Object_Interactive.h"
 #include "Tables/Generated/KMTable_Skill.h"
 #include "Util/KMUtil.h"
 
@@ -54,7 +53,7 @@ int32 UKMGameObjectSubsystem::AddGameObject(UEMGameObjectInstance* newGameObject
 
 void UKMGameObjectSubsystem::OnPreWorldFinishDestroy(UWorld* world)
 {
-	if(IsValid(world) == false)
+	if(!IsValid(world))
 	{
 		return;
 	}
@@ -64,14 +63,14 @@ void UKMGameObjectSubsystem::OnPreWorldFinishDestroy(UWorld* world)
 
 UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName characterTableId, const FTransform& transform, bool bFlipY)
 {
-	const FKMTable_CharacterRow* characterTable = FKMTable_CharacterRow::FindRowPtr(characterTableId);
-	check (characterTable != nullptr);
+	const FKMTable_Object_CharacterRow* characterTable = FKMTable_Object_CharacterRow::FindRowPtr(characterTableId);
+	check (characterTable);
 
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager) == true);
+	check(IsValid(assetManager));
 	
 	UKMCharacterPDA* characterPDA = Cast<UKMCharacterPDA>(assetManager->GetAsset(characterTable->pdaKey));
-	check(IsValid(characterPDA) == true);
+	check(IsValid(characterPDA));
 	
 	UKMCharacterInstance* newCharacterInstance = NewObject<UKMCharacterInstance>(this, characterPDA->InstanceClass);
 	newCharacterInstance->SetDepthSort(transform.GetLocation().X);
@@ -80,7 +79,7 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 	
 	AKMCharacter* newCharacter = GetWorld()->SpawnActorDeferred<AKMCharacter>(
 		characterPDA->CharacterClass, transform, nullptr, nullptr);
-	check(IsValid(newCharacter) == true);
+	check(IsValid(newCharacter));
 
 	newCharacter->SetMirror(bFlipY);
 	newCharacter->PossessedByGameObjectInstance(newCharacterInstance);
@@ -94,7 +93,7 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 
 UKMInteractiveInstance* UKMGameObjectSubsystem::SpawnInteractiveObject(FName interactiveTableId, const FTransform& transform)
 {
-	const FKMTable_InteractiveRow* interactiveTableRow = FKMTable_InteractiveRow::FindRowPtr(interactiveTableId);
+	const FKMTable_Object_InteractiveRow* interactiveTableRow = FKMTable_Object_InteractiveRow::FindRowPtr(interactiveTableId);
 	check (interactiveTableRow);
 
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
@@ -121,12 +120,12 @@ UKMInteractiveInstance* UKMGameObjectSubsystem::SpawnInteractiveObject(FName int
 UKMActorInstance* UKMGameObjectSubsystem::SpawnActorObject(TSubclassOf<AActor> actorClass, const FTransform& transform, int32 createdIndex, FKMOnActorInstancePreSpawn actorInstancePreSpawnDelegate)
 {
 	UKMAssetManager* assetManager = UKMAssetManager::GetAssetManager();
-	check(IsValid(assetManager) == true);
+	check(IsValid(assetManager));
 
 	UKMActorInstance* newActorInstance = NewObject<UKMActorInstance>(this, UKMActorInstance::StaticClass());
 	AActor* newActor = GetWorld()->SpawnActorDeferred<AActor>(
 		actorClass, transform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	check(IsValid(newActor) == true);
+	check(IsValid(newActor));
 
 	newActorInstance->SetActor(newActor);
 	actorInstancePreSpawnDelegate.ExecuteIfBound(newActorInstance, createdIndex);
@@ -141,7 +140,7 @@ UKMActorInstance* UKMGameObjectSubsystem::SpawnActorObject(TSubclassOf<AActor> a
 
 void UKMGameObjectSubsystem::OnActorInstanceDestroyed(const UKMActorInstance* destroyedActorInstance)
 {
-	check(IsValid(destroyedActorInstance) == true);
+	check(IsValid(destroyedActorInstance));
 
 	RemoveGameObject(destroyedActorInstance->GetId());
 }
@@ -155,7 +154,7 @@ static bool CompareCharacterDistance(const UKMCharacterInstance* A, const UKMCha
 int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 	const UKMCharacterInstance* attacker, const FKMSkillKey* skillKey, TArray<FKMObjectKey>& outCharacters) const
 {
-	check(IsValid(attacker) == true);
+	check(IsValid(attacker));
 
 	const FTransform& sourceTransform = attacker->GetTransform();
 	
@@ -167,17 +166,17 @@ int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 	for (auto objectItr : GameObjectMap)
 	{
 		UKMCharacterInstance* target = Cast<UKMCharacterInstance>(objectItr.Value);
-		if (IsValid(target) == false)
+		if (!IsValid(target))
 		{
 			continue;
 		}
 
-		if (target->CanBeTargeted() == false)
+		if (!target->CanBeTargeted())
 		{
 			continue;
 		}
 
-		if (skillKey != nullptr && UKMUtil::IsInTargetType(skillKey->TableRecord->TargetType, attacker, target) == false)
+		if (skillKey && !UKMUtil::IsInTargetType(skillKey->TableRecord->TargetType, attacker, target))
 		{
 			continue;
 		}
@@ -195,7 +194,7 @@ int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 		bestTargetIndex = 0;
 	}
 	
-	if (skillKey != nullptr)
+	if (skillKey)
 	{
 		if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(skillKey->TableRecord))
 		{
@@ -262,14 +261,14 @@ template<typename _TL> int32 UKMGameObjectSubsystem::NumGameObject(bool bExclude
 	int numCount = 0;
 	for (auto objectItr : GameObjectMap)
 	{
-		if (objectItr.Value->IsA<_TL>() == false)
+		if (!objectItr.Value->IsA<_TL>())
 		{
 			continue;
 		}
 		
 		if (UKMCharacterInstance* characterInstance = Cast<UKMCharacterInstance>(objectItr.Value))
 		{
-			if (characterInstance->IsDead() == true)
+			if (characterInstance->IsDead())
 			{
 				continue;
 			}
@@ -289,11 +288,6 @@ int32 UKMGameObjectSubsystem::NumMonster(bool bExcludeDead) const
 	return NumGameObject<UKMMonsterInstance>(bExcludeDead);
 }
 
-int32 UKMGameObjectSubsystem::NumGhost(bool bExcludeDead) const
-{
-	return NumGameObject<UKMGhostInstance>(bExcludeDead);
-}
-
 TStatId UKMGameObjectSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UKMGameObjectSubsystem, STATGROUP_Tickables)
@@ -306,5 +300,5 @@ ETickableTickType UKMGameObjectSubsystem::GetTickableTickType() const
 
 bool UKMGameObjectSubsystem::IsTickable() const
 {
-	return HasAnyFlags(RF_ClassDefaultObject) == false && GetWorld()->IsPaused() == false;
+	return !HasAnyFlags(RF_ClassDefaultObject) && !GetWorld()->IsPaused();
 }

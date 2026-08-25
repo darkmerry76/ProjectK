@@ -34,7 +34,7 @@ struct FKMTable_Character_DropRateRow : public FEM_TableBaseRow
 	inline static const FKMTable_Character_DropRateRow& FindRow(FName idKey, FName characterIdKey);
 	inline static FString MakeTableKeyToString(FName idKey, FName characterIdKey);
 
-	static const int32   RefTableIndex = 11;
+	static const int32   RefTableIndex = 10;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
