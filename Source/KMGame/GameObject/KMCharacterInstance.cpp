@@ -550,11 +550,7 @@ bool UKMCharacterInstance::IsAir() const
 void UKMCharacterInstance::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
-
-	StatModifier->ComputePreEffectStat();
-	SkillHandler->Tick(deltaSeconds);
-	StatModifier->ComputePostEffectStat();
-
+	
 	AKMCharacter* ownerCharacter = GetCharacter();
 	if (IsValid(ownerCharacter))
 	{
@@ -769,23 +765,6 @@ bool UKMCharacterInstance::UseGuardSkill_Release()
 void UKMCharacterInstance::ShowDamage(EKMStatFactorType factorType, int32 damage)
 {
 	if (damage <= 0) return;
-}
-
-void UKMCharacterInstance::AddAggroTarget(UKMCharacterInstance* attacker)
-{
-	if (!AggroTarget.Contains(attacker))
-	{
-		AggroTarget.Add(attacker);
-	}
-}
-const UKMCharacterInstance* UKMCharacterInstance::GetBestAggroTarget() const
-{
-	if (AggroTarget.IsEmpty())
-	{
-		return nullptr;
-	}
-	
-	return AggroTarget.begin()->Get();
 }
 
 bool UKMCharacterInstance::IsBeast() const

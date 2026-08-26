@@ -14,6 +14,9 @@ protected:
 	TObjectPtr<class USceneComponent> RootScene;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMCurveWarpingComponent> CurveWarping;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
 
 	UPROPERTY(Transient, BlueprintReadOnly)
@@ -26,7 +29,11 @@ public:
 	class UKMInteractiveInstance* GetInteractiveInstance() const;
 
 	UFUNCTION(BlueprintPure)
-	class UKMMartialArtsComponent* GetMartialArtsComponent() const;
+	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual class UKMCurveWarpingComponent* GetCurveWarping() const override;
+
 
 protected:
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;

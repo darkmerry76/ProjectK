@@ -434,6 +434,26 @@ void UKMGameObjectInstance::RemoveTimeDilation(const FName& layerName)
 	TimeDilations.Remove(layerName);
 }
 
+void UKMGameObjectInstance::AddAggroTarget(UKMGameObjectInstance* attackerGameObjectInstance)
+{
+	if (!AggroTarget.Contains(attackerGameObjectInstance))
+	{
+		AggroTarget.Add(attackerGameObjectInstance);
+	}
+}
+
+const UKMGameObjectInstance* UKMGameObjectInstance::GetBestAggroTarget() const
+{
+	if (AggroTarget.IsEmpty())
+	{
+		return nullptr;
+	}
+	return AggroTarget.begin()->Get();
+}
+
 void UKMGameObjectInstance::Tick(float deltaSeconds)
 {
+	StatModifier->ComputePreEffectStat();
+	SkillHandler->Tick(deltaSeconds);
+	StatModifier->ComputePostEffectStat();
 }

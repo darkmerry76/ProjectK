@@ -25,7 +25,7 @@ public:
 	float DirectionWeight = -1.f;
 
 	UPROPERTY()
-	TWeakObjectPtr<UKMCharacterInstance> CasterCharacterObject;
+	TWeakObjectPtr<class UKMGameObjectInstance> CasterGameObject;
 
 protected:
 	FKMObjectKey CastObjectKey;
@@ -36,8 +36,14 @@ public:
 	const FKMObjectKey& GetCastObjectKey() const { return CastObjectKey; }
 
 	UFUNCTION(BlueprintPure)
+	class AActor* GetCasterActor() const;
+
+	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetCasterCharacter() const;
 
+	UFUNCTION(BlueprintPure)
+	class UKMGameObjectInstance* GetCasterGameObjectInstance() const;
+	
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetCasterCharacterInstance() const;
 	

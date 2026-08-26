@@ -121,6 +121,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Inflict(class UKMGameObjectInstance* victimGameObjectInstance);
 
+	UFUNCTION(BlueprintCallable)
+	void AddAggroTarget(class UKMGameObjectInstance* attackerGameObjectInstance);
+
+	UFUNCTION(BlueprintPure)
+	const class UKMGameObjectInstance* GetBestAggroTarget() const;
+
+	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
+	
 	static FKMDeathDelegate& GetDeathDelegate()
 	{
 		static FKMDeathDelegate deathDelegate;
@@ -164,7 +172,6 @@ protected:
 	virtual void OnDeath();
 
 	virtual void ShowDamage(EKMStatFactorType factorType, int32 damage);
-	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
 
 	virtual void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
 	void HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
@@ -187,6 +194,9 @@ protected:
 	TMap<FName, float> TimeDilations;
 
 	const struct FKMTable_ObjectRow* ObjectTable = nullptr;
+
+	UPROPERTY()
+	TSet<TWeakObjectPtr<UKMGameObjectInstance>> AggroTarget;
 	
 	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
 	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;

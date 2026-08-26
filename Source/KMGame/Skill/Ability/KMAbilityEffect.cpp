@@ -1,7 +1,4 @@
 #include "KMAbilityEffect.h"
-
-#include <filesystem>
-
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Skill/KMSkillHandler.h"
@@ -14,27 +11,25 @@ UKMAbilityEffect::UKMAbilityEffect(const FObjectInitializer& objectInitializer) 
 
 void UKMAbilityEffect::Activate()
 {
-	CasterCharacterObject = Cast<UKMCharacterInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
+	CasterGameObject = Cast<UKMGameObjectInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
 	
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
-
 	PlayMartialArts(nullptr, Rate, bIsLoop);
 	PostActivated();
+	
 	Super::Activate();
 }
 
 void UKMAbilityEffect::PostActivated()
 {
-	if (bIsDirectionFallow && IsValid(GetCasterCharacter()))
+	if (bIsDirectionFallow)
 	{
-		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-		check(IsValid(ownerCharacterInstance));
-
-		FVector targetToDirection = GetOwnerCharacter()->GetActorLocation() - GetCasterCharacter()->GetActorLocation();
-		targetToDirection.Z = 0.0f;
-		targetToDirection.Normalize();
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+		if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+		{
+			FVector targetToDirection = GetOwnerCharacter()->GetActorLocation() - GetCasterCharacter()->GetActorLocation();
+			targetToDirection.Z = 0.0f;
+			targetToDirection.Normalize();
+			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+		}
 	}
 }
 
@@ -58,10 +53,11 @@ void UKMAbilityEffect::Deactivate(bool bCancel)
 {
 	Super::Deactivate(bCancel);
 	
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
+	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
+	check(IsValid(ownerGameObjectInstance));
 
-	UKMSkillHandler* skillHandler = character->GetCharacterInstance()->GetSkillHandler();
+	UKMSkillHandler* skillHandler = ownerGameObjectInstance->GetSkillHandler();
+	check(IsValid(skillHandler));
 
 	if (SkillEffectInstance.IsValid() && !bCancel && EndingTag.IsValid())
 	{
@@ -84,25 +80,35 @@ void UKMAbilityEffect::Deactivate(bool bCancel)
 void UKMAbilityEffect::SetCastObjectKey(FKMObjectKey newCasterObjectKey)
 {
 	CastObjectKey = newCasterObjectKey;
-	CasterCharacterObject = Cast<UKMCharacterInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
+	CasterGameObject = Cast<UKMGameObjectInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
+}
+
+AActor* UKMAbilityEffect::GetCasterActor() const
+{
+	if(!CasterGameObject.IsValid())
+	{
+		return nullptr;
+	}
+	return CasterGameObject->GetOwnerActor();
 }
 
 AKMCharacter* UKMAbilityEffect::GetCasterCharacter() const
 {
-	if(!CasterCharacterObject.IsValid())
+	return Cast<AKMCharacter>(GetCasterActor());
+}
+
+UKMGameObjectInstance* UKMAbilityEffect::GetCasterGameObjectInstance() const
+{
+	if(!CasterGameObject.IsValid())
 	{
 		return nullptr;
 	}
-	return CasterCharacterObject->GetCharacter();
+	return CasterGameObject.Pin().Get();	
 }
 
 UKMCharacterInstance* UKMAbilityEffect::GetCasterCharacterInstance() const
 {
-	if(!CasterCharacterObject.IsValid())
-	{
-		return nullptr;
-	}
-	return CasterCharacterObject.Pin().Get();
+	return Cast<UKMCharacterInstance>(GetCasterGameObjectInstance());
 }
 
 void UKMAbilityEffect::SetSkillEffectInstance(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance)

@@ -9,9 +9,6 @@ UKMAbilitySkill::UKMAbilitySkill(const FObjectInitializer& objectInitializer) : 
 
 void UKMAbilitySkill::Activate()
 {
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
-
 	PlayMartialArts(nullptr, Rate, bIsLoop);	
 	PostActivated();
 
@@ -20,27 +17,31 @@ void UKMAbilitySkill::Activate()
 
 void UKMAbilitySkill::PostActivated()
 {
-	if (bIsDirectionFallow && IsValid(GetTargetCharacter()))
+	if (bIsDirectionFallow)
 	{
-		UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-		check(IsValid(ownerCharacterInstance));
-			
-		FVector targetToDirection = GetTargetCharacter()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
-		targetToDirection.Z = 0.0f;
-		targetToDirection.Normalize();
+		if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+		{
+			if (IsValid(GetTargetActor()))
+			{
+				FVector targetToDirection = GetTargetActor()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
+				targetToDirection.Z = 0.0f;
+				targetToDirection.Normalize();
 
-		ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+				ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+			}
+		}
 	}
 }
 
 void UKMAbilitySkill::Deactivate(bool bCancel)
 {
 	Super::Deactivate(bCancel);
-	
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
 
-	UKMSkillHandler* skillHandler = character->GetCharacterInstance()->GetSkillHandler();
+	UKMGameObjectInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
+	check(IsValid(ownerCharacterInstance));
+
+	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
+	check(IsValid(skillHandler));
 
 	if (SkillInstance.IsValid() && !bCancel && EndingTag.IsValid())
 	{

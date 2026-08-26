@@ -107,13 +107,13 @@ void UKMBTService_PerceptionTarget::TickNode(UBehaviorTreeComponent& ownerComp, 
 	UBlackboardComponent* blackboardComponent = ownerComp.GetBlackboardComponent();
 	check(IsValid(blackboardComponent));
 
-	const UKMCharacterInstance* aggroTarget = ownerCharacterInstance->GetBestAggroTarget();
-	if (IsValid(aggroTarget))
+	const UKMGameObjectInstance* aggroTargetGameOBject = ownerCharacterInstance->GetBestAggroTarget();
+	if (IsValid(aggroTargetGameOBject))
 	{
 		//if (blackboardComponent->GetValueAsObject(TEXT("TargetActor")) != aggroTarget->GetCharacter())
 		{
 			blackboardComponent->SetValueAsObject(TEXT("TargetActor"), nullptr);
-			blackboardComponent->SetValueAsObject(TEXT("TargetActor"), aggroTarget->GetCharacter());
+			blackboardComponent->SetValueAsObject(TEXT("TargetActor"), aggroTargetGameOBject->GetOwnerActor());
 		}
 	}
 	else

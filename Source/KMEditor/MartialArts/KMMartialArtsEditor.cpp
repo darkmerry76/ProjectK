@@ -2,12 +2,12 @@
 #include "EMAnimationEditorPreviewActor.h"
 #include "EMAnimationEditorViewportClient.h"
 #include "EMMartialArts.h"
-#include "EMMartialArtsComponent.h"
 #include "EMMartialArtsEditorModule.h"
 #include "IPersonaPreviewScene.h"
 #include "ISkeletonTree.h"
 #include "KMMartialArtsEditorMode.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
+#include "Component/KMMartialArtsComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
 #include "Util/KMUtil.h"
@@ -249,7 +249,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_ObjectRow*
 
 	if (AKMCharacter* character = Cast<AKMCharacter>(OwnerCharacterInstance->GetCharacter()))
 	{
-		UEMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
+		UKMMartialArtsComponent* martialArtsComponent = character->GetMartialArtsComponent();
 		check(IsValid(martialArtsComponent));
 
 		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(AnimationAsset))

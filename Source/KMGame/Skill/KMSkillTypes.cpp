@@ -7,7 +7,7 @@
 #include "Ability/KMAbilityEffect.h"
 #include "Ability/KMAbilitySkill.h"
 #include "DataAsset/KMAssetManager.h"
-#include "GameObject/KMCharacterInstance.h"
+#include "GameObject/KMGameObjectInstance.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "System/KMTargetSubsystem.h"
@@ -162,10 +162,10 @@ FKMAbilityInstanceCooltime::FKMAbilityInstanceCooltime(UObject* ownerObject, con
 
 float FKMAbilityInstanceCooltime::GetElipsedTime() const
 {
-	UKMCharacterInstance* characterInstance = OwnerObject->GetTypedOuter<UKMCharacterInstance>();
-	check(IsValid(characterInstance))
+	UKMGameObjectInstance* ownerGameObjectInstance = OwnerObject->GetTypedOuter<UKMGameObjectInstance>();
+	check(IsValid(ownerGameObjectInstance))
 	
-	return FKMAbilityInstanceBase::GetElipsedTime() * characterInstance->GetStatModifier()->GetEffectiveStat().GetCooltimeWeights();
+	return FKMAbilityInstanceBase::GetElipsedTime() * ownerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetCooltimeWeights();
 }
 
 void FKMAbilityInstanceCooltime::ForceReady()
@@ -178,9 +178,6 @@ void FKMAbilityInstanceCooltime::ForceReady()
 
 bool FKMAbilityInstanceCooltime::IsReady() const
 {
-	UKMCharacterInstance* characterInstance = OwnerObject->GetTypedOuter<UKMCharacterInstance>();
-	check(IsValid(characterInstance))
-	
 	if (const FKMTable_Skill_NormalRow* skillNormal = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
 		return GetElipsedTime() >= skillNormal->CoolTime;
@@ -541,21 +538,21 @@ void FKMSkillEffectDamageInstance::Tick(float deltaSeconds)
 	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(OwnerObject.Get());
 	check(IsValid(gameObjectSubsystem));
 
-	UKMCharacterInstance* casterCharacterInstance = Cast<UKMCharacterInstance>(gameObjectSubsystem->GetGameObject(OwnerSkillInstance->Caster));
-	if (!IsValid(casterCharacterInstance))
+	UKMGameObjectInstance* casterGameObjectInstance = Cast<UKMGameObjectInstance>(gameObjectSubsystem->GetGameObject(OwnerSkillInstance->Caster));
+	if (!IsValid(casterGameObjectInstance))
 	{
 		return;
 	}
 
-	UKMStatModifierBase* casterStat = casterCharacterInstance->GetStatModifier();
+	UKMStatModifierBase* casterStat = casterGameObjectInstance->GetStatModifier();
 	check(IsValid(casterStat));
 
 	double basePhysicsDamage = casterStat->GetEffectiveStat().GetAtk() * EffectTableRecord->BaseValue;
 
-	UKMCharacterInstance* targetCharacterInstance = Cast<UKMCharacterInstance>(OwnerObject->GetTypedOuter<UKMCharacterInstance>());
-	check(IsValid(targetCharacterInstance));
+	UKMGameObjectInstance* targetGameObjectInstance = Cast<UKMGameObjectInstance>(OwnerObject->GetTypedOuter<UKMGameObjectInstance>());
+	check(IsValid(targetGameObjectInstance));
 
-	UKMStatModifierBase* targetStat = targetCharacterInstance->GetStatModifier();
+	UKMStatModifierBase* targetStat = targetGameObjectInstance->GetStatModifier();
 	check(IsValid(targetStat));
 
 	double finalPhysicsDamage = basePhysicsDamage * FMath::RandRange(0.9f, 1.1f);
@@ -573,7 +570,7 @@ void FKMSkillEffectDamageInstance::Tick(float deltaSeconds)
 		finalPhysicsDamage = 0.01f;
 	}
 
-	targetCharacterInstance->AddAggroTarget(casterCharacterInstance);
+	targetGameObjectInstance->AddAggroTarget(casterGameObjectInstance);
 
 	if (bCriChange)
 	{
@@ -587,16 +584,16 @@ void FKMSkillEffectDamageInstance::Tick(float deltaSeconds)
 	targetStat->GetEffectiveStat().ApplyDamage(finalPhysicsDamage, true);
 	
 	FKMDamageEvent newDamageEvent;
-	newDamageEvent.Attacker =  casterCharacterInstance->GetId();
-	newDamageEvent.Target =  targetCharacterInstance->GetId();
+	newDamageEvent.Attacker =  casterGameObjectInstance->GetId();
+	newDamageEvent.Target =  casterGameObjectInstance->GetId();
 	newDamageEvent.Damage = basePhysicsDamage;
 	newDamageEvent.bIsCritical = bCriChange;
 
 	newDamageEvent.Context = EKMDamageEventContext::Attacker;
-	casterCharacterInstance->BroadCastDamageEvent(newDamageEvent);
+	casterGameObjectInstance->BroadCastDamageEvent(newDamageEvent);
 	
 	newDamageEvent.Context = EKMDamageEventContext::Target;
-	targetCharacterInstance->BroadCastDamageEvent(newDamageEvent);
+	casterGameObjectInstance->BroadCastDamageEvent(newDamageEvent);
 }
 
 FKMSkillEffectAbnormalInstance::FKMSkillEffectAbnormalInstance(UObject* ownerObject,
@@ -648,9 +645,9 @@ void FKMSkillEffectBuffInstance::Leave()
 	FKMSkillEffectInstance::Leave();
 }
 
-double FKMSkillEffectBuffInstance::CalculateParameter(UKMCharacterInstance* target, double statValue, float deltaSeconds) const
+double FKMSkillEffectBuffInstance::CalculateParameter(const UKMGameObjectInstance* targetGameObjectInstance, double statValue, float deltaSeconds) const
 {
-	const FKMSecondaryStat& secondaryStat = target->GetStatModifier()->GetEffectiveStat();
+	const FKMSecondaryStat& secondaryStat = targetGameObjectInstance->GetStatModifier()->GetEffectiveStat();
 	double baseValue = EffectTableRecord->BaseValue;
 	switch(EffectTableRecord->ScaleType)
 	{
@@ -695,55 +692,55 @@ double FKMSkillEffectBuffInstance::CalculateParameter(UKMCharacterInstance* targ
 	return statValue;
 }
 
-void FKMSkillEffectBuffInstance::CalculateParameter(UKMCharacterInstance* target, float deltaSeconds)
+void FKMSkillEffectBuffInstance::CalculateParameter(const UKMGameObjectInstance* targetGameObjectInstance, float deltaSeconds)
 {
-	FKMSecondaryStat& secondaryStat = target->GetStatModifier()->GetEffectiveStat();
+	FKMSecondaryStat& secondaryStat = targetGameObjectInstance->GetStatModifier()->GetEffectiveStat();
 	switch (EffectTableRecord->Parameter)
 	{
 		case EKMStatParameterType::Hp :
-			secondaryStat.SetHp(CalculateParameter(target, secondaryStat.GetHp(), deltaSeconds), true); break;
+			secondaryStat.SetHp(CalculateParameter(targetGameObjectInstance, secondaryStat.GetHp(), deltaSeconds), true); break;
 		case EKMStatParameterType::HpRps :
-			secondaryStat.SetHpRps(CalculateParameter(target, secondaryStat.GetHpRps(), deltaSeconds), true); break;
+			secondaryStat.SetHpRps(CalculateParameter(targetGameObjectInstance, secondaryStat.GetHpRps(), deltaSeconds), true); break;
 		case EKMStatParameterType::HpCurr :
-			secondaryStat.SetHpCurr(CalculateParameter(target, secondaryStat.GetHpCurr(), deltaSeconds), true); break;
+			secondaryStat.SetHpCurr(CalculateParameter(targetGameObjectInstance, secondaryStat.GetHpCurr(), deltaSeconds), true); break;
 		case EKMStatParameterType::Sp :
-			secondaryStat.SetSp(CalculateParameter(target, secondaryStat.GetSp(), deltaSeconds), true); break;
+			secondaryStat.SetSp(CalculateParameter(targetGameObjectInstance, secondaryStat.GetSp(), deltaSeconds), true); break;
 		case EKMStatParameterType::SpRps :
-			secondaryStat.SetSpRps(CalculateParameter(target, secondaryStat.GetSpRps(), deltaSeconds), true); break;
+			secondaryStat.SetSpRps(CalculateParameter(targetGameObjectInstance, secondaryStat.GetSpRps(), deltaSeconds), true); break;
 		case EKMStatParameterType::SpCurr :
-			secondaryStat.SetSpCurr(CalculateParameter(target, secondaryStat.GetSpCurr(), deltaSeconds), true); break;
+			secondaryStat.SetSpCurr(CalculateParameter(targetGameObjectInstance, secondaryStat.GetSpCurr(), deltaSeconds), true); break;
 		case EKMStatParameterType::Mp :
-			secondaryStat.SetMp(CalculateParameter(target, secondaryStat.GetMp(), deltaSeconds), true); break;
+			secondaryStat.SetMp(CalculateParameter(targetGameObjectInstance, secondaryStat.GetMp(), deltaSeconds), true); break;
 		case EKMStatParameterType::MpRps :
-			secondaryStat.SetMpRps(CalculateParameter(target, secondaryStat.GetMpRps(), deltaSeconds), true); break;
+			secondaryStat.SetMpRps(CalculateParameter(targetGameObjectInstance, secondaryStat.GetMpRps(), deltaSeconds), true); break;
 		case EKMStatParameterType::MpCurr :
-			secondaryStat.SetMpCurr(CalculateParameter(target, secondaryStat.GetMpCurr(), deltaSeconds), true); break;
+			secondaryStat.SetMpCurr(CalculateParameter(targetGameObjectInstance, secondaryStat.GetMpCurr(), deltaSeconds), true); break;
 		case EKMStatParameterType::Atk :
-			secondaryStat.SetAtk(CalculateParameter(target, secondaryStat.GetAtk(), deltaSeconds), true); break;
+			secondaryStat.SetAtk(CalculateParameter(targetGameObjectInstance, secondaryStat.GetAtk(), deltaSeconds), true); break;
 		case EKMStatParameterType::AtkSpd :
-			secondaryStat.SetAtkSpd(CalculateParameter(target, secondaryStat.GetAtkSpd(), deltaSeconds), true); break;
+			secondaryStat.SetAtkSpd(CalculateParameter(targetGameObjectInstance, secondaryStat.GetAtkSpd(), deltaSeconds), true); break;
 		case EKMStatParameterType::Dex :
-			secondaryStat.SetDex(CalculateParameter(target, secondaryStat.GetDex(), deltaSeconds), true); break;
+			secondaryStat.SetDex(CalculateParameter(targetGameObjectInstance, secondaryStat.GetDex(), deltaSeconds), true); break;
 		case EKMStatParameterType::Def :
-			secondaryStat.SetDef(CalculateParameter(target, secondaryStat.GetDef(), deltaSeconds), true); break;
+			secondaryStat.SetDef(CalculateParameter(targetGameObjectInstance, secondaryStat.GetDef(), deltaSeconds), true); break;
 		case EKMStatParameterType::CriChance :
-			secondaryStat.SetCriChange(CalculateParameter(target, secondaryStat.GetCriChange(), deltaSeconds), true); break;
+			secondaryStat.SetCriChange(CalculateParameter(targetGameObjectInstance, secondaryStat.GetCriChange(), deltaSeconds), true); break;
 		case EKMStatParameterType::Cri :
-			secondaryStat.SetCri(CalculateParameter(target, secondaryStat.GetCri(), deltaSeconds), true); break;
+			secondaryStat.SetCri(CalculateParameter(targetGameObjectInstance, secondaryStat.GetCri(), deltaSeconds), true); break;
 		case EKMStatParameterType::Mov :
-			secondaryStat.SetMov(CalculateParameter(target, secondaryStat.GetMov(), deltaSeconds), true); break;
+			secondaryStat.SetMov(CalculateParameter(targetGameObjectInstance, secondaryStat.GetMov(), deltaSeconds), true); break;
 		case EKMStatParameterType::Run :
-			secondaryStat.SetRun(CalculateParameter(target, secondaryStat.GetRun(), deltaSeconds), true); break;
+			secondaryStat.SetRun(CalculateParameter(targetGameObjectInstance, secondaryStat.GetRun(), deltaSeconds), true); break;
 		case EKMStatParameterType::Emp :
-			secondaryStat.SetEmp(CalculateParameter(target, secondaryStat.GetEmp(), deltaSeconds), true); break;
+			secondaryStat.SetEmp(CalculateParameter(targetGameObjectInstance, secondaryStat.GetEmp(), deltaSeconds), true); break;
 		case EKMStatParameterType::EmpCurr :
-			secondaryStat.SetEmpCurr(CalculateParameter(target, secondaryStat.GetEmpCurr(), deltaSeconds), true); break;
+			secondaryStat.SetEmpCurr(CalculateParameter(targetGameObjectInstance, secondaryStat.GetEmpCurr(), deltaSeconds), true); break;
 		case EKMStatParameterType::Tempo :
-			secondaryStat.SetTempo(CalculateParameter(target, secondaryStat.GetTempo(), deltaSeconds), true); break;
+			secondaryStat.SetTempo(CalculateParameter(targetGameObjectInstance, secondaryStat.GetTempo(), deltaSeconds), true); break;
 		case EKMStatParameterType::TempoCurr :
-			secondaryStat.SetTempoCurr(CalculateParameter(target, secondaryStat.GetTempoCurr(), deltaSeconds), true); break;
+			secondaryStat.SetTempoCurr(CalculateParameter(targetGameObjectInstance, secondaryStat.GetTempoCurr(), deltaSeconds), true); break;
 		case EKMStatParameterType::TempoRps :
-			secondaryStat.SetTempoRps(CalculateParameter(target, secondaryStat.GetTempoRps(), deltaSeconds), true); break;
+			secondaryStat.SetTempoRps(CalculateParameter(targetGameObjectInstance, secondaryStat.GetTempoRps(), deltaSeconds), true); break;
 		default: check(0);
 	}
 }
@@ -760,10 +757,10 @@ void FKMSkillEffectBuffInstance::Apply(float deltaSeconds)
 		return;
 	}
 
-	UKMCharacterInstance* targetCharacterInstance = Cast<UKMCharacterInstance>(OwnerObject->GetTypedOuter<UKMCharacterInstance>());
-	check(IsValid(targetCharacterInstance));
+	UKMGameObjectInstance* targetGameObjectInstance = Cast<UKMGameObjectInstance>(OwnerObject->GetTypedOuter<UKMGameObjectInstance>());
+	check(IsValid(targetGameObjectInstance));
 
-	CalculateParameter(targetCharacterInstance, deltaSeconds);
+	CalculateParameter(targetGameObjectInstance, deltaSeconds);
 
 	ApplyTime = 0.f;
 }

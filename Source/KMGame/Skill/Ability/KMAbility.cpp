@@ -1,9 +1,8 @@
 #include "KMAbility.h"
-#include "EMCurveWarpingComponent.h"
-#include "EMMartialArtsComponent.h"
 #include "KMAbilityBlow.h"
 #include "Animation/KMAnimInstance.h"
 #include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
@@ -59,13 +58,18 @@ AKMCharacter* UKMAbility::GetOwnerCharacter() const
 	return Cast<AKMCharacter>(GetOwnerActor());
 }
 
-UKMCharacterInstance* UKMAbility::GetTargetCharacterInstance() const
+UKMGameObjectInstance* UKMAbility::GetTargetGameObjectInstance() const
 {
 	if (!LockOnCluster.IsValid())
 	{
 		return nullptr;
 	}
-	return Cast<UKMCharacterInstance>(LockOnCluster->GetBestTarget());
+	return LockOnCluster->GetBestTarget();
+}
+
+UKMCharacterInstance* UKMAbility::GetTargetCharacterInstance() const
+{
+	return Cast<UKMCharacterInstance>(GetTargetGameObjectInstance());
 }
 
 UEMMartialArtsComponent* UKMAbility::GetMartialArtsComponent() const
@@ -78,50 +82,57 @@ UEMMartialArtsComponent* UKMAbility::GetMartialArtsComponent() const
 	return ownerCharacter->GetMartialArtsComponent();
 }
 
-AKMCharacter* UKMAbility::GetTargetCharacter() const
+AActor* UKMAbility::GetTargetActor() const
 {
-	UKMGameObjectInstance* targetGameObjectInstance = GetTargetCharacterInstance();
+	UKMGameObjectInstance* targetGameObjectInstance = GetTargetGameObjectInstance();
 	if(!IsValid(targetGameObjectInstance))
 	{
 		return nullptr;
 	}
+	return targetGameObjectInstance->GetOwnerActor();
+}
 
-	AKMCharacter* targetCharacter = Cast<AKMCharacter>(targetGameObjectInstance->GetOwnerActor());
-	return targetCharacter;
+AKMCharacter* UKMAbility::GetTargetCharacter() const
+{
+	return Cast<AKMCharacter>(GetTargetActor());
 }
 
 void UKMAbility::Activate()
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
-
 	UEMMartialArts* martialArts = GetMartialArts();
 	check(IsValid(martialArts));
 
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	check(IsValid(curveWarping));
-	
-	if (IsValid(BlowCurve))
-	{
-		FVector actorForwardVector = ownerCharacter->GetActorForwardVector();
-		actorForwardVector.Z = 0.f;
-		actorForwardVector.Normalize();
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-		FVector targetLocation = ownerCharacter->GetActorLocation() + (HorizontalPower * ownerCharacter->GetActorForwardVector() * -1.f);
-		
-		if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
+	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor);
+	if(pawnInterface)
+	{
+		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarping();
+		if (IsValid(curveWarping))
 		{
-			curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
-		}
-		CurveWapingInstanceId = curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
-	}
+			if (IsValid(BlowCurve))
+			{
+				FVector actorForwardVector = ownerActor->GetActorForwardVector();
+				actorForwardVector.Z = 0.f;
+				actorForwardVector.Normalize();
 
-	if (!Impulse.IsNearlyZero())
-	{
-		FVector impulseTargetLocation = ownerCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * Impulse.X) + (ownerCharacter->GetActorRightVector() * Impulse.Y);
-		ImpulseInstanceId = curveWarping->PlayLinearWarp(impulseTargetLocation, ImpulseDuration);
+				FVector targetLocation = ownerActor->GetActorLocation() + (HorizontalPower * ownerActor->GetActorForwardVector() * -1.f);
+				
+				if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &UKMAbilityBlow::OnCurveWarpingInterrupt))
+				{
+					curveWarping->GetInteruptDelegate().AddDynamic(this, &UKMAbilityBlow::OnCurveWarpingInterrupt);
+				}
+				CurveWapingInstanceId = curveWarping->PlayCurveWarping(CustomMovementMode, BlowCurve, targetLocation, Duration, VerticalPower / 100.F, false);
+			}
+
+			if (!Impulse.IsNearlyZero())
+			{
+				FVector impulseTargetLocation = ownerActor->GetActorLocation() + (ownerActor->GetActorForwardVector() * Impulse.X) + (ownerActor->GetActorRightVector() * Impulse.Y);
+				ImpulseInstanceId = curveWarping->PlayLinearWarp(impulseTargetLocation, ImpulseDuration);
+			}
+		}
 	}
-	
 	OnActivated();
 }
 
@@ -131,29 +142,29 @@ void UKMAbility::OnActivated_Implementation()
 
 void UKMAbility::Deactivate(bool bCancel)
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
-
 	UEMMartialArts* martialArts = GetMartialArts();
 	check(IsValid(martialArts));
 
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	check(IsValid(curveWarping));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	StopMartialArts();
-
-	if (bIsClearCurve)
+	if(IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
 	{
-		if (CurveWapingInstanceId != INDEX_NONE)
+		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarping();
+		if (bIsClearCurve && IsValid(curveWarping))
 		{
-			curveWarping->ClearCurveWarping(CustomMovementMode, CurveWapingInstanceId);
-		}
+			if (CurveWapingInstanceId != INDEX_NONE)
+			{
+				curveWarping->ClearCurveWarping(CustomMovementMode, CurveWapingInstanceId);
+			}
 
-		if (ImpulseInstanceId != INDEX_NONE)
-		{
-			curveWarping->StopLinearWarp(ImpulseInstanceId);
+			if (ImpulseInstanceId != INDEX_NONE)
+			{
+				curveWarping->StopLinearWarp(ImpulseInstanceId);
+			}
 		}
 	}
+	StopMartialArts();
 	OnDeacivated(bCancel);
 }
 
@@ -171,16 +182,18 @@ void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta
 
 void UKMAbility::PlayMartialArts(TSharedPtr<UE::Anim::IAnimNotifyEventContextDataInterface> newContextData, float newRate, bool bLooping)
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	if (!IsValid(ownerCharacter))
+	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if (!pawnInterface)
 	{
 		return;
 	}
-	UEMMartialArtsComponent* martialArtsComponent = ownerCharacter->GetMartialArtsComponent();
+	
+	UKMMartialArtsComponent* martialArtsComponent = pawnInterface->GetMartialArtsComponent();
 	if (!IsValid(martialArtsComponent))
 	{
 		return;
 	}
+	
 	UEMMartialArts* martialArts = GetMartialArts();
 	if (!IsValid(martialArts))
 	{
@@ -220,16 +233,18 @@ void UKMAbility::K2_OnMartialArtsEnd_Implementation(int instanceId)
 
 void UKMAbility::StopMartialArts()
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	if (!IsValid(ownerCharacter))
+	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if (!pawnInterface)
 	{
 		return;
 	}
-	UEMMartialArtsComponent* martialArtsComponent = ownerCharacter->GetMartialArtsComponent();
+	
+	UKMMartialArtsComponent* martialArtsComponent = pawnInterface->GetMartialArtsComponent();
 	if (!IsValid(martialArtsComponent))
 	{
 		return;
 	}
+	
 	UEMMartialArts* martialArts = GetMartialArts();
 	if (!IsValid(martialArts))
 	{
@@ -405,112 +420,117 @@ void UKMAbility::Impact(const FTransform& newImpactTransform)
 
 void UKMAbility::OnImpact_Implementation(const FTransform& newImpactTransform)
 {
-	
 }
 
 FVector UKMAbility::GetOffsetAlongOwnerDirection(const FVector direction, float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	FVector result = ownerCharacter->GetActorLocation() + (direction * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? ownerCharacter->GetActorLocation().Z : result.Z);	
+	FVector result = ownerActor->GetActorLocation() + (direction * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? ownerActor->GetActorLocation().Z : result.Z);	
 }
 
 FVector UKMAbility::GetOffsetAlongOwnerForward(float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 	
-	return GetOffsetAlongOwnerDirection(ownerCharacter->GetActorForwardVector(), offsetDistance, weight, bIgnoreZ);
+	return GetOffsetAlongOwnerDirection(ownerActor->GetActorForwardVector(), offsetDistance, weight, bIgnoreZ);
 }
 
 FVector UKMAbility::GetOffsetAlongTargetForward(float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* targetCharacter = GetTargetCharacter();
-	check(IsValid(targetCharacter));
+	AActor* targetActor = GetTargetActor();
+	check(IsValid(targetActor));
 
-	FVector result = targetCharacter->GetActorLocation() + (targetCharacter->GetActorForwardVector() * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+	FVector result = targetActor->GetActorLocation() + (targetActor->GetActorForwardVector() * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOffsetToTargetByOwnerForward(float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* targetCharacter = GetTargetCharacter();
-	check(IsValid(targetCharacter));
+	AActor* targetActor = GetTargetActor();
+	check(IsValid(targetActor));
 
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	FVector result = targetCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+	FVector result = targetActor->GetActorLocation() + (ownerActor->GetActorForwardVector() * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOffsetToTargetByOwnerForward2D(FVector2D offset, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* targetCharacter = GetTargetCharacter();
-	check(IsValid(targetCharacter));
+	AActor* targetActor = GetTargetActor();
+	check(IsValid(targetActor));
 
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	FVector result = targetCharacter->GetActorLocation() + (ownerCharacter->GetActorForwardVector() * offset.X * weight) + (ownerCharacter->GetActorRightVector() * offset.Y * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+	FVector result = targetActor->GetActorLocation() + (ownerActor->GetActorForwardVector() * offset.X * weight) + (ownerActor->GetActorRightVector() * offset.Y * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOffsetOwnerAlongTargetDirection(float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	AKMCharacter* targetCharacter = GetTargetCharacter();
-	if(!IsValid(targetCharacter))
+	AActor* targetActor = GetTargetActor();
+	if(!IsValid(targetActor))
 	{
-		return ownerCharacter->GetActorLocation(); 
+		return ownerActor->GetActorLocation(); 
 	}
 	
-	FVector targetToOwner = targetCharacter->GetActorLocation() - ownerCharacter->GetActorLocation();
+	FVector targetToOwner = targetActor->GetActorLocation() - ownerActor->GetActorLocation();
 	targetToOwner.Normalize();
 
-	FVector result = ownerCharacter->GetActorLocation() + (targetToOwner * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+	FVector result = ownerActor->GetActorLocation() + (targetToOwner * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ) const
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
 
-	AKMCharacter* targetCharacter = GetTargetCharacter();
-	if(!IsValid(targetCharacter))
+	AActor* targetActor = GetTargetActor();
+	if(!IsValid(targetActor))
 	{
-		return ownerCharacter->GetActorLocation(); 
+		return ownerActor->GetActorLocation(); 
 	}
 	
-	FVector targetToOwner = ownerCharacter->GetActorLocation() - targetCharacter->GetActorLocation();
+	FVector targetToOwner = ownerActor->GetActorLocation() - targetActor->GetActorLocation();
 	targetToOwner.Normalize();
 
-	FVector result = targetCharacter->GetActorLocation() + (targetToOwner * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetCharacter->GetActorLocation().Z : result.Z);
+	FVector result = targetActor->GetActorLocation() + (targetToOwner * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOwnerFootLocation(float offsetHeight) const
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
-
-	FVector footLocation = ownerCharacter->GetActorLocation();
-	footLocation.Z -= ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + offsetHeight;
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
+	
+	FVector footLocation = ownerActor->GetActorLocation();
+	if (ACharacter* ownerCharacter = Cast<ACharacter>(ownerActor))
+	{
+		footLocation.Z -= ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + offsetHeight;
+	}
 
 	return footLocation;
 }
 
 void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetLocation)
 {
-	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
+	AKMCharacter* ownerActor = GetOwnerCharacter();
+	if(!IsValid(ownerActor))
+	{
+		return;
+	}
 
-	UEMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerActor->GetCurveWarping();
 	check(IsValid(curveWarping));
 
 	curveWarping->AddOrUpdateWarpTargetFromLocation(targetName, targetLocation);
@@ -519,9 +539,12 @@ void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetL
 void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ)
 {
 	AKMCharacter* character = GetOwnerCharacter();
-	check(IsValid(character));
+	if(!IsValid(character))
+	{
+		return;
+	}
 
-	UEMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
@@ -530,7 +553,10 @@ void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurv
 UAnimMontage* UKMAbility::GetOwnerAnimationTag(FGameplayTag tag) const
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	if(!IsValid(ownerCharacter))
+	{
+		return nullptr;
+	}
 	
 	return ownerCharacter->GetAnimationTag(tag);
 }

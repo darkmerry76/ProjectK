@@ -1,5 +1,6 @@
 #include "KMCharacterMovementComponent.h"
 #include "EMCurveWarpingComponent.h"
+#include "KMCurveWarpingComponent.h"
 #include "Animation/AnimSequenceHelpers.h"
 #include "Animation/KMAnimInstance.h"
 #include "Components/CapsuleComponent.h"
@@ -42,7 +43,7 @@ void UKMCharacterMovementComponent::BeginPlay()
 		return;
 	}
 	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
 		return;
@@ -64,7 +65,7 @@ void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 		return;
 	}
 	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
 		return;
@@ -287,7 +288,7 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 i
 		return;
 	}
 
-	UEMCurveWarpingComponent* ownerCurveWarping = Cast<UEMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
+	UKMCurveWarpingComponent* ownerCurveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
 	if (!IsValid(ownerCurveWarping))
 	{
 		return;
@@ -424,10 +425,11 @@ void UKMCharacterMovementComponent::PhysWalking(float deltaTime, int32 iteration
 		
 		Velocity = ownerCharacter->GetActorForwardVector() * 700.f * movementInput;
 		CustomMovementWalking(FVector(moveDirection.X, moveDirection.Y, GetGravityZ() * deltaTime * 0.5f), deltaTime, iterations);
-		return;
 	}
-	
-	Super::PhysWalking(deltaTime, iterations);
+	else
+	{
+		Super::PhysWalking(deltaTime, iterations);
+	}
 }
 
 void UKMCharacterMovementComponent::CustomJump()
@@ -443,7 +445,7 @@ void UKMCharacterMovementComponent::CustomJump()
 		return;
 	}
 
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
 		return;
@@ -476,7 +478,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 		return;
 	}
 
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	if (!IsValid(curveWarping))
 	{
 		return;

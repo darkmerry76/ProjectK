@@ -105,12 +105,6 @@ public:
 	bool UseGuardSkill();
 	bool UseGuardSkill_Release();
 
-	UFUNCTION(BlueprintCallable)
-	void AddAggroTarget(class UKMCharacterInstance* attacker);
-
-	UFUNCTION(BlueprintPure)
-	const class UKMCharacterInstance* GetBestAggroTarget() const;
-
 	virtual void OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue) override;
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent) override;
 	virtual void OnDeath() override;
@@ -169,9 +163,6 @@ protected:
 
 	TSharedPtr<FKMLockOnCluster> LockonTarget;
 	
-	UPROPERTY()
-	TSet<TWeakObjectPtr<UKMCharacterInstance>> AggroTarget;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<EKMDamagePowerType, TSubclassOf<class UCameraShakeBase>> InflictCameraShakes;
 

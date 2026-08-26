@@ -1219,7 +1219,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerGameObjectInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill start:"));
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill start:"));
 	}
 	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
@@ -1228,7 +1228,7 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerGameObjectInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect start:"));
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect start:"));
 	}
 }
 
@@ -1248,7 +1248,7 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerGameObjectInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill end:"));
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill end:"));
 	}
 	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
@@ -1257,7 +1257,7 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerGameObjectInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMCharacterInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect end:"));
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect end:"));
 	}
 }
 

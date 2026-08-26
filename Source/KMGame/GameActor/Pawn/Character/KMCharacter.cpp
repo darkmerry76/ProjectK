@@ -88,9 +88,14 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 	}
 }
 
-UEMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
+UKMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
 {
 	return MartialArtsComponent;
+}
+
+UKMCurveWarpingComponent* AKMCharacter::GetCurveWarping() const
+{
+	return CurveWarping;
 }
 
 void AKMCharacter::SetMirror(bool bMirror)

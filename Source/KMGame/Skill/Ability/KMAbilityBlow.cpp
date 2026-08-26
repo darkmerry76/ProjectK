@@ -1,5 +1,6 @@
 #include "KMAbilityBlow.h"
 #include "EMCurveWarpingComponent.h"
+#include "Component/KMCurveWarpingComponent.h"
 #include "Core/KMGameplayTag.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
@@ -44,9 +45,12 @@ void UKMAbilityBlow::Deactivate(bool bCancel)
 	Super::Deactivate(bCancel);
 	
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	if(!IsValid(ownerCharacter))
+	{
+		return;
+	}
 
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
 	check(IsValid(curveWarping));
 
 	curveWarping->GetInteruptDelegate().RemoveAll(this);

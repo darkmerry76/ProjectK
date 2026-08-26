@@ -285,7 +285,6 @@ public:
 	virtual void Tick(float deltaSeconds) override;
 	void Apply(float deltaSeconds);
 
-	double CalculateParameter(class UKMCharacterInstance* target, double statValue, float deltaSeconds) const;
-	
-	void CalculateParameter(class UKMCharacterInstance* target, float deltaSeconds);
+	double CalculateParameter(const class UKMGameObjectInstance* targetGameObjectInstance, double statValue, float deltaSeconds) const;
+	void CalculateParameter(const class UKMGameObjectInstance* targetGameObjectInstance, float deltaSeconds);
 };

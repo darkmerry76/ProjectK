@@ -106,13 +106,19 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetOwnerCharacter() const;
+
+	UFUNCTION(BlueprintPure)
+	class UKMGameObjectInstance* GetTargetGameObjectInstance() const;
 	
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetTargetCharacterInstance() const;
 
 	UFUNCTION(BlueprintPure)
 	class UEMMartialArtsComponent* GetMartialArtsComponent() const;
-	
+
+	UFUNCTION(BlueprintPure)
+	class AActor* GetTargetActor() const;
+
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetTargetCharacter() const;
 
