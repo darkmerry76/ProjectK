@@ -3,6 +3,8 @@
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
+#include "Skill/KMSkillTypes.h"
+#include "Tables/Generated/KMTable_SkillEffect.h"
 
 AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -45,4 +47,15 @@ void AKMInteractiveActorBase::PossessedByGameObjectInstance(UKMGameObjectInstanc
 	InteractiveInstance = Cast<UKMInteractiveInstance>(newGameObjectInstance);
 	check(InteractiveInstance.IsValid());
 	InteractiveInstance->SetOwnerActor(this);
+}
+
+void AKMInteractiveActorBase::OnImpact(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag)
+{
+	check(skillEffectInstance.IsValid() && skillEffectInstance->GetEffectTableRecord());
+	Receive_OnImpact(skillEffectInstance->GetEffectTableRecord()->Id, hitClosestPoint, hitTag);
+}
+
+void AKMInteractiveActorBase::OnDeath()
+{
+	Receive_OnDeath();
 }

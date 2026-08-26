@@ -100,6 +100,16 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsAir() const;
+\
+	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Receive_OnImpact(const FName& skillEffectName, const FVector& hitClosestPoint, const FName& hitTag);
+	
+	virtual void OnDeath() override;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Receive_OnDeath();
 	
 protected:
 	virtual void BeginPlay() override;

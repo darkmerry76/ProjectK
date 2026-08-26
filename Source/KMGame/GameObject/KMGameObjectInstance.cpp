@@ -183,6 +183,11 @@ void UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstanc
 			FTransform impactTransform;
 			impactTransform.SetLocation(hitClosestPoint);
 			abilityEffect->Impact(impactTransform);
+
+			if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(abilityEffect->GetOwnerActor()))
+			{
+				pawnInterface->OnImpact(skillEffectInstance, hitClosestPoint, hitTag);
+			}
 		}
 		
 		if (HitPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
@@ -365,7 +370,12 @@ void UKMGameObjectInstance::OnDeath()
 			//}
 		}
 	}
-	
+
+	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	{
+		pawnInterface->OnDeath();			
+	}
+
 	GetDeathDelegate().Broadcast(this);
 }
 

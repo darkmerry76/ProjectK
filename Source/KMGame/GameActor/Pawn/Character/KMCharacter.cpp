@@ -14,6 +14,7 @@
 #include "Skill/KMSkillHandler.h"
 #include "Sound/KMSoundSetTag.h"
 #include "Tables/Generated/KMTable_Item.h"
+#include "Tables/Generated/KMTable_SkillEffect.h"
 
 AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 	Super(objectInitializer.SetDefaultSubobjectClass<UKMSkeletalMeshComponent>(ACharacter::MeshComponentName).
@@ -86,6 +87,17 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 			}
 		}
 	}
+}
+
+void AKMCharacter::OnImpact(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag)
+{
+	check(skillEffectInstance.IsValid() && skillEffectInstance->GetEffectTableRecord());
+	Receive_OnImpact(skillEffectInstance->GetEffectTableRecord()->Id, hitClosestPoint, hitTag);	
+}
+
+void AKMCharacter::OnDeath()
+{
+	Receive_OnDeath();
 }
 
 UKMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const

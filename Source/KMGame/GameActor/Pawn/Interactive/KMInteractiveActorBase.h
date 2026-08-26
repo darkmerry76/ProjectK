@@ -25,6 +25,16 @@ protected:
 public:
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) override;
 
+	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
+	
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnImpact")
+	void Receive_OnImpact(const FName& skillEffectName, const FVector& hitClosestPoint, const FName& hitTag);
+
+	virtual void OnDeath() override;
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnDeath")
+	void Receive_OnDeath();
+
 	UFUNCTION(BlueprintPure)
 	class UKMInteractiveInstance* GetInteractiveInstance() const;
 
@@ -34,7 +44,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarping() const override;
 
-
-protected:
+	UFUNCTION(BlueprintPure)
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
 };
