@@ -33,6 +33,9 @@ struct FKMTable_ObjectRow : public FEM_TableBaseRow
 	EKMObjectType        Type = { EKMObjectType::Hero };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 IsCarryable = { false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                scale = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

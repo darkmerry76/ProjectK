@@ -6,6 +6,7 @@
 #include "Animation/AnimSequence.h"
 #include "Animation/AnimSequence.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
+#include "Tables/Generated/KMTable_Object.h"
 #include "Util/KMUtil.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffectTransition.h"
@@ -361,6 +362,11 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	}
 
 	if (skillConditionRow->LockonType != EKMTargetLockonType::None && !IsValid(targetGameObjectInstance))
+	{
+		return -1.f;
+	}
+
+	if (skillConditionRow->Carryable && !targetGameObjectInstance->GetTable()->IsCarryable)
 	{
 		return -1.f;
 	}

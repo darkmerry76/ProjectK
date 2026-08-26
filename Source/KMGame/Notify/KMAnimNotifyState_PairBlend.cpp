@@ -196,4 +196,6 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			(*pairContext)->FollowerCharacterInstance->RemoveTimeDilation(TEXT("Follow"));
 		}
 	}
+
+	PairContexts.Remove(meshComp);
 }

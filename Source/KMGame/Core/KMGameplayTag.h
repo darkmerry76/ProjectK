@@ -11,6 +11,10 @@ public:
 	static const FGameplayTag Block_Tag;
 	static const FGameplayTag Block_Control_Tag;
 	static const FGameplayTag Block_Control_Move_Tag;
+	static const FGameplayTag Block_Control_Walk_Tag;
+	static const FGameplayTag Block_Control_Run_Tag;
+	static const FGameplayTag Block_Control_Jump_Tag;
+	static const FGameplayTag Block_Control_Dash_Tag;
 	static const FGameplayTag Block_Control_Rotation_Tag;
 
 	static const FGameplayTag Event_Hit_Tag;

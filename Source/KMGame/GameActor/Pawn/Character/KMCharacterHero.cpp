@@ -59,7 +59,8 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 
 void AKMCharacterHero::StartCustomJump()
 {
-	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
+	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag) ||
+		GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Jump_Tag))
 	{
 		return;
 	}

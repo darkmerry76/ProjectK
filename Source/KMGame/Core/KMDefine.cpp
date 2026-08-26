@@ -30,9 +30,9 @@ FKMSkillKey::FKMSkillKey(const FKMSkillKeyBase& otherKey)
 namespace KMGame
 {
 
-UEnum* GetCharacterTypeEnum()
+UEnum* GetObjectTypeEnum()
 {
-	static UEnum* resultEnum = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMCharacterType"));
+	static UEnum* resultEnum = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMObjectType"));
 	return resultEnum;
 }
 	

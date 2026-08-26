@@ -148,6 +148,7 @@ enum class EKMAnimSlotType : uint8
 {
 	DefaultSlot,
 	OverrideSlot,
+	UpperSlot,
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -219,7 +220,7 @@ struct KMGAME_API FKMSkillKey : public FKMSkillKeyBase
 
 namespace KMGame
 {
-	KMGAME_API UEnum* GetCharacterTypeEnum();
+	KMGAME_API UEnum* GetObjectTypeEnum();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

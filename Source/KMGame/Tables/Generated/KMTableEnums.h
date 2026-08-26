@@ -88,6 +88,7 @@ enum class EKMSkillTargetType : uint8
 	Self = 1 , // 자신
 	Hero = 2 , // 히어로
 	Monster = 3 , // 몬스터
+	Object = 4 , // 사물
 };
 
 // 스킬 적용대상

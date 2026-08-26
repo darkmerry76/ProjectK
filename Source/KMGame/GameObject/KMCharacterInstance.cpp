@@ -1,7 +1,5 @@
 #include "KMCharacterInstance.h"
-
 #include <Tables/Generated/KMTable_Object_Beast.h>
-
 #include "Animation/KMAnimInstance.h"
 #include "Camera/KMPlayerCameraManager.h"
 #include "Component/KMCharacterMovementComponent.h"
@@ -14,7 +12,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
-#include "Skill/Ability/KMAbilityEffect.h"
 #include "Skill/Ability/KMAbilitySkillDirectionTag.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
@@ -23,7 +20,6 @@
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
 #include "Tables/Generated/KMTable_Object.h"
 #include "Tables/Generated/KMTable_Object_Character.h"
-#include "Tables/Generated/KMTable_SkillEffect.h"
 #include "Tables/Generated/KMTable_SkillSet.h"
 #include "Util/KMUtil.h"
 
@@ -603,6 +599,11 @@ bool UKMCharacterInstance::UseSkill(const FName skillName, int32 skillLevel)
 
 void UKMCharacterInstance::UseSkillDash(float dashDirection)
 {
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Dash_Tag))
+	{
+		return;
+	}
+	
 	if (TimingCancel.IsValid() && TimingCancel->IsComplete())
 	{
 		TimingCancel = nullptr;
@@ -783,6 +784,10 @@ bool UKMCharacterInstance::IsRun() const
 	{
 		return true;
 	}
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Run_Tag))
+	{
+		return false;
+	}
 	return bIsRun;
 }
 
@@ -794,6 +799,10 @@ void UKMCharacterInstance::Walk()
 bool UKMCharacterInstance::IsWalk() const
 {
 	if (bIsBeast)
+	{
+		return false;
+	}
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Walk_Tag))
 	{
 		return false;
 	}

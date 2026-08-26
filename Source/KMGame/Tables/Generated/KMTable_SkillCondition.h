@@ -39,6 +39,9 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FName>        ReadTag;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 Carryable = { false };
+
 	// 페어여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 PairEff = { false };

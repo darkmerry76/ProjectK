@@ -121,13 +121,13 @@ void FKMCharacterOutlinerHierarchy::Init()
 	AllItems.Empty();
 	ParentItems.Empty();
 
-	UEnum* characterTypeEnum = KMGame::GetCharacterTypeEnum();
+	UEnum* objectTypeEnum = KMGame::GetObjectTypeEnum();
 
-	for (int32 enumIndex = 0; enumIndex < characterTypeEnum->NumEnums() - 1; ++enumIndex)
+	for (int32 enumIndex = 0; enumIndex < objectTypeEnum->NumEnums() - 1; ++enumIndex)
 	{
-		FString characterEnumName = characterTypeEnum->GetNameStringByIndex(enumIndex);
+		FString characterEnumName = objectTypeEnum->GetNameStringByIndex(enumIndex);
 
-		EKMObjectType objectType = static_cast<EKMObjectType>(characterTypeEnum->GetValueByIndex(enumIndex));
+		EKMObjectType objectType = static_cast<EKMObjectType>(objectTypeEnum->GetValueByIndex(enumIndex));
 		
 		TSharedPtr<FKMCharacterOutlinerGroupTreeItem> characterGroupItem =
 			AddItem<FKMCharacterOutlinerGroupTreeItem>(FFolder(Mode->GetRootObject(), *characterEnumName),nullptr, true);

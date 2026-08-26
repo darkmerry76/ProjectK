@@ -48,20 +48,20 @@ FString SKMCharacterOutliner::GetNameRowText(const IEMOutlinerTreeItem& treeItem
 
 FString SKMCharacterOutliner::GetTypeRowText(const IEMOutlinerTreeItem& treeItem) const
 {
-	static UEnum* characterTypeEnum = KMGame::GetCharacterTypeEnum();
-	check(IsValid(characterTypeEnum));
+	static UEnum* objectTypeEnum = KMGame::GetObjectTypeEnum();
+	check(IsValid(objectTypeEnum));
 
 	if (treeItem.IsA<FKMCharacterOutlinerTreeItem>())
 	{
 		const FKMCharacterOutlinerTreeItem* characterItem = reinterpret_cast<const FKMCharacterOutlinerTreeItem*>(&treeItem);
 		if (characterItem->GetCharacterTable())
 		{
-			return characterTypeEnum->GetNameStringByValue(static_cast<int64>(characterItem->GetCharacterTable()->Type));
+			return objectTypeEnum->GetNameStringByValue(static_cast<int64>(characterItem->GetCharacterTable()->Type));
 		}
 	}
 	else if (treeItem.IsA<FKMCharacterOutlinerBeastTreeItem>())
 	{
-		return characterTypeEnum->GetNameStringByValue(static_cast<int64>(EKMObjectType::Beast));
+		return objectTypeEnum->GetNameStringByValue(static_cast<int64>(EKMObjectType::Beast));
 	}
 	return TEXT("");
 }
