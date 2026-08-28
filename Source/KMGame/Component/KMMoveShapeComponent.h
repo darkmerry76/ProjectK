@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Component/EMAttachedBlendingComponent.h"
-#include "KMAttachedBlendingComponent.generated.h"
+#include "Component/EMMoveShapeComponent.h"
+#include "KMMoveShapeComponent.generated.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UKMAttachedBlendingComponent
+// UKMMoveShapeComponent
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
-class KMGAME_API UKMAttachedBlendingComponent : public UEMAttachedBlendingComponent
+class KMGAME_API UKMMoveShapeComponent : public UEMMoveShapeComponent
 {
 	GENERATED_UCLASS_BODY()
 };

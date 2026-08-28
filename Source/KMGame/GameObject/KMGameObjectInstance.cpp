@@ -333,11 +333,10 @@ void UKMGameObjectInstance::OnStatChange(EKMStatFactorType factorType, float pre
 	
 	if (factorType == EKMStatFactorType::HpCurr)
 	{
-		if (IsDead() == false)
+		if (!IsDead())
 		{
 			if (newValue <= 0)
 			{
-				check(IsDead() == false);
 				OnDeath();
 			}
 		}

@@ -15,7 +15,7 @@ struct KMGAME_API FKMBlockReflectionData
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnHitDelegate, const TArray<FHitResult>& hitResults);
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
 class KMGAME_API UKMCharacterMovementComponent : public UEMCharacterMovementComponent, public IEMCurveWarpingInterface
 {
 	GENERATED_UCLASS_BODY()

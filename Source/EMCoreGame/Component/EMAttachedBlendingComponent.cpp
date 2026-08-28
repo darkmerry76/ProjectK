@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UEMAttachedBlendingComponent::UEMAttachedBlendingComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, const FTransform& offsetTransform, float newDuration)
@@ -26,7 +26,7 @@ void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentCompo
 void UEMAttachedBlendingComponent::StopBlending()
 {
 	AttachedParentComponent = nullptr;
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UEMAttachedBlendingComponent::UpdateBlending(float deltaTime)

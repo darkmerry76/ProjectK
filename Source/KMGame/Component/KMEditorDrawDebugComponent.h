@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "KMEditorDrawDebugComponent.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
 class KMGAME_API UKMEditorDrawDebugComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()

@@ -55,7 +55,7 @@ public:
 
 	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
 
-	virtual class UCapsuleComponent* GetMasterCapsuleComponent() const override;
+	virtual class UPrimitiveComponent* GetMovementShapeComponent() const override;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
 

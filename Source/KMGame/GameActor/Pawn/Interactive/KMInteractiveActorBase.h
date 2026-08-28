@@ -11,7 +11,7 @@ class KMGAME_API AKMInteractiveActorBase : public APawn, public IKMPawnInterface
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TObjectPtr<class UCapsuleComponent> CapsuleComponent;
+	TObjectPtr<class UKMMoveShapeComponent> MoveShapeComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UKMPawnMovementComponent> MovementComponent;
@@ -44,7 +44,7 @@ public:
 	class UKMInteractiveInstance* GetInteractiveInstance() const;
 
 	UFUNCTION(BlueprintPure)
-	virtual class UCapsuleComponent* GetMasterCapsuleComponent() const override;
+	virtual class UPrimitiveComponent* GetMovementShapeComponent() const override;
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;

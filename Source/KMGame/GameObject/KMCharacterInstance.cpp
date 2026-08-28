@@ -912,7 +912,7 @@ void UKMCharacterInstance::RemoveGameplayTag(FGameplayTag Tag)
 	{
 		if (IsValid(SkillHandler))
 		{
-			SkillHandler->ActivatedNextComboSkill();
+			SkillHandler->ActivatedNextComboSkill(LockonTarget);
 		}
 	}
 }

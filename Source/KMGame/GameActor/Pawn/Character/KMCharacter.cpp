@@ -101,7 +101,7 @@ void AKMCharacter::OnDeath()
 	Receive_OnDeath();
 }
 
-UCapsuleComponent* AKMCharacter::GetMasterCapsuleComponent() const
+UPrimitiveComponent* AKMCharacter::GetMovementShapeComponent() const
 {
 	return ACharacter::GetCapsuleComponent();
 }

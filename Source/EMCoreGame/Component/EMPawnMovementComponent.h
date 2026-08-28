@@ -5,7 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EMPawnMovementComponent.generated.h"
 
-UCLASS(Blueprintable, BlueprintType, abstract)
+UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
 class EMCOREGAME_API UEMPawnMovementComponent : public UPawnMovementComponent, public IEMCurveWarpingInterface
 {
 	GENERATED_UCLASS_BODY()

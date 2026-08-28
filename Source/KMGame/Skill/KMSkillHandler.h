@@ -117,7 +117,7 @@ public:
 	}
 
 	void TriggerTransitionSkillEffect(const FGameplayTag& effectTag);
-	void ActivatedNextComboSkill();
+	void ActivatedNextComboSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
 
 	UFUNCTION(BlueprintPure)
 	int32 GetSkillOverlapCount(const FName& skillId) const;

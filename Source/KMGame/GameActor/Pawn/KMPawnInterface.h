@@ -15,8 +15,8 @@ class KMGAME_API IKMPawnInterface
 
 public:
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const = 0;
-	
-	virtual class UCapsuleComponent* GetMasterCapsuleComponent() const = 0;
+
+	virtual class UPrimitiveComponent* GetMovementShapeComponent() const = 0;
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const = 0;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
 

@@ -76,14 +76,17 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 	newCharacterInstance->SetDepthSort(transform.GetLocation().X);
 	newCharacterInstance->SetTable(characterTable);
 	newCharacterInstance->SetTransform(transform);
-	
+
+	FTransform finalTransform = transform;
+	finalTransform.SetScale3D(FVector(characterTable->scale, characterTable->scale, characterTable->scale));
+
 	AKMCharacter* newCharacter = GetWorld()->SpawnActorDeferred<AKMCharacter>(
-		characterPDA->CharacterClass, transform, nullptr, nullptr);
+		characterPDA->CharacterClass, finalTransform, nullptr, nullptr);
 	check(IsValid(newCharacter));
 
 	newCharacter->SetMirror(bFlipY);
 	newCharacter->PossessedByGameObjectInstance(newCharacterInstance);
-	newCharacter->FinishSpawning(transform, false);
+	newCharacter->FinishSpawning(finalTransform, false);
 	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	AddGameObject(newCharacterInstance);
@@ -105,12 +108,15 @@ UKMInteractiveInstance* UKMGameObjectSubsystem::SpawnInteractiveObject(FName int
 	UKMInteractiveInstance* newInteractiveInstance = NewObject<UKMInteractiveInstance>(this, interactivePDA->InstanceClass);
 	newInteractiveInstance->SetTable(interactiveTableRow);
 
+	FTransform finalTransform = transform;
+	finalTransform.SetScale3D(FVector(interactiveTableRow->scale, interactiveTableRow->scale, interactiveTableRow->scale));
+
 	AKMInteractiveActorBase* newInteractiveActor = GetWorld()->SpawnActorDeferred<AKMInteractiveActorBase>(
-		interactivePDA->InteractiveClass, transform, nullptr, nullptr);
+		interactivePDA->InteractiveClass, finalTransform, nullptr, nullptr);
 	check(IsValid(newInteractiveActor));
 
 	newInteractiveActor->PossessedByGameObjectInstance(newInteractiveInstance);
-	newInteractiveActor->FinishSpawning(transform, false);
+	newInteractiveActor->FinishSpawning(finalTransform, false);
 	
 	AddGameObject(newInteractiveInstance);
 

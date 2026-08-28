@@ -1,21 +1,22 @@
 #include "KMInteractiveActorBase.h"
-
 #include "Component/KMAttachedBlendingComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Component/KMMoveShapeComponent.h"
 #include "Component/KMPawnMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
 
 AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
-	SetRootComponent(CapsuleComponent);
+	MoveShapeComponent = CreateDefaultSubobject<UKMMoveShapeComponent>(TEXT("Capsule"));
+	SetRootComponent(MoveShapeComponent);
 
 	MovementComponent = CreateDefaultSubobject<UKMPawnMovementComponent>(TEXT("Movement"));
-	MovementComponent->SetUpdatedComponent(CapsuleComponent);
+	MovementComponent->SetUpdatedComponent(MoveShapeComponent);
 
 	AttachedComponent = CreateDefaultSubobject<UKMAttachedBlendingComponent>(TEXT("AttachedBlending"));
 	AttachedComponent->SetupAttachment(GetRootComponent());
@@ -77,9 +78,9 @@ FBoxSphereBounds AKMInteractiveActorBase::GetMasterBounds() const
 	return FBoxSphereBounds();
 }
 
-UCapsuleComponent* AKMInteractiveActorBase::GetMasterCapsuleComponent() const
+UPrimitiveComponent* AKMInteractiveActorBase::GetMovementShapeComponent() const
 {
-	return 	CapsuleComponent;
+	return 	MoveShapeComponent;
 }
 
 UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedComponent() const

@@ -5,6 +5,7 @@
 #include "System/KMGameObjectSubsystem.h"
 #include "Tables/Generated/KMTable_Narrative_Movie.h"
 #include "EMMartialArtsComponent.h"
+#include "Component/KMMartialArtsComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Util/KMUtil.h"
 

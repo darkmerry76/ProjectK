@@ -7,12 +7,12 @@
 #include "Animation/AnimSequence.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Tables/Generated/KMTable_Object.h"
-#include "Util/KMUtil.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffectTransition.h"
 #include "Tables/Generated/KMTable_SkillSet_Hero.h"
 #include "Tables/Generated/KMTable_Skill.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
+#include "Util/KMUtil.h"
 
 UKMSkillHandler::UKMSkillHandler(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -507,33 +507,6 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	return resultScore; 
 }
 
-void UKMSkillHandler::ActivatedNextComboSkill()
-{
-	if (!ComboData.IsValid())
-	{
-		return;
-	}
-
-	if (ComboData.CurrentCombo == ComboData.NextCombo)
-	{
-		return;
-	}
-
-	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(ComboData.skillSet->Skills[ComboData.NextCombo], 0), ComboData.LockOnCluster);
-	if (!newSkillInstance.IsValid())
-	{
-		return;
-	}
-
-	if (ComboData.SkillInstance.IsValid())
-	{
-		ComboData.SkillInstance.Pin()->SetForceComplete(true);
-	}
-
-	ComboData.CurrentCombo = ComboData.NextCombo;
-	ComboData.SkillInstance = newSkillInstance;
-}
-
 TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 {
 	if (ComboData.SkillInstance.IsValid())
@@ -652,7 +625,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 
 	ComboData.LockOnCluster = MakeShared<FKMLockOnCluster>(*lockOnCluster.Get());
 	
-	ActivatedNextComboSkill();
+	ActivatedNextComboSkill(ComboData.LockOnCluster);
 	
 	if (!ComboData.SkillInstance.IsValid())
 	{
@@ -661,6 +634,48 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 	}
 
 	return ComboData.SkillInstance.Pin();
+}
+
+void UKMSkillHandler::ActivatedNextComboSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
+{
+	if (!ComboData.IsValid())
+	{
+		return;
+	}
+
+	if (ComboData.CurrentCombo == ComboData.NextCombo)
+	{
+		return;
+	}
+	
+	if (ComboData.LockOnCluster && IsValid(ComboData.LockOnCluster->GetBestTarget()) && ComboData.LockOnCluster->GetBestTarget()->IsDead())
+	{
+		ComboData.LockOnCluster = lockOnCluster;
+	}
+
+	if (!ComboData.LockOnCluster)
+	{
+		return;
+	}
+
+	if (!IsValid(lockOnCluster->GetBestTarget()))
+	{
+		return;
+	}
+
+	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(ComboData.skillSet->Skills[ComboData.NextCombo], 0), ComboData.LockOnCluster);
+	if (!newSkillInstance.IsValid())
+	{
+		return;
+	}
+
+	if (ComboData.SkillInstance.IsValid())
+	{
+		ComboData.SkillInstance.Pin()->SetForceComplete(true);
+	}
+
+	ComboData.CurrentCombo = ComboData.NextCombo;
+	ComboData.SkillInstance = newSkillInstance;
 }
 
 TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
