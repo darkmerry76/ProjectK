@@ -23,26 +23,26 @@ void UKMAbilityEffect::PostActivated()
 {
 	if (bIsDirectionFallow)
 	{
-		if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+		if (UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance())
 		{
-			FVector targetToDirection = GetOwnerCharacter()->GetActorLocation() - GetCasterCharacter()->GetActorLocation();
+			FVector targetToDirection = GetOwnerActor()->GetActorLocation() - GetCasterActor()->GetActorLocation();
 			targetToDirection.Z = 0.0f;
 			targetToDirection.Normalize();
-			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+			ownerGameObjectInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
 		}
 	}
 }
 
 void UKMAbilityEffect::Impact(const FTransform& newImpactTransform)
 {
-	if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+	if (UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerCharacterInstance())
 	{
-		if (AKMCharacter* ownerCharacter = ownerCharacterInstance->GetCharacter())
+		if (AActor* ownerActor = ownerGameObjectInstance->GetOwnerActor())
 		{
-			FVector targetToDirection = ownerCharacter->GetActorLocation() - newImpactTransform.GetLocation();
+			FVector targetToDirection = ownerActor->GetActorLocation() - newImpactTransform.GetLocation();
 			targetToDirection.Z = 0.0f;
 			targetToDirection.Normalize();
-			ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
+			ownerGameObjectInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * -1.f));
 		}
 	}
 	

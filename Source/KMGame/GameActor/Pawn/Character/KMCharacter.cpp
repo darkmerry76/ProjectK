@@ -4,6 +4,7 @@
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
@@ -20,11 +21,11 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 	Super(objectInitializer.SetDefaultSubobjectClass<UKMSkeletalMeshComponent>(ACharacter::MeshComponentName).
 		SetDefaultSubobjectClass<UKMCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	CurveWarping  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
+	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{
-		characterMovement->CustomMovementDelegate.AddDynamic(CurveWarping, &UEMCurveWarpingComponent::OnCustomMovement);
+		characterMovement->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
 	}
 
 	GetMesh()->SetCustomDepthStencilValue(1);
@@ -100,14 +101,19 @@ void AKMCharacter::OnDeath()
 	Receive_OnDeath();
 }
 
+UCapsuleComponent* AKMCharacter::GetMasterCapsuleComponent() const
+{
+	return ACharacter::GetCapsuleComponent();
+}
+
 UKMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
 {
 	return MartialArtsComponent;
 }
 
-UKMCurveWarpingComponent* AKMCharacter::GetCurveWarping() const
+UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const
 {
-	return CurveWarping;
+	return CurveWarpingComponent;
 }
 
 void AKMCharacter::SetMirror(bool bMirror)
@@ -142,7 +148,7 @@ UKMGameObjectInstance* AKMCharacter::GetGameObjectInstance() const
 		return nullptr;
 	}
 	return CharacterInstance.Get();
-};
+}
 
 void AKMCharacter::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
 {

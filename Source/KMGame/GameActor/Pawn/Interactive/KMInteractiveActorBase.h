@@ -5,16 +5,22 @@
 #include "KMInteractiveActorBase.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API AKMInteractiveActorBase : public AActor, public IKMPawnInterface
+class KMGAME_API AKMInteractiveActorBase : public APawn, public IKMPawnInterface
 {
 	GENERATED_UCLASS_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class USceneComponent> RootScene;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TObjectPtr<class UCapsuleComponent> CapsuleComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TObjectPtr<class UKMPawnMovementComponent> MovementComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TObjectPtr<class UKMAttachedBlendingComponent> AttachedComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMCurveWarpingComponent> CurveWarping;
+	TObjectPtr<class UKMCurveWarpingComponent> CurveWarpingComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
@@ -38,10 +44,13 @@ public:
 	class UKMInteractiveInstance* GetInteractiveInstance() const;
 
 	UFUNCTION(BlueprintPure)
+	virtual class UCapsuleComponent* GetMasterCapsuleComponent() const override;
+
+	UFUNCTION(BlueprintPure)
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
 
 	UFUNCTION(BlueprintPure)
-	virtual class UKMCurveWarpingComponent* GetCurveWarping() const override;
+	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
@@ -51,4 +60,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMAttachedBlendingComponent* GetAttachedComponent() const;
+
+protected:
+	virtual class UPawnMovementComponent* GetMovementComponent() const override;
 };

@@ -27,7 +27,7 @@ void UKMAbilitySkill::PostActivated()
 				targetToDirection.Z = 0.0f;
 				targetToDirection.Normalize();
 
-				ownerCharacterInstance->SetCharacterDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+				ownerCharacterInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
 			}
 		}
 	}

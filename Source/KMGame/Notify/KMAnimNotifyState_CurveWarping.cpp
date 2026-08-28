@@ -1,5 +1,6 @@
 #include "KMAnimNotifyState_CurveWarping.h"
 #include "EMCurveWarpingComponent.h"
+#include "Component/KMCurveWarpingComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMAnimNotifyState_CurveWarping::UKMAnimNotifyState_CurveWarping(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -26,7 +27,7 @@ void UKMAnimNotifyState_CurveWarping::NotifyBegin(USkeletalMeshComponent* meshCo
 		return;
 	}
 	
-	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UEMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	FTransform curveWarpingTransform = curveWarping->GetCurveWarpingTargetTransform(TargetLocationName);

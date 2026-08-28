@@ -100,6 +100,15 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	float GetTimeDilation() const;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void SetDirection(float direction, bool bForceRotate = false);
+
+	UFUNCTION(BlueprintPure)
+	virtual float GetDirection() const;
 	
 	UFUNCTION(BlueprintPure)
 	virtual bool IsDead() const;
@@ -200,4 +209,6 @@ protected:
 	
 	EKMDamagePowerType InflectPowerType = EKMDamagePowerType::None;
 	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
+
+	float Direction = 1.f;
 };

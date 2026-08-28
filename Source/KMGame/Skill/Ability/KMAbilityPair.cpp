@@ -28,7 +28,7 @@ void UKMAbilityPair::PostActivated()
 	
 	if (bIsDirectionFallow)
 	{
-		float movementCircularDirection = ownerCharacterInstance->GetCharacterDirection(); 
+		float movementCircularDirection = ownerCharacterInstance->GetDirection(); 
 		if (FMath::IsNearlyZero(ownerCharacter->GetLatestMoveInputVelocity().Size()))
 		{
 			movementCircularDirection = UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerCharacter->GetActorForwardVector() * DirectionWeight));
@@ -37,7 +37,7 @@ void UKMAbilityPair::PostActivated()
 		{
 			movementCircularDirection = UKMUtil::GetCircularAngle2D8Way(FVector2D(ownerCharacter->GetLatestMoveInputVelocity() * DirectionWeight));
 		}
-		ownerCharacterInstance->SetCharacterDirection(movementCircularDirection, bIsForceRotation);
+		ownerCharacterInstance->SetDirection(movementCircularDirection, bIsForceRotation);
 	}
 }
 

@@ -68,9 +68,9 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag) && !characterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
 			{
 				CurrentDirection = UKMUtil::FInterpToCircular(CurrentDirection, NextDirection, deltaSeconds, LerpDirectionSpeed);
-				if (PrevActorDirection != characterInstance->GetCharacterDirection())
+				if (PrevActorDirection != characterInstance->GetDirection())
 				{
-					PrevActorDirection = characterInstance->GetCharacterDirection();
+					PrevActorDirection = characterInstance->GetDirection();
 				}
 			}
 		}

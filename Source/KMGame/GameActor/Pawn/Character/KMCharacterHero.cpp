@@ -95,7 +95,7 @@ void AKMCharacterHero::Move(const FInputActionValue& Value)
 	if (IsValid(animInstance))
 	{
 		float movementCircularDirection = UKMUtil::GetCircularAngle2D8Way(moveDirection);
-		GetCharacterInstance()->SetCharacterDirection(movementCircularDirection);
+		GetCharacterInstance()->SetDirection(movementCircularDirection);
 	}	
 }
 

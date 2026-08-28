@@ -5,9 +5,6 @@
 
 AKMBreakableActor::AKMBreakableActor(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	AttachedComponent = CreateDefaultSubobject<UKMAttachedBlendingComponent>(TEXT("AttachedComponent"));
-	AttachedComponent->SetupAttachment(GetRootComponent());
-	
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMeshComponent->SetupAttachment(AttachedComponent);
 
@@ -41,9 +38,4 @@ void AKMBreakableActor::OnDeath()
 FBoxSphereBounds AKMBreakableActor::GetMasterBounds() const
 {
 	return GeometryCollectionComponent->Bounds;
-}
-
-UKMAttachedBlendingComponent* AKMBreakableActor::GetAttachedComponent() const
-{
-	return AttachedComponent;
 }

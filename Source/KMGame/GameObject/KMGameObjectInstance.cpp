@@ -271,7 +271,6 @@ void UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjus
 	if (objectTypeQuery.IsEmpty())
 	{
 		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Damage));
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Destructible));
 	}
 	if (!IsValid(actorClassFilter))
 	{
@@ -300,7 +299,6 @@ void UKMGameObjectInstance::SphereHitImpact(
 	if (objectTypeQuery.IsEmpty())
 	{
 		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Damage));
-		objectTypeQuery.Emplace(UEngineTypes::ConvertToObjectType(ECC_Destructible));
 	}
 	if (!IsValid(actorClassFilter))
 	{
@@ -442,6 +440,21 @@ void UKMGameObjectInstance::SetTimeDilation(const FName& layerName, float newTim
 void UKMGameObjectInstance::RemoveTimeDilation(const FName& layerName)
 {
 	TimeDilations.Remove(layerName);
+}
+
+void UKMGameObjectInstance::SetDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
+{
+	
+}
+	
+void UKMGameObjectInstance::SetDirection(float direction, bool bForceRotate)
+{
+	
+}
+
+float UKMGameObjectInstance::GetDirection() const
+{
+	return Direction;
 }
 
 void UKMGameObjectInstance::AddAggroTarget(UKMGameObjectInstance* attackerGameObjectInstance)

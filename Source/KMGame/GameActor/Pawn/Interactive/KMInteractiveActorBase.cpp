@@ -1,17 +1,29 @@
 #include "KMInteractiveActorBase.h"
 
+#include "Component/KMAttachedBlendingComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Component/KMPawnMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
 
 AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("RootScene")));
-	
-	CurveWarping  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
+	SetRootComponent(CapsuleComponent);
+
+	MovementComponent = CreateDefaultSubobject<UKMPawnMovementComponent>(TEXT("Movement"));
+	MovementComponent->SetUpdatedComponent(CapsuleComponent);
+
+	AttachedComponent = CreateDefaultSubobject<UKMAttachedBlendingComponent>(TEXT("AttachedBlending"));
+	AttachedComponent->SetupAttachment(GetRootComponent());
+
+	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
+
+	MovementComponent->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
 }
 
 UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() const
@@ -19,9 +31,9 @@ UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() cons
 	return MartialArtsComponent;
 }
 
-UKMCurveWarpingComponent* AKMInteractiveActorBase::GetCurveWarping() const
+UKMCurveWarpingComponent* AKMInteractiveActorBase::GetCurveWarpingComponent() const
 {
-	return CurveWarping;
+	return CurveWarpingComponent;
 }
 
 UKMInteractiveInstance* AKMInteractiveActorBase::GetInteractiveInstance() const
@@ -65,7 +77,17 @@ FBoxSphereBounds AKMInteractiveActorBase::GetMasterBounds() const
 	return FBoxSphereBounds();
 }
 
+UCapsuleComponent* AKMInteractiveActorBase::GetMasterCapsuleComponent() const
+{
+	return 	CapsuleComponent;
+}
+
 UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedComponent() const
 {
-	return nullptr;
+	return AttachedComponent;
+}
+
+UPawnMovementComponent* AKMInteractiveActorBase::GetMovementComponent() const
+{
+	return MovementComponent;
 }

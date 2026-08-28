@@ -19,6 +19,8 @@ public class EMCoreGame : ModuleRules
 			"EMTableCore",
 			"Landscape",
 			"Niagara",
+			"EMCurveWarping",
+			"MotionWarping"
 		});
 		
 		PublicIncludePaths.Add("EMCoreGame");

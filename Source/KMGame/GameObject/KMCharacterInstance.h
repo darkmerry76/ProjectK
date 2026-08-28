@@ -70,14 +70,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseSkillDash(float dashDirection);
 
-	UFUNCTION(BlueprintCallable)
-	void SetCharacterDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
-	
-	UFUNCTION(BlueprintCallable)
-	void SetCharacterDirection(float direction, bool bForceRotate = false);
-
-	UFUNCTION(BlueprintPure)
-	float GetCharacterDirection() const;
+	virtual void SetDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr) override;
+	virtual void SetDirection(float direction, bool bForceRotate = false) override;
+	virtual float GetDirection() const override;
 
 	UFUNCTION(BlueprintPure)
 	bool IsBeast() const;
@@ -175,7 +170,6 @@ protected:
 	bool bIsRun = false;
 
 	float MoveAccelate = 0.f;
-	float CharacterDirection = 1.f;
 	
 	FEMTickerHandle GoodCancelTimerHandle;
 	FEMTickerHandle GreatCancelTimerHandle;

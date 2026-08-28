@@ -22,7 +22,7 @@ protected:
 	TObjectPtr<class UKMSoundSetTag> SoundsetTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMCurveWarpingComponent> CurveWarping;
+	TObjectPtr<class UKMCurveWarpingComponent> CurveWarpingComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
@@ -55,8 +55,9 @@ public:
 
 	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
 
+	virtual class UCapsuleComponent* GetMasterCapsuleComponent() const override;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
-	virtual class UKMCurveWarpingComponent* GetCurveWarping() const override;
+	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
 
 	void SetMirror(bool bMirror);
 	bool GetMirror() const;
@@ -116,7 +117,6 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
-
 protected:
 	bool bIsMirror = false;
 };

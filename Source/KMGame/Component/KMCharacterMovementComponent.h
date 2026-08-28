@@ -13,7 +13,6 @@ struct KMGAME_API FKMBlockReflectionData
 	TWeakObjectPtr<class AKMCharacter> Character;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FKMCustomMovementDelegate, float, deltaTime, int32, iterations);
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnHitDelegate, const TArray<FHitResult>& hitResults);
 
 UCLASS(Blueprintable, BlueprintType)
@@ -22,9 +21,6 @@ class KMGAME_API UKMCharacterMovementComponent : public UEMCharacterMovementComp
 	GENERATED_UCLASS_BODY()
 	
 public:
-	UPROPERTY(BlueprintAssignable)
-	FKMCustomMovementDelegate CustomMovementDelegate;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UCurveVector> JumpCurve;
 
@@ -48,6 +44,7 @@ public:
 	FVector LatestJumpInputDir = FVector::ZeroVector;
 
 	FKMSweepPawnHitDelegate SweepPawnHitDelegate;
+	FEMCustomMovementDelegate CustomMovementDelegate;
 
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimSequence> CustomWalkingAnimSequence;
@@ -66,6 +63,8 @@ protected:
 public:
 	void CustomJump();
 
+	virtual void BindCurveWarpingComponent(class UEMCurveWarpingComponent* newCurveWarpingComponent) override;
+	virtual void UnbindCurveWarpingComponent(class UEMCurveWarpingComponent* newCurveWarpingComponent) override;
 	virtual bool CustomMovement(EEMCustomMovementMode movementMode, const FVector& adjusted, float deltaTime, int32 iterations) override;
 
 	bool IsOnGround() const;

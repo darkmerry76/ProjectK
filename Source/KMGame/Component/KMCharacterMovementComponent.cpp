@@ -36,44 +36,36 @@ UKMCharacterInstance* UKMCharacterMovementComponent::GetOwnerCharacterInstance()
 void UKMCharacterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
-	{
-		return;
-	}
-
-	if (!curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &ThisClass::OnJumpInterrupt))
-	{
-		curveWarping->GetInteruptDelegate().AddDynamic(this, &ThisClass::OnJumpInterrupt);
-	}
 }
 
 void UKMCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+}
 
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner());
-	if (!IsValid(ownerCharacter))
+void UKMCharacterMovementComponent::BindCurveWarpingComponent(UEMCurveWarpingComponent* newCurveWarpingComponent)
+{
+	if (!IsValid(newCurveWarpingComponent))
 	{
 		return;
 	}
 	
-	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
-	if (!IsValid(curveWarping))
+	if (!newCurveWarpingComponent->GetInteruptDelegate().IsAlreadyBound(this, &ThisClass::OnJumpInterrupt))
+	{
+		newCurveWarpingComponent->GetInteruptDelegate().AddDynamic(this, &ThisClass::OnJumpInterrupt);
+	}
+}
+
+void UKMCharacterMovementComponent::UnbindCurveWarpingComponent(UEMCurveWarpingComponent* newCurveWarpingComponent)
+{
+	if (!IsValid(newCurveWarpingComponent))
 	{
 		return;
 	}
 
-	if (curveWarping->GetInteruptDelegate().IsAlreadyBound(this, &ThisClass::OnJumpInterrupt))
+	if (newCurveWarpingComponent->GetInteruptDelegate().IsAlreadyBound(this, &ThisClass::OnJumpInterrupt))
 	{
-		curveWarping->GetInteruptDelegate().RemoveAll(this);
+		newCurveWarpingComponent->GetInteruptDelegate().RemoveAll(this);
 	}
 }
 
@@ -288,7 +280,7 @@ void UKMCharacterMovementComponent::MoveBlockProcessing(float deltaTime, int32 i
 		return;
 	}
 
-	UKMCurveWarpingComponent* ownerCurveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
+	UKMCurveWarpingComponent* ownerCurveWarping = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarpingComponent());
 	if (!IsValid(ownerCurveWarping))
 	{
 		return;
@@ -445,7 +437,7 @@ void UKMCharacterMovementComponent::CustomJump()
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarpingComponent();
 	if (!IsValid(curveWarping))
 	{
 		return;
@@ -478,7 +470,7 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarpingComponent();
 	if (!IsValid(curveWarping))
 	{
 		return;
@@ -498,6 +490,10 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 			Velocity = moveDelta * (FMath::IsNearlyZero(deltaTime) ? 0.f : (1.f / deltaTime));
 			SetMovementMode(MOVE_Falling);
 		}
+	}
+	else
+	{
+		SetMovementMode(MOVE_Walking);
 	}
 }
 

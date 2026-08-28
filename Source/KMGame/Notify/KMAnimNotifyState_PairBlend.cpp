@@ -105,7 +105,7 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarpingComponent = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarping());
+	UKMCurveWarpingComponent* curveWarpingComponent = Cast<UKMCurveWarpingComponent>(ownerCharacter->GetCurveWarpingComponent());
 	if (!IsValid(curveWarpingComponent))
 	{
 		return;

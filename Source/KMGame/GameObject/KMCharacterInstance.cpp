@@ -197,7 +197,7 @@ void UKMCharacterInstance::RevertFromBest()
 		leaveSkeletalMeshComponnent->SetSkeletalMeshAsset(ownerCharacter->GetMesh()->GetSkeletalMeshAsset());
 		leaveSkeletalMeshComponnent->SetAnimInstanceClass(ownerCharacter->GetMesh()->GetAnimClass());
 		leaveSkeletalMeshComponnent->SetRelativeTransform(ownerCharacter->GetMesh()->GetRelativeTransform());
-		SetCharacterDirectionVisual(GetCharacterDirection(), true, leaveSkeletalMeshComponnent);
+		SetDirectionVisual(GetDirection(), true, leaveSkeletalMeshComponnent);
 		leaveSkeletalMeshComponnent->SetReceivesDecals(false);
 		leaveSkeletalMeshComponnent->SetRenderCustomDepth(true);
 		leaveSkeletalMeshComponnent->SetCustomDepthStencilValue(1);
@@ -208,7 +208,7 @@ void UKMCharacterInstance::RevertFromBest()
 	ownerCharacter->GetMesh()->SetAnimInstanceClass(ownerCharacterCDO->GetMesh()->GetAnimClass());
 	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
 	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(characterTableRow->scale));
-	SetCharacterDirection(GetCharacterDirection(), true);
+	SetDirection(GetDirection(), true);
 	
 	if (GetWorld()->IsGameWorld())
 	{
@@ -285,7 +285,7 @@ void UKMCharacterInstance::TransformToBeast()
 		leaveSkeletalMeshComponnent->SetReceivesDecals(false);
 		leaveSkeletalMeshComponnent->SetRenderCustomDepth(true);
 		leaveSkeletalMeshComponnent->SetCustomDepthStencilValue(1);
-		SetCharacterDirectionVisual(GetCharacterDirection(), true, leaveSkeletalMeshComponnent);
+		SetDirectionVisual(GetDirection(), true, leaveSkeletalMeshComponnent);
 
 		if (UKMAnimInstance* beforeAnimInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance()))
 		{
@@ -307,7 +307,7 @@ void UKMCharacterInstance::TransformToBeast()
 	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(BeastTableRow->scale));
 	ownerCharacter->GetMesh()->SetRenderInMainPass(false);
 	ownerCharacter->GetMesh()->SetRenderInDepthPass(false);
-	SetCharacterDirection(GetCharacterDirection(), true);
+	SetDirection(GetDirection(), true);
 
 	ChangeSkillSet(BeastTableRow->Id);
 	
@@ -611,7 +611,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 	
 	if (TimingCancel.IsValid() && !TimingCancel->IsUsed())
 	{
-		EKM8WayDirection direction8way = UKMUtil::ConvertDegreesTo8WayDirection(dashDirection, GetCharacterDirection());
+		EKM8WayDirection direction8way = UKMUtil::ConvertDegreesTo8WayDirection(dashDirection, GetDirection());
 
 		FKMSkillKey dashSkillKey;
 		EKMTimingResult cancelResult = TimingCancel->GetResult();
@@ -654,7 +654,7 @@ void UKMCharacterInstance::UseSkillDash(float dashDirection)
 	}
 	else if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
 	{
-		SetCharacterDirection(dashDirection);
+		SetDirection(dashDirection);
 		SkillHandler->UseSkill(FKMSkillKey(TEXT("sk_front_dash"), 0), nullptr);
 	}
 }
@@ -809,7 +809,7 @@ bool UKMCharacterInstance::IsWalk() const
 	return !bIsRun;
 }
 
-void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
+void UKMCharacterInstance::SetDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
@@ -831,7 +831,7 @@ void UKMCharacterInstance::SetCharacterDirectionVisual(float direction, bool bFo
 	}
 }
 
-void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRotate)
+void UKMCharacterInstance::SetDirection(float direction, bool bForceRotate)
 {
 	if (IsDead())
 	{
@@ -843,16 +843,16 @@ void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRot
 		return;
 	}
 
-	if (FMath::IsNearlyEqual(CharacterDirection, direction) && !bForceRotate)
+	if (FMath::IsNearlyEqual(Direction, direction) && !bForceRotate)
 	{
 		return;
 	}
 
-	CharacterDirection = direction;
+	Direction = direction;
 	
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
-		float angle = CharacterDirection * PI * 2.f;
+		float angle = Direction * PI * 2.f;
 
 		FVector newForwardVector(FMath::Cos(angle), FMath::Sin(angle),0.f);
 
@@ -860,7 +860,7 @@ void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRot
 		ownerCharacter->SetActorRotation(newRotation);
 		ownerCharacter->GetRootComponent()->UpdateComponentToWorld();
 
-		SetCharacterDirectionVisual(direction, bForceRotate);
+		SetDirectionVisual(direction, bForceRotate);
 		if (!ownerCharacter->GetMesh()->IsPostEvaluatingAnimation())
 		{
 			ownerCharacter->GetMesh()->RefreshBoneTransforms();
@@ -868,9 +868,9 @@ void UKMCharacterInstance::SetCharacterDirection(float direction, bool bForceRot
 	}
 }
 
-float UKMCharacterInstance::GetCharacterDirection() const
+float UKMCharacterInstance::GetDirection() const
 {
-	return CharacterDirection;
+	return Direction;
 }
 
 void UKMCharacterInstance::OnSensorResult(const TArray<AActor*>& resultActors)

@@ -105,11 +105,9 @@ void UKMAbility::Activate()
 	AActor* ownerActor = GetOwnerActor();
 	check(IsValid(ownerActor));
 
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor);
-	if(pawnInterface)
+	if(IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
 	{
-		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarping();
-		if (IsValid(curveWarping))
+		if (UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarpingComponent())
 		{
 			if (IsValid(BlowCurve))
 			{
@@ -150,7 +148,7 @@ void UKMAbility::Deactivate(bool bCancel)
 
 	if(IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
 	{
-		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarping();
+		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarpingComponent();
 		if (bIsClearCurve && IsValid(curveWarping))
 		{
 			if (CurveWapingInstanceId != INDEX_NONE)
@@ -530,7 +528,7 @@ void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetL
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerActor->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerActor->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->AddOrUpdateWarpTargetFromLocation(targetName, targetLocation);
@@ -544,7 +542,7 @@ void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurv
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
@@ -558,7 +556,7 @@ void UKMAbility::PlayOwnerLinearWarping(FVector newTargetLocation, float newPlay
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayLinearWarp(newTargetLocation, newPlayLength);
@@ -586,10 +584,10 @@ void UKMAbility::ForceComplate()
 
 void UKMAbility::InverseDirection(bool bForce)
 {
-	UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-	if (!IsValid(ownerCharacterInstance))
+	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
+	if (!IsValid(ownerGameObjectInstance))
 	{
 		return;
 	}
-	ownerCharacterInstance->SetCharacterDirection(UKMUtil::InverseCircularDirection(ownerCharacterInstance->GetCharacterDirection()), bForce);
+	ownerGameObjectInstance->SetDirection(UKMUtil::InverseCircularDirection(ownerGameObjectInstance->GetDirection()), bForce);
 }

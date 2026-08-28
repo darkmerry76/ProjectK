@@ -50,7 +50,7 @@ void UKMAbilityBlow::Deactivate(bool bCancel)
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarping();
+	UKMCurveWarpingComponent* curveWarping = ownerCharacter->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->GetInteruptDelegate().RemoveAll(this);
