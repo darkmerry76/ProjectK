@@ -24,7 +24,6 @@ protected:
 
 public:
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) override;
-
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 	
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnImpact")
@@ -46,4 +45,10 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual FBoxSphereBounds GetMasterBounds() const;
+
+	UFUNCTION(BlueprintPure)
+	virtual class UKMAttachedBlendingComponent* GetAttachedComponent() const;
 };

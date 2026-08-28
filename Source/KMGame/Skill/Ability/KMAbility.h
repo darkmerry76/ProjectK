@@ -170,6 +170,9 @@ public:
 	void PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, class UCurveBase* newCurveAsset, FVector newTargetLocation,
 		float newPlayLength = 1.f, float newZScale = 1.f, bool bIgnoreZ = false);
 
+	UFUNCTION(BlueprintCallable)
+	void PlayOwnerLinearWarping(FVector newTargetLocation, float newPlayLength = 1.f);
+
 	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetOwnerAnimationTag(FGameplayTag tag) const;
 

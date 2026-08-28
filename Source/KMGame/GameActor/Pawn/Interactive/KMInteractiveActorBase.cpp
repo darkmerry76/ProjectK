@@ -59,3 +59,13 @@ void AKMInteractiveActorBase::OnDeath()
 {
 	Receive_OnDeath();
 }
+
+FBoxSphereBounds AKMInteractiveActorBase::GetMasterBounds() const
+{
+	return FBoxSphereBounds();
+}
+
+UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedComponent() const
+{
+	return nullptr;
+}

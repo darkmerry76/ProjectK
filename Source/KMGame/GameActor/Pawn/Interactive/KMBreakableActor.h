@@ -11,6 +11,9 @@ class KMGAME_API AKMBreakableActor : public AKMInteractiveActorBase
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TObjectPtr<class UKMAttachedBlendingComponent> AttachedComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
@@ -24,4 +27,6 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 	virtual void OnDeath() override;
+	virtual FBoxSphereBounds GetMasterBounds() const override;
+	virtual class UKMAttachedBlendingComponent* GetAttachedComponent() const override;
 };

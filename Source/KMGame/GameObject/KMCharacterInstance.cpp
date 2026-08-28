@@ -183,6 +183,7 @@ void UKMCharacterInstance::RevertFromBest()
 		return;
 	}
 
+	bIsBeast = false;
 	ChangeSkillSet(GetTableId());
 
 	UKMSkeletalMeshComponent* leaveSkeletalMeshComponnent = Cast<UKMSkeletalMeshComponent>(ownerCharacter->FindComponentByTag(UKMSkeletalMeshComponent::StaticClass(), LeaveSkeletalMeshCompTag));
@@ -208,8 +209,7 @@ void UKMCharacterInstance::RevertFromBest()
 	ownerCharacter->GetMesh()->SetSkeletalMesh(ownerCharacterCDO->GetMesh()->GetSkeletalMeshAsset());
 	ownerCharacter->GetMesh()->SetRelativeScale3D(FVector(characterTableRow->scale));
 	SetCharacterDirection(GetCharacterDirection(), true);
-
-	bIsBeast = false;
+	
 	if (GetWorld()->IsGameWorld())
 	{
 		if (characterTableRow->TransformSkill != NAME_None)

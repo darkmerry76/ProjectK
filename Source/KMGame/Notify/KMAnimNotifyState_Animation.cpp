@@ -217,7 +217,7 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			}
 		}
 
-		if (meshComp->GetWorld()->IsGameWorld())
+		if (IsValid(meshComp->GetWorld()) && meshComp->GetWorld()->IsGameWorld())
 		{
 			if (bIsEndRemoveTagMeshComponent && targetMeshComp != meshComp)
 			{

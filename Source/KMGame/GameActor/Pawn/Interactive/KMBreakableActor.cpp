@@ -1,14 +1,18 @@
 #include "KMBreakableActor.h"
+#include "Component/KMAttachedBlendingComponent.h"
 #include "Field/FieldSystemComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 
 AKMBreakableActor::AKMBreakableActor(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	AttachedComponent = CreateDefaultSubobject<UKMAttachedBlendingComponent>(TEXT("AttachedComponent"));
+	AttachedComponent->SetupAttachment(GetRootComponent());
+	
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMeshComponent->SetupAttachment(GetRootComponent());
+	StaticMeshComponent->SetupAttachment(AttachedComponent);
 
 	GeometryCollectionComponent = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("GeometryCollection"));
-	GeometryCollectionComponent->SetupAttachment(GetRootComponent());
+	GeometryCollectionComponent->SetupAttachment(AttachedComponent);
 	
 	FieldSystemComponent = CreateDefaultSubobject<UFieldSystemComponent>(TEXT("FieldSystem"));
 	FieldSystemComponent->SetupAttachment(GetRootComponent());
@@ -32,4 +36,14 @@ void AKMBreakableActor::OnImpact(const TSharedPtr<FKMSkillEffectInstance>& skill
 void AKMBreakableActor::OnDeath()
 {
 	Super::OnDeath();
+}
+
+FBoxSphereBounds AKMBreakableActor::GetMasterBounds() const
+{
+	return GeometryCollectionComponent->Bounds;
+}
+
+UKMAttachedBlendingComponent* AKMBreakableActor::GetAttachedComponent() const
+{
+	return AttachedComponent;
 }

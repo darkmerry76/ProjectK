@@ -550,6 +550,20 @@ void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurv
 	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
 }
 
+void UKMAbility::PlayOwnerLinearWarping(FVector newTargetLocation, float newPlayLength)
+{
+	AKMCharacter* character = GetOwnerCharacter();
+	if(!IsValid(character))
+	{
+		return;
+	}
+
+	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarping();
+	check(IsValid(curveWarping));
+
+	curveWarping->PlayLinearWarp(newTargetLocation, newPlayLength);
+}
+
 UAnimMontage* UKMAbility::GetOwnerAnimationTag(FGameplayTag tag) const
 {
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
