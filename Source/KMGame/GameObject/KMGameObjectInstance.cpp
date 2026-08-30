@@ -1,4 +1,6 @@
 #include "KMGameObjectInstance.h"
+
+#include "Component/KMMoveShapeComponent.h"
 #include "Tables/Generated/KMTable_Object.h"
 #include "GameActor/Pawn/KMPawnInterface.h"
 #include "Skill/KMSkillHandler.h"
@@ -439,6 +441,82 @@ void UKMGameObjectInstance::SetTimeDilation(const FName& layerName, float newTim
 void UKMGameObjectInstance::RemoveTimeDilation(const FName& layerName)
 {
 	TimeDilations.Remove(layerName);
+}
+
+float UKMGameObjectInstance::GetHorizontalDistanceTo(const UKMGameObjectInstance* toGameObjectInstance) const
+{
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	check(ownerPawnInterface);
+	
+	AActor* targetActor = toGameObjectInstance->GetOwnerActor();
+	if (!IsValid(targetActor))
+	{
+		return 0.f;
+	}
+	
+	const IKMPawnInterface* pawnTargetInterface = Cast<IKMPawnInterface>(toGameObjectInstance->GetOwnerActor());
+	if (!pawnTargetInterface)
+	{
+		return 0.f;
+	}
+
+	UPrimitiveComponent* ownerShapeComponent = ownerPawnInterface->GetMovementShapeComponent();
+	UPrimitiveComponent* targetShapeComponent = pawnTargetInterface->GetMovementShapeComponent();
+
+	if (UKMMoveShapeComponent* moveShapeComponent = Cast<UKMMoveShapeComponent>(targetShapeComponent))
+	{
+		return moveShapeComponent->GetHorizontalDistance(ownerShapeComponent);
+	}
+	else if(UCapsuleComponent* targetCapsuleComponent = Cast<UCapsuleComponent>(targetShapeComponent))
+	{
+		if (UKMMoveShapeComponent* ownerMoveShapeComponent = Cast<UKMMoveShapeComponent>(ownerShapeComponent))
+		{
+			return ownerMoveShapeComponent->GetHorizontalDistance(targetCapsuleComponent);
+		}
+		else if (UCapsuleComponent* ownerCapsuleComponent = Cast<UCapsuleComponent>(ownerShapeComponent))
+		{
+			return (ownerCapsuleComponent->GetComponentLocation() - targetCapsuleComponent->GetComponentLocation()).Size2D() - ownerCapsuleComponent->GetScaledCapsuleRadius() - targetCapsuleComponent->GetScaledCapsuleRadius();
+		} 
+	}
+	return (GetOwnerActor()->GetActorLocation() - targetActor->GetActorLocation()).Size2D();
+}
+
+float UKMGameObjectInstance::GetVerticalDistanceTo(const UKMGameObjectInstance* toGameObjectInstance) const
+{
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	check(ownerPawnInterface);
+
+	const IKMPawnInterface* pawnTargetInterface = Cast<IKMPawnInterface>(toGameObjectInstance->GetOwnerActor());
+	if (!pawnTargetInterface)
+	{
+		return 0.f;
+	}
+
+	UPrimitiveComponent* ownerShapeComponent = ownerPawnInterface->GetMovementShapeComponent();
+	UPrimitiveComponent* targetShapeComponent = pawnTargetInterface->GetMovementShapeComponent();
+
+	if (UKMMoveShapeComponent* targetMoveShapeComponent = Cast<UKMMoveShapeComponent>(targetShapeComponent))
+	{
+		return targetMoveShapeComponent->GetVerticalDistance(ownerShapeComponent);
+	}
+	else if(UCapsuleComponent* targetCapsuleComponent = Cast<UCapsuleComponent>(targetShapeComponent))
+	{
+		if (UKMMoveShapeComponent* ownerMoveShapeComponent = Cast<UKMMoveShapeComponent>(ownerShapeComponent))
+		{
+			return ownerMoveShapeComponent->GetVerticalDistance(targetCapsuleComponent);
+		}
+		else if (UCapsuleComponent* ownerCapsuleComponent = Cast<UCapsuleComponent>(ownerShapeComponent))
+		{
+			if (targetCapsuleComponent)
+			{
+				const float ownerBottomLocationZ = ownerCapsuleComponent->GetComponentLocation().Z - ownerCapsuleComponent->GetScaledCapsuleHalfHeight();
+				const float targetBottomLocationZ = targetCapsuleComponent->GetComponentLocation().Z - targetCapsuleComponent->GetScaledCapsuleHalfHeight();
+				return FMath::Abs(ownerBottomLocationZ - targetBottomLocationZ);
+			}
+		}
+	}
+
+	return FMath::Abs(ownerShapeComponent->GetComponentLocation().Z - targetShapeComponent->GetComponentLocation().Z);
 }
 
 void UKMGameObjectInstance::SetDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)

@@ -92,3 +92,14 @@ UPawnMovementComponent* AKMInteractiveActorBase::GetMovementComponent() const
 {
 	return MovementComponent;
 }
+
+void AKMInteractiveActorBase::Crarry(UKMGameObjectInstance* carriedGameObjectInstance)
+{
+	Receive_OnCarry(carriedGameObjectInstance);
+}
+
+void AKMInteractiveActorBase::Crarried(UKMGameObjectInstance* carryGameObjectInstance)
+{
+	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	Receive_OnCarried(carryGameObjectInstance);
+}

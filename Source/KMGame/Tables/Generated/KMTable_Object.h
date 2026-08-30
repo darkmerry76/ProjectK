@@ -33,6 +33,9 @@ struct FKMTable_ObjectRow : public FEM_TableBaseRow
 	EKMObjectType        Type = { EKMObjectType::Hero };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 IsGrabable = { false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 IsCarryable = { false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

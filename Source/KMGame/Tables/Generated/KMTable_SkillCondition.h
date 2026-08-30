@@ -40,6 +40,9 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	TArray<FName>        ReadTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 Grabable = { false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 Carryable = { false };
 
 	// 페어여부

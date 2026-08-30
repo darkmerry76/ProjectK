@@ -366,6 +366,11 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		return -1.f;
 	}
 
+	if (skillConditionRow->Grabable && !targetGameObjectInstance->GetTable()->IsGrabable)
+	{
+		return -1.f;
+	}
+	
 	if (skillConditionRow->Carryable && !targetGameObjectInstance->GetTable()->IsCarryable)
 	{
 		return -1.f;
@@ -447,11 +452,13 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	if (IsValid(targetGameObjectInstance))
 	{
 		FVector targetToDirection = targetGameObjectInstance->GetOwnerActor()->GetActorLocation() - ownerGameObjectInstance->GetOwnerActor()->GetActorLocation();
-		float targetToDistance = targetToDirection.Size();
+
+		float horizontalDistance = ownerGameObjectInstance->GetHorizontalDistanceTo(targetGameObjectInstance);
+		float verticallDistance = ownerGameObjectInstance->GetVerticalDistanceTo(targetGameObjectInstance);
 		
 		if (!FMath::IsNearlyZero(skillConditionRow->TargetRange))
 		{
-			if (skillConditionRow->TargetRange < targetToDistance)
+			if (skillConditionRow->TargetRange < horizontalDistance)
 			{
 				return -1.f;
 			}
@@ -459,7 +466,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			float center = (skillConditionRow->TargetRangeMin + skillConditionRow->TargetRange) * 0.5f;
 			float halfRange = (skillConditionRow->TargetRange - skillConditionRow->TargetRangeMin) * 0.5f;
 
-			targetDistanceScore = 1.f - (FMath::Abs(targetToDistance - center) / halfRange);
+			targetDistanceScore = 1.f - (FMath::Abs(horizontalDistance - center) / halfRange);
 			targetDistanceScore = FMath::Clamp(targetDistanceScore, 0.f, 1.f);
 		}
 		
@@ -663,6 +670,11 @@ void UKMSkillHandler::ActivatedNextComboSkill(const TSharedPtr<FKMLockOnCluster>
 		return;
 	}
 
+	if (GetConditionScore(ComboData.skillSet->Skills[ComboData.NextCombo], lockOnCluster) < 0.f)
+	{
+		return;
+	}
+
 	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(ComboData.skillSet->Skills[ComboData.NextCombo], 0), ComboData.LockOnCluster);
 	if (!newSkillInstance.IsValid())
 	{
@@ -778,7 +790,6 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkill(const FKMSkillKey& skillK
 	TSharedPtr<FKMSkillInstance> newSkillInstance = MakeShared<FKMSkillInstance>(this, skillKey);
 	newSkillInstance->Caster = GetOwner()->GetId();
 	newSkillInstance->Target = lockOnCluster;
-	;	
 	return UseSkillInternal(newSkillInstance);
 }
 

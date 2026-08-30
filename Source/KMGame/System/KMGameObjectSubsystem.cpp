@@ -262,7 +262,8 @@ UKMCharacterInstance* UKMGameObjectSubsystem::GetAuthCharacterInstance() const
 	return character->GetCharacterInstance();
 }
 
-template<typename _TL> int32 UKMGameObjectSubsystem::NumGameObject(bool bExcludeDead) const
+template<typename _TL>
+int32 UKMGameObjectSubsystem::NumGameObject(bool bExcludeDead) const
 {
 	int numCount = 0;
 	for (auto objectItr : GameObjectMap)

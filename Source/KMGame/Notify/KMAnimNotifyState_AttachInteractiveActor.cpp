@@ -85,9 +85,10 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyBegin(USkeletalMeshCompone
 	if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(context->InteractiveActor->GetAttachedComponent()))
 	{
 		FTransform startTransform = attachedComponent->GetComponentToWorld();
-		
+
+		context->InteractiveActor->Crarried(ownerCharacter->GetCharacterInstance());
 		context->InteractiveActor->AttachToComponent(ownerCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
-		attachedComponent->StartBlending(ownerCharacter->GetMesh(), AttachSocket, startTransform, AttachTransform, BlendingDuration);
+		attachedComponent->StartBlending(ownerCharacter->GetMesh(), AttachSocket, startTransform, BlendingDuration);
 	}
 }
 

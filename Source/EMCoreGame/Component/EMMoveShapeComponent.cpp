@@ -312,6 +312,82 @@ void UEMMoveShapeComponent::UpdateBodySetup()
 	}
 }
 
+FVector UEMMoveShapeComponent::GetScaledBoxExtent() const
+{
+	return BoxExtent * GetComponentScale();
+}
+
+float UEMMoveShapeComponent::GetHorizontalRadiusInternal(const FVector& directionLocation) const
+{
+	if (CollisionShapeType == EEMCollisionShapeType::Box)
+	{
+		FVector direction = directionLocation - GetComponentLocation();
+		direction.Z = 0.f;
+		direction.Normalize();
+
+		const FVector boxExtent = GetScaledBoxExtent();
+
+		return  FMath::Abs(FVector::DotProduct(direction, GetForwardVector())) * boxExtent.X +
+				FMath::Abs(FVector::DotProduct(direction, GetRightVector())) * boxExtent.Y +
+				FMath::Abs(FVector::DotProduct(direction, GetUpVector())) * boxExtent.Z;
+	}
+
+	return GetScaledCapsuleRadius();
+}
+
+float UEMMoveShapeComponent::GetHorizontalDistance(const UPrimitiveComponent* otherShapeComponent) const
+{
+	const FVector otherLocation = otherShapeComponent->GetComponentLocation();
+	
+	float distance = (otherLocation - GetComponentLocation()).Size2D();
+	distance -= GetHorizontalRadiusInternal(otherLocation);
+
+	if (const UEMMoveShapeComponent* otherMoveShapeComponent = Cast<UEMMoveShapeComponent>(otherShapeComponent))
+	{
+		distance -= otherMoveShapeComponent->GetHorizontalRadiusInternal(GetComponentLocation());
+	}
+	else if (const UCapsuleComponent* otherCapsuleComponent = Cast<UCapsuleComponent>(otherShapeComponent))
+	{
+		distance -= otherCapsuleComponent->GetScaledCapsuleRadius();
+	}
+
+	return distance;
+}
+
+float UEMMoveShapeComponent::GetVerticalExtentInternal() const
+{
+	if (CollisionShapeType == EEMCollisionShapeType::Box)
+	{
+		const FVector boxExtent = GetScaledBoxExtent();
+		return	FMath::Abs(GetForwardVector().Z) * boxExtent.X +
+				FMath::Abs(GetRightVector().Z) * boxExtent.Y +
+				FMath::Abs(GetUpVector().Z) * boxExtent.Z;
+	}
+
+	return GetScaledCapsuleHalfHeight();
+}
+
+float UEMMoveShapeComponent::GetBottomLocationZ() const
+{
+	return GetComponentLocation().Z - GetVerticalExtentInternal();
+}
+
+float UEMMoveShapeComponent::GetVerticalDistance(const UPrimitiveComponent* otherShapeComponent) const
+{
+	float otherBottomLocationZ = otherShapeComponent->GetComponentLocation().Z;
+
+	if (const UEMMoveShapeComponent* otherMoveShapeComponent = Cast<UEMMoveShapeComponent>(otherShapeComponent))
+	{
+		otherBottomLocationZ = otherMoveShapeComponent->GetBottomLocationZ();
+	}
+	else if (const UCapsuleComponent* otherCapsuleComponent = Cast<UCapsuleComponent>(otherShapeComponent))
+	{
+		otherBottomLocationZ -= otherCapsuleComponent->GetScaledCapsuleHalfHeight();
+	}
+
+	return FMath::Abs(GetBottomLocationZ() - otherBottomLocationZ);
+}
+
 #if WITH_EDITOR
 void UEMMoveShapeComponent::PostEditChangeProperty(struct FPropertyChangedEvent& propertyChangedEvent)
 {

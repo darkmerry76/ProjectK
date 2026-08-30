@@ -194,11 +194,20 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetMontageRateByTag(class AKMCharacter* character, FName tag) const;
 
+	void MontageStart(class UAnimMontage* animMontage, FName montageInstanceTag);
+	void MontageStop(class UAnimMontage* animMontage, FName montageInstanceTag);
+
 protected:
 	struct FAnimMontageInstance* PlayMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None, EKMAnimSlotType slotType = EKMAnimSlotType::DefaultSlot, float slotBlendTime = 0.1f);
-	void StopMontage(class UAnimMontage* montage);
+	void StopMontage(class UAnimMontage* animMontage);
 
 	struct FAnimMontageInstance* GetMontageInstanceByTag(class AKMCharacter* character, const FName& tag) const;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMontageStart(class UAnimMontage* animMontage, FName montageInstanceTag);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMontageStop(class UAnimMontage* animMontage, FName montageInstanceTag);
 
 protected:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;

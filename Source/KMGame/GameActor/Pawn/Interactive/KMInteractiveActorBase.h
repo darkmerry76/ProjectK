@@ -61,6 +61,18 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual class UKMAttachedBlendingComponent* GetAttachedComponent() const;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void Crarry(class UKMGameObjectInstance* carryedGameObjectInstance) override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+
 protected:
 	virtual class UPawnMovementComponent* GetMovementComponent() const override;
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarry")
+	void Receive_OnCarry(class UKMGameObjectInstance* carryedGameObjectInstance);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarried")
+	void Receive_OnCarried(class UKMGameObjectInstance* carryedGameObjectInstance);
 };

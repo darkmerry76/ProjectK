@@ -10,9 +10,12 @@ UCLASS(Abstract)
 class EMCOREGAME_API UEMAttachedBlendingComponent : public USceneComponent
 {
 	GENERATED_UCLASS_BODY()
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FTransform OffsetTransform;
 	
 public:
-	void StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, const FTransform& offsetTransform, float newDuration = 0.2f);
+	void StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration = 0.2f);
 	void StopBlending();
 	
 protected:
@@ -22,7 +25,7 @@ protected:
 protected:
 	FName AttachedSocketName;
 	FTransform StartWorldTransform;
-	FTransform OffsetTransform;
+	
 	float Duration = 0.2f;
 	float BlendElipsedTime = 0.f;
 

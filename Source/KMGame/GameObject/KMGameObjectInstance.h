@@ -101,6 +101,12 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetTimeDilation() const;
 
+	UFUNCTION(BlueprintPure)
+	float GetHorizontalDistanceTo(const class UKMGameObjectInstance* toGameObjectInstance) const;
+
+	UFUNCTION(BlueprintPure)
+	float GetVerticalDistanceTo(const class UKMGameObjectInstance* toGameObjectInstance) const;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void SetDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
 	

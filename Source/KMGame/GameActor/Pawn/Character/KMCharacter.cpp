@@ -290,3 +290,13 @@ bool AKMCharacter::IsAir() const
 	}
 	return false;
 }
+
+void AKMCharacter::Crarry(UKMGameObjectInstance* carriedGameObjectInstance)
+{
+	Receive_OnCarry(carriedGameObjectInstance);
+}
+
+void AKMCharacter::Crarried(UKMGameObjectInstance* carryGameObjectInstance)
+{
+	Receive_OnCarried(carryGameObjectInstance);
+}

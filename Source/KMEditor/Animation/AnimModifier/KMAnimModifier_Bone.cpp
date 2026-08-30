@@ -418,3 +418,128 @@ void UKMFixPelvisYawModifier::OnApply_Implementation(UAnimSequence* animationSeq
 	
 	controller.CloseBracket();
 }
+
+UKMBlendToAnimationModifier::UKMBlendToAnimationModifier() : Super()
+{
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("Root"), false));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("Bip001-Pelvis"), false));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("Bip001-L-LegRoot"), true));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("Bip001-R-LegRoot"), true));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("lhip"), true));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("llegdir"), true));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("rhip"), true));
+	BlendBones.Emplace(FKMBlendToAnimationBoneData::Create(TEXT("rlegdir"), true));
+}
+
+bool UKMBlendToAnimationModifier::IsBlendBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const
+{
+	for (const FKMBlendToAnimationBoneData& blendBone : BlendBones)
+	{
+		const int32 blendBoneIndex = refSkeleton.FindBoneIndex(blendBone.BoneName);
+		if (blendBoneIndex == INDEX_NONE)
+		{
+			continue;
+		}
+
+		if (boneIndex == blendBoneIndex)
+		{
+			return true;
+		}
+
+		if (!blendBone.bIsSubSearch)
+		{
+			continue;
+		}
+		
+		if (refSkeleton.BoneIsChildOf(boneIndex, blendBoneIndex))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animationSequence)
+{
+    if (!IsValid(animationSequence))
+    {
+        return;
+    }
+    
+    if (!IsValid(TargetAnimationSequence))
+    {
+        return;
+    }
+
+    if (animationSequence->GetSkeleton() != TargetAnimationSequence->GetSkeleton())
+    {
+        return;
+    }
+
+    if (BlendingTime <= 0.f)
+    {
+        return;
+    }
+    
+    IAnimationDataController& controller = animationSequence->GetController();
+    const FReferenceSkeleton& refSkeleton = animationSequence->GetSkeleton()->GetReferenceSkeleton();
+    
+    TArray<TArray<FVector>> newLocation;
+    TArray<TArray<FQuat>> newRotation;
+    TArray<TArray<FVector>> newScale;
+
+    newLocation.SetNum(refSkeleton.GetNum());
+    newRotation.SetNum(refSkeleton.GetNum());
+    newScale.SetNum(refSkeleton.GetNum());
+    
+    TArray<FTransform> targetBoneTransform;
+    for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
+    {
+        FTransform boneTransform;
+        FAnimExtractContext extractBaseContext(static_cast<double>(0.f), TargetAnimationSequence->bEnableRootMotion);
+
+        TargetAnimationSequence->GetBoneTransform(boneTransform, FSkeletonPoseBoneIndex(boneIndex), extractBaseContext, false);
+        targetBoneTransform.Emplace(boneTransform);
+    }
+
+    const int32 numKeys = animationSequence->GetNumberOfSampledKeys();
+
+    for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+    {
+        const float time = static_cast<float>(animationSequence->GetTimeAtFrame(keyIndex));
+        const float blendAlpha = FMath::Clamp((time - BlendingStartTime) / BlendingTime, 0.f,1.f);
+
+        FAnimExtractContext extractContext(static_cast<double>(time), animationSequence->bEnableRootMotion);
+        for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
+        {
+        	if (!IsBlendBone(refSkeleton, boneIndex))
+        	{
+        		continue;
+        	}
+            FTransform sourceBoneTransform;
+            animationSequence->GetBoneTransform(sourceBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractContext, false);
+            FTransform finalBoneTransform;
+            finalBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha * blendAlpha);
+
+            newLocation[boneIndex].Emplace(finalBoneTransform.GetTranslation());
+            newRotation[boneIndex].Emplace(finalBoneTransform.GetRotation());
+            newScale[boneIndex].Emplace(finalBoneTransform.GetScale3D());
+        }
+    }
+
+	controller.OpenBracket(FText::FromString(TEXT("Blend To Animation")));
+    for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
+    {
+        const FName boneName = refSkeleton.GetBoneName(boneIndex);
+    	if (!IsBlendBone(refSkeleton, boneIndex))
+    	{
+    		continue;
+    	}
+    	
+		controller.AddBoneCurve(boneName);
+        controller.SetBoneTrackKeys(boneName,newLocation[boneIndex], newRotation[boneIndex],newScale[boneIndex]);
+    }
+
+    controller.CloseBracket();
+}

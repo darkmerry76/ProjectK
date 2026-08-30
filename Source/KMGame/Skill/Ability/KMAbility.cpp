@@ -591,3 +591,13 @@ void UKMAbility::InverseDirection(bool bForce)
 	}
 	ownerGameObjectInstance->SetDirection(UKMUtil::InverseCircularDirection(ownerGameObjectInstance->GetDirection()), bForce);
 }
+
+void UKMAbility::MontageStart(UAnimMontage* animMontage, FName montageInstanceTag)
+{
+	OnMontageStart(animMontage, montageInstanceTag);
+}
+
+void UKMAbility::MontageStop(class UAnimMontage* animMontage, FName montageInstanceTag)
+{
+	OnMontageStop(animMontage, montageInstanceTag);
+}

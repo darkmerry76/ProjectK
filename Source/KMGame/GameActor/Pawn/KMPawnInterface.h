@@ -20,6 +20,9 @@ public:
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const = 0;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
 
+	virtual void Crarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
+	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;
+
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) = 0;
 
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) = 0;

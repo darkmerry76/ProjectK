@@ -33,11 +33,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="CollisionShapeType==EEMCollisionShapeType::Sphere"), Category=Shape)
 	float SphereRadius = 32.f;
 
+public:
+	UFUNCTION(BlueprintPure)
+	float GetHorizontalDistance(const class UPrimitiveComponent* otherShapeComponent) const;
+
+	UFUNCTION(BlueprintPure)
+	float GetVerticalDistance(const class UPrimitiveComponent* otherShapeComponent) const;
+
+	UFUNCTION(BlueprintPure)
+	FVector GetScaledBoxExtent() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetBottomLocationZ() const;
+
 protected:
 	virtual void UpdateBodySetup() override;
 	virtual class FPrimitiveSceneProxy* CreateSceneProxy() override;
 	
 	virtual void OnRegister() override;
+
+	float GetHorizontalRadiusInternal(const FVector& directionLocation) const;
+	float GetVerticalExtentInternal() const;
 	
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& propertyChangedEvent) override;

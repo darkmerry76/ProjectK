@@ -158,3 +158,47 @@ private:
 	void FixedWorldPose(UAnimSequence* animationSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms);
 	void CreateBoneInfo(const UAnimSequence* animationSequence, TArray<FKMBoneInfo>& outBoneInfos);
 };
+
+USTRUCT()
+struct FKMBlendToAnimationBoneData
+{
+	GENERATED_USTRUCT_BODY()
+	
+	static FKMBlendToAnimationBoneData Create(const FName& boneName, bool bSubSearch)
+	{
+		FKMBlendToAnimationBoneData newData;
+		newData.BoneName = boneName;
+		newData.bIsSubSearch = bSubSearch;
+		return newData;
+	}
+
+	UPROPERTY(EditAnywhere)
+	FName BoneName;
+
+	UPROPERTY(EditAnywhere)
+	bool bIsSubSearch = true;
+};
+
+UCLASS()
+class UKMBlendToAnimationModifier : public UAnimationModifier
+{
+	GENERATED_BODY()
+	
+protected:
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	UAnimSequence* TargetAnimationSequence;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TArray<FKMBlendToAnimationBoneData> BlendBones;
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float BlendingStartTime = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float BlendingTime = 0.2f;
+public:
+	UKMBlendToAnimationModifier();
+protected:
+	virtual void OnApply_Implementation(UAnimSequence* animationSequence) override;
+	bool IsBlendBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const;
+};

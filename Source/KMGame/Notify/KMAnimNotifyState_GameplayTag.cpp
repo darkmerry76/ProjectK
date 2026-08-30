@@ -24,7 +24,10 @@ void UKMAnimNotifyState_GameplayTag::NotifyBegin(USkeletalMeshComponent* meshCom
 	{
 		for (auto gameplayTag : TagContainer.GetGameplayTagArray())
 		{
-			ownerCharacter->GetCharacterInstance()->AddGameplayTag(gameplayTag);
+			if (UKMGameObjectInstance* ownerGameObjectInstance = ownerCharacter->GetCharacterInstance())
+			{
+				ownerGameObjectInstance->AddGameplayTag(gameplayTag);
+			}
 		}
 	}
 }
@@ -35,7 +38,10 @@ void UKMAnimNotifyState_GameplayTag::NotifyEnd(USkeletalMeshComponent* meshComp,
 	{
 		for (auto gameplayTag : TagContainer.GetGameplayTagArray())
 		{
-			ownerCharacter->GetCharacterInstance()->RemoveGameplayTag(gameplayTag);
+			if (UKMGameObjectInstance* ownerGameObjectInstance = ownerCharacter->GetCharacterInstance())
+			{
+				ownerGameObjectInstance->RemoveGameplayTag(gameplayTag);
+			}
 		}
 	}
 }

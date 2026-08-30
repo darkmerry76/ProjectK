@@ -1,6 +1,7 @@
 #include "KMAnimNotifyState_Animation.h"
 #include "EMMartialArts.h"
 #include "Animation/KMAnimInstance.h"
+#include "Component/KMMartialArtsComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/Ability/KMAbilityEffect.h"
 #include "System/EMMontageCacheManager.h"
@@ -144,6 +145,13 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 				{
 					targetAnimInstance->SetMontageInstanceTag(montageInstanceId, MontageInstanceTag);
 				}
+				if(const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+				{
+					if (UKMAbility* ability = Cast<UKMAbility>(martialArtsData->GetAbility()))
+					{
+						ability->MontageStart(newContext->ActivatedMontage, MontageInstanceTag);
+					}
+				}
 			}
 			
 #if WITH_EDITOR
@@ -214,6 +222,14 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 				{
 					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 0.f, SlotBlendOutTime);
 				}
+			}
+		}
+
+		if(const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+		{
+			if (UKMAbility* ability = Cast<UKMAbility>(martialArtsData->GetAbility()))
+			{
+				ability->MontageStop((*currContext)->ActivatedMontage, MontageInstanceTag);
 			}
 		}
 

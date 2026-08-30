@@ -24,9 +24,6 @@ class KMGAME_API UKMAnimNotifyState_AttachInteractiveActor : public UKMAnimNotif
 	GENERATED_UCLASS_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
-	FTransform AttachTransform = FTransform::Identity;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, AnimNotifyBoneName="true", DisplayAfter="AttachTransform"))
 	FName AttachSocket = NAME_None;
 

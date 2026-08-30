@@ -53,6 +53,7 @@ protected:
 public:
 	class UKMCharacterInstance* GetCharacterInstance() const;
 
+	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
 	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
 
 	virtual class UPrimitiveComponent* GetMovementShapeComponent() const override;
@@ -111,12 +112,23 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void Receive_OnDeath();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Crarry(class UKMGameObjectInstance* carryedGameObjectInstance) override;
 	
+	UFUNCTION(BlueprintCallable)
+	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
-	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarry")
+	void Receive_OnCarry(class UKMGameObjectInstance* carryedGameObjectInstance);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarried")
+	void Receive_OnCarried(class UKMGameObjectInstance* carryedGameObjectInstance);
+
 protected:
 	bool bIsMirror = false;
 };

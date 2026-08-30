@@ -8,7 +8,7 @@ UEMAttachedBlendingComponent::UEMAttachedBlendingComponent(const FObjectInitiali
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, const FTransform& offsetTransform, float newDuration)
+void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	AttachedParentComponent = newParentComponent;
@@ -19,7 +19,6 @@ void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentCompo
 	BlendElipsedTime = 0.f;
 
 	StartWorldTransform = startWorldTransform;
-	OffsetTransform = offsetTransform;
 	UpdateBlending(0.f);
 }
 
@@ -44,7 +43,8 @@ void UEMAttachedBlendingComponent::UpdateBlending(float deltaTime)
 
 		FTransform worldTransform;
 		worldTransform.Blend(StartWorldTransform,targetTransform, alpha);
-		SetWorldTransform(worldTransform);
+		SetWorldLocation(worldTransform.GetLocation());
+		SetWorldRotation(worldTransform.GetRotation());
 	}
 
 	BlendElipsedTime += deltaTime;
