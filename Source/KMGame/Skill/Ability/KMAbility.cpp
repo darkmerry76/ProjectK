@@ -15,7 +15,6 @@
 
 UKMAbility::UKMAbility(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	
 }
 
 FPrimaryAssetId UKMAbility::GetPrimaryAssetId() const
@@ -600,4 +599,8 @@ void UKMAbility::MontageStart(UAnimMontage* animMontage, FName montageInstanceTa
 void UKMAbility::MontageStop(class UAnimMontage* animMontage, FName montageInstanceTag)
 {
 	OnMontageStop(animMontage, montageInstanceTag);
+}
+
+UKMAbilityPreview::UKMAbilityPreview(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
+{
 }

@@ -38,8 +38,19 @@ const FKMPairPositionBlendInfo& FKMAnimInstanceProxy::GetPairBlendInfo() const
 {
 	return PairBlendInfo;
 }
+
+void FKMAnimInstanceProxy::ResetRootNode(bool bInDeferRootNodeInitialization)
+{
+	InitializeRootNode(bInDeferRootNodeInitialization);
+}
+
 UKMAnimInstance::UKMAnimInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+}
+
+void UKMAnimInstance::ResetEntryNode()
+{
+	GetProxyOnGameThread<FKMAnimInstanceProxy>().ResetRootNode();
 }
 
 void UKMAnimInstance::NativeInitializeAnimation()
@@ -57,10 +68,12 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 	TickSlotBlend(deltaSeconds);
 	TickShake(GetWorld()->GetDeltaSeconds());
 	TickPairBlend(GetWorld()->GetDeltaSeconds());
+
 	if (!IsCustomWalking())
 	{
 		ResetMovementElipsedTime();
 	}
+	
 	if(AKMCharacter* ownerCharacter = Cast<AKMCharacter>(TryGetPawnOwner()))
 	{
 		if (UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance())

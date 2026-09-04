@@ -35,6 +35,8 @@ public:
 	const FKMAnimNodeShakeData& GetShakeData() const;
 	const FKMPairPositionBlendInfo& GetPairBlendInfo() const;
 
+	void ResetRootNode(bool bInDeferRootNodeInitialization = false);
+
 protected:
 	virtual void PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds) override;
 
@@ -114,6 +116,9 @@ public:
 	float GetNextDirection() const;
 
 	const TArray<FName>& GetHiddenBones() const;
+
+	UFUNCTION(Blueprintable)
+	void ResetEntryNode();
 
 	UFUNCTION(BlueprintCallable)
 	void ResetMovementElipsedTime();

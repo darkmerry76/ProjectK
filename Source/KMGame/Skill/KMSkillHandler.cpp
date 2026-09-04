@@ -432,6 +432,17 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		}
 		if (!bExistTag)
 		{
+			for (auto tag : skillConditionRow->ReadTag)
+			{
+				if (ownerGameObjectInstance->HasGameplayTag(FGameplayTag::RequestGameplayTag(tag)))
+				{
+					bExistTag = true;
+					break;
+				}
+			}
+		}
+		if (!bExistTag)
+		{
 			return -1.f;
 		}
 	}

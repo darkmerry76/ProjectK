@@ -10,6 +10,8 @@
 #include "Component/KMMartialArtsComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
+#include "Skill/KMSkillHandler.h"
+#include "Skill/Ability/KMAbility.h"
 #include "Util/KMUtil.h"
 #include "Tables/Generated/KMTable_Object_Beast.h"
 #include "Tables/Generated/KMTable_Object_Character.h"
@@ -254,7 +256,12 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_ObjectRow*
 
 		if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(AnimationAsset))
 		{
-			martialArtsComponent->PlayEx(martialArts, nullptr, 1.f, true);
+			UKMAbilityPreview* newAbility = NewObject<UKMAbilityPreview>(OwnerCharacterInstance, UKMAbilityPreview::StaticClass());
+			newAbility->SetMartialArts(martialArts);
+
+			TSharedPtr<FKMMartialArtsSkillContextData> newSkillContextData = MakeShared<FKMMartialArtsSkillContextData>(newAbility);
+
+			newAbility->PlayMartialArts(newSkillContextData, 1.f, true);
 		}
 		SkeletonTree->SetSkeletalMesh(character->GetMesh()->GetSkeletalMeshAsset());
 		static_cast<FEMAnimationViewportClient*>(ViewportClient.Get())->SetAdjustSkeletalMeshComponent(character->GetMesh());

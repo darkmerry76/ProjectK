@@ -9,7 +9,7 @@
 #include "KMAbility.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class UKMAbility : public UEMAbility
+class KMGAME_API UKMAbility : public UEMAbility
 {
 	GENERATED_UCLASS_BODY()
 
@@ -212,4 +212,10 @@ protected:
 protected:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 	virtual UWorld* GetWorld() const override;
+};
+
+UCLASS()
+class KMGAME_API UKMAbilityPreview : public UKMAbility
+{
+	GENERATED_UCLASS_BODY()
 };

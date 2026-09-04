@@ -34,7 +34,7 @@ class KMEDITOR_API UKMAnimModifier_Bone : public UAnimationModifier
 	GENERATED_BODY()
 
 public:
-	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	FName BoneName = FName("Root");
@@ -55,7 +55,7 @@ class KMEDITOR_API UKMAnimModifier_BoneToRoot : public UAnimationModifier
 	GENERATED_BODY()
 
 public:
-	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	FName BoneName = FName("Pelvis");
@@ -97,7 +97,7 @@ class KMEDITOR_API UKMAnimModifier_BoneTransform : public UAnimationModifier
 	GENERATED_BODY()
 
 public:
-	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	FName BoneName = FName("Pelvis");
@@ -124,7 +124,7 @@ class KMEDITOR_API UKMAnimModifier_FrameCut : public UAnimationModifier
 	GENERATED_BODY()
 
 public:
-	virtual void OnApply_Implementation(UAnimSequence* AnimationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float StartFrame = 0.f;
@@ -152,11 +152,11 @@ public:
 	TArray<FKMBoneInfo> BoneInfos;
 
 public:
-	virtual void OnApply_Implementation(UAnimSequence* animationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 private:
-	void FixedWorldPose(UAnimSequence* animationSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms);
-	void CreateBoneInfo(const UAnimSequence* animationSequence, TArray<FKMBoneInfo>& outBoneInfos);
+	void FixedWorldPose(UAnimSequence* animSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms);
+	void CreateBoneInfo(const UAnimSequence* animSequence, TArray<FKMBoneInfo>& outBoneInfos);
 };
 
 USTRUCT()
@@ -189,16 +189,32 @@ protected:
 	UAnimSequence* TargetAnimationSequence;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	TArray<FKMBlendToAnimationBoneData> BlendBones;
+	FTransform TargetRootTransform = FTransform::Identity;
 	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float AddTime = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool bIsAddTranslate = false;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool bIsAddRotation = false;
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TArray<FKMBlendToAnimationBoneData> BlendBones;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool bIsBlending = true;
+
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float BlendingStartTime = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float BlendingTime = 0.2f;
+	
 public:
 	UKMBlendToAnimationModifier();
 protected:
-	virtual void OnApply_Implementation(UAnimSequence* animationSequence) override;
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 	bool IsBlendBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const;
 };

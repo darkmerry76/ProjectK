@@ -30,8 +30,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AttachSocket"))
 	float BlendingDuration = 0.2f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="StartAttach", Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendingDuration"))
+	bool bIsStartAttach = true;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="EndDetach", Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartAttach"))
+	bool bIsEndDetach = false;
+
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendingDuration"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsEndDetach"))
 	TSubclassOf<class AKMInteractiveActorBase> PreviewInteractiveActorClass;
 #endif
 

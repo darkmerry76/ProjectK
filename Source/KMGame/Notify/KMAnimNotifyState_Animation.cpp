@@ -209,19 +209,16 @@ void UKMAnimNotifyState_Animation::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			{
 				if (IsValid((*currContext)->ActivatedMontage))
 				{
-					FAnimMontageInstance* montageInstance = targetAnimInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage);
-					if (montageInstance)
+					if (FAnimMontageInstance* montageInstance = targetAnimInstance->GetActiveInstanceForMontage((*currContext)->ActivatedMontage))
 					{
-						if (montageInstance->GetCurrentSection() != montageInstance->GetNextSection())
-						{
-							targetAnimInstance->Montage_Stop(0.1f, (*currContext)->ActivatedMontage);
-						}
+						targetAnimInstance->Montage_Stop(0.1f, (*currContext)->ActivatedMontage);
 					}
 				}
 				if (SlotType == EKMAnimSlotType::OverrideSlot)
 				{
 					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 0.f, SlotBlendOutTime);
 				}
+				targetAnimInstance->ResetEntryNode();
 			}
 		}
 

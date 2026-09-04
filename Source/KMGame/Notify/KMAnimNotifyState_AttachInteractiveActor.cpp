@@ -81,14 +81,16 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyBegin(USkeletalMeshCompone
 	{
 		return;
 	}
-	
-	if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(context->InteractiveActor->GetAttachedComponent()))
+	if (bIsStartAttach)
 	{
-		FTransform startTransform = attachedComponent->GetComponentToWorld();
+		if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(context->InteractiveActor->GetAttachedComponent()))
+		{
+			FTransform startTransform = attachedComponent->GetComponentToWorld();
 
-		context->InteractiveActor->Crarried(ownerCharacter->GetCharacterInstance());
-		context->InteractiveActor->AttachToComponent(ownerCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
-		attachedComponent->StartBlending(ownerCharacter->GetMesh(), AttachSocket, startTransform, BlendingDuration);
+			context->InteractiveActor->Crarried(ownerCharacter->GetCharacterInstance());
+			context->InteractiveActor->AttachToComponent(ownerCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
+			attachedComponent->StartBlending(ownerCharacter->GetMesh(), AttachSocket, startTransform, BlendingDuration);
+		}
 	}
 }
 
@@ -103,21 +105,28 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyEnd(USkeletalMeshComponent
 	{
 		return;
 	}
-
-#if WITH_EDITOR
+	
 	const TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context>* existPairContext = Contexts.Find(targetMeshComp);
 	if (existPairContext && existPairContext->IsValid())
 	{
-		if (IsValid(targetMeshComp->GetWorld()) && !targetMeshComp->GetWorld()->IsGameWorld())
+		AKMInteractiveActorBase* interactiveActor = (*existPairContext)->InteractiveActor;
+		if (IsValid(interactiveActor))
 		{
-			AKMInteractiveActorBase* interactiveActor = (*existPairContext)->InteractiveActor;
-			if (IsValid(interactiveActor))
+			if (bIsEndDetach)
 			{
+				if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(interactiveActor->GetAttachedComponent()))
+				{
+					attachedComponent->StopBlending();
+				}
 				interactiveActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			}
+#if WITH_EDITOR
+			if (IsValid(GetWorld()) && !GetWorld()->IsGameWorld())
+			{
 				interactiveActor->Destroy();
 			}
-		}
 #endif
+		}
 	}
 	Contexts.Remove(targetMeshComp);
 }

@@ -1,55 +1,55 @@
 #include "KMAnimModifier_Bone.h"
 
-#include "SkeletalMeshAttributes.h"
-
-void UKMAnimModifier_Bone::OnApply_Implementation(UAnimSequence* AnimSeq)
+void UKMAnimModifier_Bone::OnApply_Implementation(UAnimSequence* animSequence)
 {
-	if (!AnimSeq) return;
-
-	IAnimationDataController& Controller = AnimSeq->GetController();
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
 	
-	const float Duration = AnimSeq->GetPlayLength();
-	const int32 NumKeys = AnimSeq->GetNumberOfSampledKeys();
+	IAnimationDataController& controller = animSequence->GetController();
+	
+	const float duration = animSequence->GetPlayLength();
+	const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
-	TArray<FVector> PosKeys;
-	TArray<FQuat> RotKeys;
-	TArray<FVector> ScaleKeys;
+	TArray<FVector> posKeys;
+	TArray<FQuat> rotKeys;
+	TArray<FVector> scaleKeys;
 
-	int32 boneIndex = AnimSeq->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
+	int32 boneIndex = animSequence->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
 	if (boneIndex == INDEX_NONE)
 	{
 		return;
 	}
 
 	FSkeletonPoseBoneIndex poseBoneIndex(boneIndex);
-
-	for (int32 i = 0; i < NumKeys; ++i)
+	for (int32 i = 0; i < numKeys; ++i)
 	{
-		double Time = AnimSeq->GetTimeAtFrame(i);
+		double time = animSequence->GetTimeAtFrame(i);
 
-		FTransform OutTransform;
-		FAnimExtractContext extractContext(Time, AnimSeq->bEnableRootMotion);
-		AnimSeq->GetBoneTransform(OutTransform, poseBoneIndex, extractContext, false);
+		FTransform outTransform;
+		FAnimExtractContext extractContext(time, animSequence->bEnableRootMotion);
+		animSequence->GetBoneTransform(outTransform, poseBoneIndex, extractContext, false);
 
-		FVector CurrentPos = OutTransform.GetLocation();
-		FRotator CurrentRot = OutTransform.GetRotation().Rotator();
-		FVector CurrentScale = OutTransform.GetScale3D();
+		FVector currentPos = outTransform.GetLocation();
+		FRotator currentRot = outTransform.GetRotation().Rotator();
+		FVector currentScale = outTransform.GetScale3D();
 
-		float CurveVal = AnimSeq->EvaluateCurveData(TargetCurveName, Time);
+		float curveVal = animSequence->EvaluateCurveData(TargetCurveName, time);
 
 		double* resultValue = nullptr;
 
 		switch (Type)
 		{
-		case EKM_BoneTransformType::TRANS_X: resultValue = &CurrentPos.X;break;
-		case EKM_BoneTransformType::TRANS_Y: resultValue = &CurrentPos.Y;break;
-		case EKM_BoneTransformType::TRANS_Z: resultValue = &CurrentPos.Z;break;
-		case EKM_BoneTransformType::ROTATION_X: resultValue = &CurrentRot.Roll;break;
-		case EKM_BoneTransformType::ROTATION_Y: resultValue = &CurrentRot.Pitch;break;
-		case EKM_BoneTransformType::ROTATION_Z: resultValue = &CurrentRot.Yaw;break;
-		case EKM_BoneTransformType::SCALE_X: resultValue = &CurrentScale.X;break;
-		case EKM_BoneTransformType::SCALE_Y: resultValue = &CurrentScale.Y;break;
-		case EKM_BoneTransformType::SCALE_Z: resultValue = &CurrentScale.Z;break;
+		case EKM_BoneTransformType::TRANS_X: resultValue = &currentPos.X;break;
+		case EKM_BoneTransformType::TRANS_Y: resultValue = &currentPos.Y;break;
+		case EKM_BoneTransformType::TRANS_Z: resultValue = &currentPos.Z;break;
+		case EKM_BoneTransformType::ROTATION_X: resultValue = &currentRot.Roll;break;
+		case EKM_BoneTransformType::ROTATION_Y: resultValue = &currentRot.Pitch;break;
+		case EKM_BoneTransformType::ROTATION_Z: resultValue = &currentRot.Yaw;break;
+		case EKM_BoneTransformType::SCALE_X: resultValue = &currentScale.X;break;
+		case EKM_BoneTransformType::SCALE_Y: resultValue = &currentScale.Y;break;
+		case EKM_BoneTransformType::SCALE_Z: resultValue = &currentScale.Z;break;
 		default:break;
 		}
 
@@ -57,41 +57,45 @@ void UKMAnimModifier_Bone::OnApply_Implementation(UAnimSequence* AnimSeq)
 		{
 			switch (OperatorType)
 			{
-			case EKM_OperatorType::Set:(*resultValue) = CurveVal; break;
-			case EKM_OperatorType::Add:(*resultValue) += CurveVal; break;
-			case EKM_OperatorType::Subtract:(*resultValue) -= CurveVal; break;
-			case EKM_OperatorType::Multiply:(*resultValue) *= CurveVal; break;
-			case EKM_OperatorType::Divide:(*resultValue) /= CurveVal; break;
+			case EKM_OperatorType::Set:(*resultValue) = curveVal; break;
+			case EKM_OperatorType::Add:(*resultValue) += curveVal; break;
+			case EKM_OperatorType::Subtract:(*resultValue) -= curveVal; break;
+			case EKM_OperatorType::Multiply:(*resultValue) *= curveVal; break;
+			case EKM_OperatorType::Divide:(*resultValue) /= curveVal; break;
 			default:break;
 			}
 		}
 
-		PosKeys.Add(CurrentPos);
-		RotKeys.Add(CurrentRot.Quaternion());
-		ScaleKeys.Add(CurrentScale);
+		posKeys.Add(currentPos);
+		rotKeys.Add(currentRot.Quaternion());
+		scaleKeys.Add(currentScale);
 	}
-	Controller.SetBoneTrackKeys(BoneName, PosKeys, RotKeys, ScaleKeys);
+	
+	controller.SetBoneTrackKeys(BoneName, posKeys, rotKeys, scaleKeys);
 }
 
-void UKMAnimModifier_BoneToRoot::OnApply_Implementation(UAnimSequence* AnimSeq)
+void UKMAnimModifier_BoneToRoot::OnApply_Implementation(UAnimSequence* animSequence)
 {
-	if (!AnimSeq) return;
-
-	IAnimationDataController& Controller = AnimSeq->GetController();
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
 	
-	const float Duration = AnimSeq->GetPlayLength();
-	const int32 NumKeys = AnimSeq->GetNumberOfSampledKeys();
+	IAnimationDataController& controller = animSequence->GetController();
+	
+	const float duration = animSequence->GetPlayLength();
+	const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
-	TArray<FVector> BonePosKeys;
-	TArray<FQuat> BoneRotKeys;
-	TArray<FVector> BoneScaleKeys;
+	TArray<FVector> bonePosKeys;
+	TArray<FQuat> boneRotKeys;
+	TArray<FVector> boneScaleKeys;
 
-	TArray<FVector> RootPosKeys;
-	TArray<FQuat> RootRotKeys;
-	TArray<FVector> RootScaleKeys;
+	TArray<FVector> rootPosKeys;
+	TArray<FQuat> rootRotKeys;
+	TArray<FVector> rootScaleKeys;
 	
 	int32 rootboneIndex = 0;
-	int32 boneIndex = AnimSeq->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
+	int32 boneIndex = animSequence->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
 	if (boneIndex == INDEX_NONE)
 	{
 		return;
@@ -100,280 +104,162 @@ void UKMAnimModifier_BoneToRoot::OnApply_Implementation(UAnimSequence* AnimSeq)
 	FSkeletonPoseBoneIndex poseRootIndex(0);
 	FSkeletonPoseBoneIndex poseBoneIndex(boneIndex);
 
-	for (int32 i = 0; i < NumKeys; ++i)
+	for (int32 i = 0; i < numKeys; ++i)
 	{
-		double Time = AnimSeq->GetTimeAtFrame(i);
+		double time = animSequence->GetTimeAtFrame(i);
 
-		FTransform OutBoneTransform;
-		FTransform OutBaseTransform;
-		FTransform OutRootTransform;
-		FAnimExtractContext extractBaseContext(static_cast<double>(0.f), AnimSeq->bEnableRootMotion);
-		AnimSeq->GetBoneTransform(OutBaseTransform, poseBoneIndex, extractBaseContext, false);
+		FTransform outBoneTransform;
+		FTransform outBaseTransform;
+		FTransform outRootTransform;
+		FAnimExtractContext extractBaseContext(static_cast<double>(0.f), animSequence->bEnableRootMotion);
+		animSequence->GetBoneTransform(outBaseTransform, poseBoneIndex, extractBaseContext, false);
 
-		FAnimExtractContext extractContext(Time, AnimSeq->bEnableRootMotion);
-		AnimSeq->GetBoneTransform(OutBoneTransform, poseBoneIndex, extractContext, false);
-		AnimSeq->GetBoneTransform(OutRootTransform, poseRootIndex, extractContext, false);
+		FAnimExtractContext extractContext(time, animSequence->bEnableRootMotion);
+		animSequence->GetBoneTransform(outBoneTransform, poseBoneIndex, extractContext, false);
+		animSequence->GetBoneTransform(outRootTransform, poseRootIndex, extractContext, false);
 
-		FVector Offset = OutBoneTransform.GetLocation() - OutBaseTransform.GetLocation();
-		FVector CurrentRootPos = FVector(CopyTranslateX ? Offset.X : OutRootTransform.GetLocation().X,
-		CopyTranslateY ? Offset.Y : OutRootTransform.GetLocation().Y,
-		CopyTranslateZ ? Offset.Z : OutRootTransform.GetLocation().Z);
-		FRotator CurrentRootRot = OutRootTransform.GetRotation().Rotator();
-		FVector CurrentRootScale = OutRootTransform.GetScale3D();
+		FVector offset = outBoneTransform.GetLocation() - outBaseTransform.GetLocation();
+		FVector currentRootPos = FVector(CopyTranslateX ? offset.X : outRootTransform.GetLocation().X,
+		CopyTranslateY ? offset.Y : outRootTransform.GetLocation().Y,
+		CopyTranslateZ ? offset.Z : outRootTransform.GetLocation().Z);
+		FRotator currentRootRot = outRootTransform.GetRotation().Rotator();
+		FVector currentRootScale = outRootTransform.GetScale3D();
 		
-		RootRotKeys.Add(CurrentRootRot.Quaternion());
-		RootScaleKeys.Add(CurrentRootScale);
+		rootRotKeys.Add(currentRootRot.Quaternion());
+		rootScaleKeys.Add(currentRootScale);
 
 		float xScale = X > 0 ? 1.f : -1.f;
 		float yScale = Y > 0 ? 1.f : -1.f;
 		float zScale = Z > 0 ? 1.f : -1.f;
-		RootPosKeys.Add(FVector((&CurrentRootPos.X)[abs(X)] * xScale, (&CurrentRootPos.X)[abs(Y)] * yScale, (&CurrentRootPos.X)[abs(Z)] * zScale));
-		//RootPosKeys.Add(FVector(OutRootTransform.GetLocation().X, OutRootTransform.GetLocation().Y, OutRootTransform.GetLocation().Z));
+		rootPosKeys.Add(FVector((&currentRootPos.X)[abs(X)] * xScale, (&currentRootPos.X)[abs(Y)] * yScale, (&currentRootPos.X)[abs(Z)] * zScale));
 		
-		FVector CurrentBonePos = FVector(DefaultTranslateX ? DefaultTranslate.X : OutBoneTransform.GetLocation().X,
-		DefaultTranslateY ? DefaultTranslate.Y : OutBoneTransform.GetLocation().Y,
-		DefaultTranslateZ ? DefaultTranslate.Z : OutBoneTransform.GetLocation().Z);
-		FRotator CurrentBoneRot = OutBoneTransform.GetRotation().Rotator();
-		FVector CurrentBoneScale = OutBoneTransform.GetScale3D();
+		FVector currentBonePos = FVector(
+		DefaultTranslateX ? DefaultTranslate.X : outBoneTransform.GetLocation().X,
+		DefaultTranslateY ? DefaultTranslate.Y : outBoneTransform.GetLocation().Y,
+		DefaultTranslateZ ? DefaultTranslate.Z : outBoneTransform.GetLocation().Z);
+		FRotator currentBoneRot = outBoneTransform.GetRotation().Rotator();
+		FVector currentBoneScale = outBoneTransform.GetScale3D();
 
-		BonePosKeys.Add(CurrentBonePos);
-		BoneRotKeys.Add(CurrentBoneRot.Quaternion());
-		BoneScaleKeys.Add(CurrentBoneScale);
+		bonePosKeys.Add(currentBonePos);
+		boneRotKeys.Add(currentBoneRot.Quaternion());
+		boneScaleKeys.Add(currentBoneScale);
 	}
-	Controller.SetBoneTrackKeys(BoneName, BonePosKeys, BoneRotKeys, BoneScaleKeys);
-	Controller.SetBoneTrackKeys(TEXT("Root"), RootPosKeys, RootRotKeys, RootScaleKeys);
+	
+	controller.SetBoneTrackKeys(BoneName, bonePosKeys, boneRotKeys, boneScaleKeys);
+	controller.SetBoneTrackKeys(TEXT("Root"), rootPosKeys, rootRotKeys, rootScaleKeys);
 }
 
-void UKMAnimModifier_BoneTransform::OnApply_Implementation(UAnimSequence* AnimSeq)
+void UKMAnimModifier_BoneTransform::OnApply_Implementation(UAnimSequence* animSequence)
 {
-	if (!AnimSeq) return;
-
-	IAnimationDataController& Controller = AnimSeq->GetController();
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
 	
-	const int32 NumKeys = AnimSeq->GetNumberOfSampledKeys();
-
-	TArray<FVector> BonePosKeys;
-	TArray<FQuat> BoneRotKeys;
-	TArray<FVector> BoneScaleKeys;
-
-	TArray<FVector> RootPosKeys;
-	TArray<FQuat> RootRotKeys;
-	TArray<FVector> RootScaleKeys;
+	IAnimationDataController& controller = animSequence->GetController();
 	
-	int32 boneIndex = AnimSeq->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
+	const int32 numKeys = animSequence->GetNumberOfSampledKeys();
+
+	TArray<FVector> bonePosKeys;
+	TArray<FQuat> boneRotKeys;
+	TArray<FVector> boneScaleKeys;
+
+	TArray<FVector> rootPosKeys;
+	TArray<FQuat> rootRotKeys;
+	TArray<FVector> rootScaleKeys;
+	
+	int32 boneIndex = animSequence->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(BoneName);
 	if (boneIndex == INDEX_NONE)
 	{
 		return;
 	}
 	FSkeletonPoseBoneIndex poseBoneIndex(boneIndex);
 
-	for (int32 i = 0; i < NumKeys; ++i)
+	for (int32 i = 0; i < numKeys; ++i)
 	{
-		double Time = AnimSeq->GetTimeAtFrame(i);
+		double Time = animSequence->GetTimeAtFrame(i);
 
-		FTransform OutBoneTransform;
-		FAnimExtractContext extractContext(Time, AnimSeq->bEnableRootMotion);
-		AnimSeq->GetBoneTransform(OutBoneTransform, poseBoneIndex, extractContext, false);
+		FTransform outBoneTransform;
+		FAnimExtractContext extractContext(Time, animSequence->bEnableRootMotion);
+		animSequence->GetBoneTransform(outBoneTransform, poseBoneIndex, extractContext, false);
 
 		FQuat addQuat = AddRotator.Quaternion();
-		FQuat CurrentBoneRot = addQuat * OutBoneTransform.GetRotation();
+		FQuat currentBoneRot = addQuat * outBoneTransform.GetRotation();
 
-		FVector CurrentBoneLocation = addQuat * ((OutBoneTransform.GetLocation() + AddLocation) * MultiplyLocation);
-
+		FVector currentBoneLocation = addQuat * ((outBoneTransform.GetLocation() + AddLocation) * MultiplyLocation);
+		FVector currentBoneScale = (outBoneTransform.GetScale3D() + AddScale) * MultiplyScale;
 		
-		FVector CurrentBoneScale = (OutBoneTransform.GetScale3D() + AddScale) * MultiplyScale;
-		
-		BonePosKeys.Add(CurrentBoneLocation);
-		BoneRotKeys.Add(CurrentBoneRot);
-		BoneScaleKeys.Add(CurrentBoneScale);
+		bonePosKeys.Add(currentBoneLocation);
+		boneRotKeys.Add(currentBoneRot);
+		boneScaleKeys.Add(currentBoneScale);
 	}
-	Controller.SetBoneTrackKeys(BoneName, BonePosKeys, BoneRotKeys, BoneScaleKeys);
+	
+	controller.SetBoneTrackKeys(BoneName, bonePosKeys, boneRotKeys, boneScaleKeys);
 }
 
 void UKMAnimModifier_FrameCut::OnApply_Implementation(UAnimSequence* animationSequence)
 {
-/*	if(animationSequence == nullptr)
-	{
-		return;
-	}
-
-	const IAnimationDataModel* dataModel = animationSequence->GetDataModel();
-	const int32 totalFrames = dataModel->GetNumberOfFrames();
-	if (totalFrames <= 1)
-	{
-		return;
-	}
-
-	// Clamp
-	const int32 startFrame = FMath::Clamp(static_cast<int32>(StartFrame), 0, totalFrames - 1);
-	const int32 endFrame   = FMath::Clamp(static_cast<int32>(EndFrame), startFrame + 1, totalFrames);
-
-	const float sequenceLength = animationSequence->GetPlayLength();
-	const float frameTime = sequenceLength / (totalFrames - 1);
-
-	const float startTime = startFrame * frameTime;
-	const float endTime   = endFrame * frameTime;
-	const float newLength = endTime - startTime;
-
-	if (newLength <= KINDA_SMALL_NUMBER)
-	{
-		return;
-	}
-
-	// Raw Data 접근
-	TArray<FRawAnimSequenceTrack>& rawTracks = animationSequence->GetRawAnimationData();
-
-	const int32 newFrameCount = endFrame - startFrame;
-
-	for (FRawAnimSequenceTrack& track : rawTracks)
-	{
-		// Pos
-		if (track.PosKeys.Num() > 0)
-		{
-			TArray<FVector> newPosKeys;
-			newPosKeys.Reserve(newFrameCount);
-
-			for (int32 i = startFrame; i < endFrame; ++i)
-			{
-				newPosKeys.Add(track.PosKeys[i]);
-			}
-
-			track.PosKeys = MoveTemp(newPosKeys);
-		}
-
-		// Rot
-		if (track.RotKeys.Num() > 0)
-		{
-			TArray<FQuat> newRotKeys;
-			newRotKeys.Reserve(newFrameCount);
-
-			for (int32 i = startFrame; i < endFrame; ++i)
-			{
-				newRotKeys.Add(track.RotKeys[i]);
-			}
-
-			track.RotKeys = MoveTemp(newRotKeys);
-		}
-
-		// Scale
-		if (track.ScaleKeys.Num() > 0)
-		{
-			TArray<FVector> newScaleKeys;
-			newScaleKeys.Reserve(newFrameCount);
-
-			for (int32 i = startFrame; i < endFrame; ++i)
-			{
-				newScaleKeys.Add(track.ScaleKeys[i]);
-			}
-
-			track.ScaleKeys = MoveTemp(newScaleKeys);
-		}
-	}
-
-	// Frame 수 재설정
-	animationSequence->SetRawNumberOfFrame(newFrameCount);
-
-	// 길이 재설정
-	animationSequence->SequenceLength = newLength;
-
-	// Curve도 같이 잘라줘야함 (중요)
-	animationSequence->GetController().OpenBracket(TEXT("FrameCut"));
-
-	{
-		IAnimationDataController& controller = animationSequence->GetController();
-
-		controller.SetPlayLength(newLength);
-
-		// Curve 리맵
-		for (FFloatCurve& curve : animationSequence->GetCurveData().FloatCurves)
-		{
-			TArray<FRichCurveKey> newKeys;
-
-			for (auto& key : curve.FloatCurve.GetConstRefOfKeys())
-			{
-				if (key.Time >= startTime && key.Time <= endTime)
-				{
-					FRichCurveKey newKey = key;
-					newKey.Time -= startTime; // 시간 재정렬
-					newKeys.Add(newKey);
-				}
-			}
-
-			curve.FloatCurve.Reset();
-			for (const FRichCurveKey& k : newKeys)
-			{
-				curve.FloatCurve.AddKey(k);
-			}
-		}
-	}
-
-	animationSequence->GetController().CloseBracket();
-
-	// Notify도 잘라줘야함
-	TArray<FAnimNotifyEvent>& notifies = animationSequence->Notifies;
-	for (int32 i = notifies.Num() - 1; i >= 0; --i)
-	{
-		FAnimNotifyEvent& notify = notifies[i];
-
-		if (notify.GetTime() < startTime || notify.GetTime() > endTime)
-		{
-			notifies.RemoveAt(i);
-		}
-		else
-		{
-			notify.SetTime(notify.GetTime() - startTime);
-		}
-	}
-
-	// 필수
-	animationSequence->MarkRawDataAsModified();
-	animationSequence->PostEditChange();*/
 }
 
-void UKMFixPelvisYawModifier::CreateBoneInfo(const UAnimSequence* animationSequence, TArray<FKMBoneInfo>& outBoneInfos)
+void UKMFixPelvisYawModifier::CreateBoneInfo(const UAnimSequence* animSequence, TArray<FKMBoneInfo>& outBoneInfos)
 {
-	const FReferenceSkeleton& RefSkeleton = animationSequence->GetSkeleton()->GetReferenceSkeleton();
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
+	
+	const FReferenceSkeleton& refSkeleton = animSequence->GetSkeleton()->GetReferenceSkeleton();
 
-	const int32 numBones = RefSkeleton.GetNum();
+	const int32 numBones = refSkeleton.GetNum();
 	outBoneInfos.SetNum(numBones);
 	for (int32 boneIndex = 0; boneIndex < numBones; ++boneIndex)
 	{
-		int32 parentBoneIndex = RefSkeleton.GetParentIndex(boneIndex);
+		int32 parentBoneIndex = refSkeleton.GetParentIndex(boneIndex);
 		if (parentBoneIndex != INDEX_NONE)
 		{
 			outBoneInfos[parentBoneIndex].ChildBoneIndices.Emplace(boneIndex);
 		}
 		outBoneInfos[boneIndex].ParentBoneIndex = parentBoneIndex;
-		outBoneInfos[boneIndex].BoneName = RefSkeleton.GetBoneName(boneIndex);
+		outBoneInfos[boneIndex].BoneName = refSkeleton.GetBoneName(boneIndex);
 	}
 }
 
-void UKMFixPelvisYawModifier::FixedWorldPose(UAnimSequence* animationSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms)
+void UKMFixPelvisYawModifier::FixedWorldPose(UAnimSequence* animSequence, int32 boneIndex, float time, const FTransform& parentTransform, TArray<FTransform>& outBoneWorldTransforms)
 {
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
+	
 	for (auto childBoneIndex : BoneInfos[boneIndex].ChildBoneIndices)
 	{
-		FAnimExtractContext extractBaseContext(static_cast<double>(time), animationSequence->bEnableRootMotion);
+		FAnimExtractContext extractBaseContext(static_cast<double>(time), animSequence->bEnableRootMotion);
 
 		FTransform boneLocalTransform;
-		animationSequence->GetBoneTransform(boneLocalTransform, FSkeletonPoseBoneIndex(childBoneIndex), extractBaseContext, false);
+		animSequence->GetBoneTransform(boneLocalTransform, FSkeletonPoseBoneIndex(childBoneIndex), extractBaseContext, false);
 		outBoneWorldTransforms[childBoneIndex] = boneLocalTransform * parentTransform;
 
-		FixedWorldPose(animationSequence, childBoneIndex, time, outBoneWorldTransforms[childBoneIndex], outBoneWorldTransforms);
+		FixedWorldPose(animSequence, childBoneIndex, time, outBoneWorldTransforms[childBoneIndex], outBoneWorldTransforms);
 	}
 }
 
-void UKMFixPelvisYawModifier::OnApply_Implementation(UAnimSequence* animationSequence)
+void UKMFixPelvisYawModifier::OnApply_Implementation(UAnimSequence* animSequence)
 {
-	CreateBoneInfo(animationSequence, BoneInfos);
+	if (!IsValid(animSequence))
+	{
+		return;
+	}
 	
-    IAnimationDataController& controller = animationSequence->GetController();
-    const FReferenceSkeleton& refSkeleton = animationSequence->GetSkeleton()->GetReferenceSkeleton();
+	CreateBoneInfo(animSequence, BoneInfos);
+	
+    IAnimationDataController& controller = animSequence->GetController();
+    const FReferenceSkeleton& refSkeleton = animSequence->GetSkeleton()->GetReferenceSkeleton();
 	
     FTransform offsetTransform(OffsetRotator);
 	
     controller.OpenBracket(FText::FromString(TEXT("Perfect Matrix Inverse Rotation")));
 
-	const int32 numKeys = animationSequence->GetNumberOfSampledKeys();
+	const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
 	TArray<TArray<FVector>> newLocation;
 	TArray<TArray<FQuat>> newRotation;
@@ -385,17 +271,17 @@ void UKMFixPelvisYawModifier::OnApply_Implementation(UAnimSequence* animationSeq
 
     for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
-    	double time = animationSequence->GetTimeAtFrame(keyIndex);
+    	double time = animSequence->GetTimeAtFrame(keyIndex);
 
     	TArray<FTransform> boneWorldTransforms;
     	boneWorldTransforms.SetNum(refSkeleton.GetNum());
 
     	FTransform boneRootLocalTransform;
-    	FAnimExtractContext extractBaseContext(static_cast<double>(time), animationSequence->bEnableRootMotion);
-    	animationSequence->GetBoneTransform(boneRootLocalTransform, FSkeletonPoseBoneIndex(0), extractBaseContext, false);
+    	FAnimExtractContext extractBaseContext(static_cast<double>(time), animSequence->bEnableRootMotion);
+    	animSequence->GetBoneTransform(boneRootLocalTransform, FSkeletonPoseBoneIndex(0), extractBaseContext, false);
 
     	boneWorldTransforms[0] = boneRootLocalTransform * offsetTransform;
-    	FixedWorldPose(animationSequence, 0, time, boneRootLocalTransform, boneWorldTransforms);  	
+    	FixedWorldPose(animSequence, 0, time, boneRootLocalTransform, boneWorldTransforms);  	
     	
     	for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
     	{
@@ -460,9 +346,9 @@ bool UKMBlendToAnimationModifier::IsBlendBone(const FReferenceSkeleton& refSkele
 	return false;
 }
 
-void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animationSequence)
+void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequence)
 {
-    if (!IsValid(animationSequence))
+    if (!IsValid(animSequence))
     {
         return;
     }
@@ -472,7 +358,7 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animatio
         return;
     }
 
-    if (animationSequence->GetSkeleton() != TargetAnimationSequence->GetSkeleton())
+    if (animSequence->GetSkeleton() != TargetAnimationSequence->GetSkeleton())
     {
         return;
     }
@@ -482,8 +368,8 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animatio
         return;
     }
     
-    IAnimationDataController& controller = animationSequence->GetController();
-    const FReferenceSkeleton& refSkeleton = animationSequence->GetSkeleton()->GetReferenceSkeleton();
+    IAnimationDataController& controller = animSequence->GetController();
+    const FReferenceSkeleton& refSkeleton = animSequence->GetSkeleton()->GetReferenceSkeleton();
     
     TArray<TArray<FVector>> newLocation;
     TArray<TArray<FQuat>> newRotation;
@@ -492,7 +378,7 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animatio
     newLocation.SetNum(refSkeleton.GetNum());
     newRotation.SetNum(refSkeleton.GetNum());
     newScale.SetNum(refSkeleton.GetNum());
-    
+
     TArray<FTransform> targetBoneTransform;
     for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
     {
@@ -500,17 +386,38 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animatio
         FAnimExtractContext extractBaseContext(static_cast<double>(0.f), TargetAnimationSequence->bEnableRootMotion);
 
         TargetAnimationSequence->GetBoneTransform(boneTransform, FSkeletonPoseBoneIndex(boneIndex), extractBaseContext, false);
-        targetBoneTransform.Emplace(boneTransform);
-    }
 
-    const int32 numKeys = animationSequence->GetNumberOfSampledKeys();
+    	if (boneIndex == 1)
+    	{
+    		targetBoneTransform.Emplace(boneTransform * TargetRootTransform);
+    	}
+    	else
+    	{
+    	    targetBoneTransform.Emplace(boneTransform);
+    	}
+    }
+	
+	int32 addBoneIndex = 1;
+	
+	FTransform addSourceBoneTransform;
+	FAnimExtractContext addExtractContext(static_cast<double>(AddTime), animSequence->bEnableRootMotion);
+	animSequence->GetBoneTransform(addSourceBoneTransform, FSkeletonPoseBoneIndex(addBoneIndex), addExtractContext, false);
+
+	FVector addLocation = targetBoneTransform[addBoneIndex].GetLocation() - addSourceBoneTransform.GetLocation();
+	addLocation.Y = 0.f;
+	FQuat addRotation = targetBoneTransform[addBoneIndex].GetRotation().Inverse() * addSourceBoneTransform.GetRotation();
+
+	FTransform addBoneTransform = FTransform(addRotation, addLocation, FVector::One());
+
+    const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
     for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
-        const float time = static_cast<float>(animationSequence->GetTimeAtFrame(keyIndex));
-        const float blendAlpha = FMath::Clamp((time - BlendingStartTime) / BlendingTime, 0.f,1.f);
+        const float time = static_cast<float>(animSequence->GetTimeAtFrame(keyIndex));
+    	
+        const float blendAlpha = FMath::IsNearlyZero(BlendingTime) ? 1.f : FMath::Clamp((time - BlendingStartTime) / BlendingTime, 0.f,1.f);
 
-        FAnimExtractContext extractContext(static_cast<double>(time), animationSequence->bEnableRootMotion);
+        FAnimExtractContext extractContext(static_cast<double>(time), animSequence->bEnableRootMotion);
         for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
         {
         	if (!IsBlendBone(refSkeleton, boneIndex))
@@ -518,11 +425,25 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animatio
         		continue;
         	}
             FTransform sourceBoneTransform;
-            animationSequence->GetBoneTransform(sourceBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractContext, false);
-            FTransform finalBoneTransform;
-            finalBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha * blendAlpha);
+            animSequence->GetBoneTransform(sourceBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractContext, false);
+            FTransform blendBoneTransform;
+            blendBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha * blendAlpha);
 
-            newLocation[boneIndex].Emplace(finalBoneTransform.GetTranslation());
+        	FTransform finalBoneTransform = bIsBlending ?  blendBoneTransform : sourceBoneTransform;
+
+        	if (boneIndex == 1)
+        	{
+        		if (bIsAddTranslate)
+        		{
+        			finalBoneTransform.SetLocation(finalBoneTransform.GetLocation() + (addBoneTransform.GetLocation() * blendAlpha));
+        		}
+        		if (bIsAddRotation)
+        		{
+        			finalBoneTransform.SetRotation(finalBoneTransform.GetRotation() * (addBoneTransform.GetRotation() * blendAlpha));
+        		}
+        	}
+        	
+            newLocation[boneIndex].Emplace(finalBoneTransform.GetLocation());
             newRotation[boneIndex].Emplace(finalBoneTransform.GetRotation());
             newScale[boneIndex].Emplace(finalBoneTransform.GetScale3D());
         }
