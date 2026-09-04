@@ -70,6 +70,12 @@ protected:
 
 	float CustomDuration = 0.f;
 
+public:
+	const FName& GetMontageInstanceTag() const { return MontageInstanceTag; }
+	EKMAnimSlotType GetSlotType() const { return SlotType; }
+
+	class UAnimMontage* GetUsedMontage(AActor* actor, const FName& slotName) const;
+
 protected:
 	virtual void NotifyBegin(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
@@ -77,8 +83,6 @@ protected:
 
 	virtual bool IsCustomDuration() const override;
 	virtual float GetCustomDuration() const override;
-
-	class UAnimMontage* GetUsedMontage(AActor* actor, const FName& slotName) const;
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

@@ -7,7 +7,14 @@ UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
 class KMGAME_API UKMSkeletalMeshComponent : public USkeletalMeshComponent
 {
 	GENERATED_UCLASS_BODY()
-
+	
+protected:
+	UPROPERTY(Transient)
+	TArray<TWeakObjectPtr<class UKMAttachedBlendingComponent>> BlendingComponentChilds;
+	
+public:
+	void AttachBlendingComponent(class UKMAttachedBlendingComponent* newBlendingComponent);
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnRegister() override;

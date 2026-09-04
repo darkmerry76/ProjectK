@@ -922,6 +922,14 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMGameObjectInst
 	return newSkillInstance;
 }
 
+void UKMSkillHandler::UseSkill_Release()
+{
+	for (auto skillInstance : SkillInstances)
+	{
+		skillInstance.Value->RequestEnd();
+	}	
+}
+
 TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag)
 {
 	check(skillInstance.IsValid());

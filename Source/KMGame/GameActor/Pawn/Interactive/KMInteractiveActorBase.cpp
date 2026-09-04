@@ -32,6 +32,11 @@ UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() cons
 	return MartialArtsComponent;
 }
 
+UMeshComponent* AKMInteractiveActorBase::GetMasterMeshComponent() const
+{
+	return MasterMeshComponent;
+}
+
 UKMCurveWarpingComponent* AKMInteractiveActorBase::GetCurveWarpingComponent() const
 {
 	return CurveWarpingComponent;

@@ -693,6 +693,11 @@ void UKMCharacterInstance::UseTechniqueSkill()
 	GetSkillHandler()->UseTechniqueSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
 }
 
+void UKMCharacterInstance::UseTechniqueSkill_Release()
+{
+	GetSkillHandler()->UseSkill_Release();
+}
+
 bool UKMCharacterInstance::UseParrySkill()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
@@ -809,7 +814,7 @@ bool UKMCharacterInstance::IsWalk() const
 	return !bIsRun;
 }
 
-void UKMCharacterInstance::SetDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
+void UKMCharacterInstance::SetDirectionVisual(float newDirection, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
@@ -821,17 +826,17 @@ void UKMCharacterInstance::SetDirectionVisual(float direction, bool bForceRotate
 		
 		if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(adjustSkeletalMeshComp->GetAnimInstance()))
 		{
-			animInstance->SetNextDirection(direction);
+			animInstance->SetNextDirection(newDirection);
 			if (bForceRotate)
 			{
-				animInstance->SetCurrentDirection(direction);
+				animInstance->SetCurrentDirection(newDirection);
 			}
 			animInstance->UpdateAnimation(0.f, true);
 		}
 	}
 }
 
-void UKMCharacterInstance::SetDirection(float direction, bool bForceRotate)
+void UKMCharacterInstance::SetDirection(float newDirection, bool bForceRotate)
 {
 	if (IsDead())
 	{
@@ -843,12 +848,11 @@ void UKMCharacterInstance::SetDirection(float direction, bool bForceRotate)
 		return;
 	}
 
-	if (FMath::IsNearlyEqual(Direction, direction) && !bForceRotate)
+	if (FMath::IsNearlyEqual(Direction, newDirection) && !bForceRotate)
 	{
 		return;
 	}
-
-	Direction = direction;
+	Super::SetDirection(newDirection, bForceRotate);
 	
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
@@ -860,7 +864,7 @@ void UKMCharacterInstance::SetDirection(float direction, bool bForceRotate)
 		ownerCharacter->SetActorRotation(newRotation);
 		ownerCharacter->GetRootComponent()->UpdateComponentToWorld();
 
-		SetDirectionVisual(direction, bForceRotate);
+		SetDirectionVisual(newDirection, bForceRotate);
 		if (!ownerCharacter->GetMesh()->IsPostEvaluatingAnimation())
 		{
 			ownerCharacter->GetMesh()->RefreshBoneTransforms();

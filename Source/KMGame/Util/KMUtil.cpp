@@ -1,6 +1,7 @@
 #include "KMUtil.h"
 #include <Tables/Generated/KMTable_Chapter.h>
 #include "AIController.h"
+#include "MotionWarpingComponent.h"
 #include "Animation/BlendSpace1D.h"
 #include "Animation/KMAnimInstance.h"
 #include "Core/KMGameInstance.h"
@@ -555,6 +556,61 @@ FAnimMontageInstance* UKMUtil::GetActiveMontageInstance(const AKMCharacter* char
 	{
 		return nullptr;
 	}
-	
+
 	return animInstance->GetActiveMontageInstance();
+}
+
+FTransform UKMUtil::GetExtractComponentSpaceBoneTransform(const UAnimInstance* animInstance, const UAnimSequenceBase* animation, float time, FName boneName, bool bExtractRootMotion)
+{
+	if (!IsValid(animInstance))
+	{
+		return FTransform::Identity;
+	}
+
+	if (!IsValid(animation))
+	{
+		return FTransform::Identity;
+	}
+
+	const int32 boneIndex = animInstance->GetRequiredBones().GetPoseBoneIndexForBoneName(boneName);
+	if (boneIndex == INDEX_NONE)
+	{
+		return FTransform::Identity;
+	}
+
+	FMemMark Mark(FMemStack::Get());
+	
+	FCompactPose outCompactPose;
+	ExtractLocalSpacePose(animation, animInstance->GetRequiredBones(), time, bExtractRootMotion, outCompactPose);
+
+	FCSPose<FCompactPose> componentSpacePoses;
+	componentSpacePoses.InitPose(outCompactPose);
+	return componentSpacePoses.GetComponentSpaceTransform(FCompactPoseBoneIndex(boneIndex));
+}
+
+void UKMUtil::ExtractLocalSpacePose(const UAnimSequenceBase* animation, const FBoneContainer& boneContainer, float time, bool bExtractRootMotion, FCompactPose& outPose)
+{
+	if (!IsValid(animation))
+	{
+		return;
+	}
+	
+	outPose.SetBoneContainer(&boneContainer);
+
+	FBlendedCurve curve;
+	curve.InitFrom(boneContainer);
+
+	FAnimExtractContext context(static_cast<double>(time), bExtractRootMotion);
+
+	UE::Anim::FStackAttributeContainer attributes;
+	FAnimationPoseData animationPoseData(outPose, curve, attributes);
+	if (const UAnimSequence* animSequence = Cast<UAnimSequence>(animation))
+	{
+		animSequence->GetBonePose(animationPoseData, context);
+	}
+	else if (const UAnimMontage* animMontage = Cast<UAnimMontage>(animation))
+	{
+		const FAnimTrack& animTrack = animMontage->SlotAnimTracks[0].AnimTrack;
+		animTrack.GetAnimationPose(animationPoseData, context);
+	}
 }

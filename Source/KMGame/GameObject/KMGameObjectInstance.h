@@ -108,14 +108,20 @@ public:
 	float GetVerticalDistanceTo(const class UKMGameObjectInstance* toGameObjectInstance) const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
+	virtual void SetDirectionVisual(float newDirection, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void SetDirection(float direction, bool bForceRotate = false);
+	virtual void SetDirection(float newDirection, bool bForceRotate = false);
 
 	UFUNCTION(BlueprintPure)
 	virtual float GetDirection() const;
-	
+
+	UFUNCTION(BlueprintCallable)
+	void SetInteractionDirection(float newDirection);
+
+	UFUNCTION(BlueprintPure)
+	float GetInteractionDirection() const;
+
 	UFUNCTION(BlueprintPure)
 	virtual bool IsDead() const;
 
@@ -217,4 +223,5 @@ protected:
 	EKMDamagePowerType HitPowerType = EKMDamagePowerType::None;
 
 	float Direction = 1.f;
+	float InteractionDirection = 1.f;
 };

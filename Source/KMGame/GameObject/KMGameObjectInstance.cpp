@@ -519,19 +519,29 @@ float UKMGameObjectInstance::GetVerticalDistanceTo(const UKMGameObjectInstance* 
 	return FMath::Abs(ownerShapeComponent->GetComponentLocation().Z - targetShapeComponent->GetComponentLocation().Z);
 }
 
-void UKMGameObjectInstance::SetDirectionVisual(float direction, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
+void UKMGameObjectInstance::SetDirectionVisual(float newDirection, bool bForceRotate, USkeletalMeshComponent* otherSkeletalMeshComp)
 {
 	
 }
 	
-void UKMGameObjectInstance::SetDirection(float direction, bool bForceRotate)
+void UKMGameObjectInstance::SetDirection(float newDirection, bool bForceRotate)
 {
-	
+	Direction = newDirection;
 }
 
 float UKMGameObjectInstance::GetDirection() const
 {
 	return Direction;
+}
+
+void UKMGameObjectInstance::SetInteractionDirection(float newDirection)
+{
+	InteractionDirection = newDirection;	
+}
+
+float UKMGameObjectInstance::GetInteractionDirection() const
+{
+	return InteractionDirection;
 }
 
 void UKMGameObjectInstance::AddAggroTarget(UKMGameObjectInstance* attackerGameObjectInstance)

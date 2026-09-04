@@ -28,6 +28,7 @@ const FGameplayTag FKMGameplayTagName::Event_Cancel_Available_Tag = FGameplayTag
 const FGameplayTag FKMGameplayTagName::Event_Cancel_Available_Perfect_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Cancel.Available.Perfect"));
 const FGameplayTag FKMGameplayTagName::Event_Move_Landing_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Move.Landing"));
 const FGameplayTag FKMGameplayTagName::Event_Blow_IgnoreLanded_Tag = FGameplayTag::RequestGameplayTag(TEXT("Event.Blow.IgnoreLanded"));
+const FGameplayTag FKMGameplayTagName::Event_PutDown_Tag =  FGameplayTag::RequestGameplayTag(TEXT("Event.PutDown"));
 
 const FGameplayTag FKMGameplayTagName::State_Tag = FGameplayTag::RequestGameplayTag(TEXT("State"));
 const FGameplayTag FKMGameplayTagName::State_Dead_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Dead"));

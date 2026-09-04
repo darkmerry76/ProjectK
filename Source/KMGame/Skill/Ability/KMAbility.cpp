@@ -7,7 +7,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacterAnimInstance.h"
 #include "GameObject/KMCharacterInstance.h"
+#include "Notify/KMAnimNotifyState_Animation.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/EMMontageCacheManager.h"
 #include "System/KMTargetSubsystem.h"
@@ -98,9 +100,6 @@ AKMCharacter* UKMAbility::GetTargetCharacter() const
 
 void UKMAbility::Activate()
 {
-	UEMMartialArts* martialArts = GetMartialArts();
-	check(IsValid(martialArts));
-
 	AActor* ownerActor = GetOwnerActor();
 	check(IsValid(ownerActor));
 
@@ -374,15 +373,37 @@ bool UKMAbility::SetMontageRateByTag(AKMCharacter* character, FName tag, float n
 	return true;
 }
 
-float UKMAbility::GetMontageRateByTag(AKMCharacter* character, FName tag) const
+float UKMAbility::GetMontageRateByTag(AKMCharacter* character, FName montageInstanceTag) const
 {
-	const FAnimMontageInstance* montageInstance = GetMontageInstanceByTag(character, tag);
+	const FAnimMontageInstance* montageInstance = GetMontageInstanceByTag(character, montageInstanceTag);
 	if (!montageInstance)
 	{
 		return 1.f;
 	}
 	
 	return montageInstance->GetPlayRate();
+}
+
+void UKMAbility::StopMontageByTag(class AKMCharacter* character, FName montageInstanceTag)
+{
+	if (!IsValid(character) || !IsValid(character->GetMesh()))
+	{
+		return;
+	}
+
+	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(character->GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+	
+	FAnimMontageInstance* montageInstance = GetMontageInstanceByTag(character, montageInstanceTag);
+	if (!montageInstance || !IsValid(montageInstance->Montage))
+	{
+		return;
+	}
+
+	montageInstance->Stop(montageInstance->Montage->BlendOut);
 }
 
 void UKMAbility::SetLockOnCluster(TSharedPtr<FKMLockOnCluster> newLockOnCluster)
@@ -599,6 +620,56 @@ void UKMAbility::MontageStart(UAnimMontage* animMontage, FName montageInstanceTa
 void UKMAbility::MontageStop(class UAnimMontage* animMontage, FName montageInstanceTag)
 {
 	OnMontageStop(animMontage, montageInstanceTag);
+}
+
+FTransform UKMAbility::GetMontageComponentSpaceBoneTransform(AKMCharacter* character, FName montageInstanceTag, float time, FName boneName, bool bExtractRootMotion) const
+{
+	if(!IsValid(character) || !IsValid(character->GetMesh()))
+	{
+		return FTransform::Identity;
+	}
+	
+	UKMAnimInstance* ownerAnimInstance = Cast<UKMAnimInstance>(character->GetMesh()->GetAnimInstance());
+	if (!IsValid(ownerAnimInstance))
+	{
+		return FTransform::Identity;
+	}
+
+	UAnimMontage* animMontage = nullptr;
+	FAnimMontageInstance* animMontageInstance = GetMontageInstanceByTag(character, montageInstanceTag);
+	if (!animMontageInstance)
+	{
+		if (IsValid(MartialArts))
+		{
+			TArray<UObject*> outNotifyStateAnimations;
+			MartialArts->GetNotifiesByClass(UKMAnimNotifyState_Animation::StaticClass(), outNotifyStateAnimations);
+			for (int32 notifyIndex = 0; notifyIndex < outNotifyStateAnimations.Num(); ++notifyIndex)
+			{
+				UKMAnimNotifyState_Animation* notifyStateAnimation = Cast<UKMAnimNotifyState_Animation>(outNotifyStateAnimations[notifyIndex]);
+				if (!IsValid(notifyStateAnimation))
+				{
+					continue;
+				}
+
+				if (notifyStateAnimation->GetMontageInstanceTag() == montageInstanceTag)
+				{
+					animMontage = notifyStateAnimation->GetUsedMontage(character, UKMUtil::GetAnimSlotName(notifyStateAnimation->GetSlotType()));
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		animMontage = animMontageInstance->Montage;
+	}
+
+	if (!IsValid(animMontage))
+	{
+		return FTransform::Identity;
+	}
+	
+	return UKMUtil::GetExtractComponentSpaceBoneTransform(ownerAnimInstance, animMontage, time, boneName, bExtractRootMotion);
 }
 
 UKMAbilityPreview::UKMAbilityPreview(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

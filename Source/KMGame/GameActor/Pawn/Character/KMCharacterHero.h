@@ -89,7 +89,9 @@ protected:
 	void RunReleased();
 
 	void OnCombatSkillAction();
+	
 	void OnTachniqueSkillAction();
+	void OnTachniqueSkillAction_Release();
 
 	void OnGuardSkillAction();
 	void OnGuardSkillAction_Release();

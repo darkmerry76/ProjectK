@@ -155,6 +155,7 @@ public:
 
 enum class EKMSkillState
 {
+	None,
 	Start,
 	Loop,
 	End,

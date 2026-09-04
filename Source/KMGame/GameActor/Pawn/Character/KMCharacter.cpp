@@ -116,6 +116,12 @@ UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const
 	return CurveWarpingComponent;
 }
 
+
+UMeshComponent* AKMCharacter::GetMasterMeshComponent() const
+{
+	return GetMesh();
+}
+
 void AKMCharacter::SetMirror(bool bMirror)
 {
 	bIsMirror = bMirror;

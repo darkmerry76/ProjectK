@@ -51,14 +51,25 @@ protected:
 	uint64 LasteLandedFrameCount = 0;
 
 public:
+	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetCharacterInstance() const;
 
+	UFUNCTION(BlueprintPure)
 	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
+	
 	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
 
+	UFUNCTION(BlueprintPure)
 	virtual class UPrimitiveComponent* GetMovementShapeComponent() const override;
+
+	UFUNCTION(BlueprintPure)
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
+
+	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual class UMeshComponent* GetMasterMeshComponent() const override;
 
 	void SetMirror(bool bMirror);
 	bool GetMirror() const;

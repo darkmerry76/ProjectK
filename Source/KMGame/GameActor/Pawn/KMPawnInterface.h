@@ -20,6 +20,8 @@ public:
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const = 0;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
 
+	virtual class UMeshComponent* GetMasterMeshComponent() const = 0;
+
 	virtual void Crarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
 	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;
 

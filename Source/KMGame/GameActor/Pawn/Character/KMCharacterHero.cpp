@@ -41,7 +41,9 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AKMCharacterHero::RunReleased);
 		
 		EnhancedInputComponent->BindAction(CombatSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnCombatSkillAction);
+		
 		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnTachniqueSkillAction);
+		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnTachniqueSkillAction_Release);
 
 		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnGuardSkillAction);
 		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnGuardSkillAction_Release);
@@ -83,7 +85,10 @@ void AKMCharacterHero::Move(const FInputActionValue& Value)
 	}
 
 	LastetMoveInputVelocity = FVector(moveDirection, 0.f);
+	float circularDirection = UKMUtil::GetCircularAngle2D8Way(moveDirection);
 
+	GetCharacterInstance()->SetInteractionDirection(circularDirection);
+	
 	if(GetCharacterInstance()->HasGameplayTag(FKMGameplayTagName::Block_Control_Move_Tag))
 	{
 		return;
@@ -94,8 +99,7 @@ void AKMCharacterHero::Move(const FInputActionValue& Value)
 	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(GetMesh()->GetAnimInstance());
 	if (IsValid(animInstance))
 	{
-		float movementCircularDirection = UKMUtil::GetCircularAngle2D8Way(moveDirection);
-		GetCharacterInstance()->SetDirection(movementCircularDirection);
+		GetCharacterInstance()->SetDirection(circularDirection);
 	}	
 }
 
@@ -203,6 +207,11 @@ void AKMCharacterHero::OnTachniqueSkillAction()
 	bTechniqueTriggered = true;
 	GetWorldTimerManager().SetTimer(TechniqueSkillTimerHandle,this,
 		&AKMCharacterHero::ExecuteTechniqueSkill,ComboInputWindow,false);
+}
+
+void AKMCharacterHero::OnTachniqueSkillAction_Release()
+{
+	GetCharacterInstance()->UseTechniqueSkill_Release();
 }
 
 void AKMCharacterHero::OnGuardSkillAction()

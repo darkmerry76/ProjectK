@@ -104,6 +104,11 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	static FName GetAnimSlotName(EKMAnimSlotType slotType);
+	
+	UFUNCTION(BlueprintPure)
+	static FTransform GetExtractComponentSpaceBoneTransform(const class UAnimInstance* animInstance, const class UAnimSequenceBase* animation, float time, FName boneName, bool bExtractRootMotion = false);
+	
+	static void ExtractLocalSpacePose(const class UAnimSequenceBase* Animation, const FBoneContainer& BoneContainer, float Time, bool bExtractRootMotion, FCompactPose& OutPose);
 
 	static struct FAnimMontageInstance* FindMontageInstaceTagByCharacter(const class AKMCharacter* character, const FName& montageInstancetag);
 

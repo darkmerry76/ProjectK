@@ -70,10 +70,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseSkillDash(float dashDirection);
 
-	virtual void SetDirectionVisual(float direction, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr) override;
-	virtual void SetDirection(float direction, bool bForceRotate = false) override;
+	virtual void SetDirectionVisual(float newDirection, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr) override;
+	virtual void SetDirection(float newDirection, bool bForceRotate = false) override;
 	virtual float GetDirection() const override;
-
+	
 	UFUNCTION(BlueprintPure)
 	bool IsBeast() const;
 	
@@ -95,6 +95,7 @@ public:
 	void UseCombatSkill();
 	void UseUltimateSkill();
 	void UseTechniqueSkill();
+	void UseTechniqueSkill_Release();
 	bool UseParrySkill();
 
 	bool UseGuardSkill();

@@ -25,6 +25,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UMeshComponent> MasterMeshComponent;
+	
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class UKMInteractiveInstance> InteractiveInstance;
 
@@ -48,6 +51,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual class UMeshComponent* GetMasterMeshComponent() const;
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;

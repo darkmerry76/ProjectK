@@ -1,4 +1,6 @@
 #include "KMSkeletalMeshComponent.h"
+
+#include "KMAttachedBlendingComponent.h"
 #include "Core/KMParameterLayerSystem.h"
 
 UKMSkeletalMeshComponent::UKMSkeletalMeshComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -37,6 +39,11 @@ void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
 	Super::EndPlay(endPlayReason);
 }
 
+void UKMSkeletalMeshComponent::AttachBlendingComponent(UKMAttachedBlendingComponent* newBlendingComponent)
+{
+	BlendingComponentChilds.AddUnique(newBlendingComponent);
+}
+
 void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterface* material)
 {
 	Super::SetMaterial(elementIndex, material);
@@ -53,14 +60,16 @@ void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterfac
 
 void UKMSkeletalMeshComponent::FinalizeBoneTransform()
 {
-	TArray<FTransform>& testTransform = GetEditableComponentSpaceTransforms();
-
-	testTransform[0].SetLocation(FVector(0, 0, 0));
-
 	Super::FinalizeBoneTransform();
 
-
-	return;
+	for (auto childComp : BlendingComponentChilds)
+	{
+		if (!childComp.IsValid())
+		{
+			continue;
+		}
+		childComp->UpdateBlending();
+	}
 }
 
 void UKMSkeletalMeshComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)

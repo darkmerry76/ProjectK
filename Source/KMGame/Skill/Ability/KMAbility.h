@@ -189,13 +189,18 @@ public:
 	void InverseDirection(bool bForce = false);
 
 	UFUNCTION(BlueprintCallable)
-	bool SetMontageRateByTag(class AKMCharacter* character, FName tag, float newRate = 1.f);
+	bool SetMontageRateByTag(class AKMCharacter* character, FName montageInstanceTag, float newRate = 1.f);
 
 	UFUNCTION(BlueprintPure)
-	float GetMontageRateByTag(class AKMCharacter* character, FName tag) const;
+	float GetMontageRateByTag(class AKMCharacter* character, FName montageInstanceTag) const;
+
+	UFUNCTION(BlueprintCallable)
+	void StopMontageByTag(class AKMCharacter* character, FName montageInstanceTag);
 
 	void MontageStart(class UAnimMontage* animMontage, FName montageInstanceTag);
 	void MontageStop(class UAnimMontage* animMontage, FName montageInstanceTag);
+
+	virtual void Tick(float deltaTime) { };
 
 protected:
 	struct FAnimMontageInstance* PlayMontage(class UAnimMontage* montage, float playRate = 1.f, FName startSectionName = NAME_None, EKMAnimSlotType slotType = EKMAnimSlotType::DefaultSlot, float slotBlendTime = 0.1f);
@@ -208,6 +213,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnMontageStop(class UAnimMontage* animMontage, FName montageInstanceTag);
+
+	UFUNCTION(BlueprintPure)
+	FTransform GetMontageComponentSpaceBoneTransform(class AKMCharacter* character, FName montageInstanceTag, float time, FName boneName, bool bExtractRootMotion) const;
 
 protected:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;

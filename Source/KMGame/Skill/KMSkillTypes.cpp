@@ -74,6 +74,14 @@ void FKMAbilityInstanceBase::ResetElipsedTime()
 
 void FKMAbilityInstanceBase::PostTick(float deltaSeconds)
 {
+	for (auto ability : AbilitieAssets)
+	{
+		if (!IsValid(ability))
+		{
+			continue;
+		}
+		ability->Tick(deltaSeconds);
+	}
 	ElipsedTime += deltaSeconds * TimeScale;
 }
 
@@ -246,10 +254,6 @@ bool FKMSkillInstance::IsComplete() const
 
 	if (const FKMTable_Skill_NormalRow* skillNormal = CastRow<FKMTable_Skill_NormalRow>(SkillKey.TableRecord))
 	{
-		if (skillNormal->Duration < 0.0001f)
-		{
-			return false;
-		}
 		if (skillNormal->ActiveType == EKMSkillActiveType::Cahnneling)
 		{
 			if (State != EKMSkillState::End)
@@ -261,6 +265,11 @@ bool FKMSkillInstance::IsComplete() const
 			{
 				return true;
 			}
+		}
+
+		if (skillNormal->Duration < 0.0001f)
+		{
+			return false;
 		}
 		
 		if (skillNormal->CoolTime < 0.0001f)
@@ -321,6 +330,7 @@ bool FKMSkillInstance::CanTransitionTo(EKMSkillState newState) const
 void FKMSkillInstance::TransitionTo(EKMSkillState newState)
 {
 	State = newState;
+	ResevedState = EKMSkillState::None; 
 	OnStateEnter(newState);
 }
 
@@ -362,7 +372,7 @@ void FKMSkillInstance::Tick(float deltaSeconds)
 	{
 		if (skillNormal->ActiveType == EKMSkillActiveType::Cahnneling)
 		{
-			if (ResevedState == EKMSkillState::End)
+			if (ResevedState == EKMSkillState::End && State != EKMSkillState::End)
 			{
 				if (skillNormal->Duration <= GetElipsedTime())
 				{
