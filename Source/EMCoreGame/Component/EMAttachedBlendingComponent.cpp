@@ -19,7 +19,8 @@ void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentCompo
 	BlendElipsedTime = 0.f;
 
 	StartWorldTransform = startWorldTransform;
-	UpdateBlending(0.f);
+
+	UpdateBlending();
 }
 
 void UEMAttachedBlendingComponent::StopBlending()
@@ -28,7 +29,7 @@ void UEMAttachedBlendingComponent::StopBlending()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UEMAttachedBlendingComponent::UpdateBlending(float deltaTime)
+void UEMAttachedBlendingComponent::UpdateBlending()
 {
 	if (AttachedParentComponent.IsValid())
 	{
@@ -37,21 +38,19 @@ void UEMAttachedBlendingComponent::UpdateBlending(float deltaTime)
 		{
 			alpha = FMath::Clamp(BlendElipsedTime / Duration, 0.f, 1.f);
 		}
-
+		
 		FTransform socketTransform = AttachedParentComponent->GetSocketTransform(AttachedSocketName,RTS_World);
 		FTransform targetTransform = OffsetTransform * socketTransform;
-
+		
 		FTransform worldTransform;
 		worldTransform.Blend(StartWorldTransform,targetTransform, alpha);
 		SetWorldLocation(worldTransform.GetLocation());
 		SetWorldRotation(worldTransform.GetRotation());
 	}
-
-	BlendElipsedTime += deltaTime;
 }
 
 void UEMAttachedBlendingComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)
 {
-	UpdateBlending(deltaTime);
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
+	BlendElipsedTime += deltaTime;
 }

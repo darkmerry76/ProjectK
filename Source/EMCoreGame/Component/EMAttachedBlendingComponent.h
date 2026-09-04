@@ -15,13 +15,14 @@ protected:
 	FTransform OffsetTransform;
 	
 public:
-	void StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration = 0.2f);
-	void StopBlending();
+	virtual void StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration = 0.2f);
+	virtual void StopBlending();
+
+	virtual void UpdateBlending();
 	
 protected:
 	virtual void TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction) override;
-	void UpdateBlending(float deltaTime);
-
+	
 protected:
 	FName AttachedSocketName;
 	FTransform StartWorldTransform;
