@@ -4,17 +4,6 @@
 #include "KMAnimNotifyState.h"
 #include "KMAnimNotifyState_AttachInteractiveActor.generated.h"
 
-USTRUCT()
-struct KMGAME_API FKMAnimNotifyState_AttachInteractiveActor_Context
-{
-	GENERATED_USTRUCT_BODY()
-
-	bool IsValid() const;
-
-	UPROPERTY()
-	TObjectPtr<class AKMInteractiveActorBase> InteractiveActor = nullptr;
-};
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UKMAnimNotifyState_AttachInteractiveActor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,15 +15,6 @@ class KMGAME_API UKMAnimNotifyState_AttachInteractiveActor : public UKMAnimNotif
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, AnimNotifyBoneName="true", DisplayAfter="AttachTransform"))
 	FName AttachSocket = NAME_None;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="AttachSocket"))
-	float BlendingDuration = 0.2f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="StartAttach", Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="BlendingDuration"))
-	bool bIsStartAttach = true;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="EndDetach", Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsStartAttach"))
-	bool bIsEndDetach = false;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsEndDetach"))
@@ -48,8 +28,4 @@ protected:
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
-	TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context> GetContext(class USkeletalMeshComponent* meshComp, const FAnimNotifyEventReference& eventReference) const;
-
-protected:
-	mutable TMap<TObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context>> Contexts;
 };

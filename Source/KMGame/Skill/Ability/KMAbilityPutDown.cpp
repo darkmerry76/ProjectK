@@ -1,10 +1,12 @@
 #include "KMAbilityPutDown.h"
 #include "Animation/KMAnimInstance.h"
+#include "Component/KMAttachedBlendingComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Skill/KMSkillHandler.h"
 #include "System/KMIndicatorSubsystem.h"
+#include "Util/KMUtil.h"
 
 UKMAbilityPutDown::UKMAbilityPutDown(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -30,6 +32,8 @@ void UKMAbilityPutDown::Activate()
 
 	OriginTransform = GetOriginWorldTransform();
 	ItemPivotBoneTransform = GetMontageComponentSpaceBoneTransform(GetOwnerCharacter(), PutDownMontageInstanceTag, ItemPivotExtractTime, ItemPivotBoneName, false);
+	ItemPivotBoneTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
+	ItemPivotBoneTransform.SetLocation(FVector(0.f, ItemPivotBoneTransform.GetLocation().Size2D(), ItemPivotBoneTransform.GetLocation().Z));
 
 	bIsAvailableItem = CalcAvailableTargetTransform(ItemTargetTransform);
 
@@ -41,7 +45,7 @@ void UKMAbilityPutDown::Activate()
 			UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
 			check(IsValid(indicatorSubsystem));
 
-			FTransform newTransform = ItemTargetTransform;
+			FTransform newTransform = pawnInterface->GetCarryOffsetTransform() * ItemTargetTransform;
 			newTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
 			PlacementMeshcomponentId = indicatorSubsystem->SpawnPlacementMeshComponent(masterMeshComponent, newTransform);
 			if (UMeshComponent* placementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
@@ -57,20 +61,18 @@ void UKMAbilityPutDown::Activate()
 void UKMAbilityPutDown::Deactivate(bool bCancel)
 {
 	Super::Deactivate(bCancel);
-}
-
-void UKMAbilityPutDown::OnRequestEnd_Implementation()
-{
-	OriginTransform = GetOriginWorldTransform();
-	bIsAvailableItem = CalcAvailableTargetTransform(ItemTargetTransform);
 
 	UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
 	check(IsValid(indicatorSubsystem));
 
 	indicatorSubsystem->RemoveMeshComponent(PlacementMeshcomponentId);
+}
 
+void UKMAbilityPutDown::OnRequestEnd_Implementation()
+{
 	if (!bIsAvailableItem || TestOverlapWorld(ItemTargetTransform))
 	{
+		ForceComplate();
 		return;
 	}
 
@@ -78,10 +80,17 @@ void UKMAbilityPutDown::OnRequestEnd_Implementation()
 	{
 		check(IsValid(ownerGameObjectInstance->GetSkillHandler()));
 		ownerGameObjectInstance->GetSkillHandler()->TriggerEvent(FKMGameplayTagName::Event_PutDown_Tag);
-		ownerGameObjectInstance->SetDirection(ownerGameObjectInstance->GetInteractionDirection());
+		
+		FVector targetToDirection = ItemTargetTransform.GetLocation() - OriginTransform.GetLocation();
+		targetToDirection.Z = 0.0f;
+		targetToDirection.Normalize();
+
+		ownerGameObjectInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection)));
 	}
 	
 	PlayMartialArts(nullptr, Rate, false);
+
+	bIsPutDowned = true;
 }
 
 bool UKMAbilityPutDown::TestOverlapWorld(const FTransform& testWorldTransform) const
@@ -140,8 +149,95 @@ FTransform UKMAbilityPutDown::GetOriginWorldTransform() const
 	return FTransform::Identity;
 }
 
+bool UKMAbilityPutDown::StartPutDown(FName attackSocket, float blendingDuration)
+{
+	AActor* ownerActor = GetOwnerActor();
+	if (!IsValid(ownerActor))
+	{
+		return false;
+	}
+	
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if (!ownerPawnInterface)
+	{
+		return false;
+	}
+
+	AActor* targetActor = GetTargetActor();
+	if (!IsValid(targetActor))
+	{
+		return false;
+	}
+	
+	IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(targetActor);
+	if (!targetPawnInterface)
+	{
+		return false;
+	}
+	
+	UKMAttachedBlendingComponent* targetAttachedBlendingComponent = targetPawnInterface->GetAttachedBlendingComponent();
+	if (!IsValid(targetAttachedBlendingComponent))
+	{
+		return false;
+	}
+
+	targetActor->SetActorLocation(ItemTargetTransform.GetLocation());
+	
+	FTransform targetWorldTransform = ItemTargetTransform;
+	targetWorldTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
+	targetActor->AttachToComponent(ownerActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
+	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
+	{
+		targetAttachedBlendingComponent->StartBlending(ownerCharacter->GetMesh(), attackSocket, targetWorldTransform, blendingDuration * -1.f);
+	}
+	
+	OnStartPutDown();
+	return true;
+}
+
+void UKMAbilityPutDown::CompletePutDown()
+{
+	AActor* ownerActor = GetOwnerActor();
+	if (!IsValid(ownerActor))
+	{
+		return;
+	}
+	
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if (!ownerPawnInterface)
+	{
+		return;
+	}
+	
+	AActor* targetActor = GetTargetActor();
+	if (!IsValid(targetActor))
+	{
+		return;
+	}
+	
+	IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(targetActor);
+	if (!targetPawnInterface)
+	{
+		return;
+	}
+	
+	UKMAttachedBlendingComponent* targetAttachedBlendingComponent = targetPawnInterface->GetAttachedBlendingComponent();
+	if (!IsValid(targetAttachedBlendingComponent))
+	{
+		return;
+	}
+	ownerPawnInterface->ComplatePutdown(targetPawnInterface->GetGameObjectInstance());
+	targetPawnInterface->ComplatePutdowned(ownerPawnInterface->GetGameObjectInstance());
+	targetAttachedBlendingComponent->StopBlending();
+	targetActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+}
+
 void UKMAbilityPutDown::Tick(float deltaTime)
 {
+	if (bIsPutDowned)
+	{
+		return;
+	}
 	AActor* ownerActor = GetOwnerActor();
 	if (!IsValid(ownerActor))
 	{
@@ -165,9 +261,7 @@ void UKMAbilityPutDown::Tick(float deltaTime)
 		float angle = ownerGameObjectInstance->GetInteractionDirection() * PI * 2.f;
 
 		FVector newForwardVector(FMath::Cos(angle), FMath::Sin(angle),0.f);
-
 		FRotator newRotation = newForwardVector.Rotation();
-		
 		ownerActor->SetActorRotation(newRotation);
 		
 		if (UKMCharacterInstance* ownerCharacterInstance = Cast<UKMCharacterInstance>(ownerGameObjectInstance))
@@ -185,15 +279,22 @@ void UKMAbilityPutDown::Tick(float deltaTime)
 		}
 		beforeInteractionDirection = ownerGameObjectInstance->GetInteractionDirection();
 	}
+	
 	OriginTransform = GetOriginWorldTransform();
-	if (CalcAvailableTargetTransform(ItemTargetTransform))
-	{
-		UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
-		check(IsValid(indicatorSubsystem));
 
-		if (UMeshComponent* placementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
-		{
-			placementComponent->GetOwner()->SetActorLocation(ItemTargetTransform.GetLocation());
-		}
+	FTransform tempItemTargetTransform;
+	if (CalcAvailableTargetTransform(tempItemTargetTransform))
+	{
+		bIsAvailableItem = true;
+		ItemTargetTransform = tempItemTargetTransform;	
+	}
+	
+	UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
+	check(IsValid(indicatorSubsystem));
+
+	if (UMeshComponent* placementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
+	{
+		placementComponent->GetOwner()->SetActorHiddenInGame(!bIsAvailableItem);
+		placementComponent->GetOwner()->SetActorLocation(ItemTargetTransform.GetLocation());
 	}
 }

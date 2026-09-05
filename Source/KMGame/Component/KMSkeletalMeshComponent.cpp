@@ -41,7 +41,18 @@ void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
 
 void UKMSkeletalMeshComponent::AttachBlendingComponent(UKMAttachedBlendingComponent* newBlendingComponent)
 {
-	BlendingComponentChilds.AddUnique(newBlendingComponent);
+	if (!BlendingComponentChilds.Contains(newBlendingComponent))
+	{
+		BlendingComponentChilds.AddUnique(newBlendingComponent);
+	}
+}
+
+void UKMSkeletalMeshComponent::DetachBlendingComponent(UKMAttachedBlendingComponent* blendingComponent)
+{
+	if (!BlendingComponentChilds.Contains(blendingComponent))
+	{
+		BlendingComponentChilds.Remove(blendingComponent);
+	}
 }
 
 void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterface* material)

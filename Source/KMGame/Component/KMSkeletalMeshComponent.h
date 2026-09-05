@@ -14,6 +14,7 @@ protected:
 	
 public:
 	void AttachBlendingComponent(class UKMAttachedBlendingComponent* newBlendingComponent);
+	void DetachBlendingComponent(class UKMAttachedBlendingComponent* blendingComponent);
 	
 protected:
 	virtual void BeginPlay() override;

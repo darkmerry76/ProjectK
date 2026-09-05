@@ -8,23 +8,28 @@ UEMAttachedBlendingComponent::UEMAttachedBlendingComponent(const FObjectInitiali
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration)
+const FTransform& UEMAttachedBlendingComponent::GetOffsetTransform() const
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	return OffsetTransform;
+}
+
+void UEMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& newTargetWorldTransform, float newDuration)
+{
 	AttachedParentComponent = newParentComponent;
-	
 	AttachedSocketName = newAttachSocketName;
 	
 	Duration = newDuration;
 	BlendElipsedTime = 0.f;
 
-	StartWorldTransform = startWorldTransform;
+	TargetWorldTransform = newTargetWorldTransform;
 
 	UpdateBlending();
 }
 
 void UEMAttachedBlendingComponent::StopBlending()
 {
+	UpdateBlending();
+	
 	AttachedParentComponent = nullptr;
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -34,16 +39,22 @@ void UEMAttachedBlendingComponent::UpdateBlending()
 	if (AttachedParentComponent.IsValid())
 	{
 		float alpha = 1.f;
-		if (Duration > 0.f)
+		float absDuration = FMath::Abs(Duration);
+		if (absDuration > 0.f)
 		{
-			alpha = FMath::Clamp(BlendElipsedTime / Duration, 0.f, 1.f);
+			alpha = FMath::Clamp(BlendElipsedTime / absDuration, 0.f, 1.f);
+			if (Duration < 0.f)
+			{
+				alpha = 1.f - alpha;
+			}
 		}
 		
 		FTransform socketTransform = AttachedParentComponent->GetSocketTransform(AttachedSocketName,RTS_World);
 		FTransform targetTransform = OffsetTransform * socketTransform;
 		
 		FTransform worldTransform;
-		worldTransform.Blend(StartWorldTransform,targetTransform, alpha);
+		worldTransform.Blend(TargetWorldTransform,targetTransform, alpha);
+		
 		SetWorldLocation(worldTransform.GetLocation());
 		SetWorldRotation(worldTransform.GetRotation());
 	}

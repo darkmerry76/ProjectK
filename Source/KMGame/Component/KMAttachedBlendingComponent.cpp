@@ -8,12 +8,22 @@ UKMAttachedBlendingComponent::UKMAttachedBlendingComponent(const FObjectInitiali
 {
 }
 
-void UKMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& startWorldTransform, float newDuration)
+void UKMAttachedBlendingComponent::StartBlending(USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& targetWorldTransform, float newDuration)
 {
-	Super::StartBlending(newParentComponent, newAttachSocketName, startWorldTransform, newDuration);
-
-	if (UKMSkeletalMeshComponent* skeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(newParentComponent))
+	if (UKMSkeletalMeshComponent* parentSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(newParentComponent))
 	{
-		skeletalMeshComponent->AttachBlendingComponent(this);
+		parentSkeletalMeshComponent->AttachBlendingComponent(this);
 	}
+
+	Super::StartBlending(newParentComponent, newAttachSocketName, targetWorldTransform, newDuration);
+}
+
+void UKMAttachedBlendingComponent::StopBlending()
+{
+	if (UKMSkeletalMeshComponent* parentSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(AttachedParentComponent.Get()))
+	{
+		parentSkeletalMeshComponent->DetachBlendingComponent(this);
+	}
+	
+	Super::StopBlending();
 }

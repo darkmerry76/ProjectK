@@ -21,9 +21,15 @@ public:
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
 
 	virtual class UMeshComponent* GetMasterMeshComponent() const = 0;
+	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const = 0;
 
-	virtual void Crarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
-	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;
+	virtual FTransform GetCarryOffsetTransform() const = 0;
+
+	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
+	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;
+
+	virtual void ComplatePutdown(class UKMGameObjectInstance* putDownedGameObjectInstance) = 0;
+	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) = 0;
 
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) = 0;
 

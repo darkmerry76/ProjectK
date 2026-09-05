@@ -37,9 +37,15 @@ protected:
 	FTransform ItemTargetTransform;
 	bool bIsAvailableItem = false;
 
+	bool bIsPutDowned = false;
+
 	float beforeInteractionDirection = -1.f;
 
 	int32 PlacementMeshcomponentId = INDEX_NONE;
+
+public:
+	bool StartPutDown(FName attackSocket, float blendingDuration = 0.2f);
+	void CompletePutDown();
 	
 protected:	
 	virtual void Activate() override;
@@ -54,4 +60,7 @@ protected:
 	bool TestOverlapWorld(const FTransform& testWorldTransform) const;
 
 	virtual void OnRequestEnd_Implementation() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStartPutDown();
 };

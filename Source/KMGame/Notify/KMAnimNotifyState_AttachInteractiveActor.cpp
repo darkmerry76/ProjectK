@@ -1,16 +1,9 @@
 #include "KMAnimNotifyState_AttachInteractiveActor.h"
-
-#include "Component/KMAttachedBlendingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
-#include "GameActor/Pawn/Interactive/KMInteractiveActorBase.h"
 #include "Skill/Ability/KMAbility.h"
-#include "Skill/Ability/KMAbilitySkill.h"
-
-bool FKMAnimNotifyState_AttachInteractiveActor_Context::IsValid() const
-{
-	return ::IsValid(InteractiveActor);
-}
+#include "Skill/Ability/KMAbilityCarry.h"
+#include "Skill/Ability/KMAbilityPutDown.h"
 
 UKMAnimNotifyState_AttachInteractiveActor::UKMAnimNotifyState_AttachInteractiveActor(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -25,71 +18,17 @@ FString UKMAnimNotifyState_AttachInteractiveActor::GetNotifyName_Implementation(
 	return notifyName;
 }
 
-TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context> UKMAnimNotifyState_AttachInteractiveActor::GetContext(USkeletalMeshComponent* meshComp, const FAnimNotifyEventReference& eventReference) const
-{
-	const TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context>* existPairContext = Contexts.Find(meshComp);
-	if (existPairContext && existPairContext->IsValid())
-	{
-		return *existPairContext;
-	}
-
-	AKMInteractiveActorBase* interactiveActor = nullptr;
-	if (meshComp->GetWorld() && meshComp->GetWorld()->IsGameWorld())
-	{
-		if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
-		{
-			if (UKMAbilitySkill* AbilitySkill = Cast<UKMAbilitySkill>(martialArtsData->GetAbility()))
-			{
-				interactiveActor = Cast<AKMInteractiveActorBase>(AbilitySkill->GetTargetActor());
-			}
-		}
-	}
-#if WITH_EDITOR
-	if (!IsValid(interactiveActor) && meshComp->GetWorld() && !meshComp->GetWorld()->IsGameWorld())
-	{
-		interactiveActor = Cast<AKMInteractiveActorBase>(meshComp->GetWorld()->SpawnActor(PreviewInteractiveActorClass));
-		if (IsValid(interactiveActor))
-		{
-			float radius = interactiveActor->GetMasterBounds().BoxExtent.Size2D();
-			interactiveActor->SetActorLocation(meshComp->GetOwner()->GetActorLocation() + meshComp->GetOwner()->GetActorForwardVector() * radius);
-		}
-	}
-#endif
-	
-	TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context> newContext = MakeShared<FKMAnimNotifyState_AttachInteractiveActor_Context>();
-	newContext->InteractiveActor = interactiveActor;
-
-	Contexts.Emplace(meshComp, newContext);
-	return newContext;
-}
-
 void UKMAnimNotifyState_AttachInteractiveActor::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
-	if (!IsValid(targetMeshComp))
+	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
 	{
-		return;
-	}
-
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(targetMeshComp->GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context> context = GetContext(targetMeshComp, eventReference);
-	if (!context.IsValid() || !context->IsValid())
-	{
-		return;
-	}
-	if (bIsStartAttach)
-	{
-		if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(context->InteractiveActor->GetAttachedComponent()))
+		if (UKMAbilityCarry* abilityCarry = Cast<UKMAbilityCarry>(martialArtsData->GetAbility()))
 		{
-			FTransform startTransform = attachedComponent->GetComponentToWorld();
-
-			context->InteractiveActor->Crarried(ownerCharacter->GetCharacterInstance());
-			context->InteractiveActor->AttachToComponent(ownerCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
-			attachedComponent->StartBlending(ownerCharacter->GetMesh(), AttachSocket, startTransform, BlendingDuration);
+			abilityCarry->StartCarried(AttachSocket, totalDuration);
+		}
+		else if (UKMAbilityPutDown* abilityPutDown = Cast<UKMAbilityPutDown>(martialArtsData->GetAbility()))
+		{
+			abilityPutDown->StartPutDown(AttachSocket, totalDuration);
 		}
 	}
 }
@@ -100,33 +39,15 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyTick(USkeletalMeshComponen
 
 void UKMAnimNotifyState_AttachInteractiveActor::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
-	if (!IsValid(targetMeshComp))
+	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
 	{
-		return;
-	}
-	
-	const TSharedPtr<FKMAnimNotifyState_AttachInteractiveActor_Context>* existPairContext = Contexts.Find(targetMeshComp);
-	if (existPairContext && existPairContext->IsValid())
-	{
-		AKMInteractiveActorBase* interactiveActor = (*existPairContext)->InteractiveActor;
-		if (IsValid(interactiveActor))
+		if (UKMAbilityCarry* abilityCarry = Cast<UKMAbilityCarry>(martialArtsData->GetAbility()))
 		{
-			if (bIsEndDetach)
-			{
-				if (UKMAttachedBlendingComponent* attachedComponent = Cast<UKMAttachedBlendingComponent>(interactiveActor->GetAttachedComponent()))
-				{
-					attachedComponent->StopBlending();
-				}
-				interactiveActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			}
-#if WITH_EDITOR
-			if (IsValid(GetWorld()) && !GetWorld()->IsGameWorld())
-			{
-				interactiveActor->Destroy();
-			}
-#endif
+			abilityCarry->CompleteCarried();
+		}
+		else if (UKMAbilityPutDown* abilityPutDown = Cast<UKMAbilityPutDown>(martialArtsData->GetAbility()))
+		{
+			abilityPutDown->CompletePutDown();
 		}
 	}
-	Contexts.Remove(targetMeshComp);
 }

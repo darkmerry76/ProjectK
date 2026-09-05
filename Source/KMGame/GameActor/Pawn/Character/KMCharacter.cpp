@@ -122,6 +122,16 @@ UMeshComponent* AKMCharacter::GetMasterMeshComponent() const
 	return GetMesh();
 }
 
+UKMAttachedBlendingComponent* AKMCharacter::GetAttachedBlendingComponent() const
+{
+	return nullptr;
+}
+
+FTransform AKMCharacter::GetCarryOffsetTransform() const
+{
+	return FTransform::Identity;
+}
+
 void AKMCharacter::SetMirror(bool bMirror)
 {
 	bIsMirror = bMirror;
@@ -297,12 +307,22 @@ bool AKMCharacter::IsAir() const
 	return false;
 }
 
-void AKMCharacter::Crarry(UKMGameObjectInstance* carriedGameObjectInstance)
+void AKMCharacter::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
 {
-	Receive_OnCarry(carriedGameObjectInstance);
+	Receive_OnStartCarry(carriedGameObjectInstance);
 }
 
-void AKMCharacter::Crarried(UKMGameObjectInstance* carryGameObjectInstance)
+void AKMCharacter::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
 {
-	Receive_OnCarried(carryGameObjectInstance);
+	Receive_OnStartCarried(carryGameObjectInstance);
+}
+
+void AKMCharacter::ComplatePutdown(UKMGameObjectInstance* putDownedGameObjectInstance)
+{
+	Receive_OnComplatePutdown(putDownedGameObjectInstance);
+}
+
+void AKMCharacter::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
+{
+	Receive_OnComplatePutdowned(putDownGameObjectInstance);
 }

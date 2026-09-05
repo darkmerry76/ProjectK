@@ -31,6 +31,8 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class UKMInteractiveInstance> InteractiveInstance;
 
+	ECollisionResponse PawnResponse = ECollisionResponse::ECR_Block;
+
 public:
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) override;
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
@@ -56,6 +58,12 @@ public:
 	virtual class UMeshComponent* GetMasterMeshComponent() const;
 
 	UFUNCTION(BlueprintPure)
+	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual FTransform GetCarryOffsetTransform() const override;
+
+	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
 
 	UFUNCTION(BlueprintPure)
@@ -68,17 +76,29 @@ public:
 	virtual class UKMAttachedBlendingComponent* GetAttachedComponent() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Crarry(class UKMGameObjectInstance* carryedGameObjectInstance) override;
+	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) override;
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ComplatePutdown(class UKMGameObjectInstance* putDownedGameObjectInstance) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) override;
 
 protected:
 	virtual class UPawnMovementComponent* GetMovementComponent() const override;
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarry")
-	void Receive_OnCarry(class UKMGameObjectInstance* carryedGameObjectInstance);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarry")
+	void Receive_OnStartCarry(class UKMGameObjectInstance* carriedGameObjectInstance);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarried")
-	void Receive_OnCarried(class UKMGameObjectInstance* carryedGameObjectInstance);
+	void Receive_OnStartCarried(class UKMGameObjectInstance* carryGameObjectInstance);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdown")
+	void Receive_OnComplatePutdown(class UKMGameObjectInstance* downedGameObjectInstance);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdowned")
+	void Receive_OnComplatePutdowned(class UKMGameObjectInstance* downGameObjectInstance);
 };

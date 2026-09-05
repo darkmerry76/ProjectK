@@ -70,6 +70,12 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual class UMeshComponent* GetMasterMeshComponent() const override;
+	
+	UFUNCTION(BlueprintPure)
+	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual FTransform GetCarryOffsetTransform() const override;
 
 	void SetMirror(bool bMirror);
 	bool GetMirror() const;
@@ -125,21 +131,32 @@ public:
 	void Receive_OnDeath();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Crarry(class UKMGameObjectInstance* carryedGameObjectInstance) override;
+	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) override;
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void Crarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ComplatePutdown(class UKMGameObjectInstance* putDownedGameObjectInstance) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarry")
-	void Receive_OnCarry(class UKMGameObjectInstance* carryedGameObjectInstance);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarry")
+	void Receive_OnStartCarry(class UKMGameObjectInstance* carriedGameObjectInstance);
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnCarried")
-	void Receive_OnCarried(class UKMGameObjectInstance* carryedGameObjectInstance);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarried")
+	void Receive_OnStartCarried(class UKMGameObjectInstance* carryGameObjectInstance);
 
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdown")
+	void Receive_OnComplatePutdown(class UKMGameObjectInstance* downedGameObjectInstance);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdowned")
+	void Receive_OnComplatePutdowned(class UKMGameObjectInstance* downGameObjectInstance);
 protected:
 	bool bIsMirror = false;
 };

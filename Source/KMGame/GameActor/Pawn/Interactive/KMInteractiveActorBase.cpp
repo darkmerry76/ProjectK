@@ -4,8 +4,6 @@
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMMoveShapeComponent.h"
 #include "Component/KMPawnMovementComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SphereComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
@@ -35,6 +33,16 @@ UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() cons
 UMeshComponent* AKMInteractiveActorBase::GetMasterMeshComponent() const
 {
 	return MasterMeshComponent;
+}
+
+UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedBlendingComponent() const
+{
+	return AttachedComponent;
+}
+
+FTransform AKMInteractiveActorBase::GetCarryOffsetTransform() const
+{
+	return AttachedComponent->GetOffsetTransform();
 }
 
 UKMCurveWarpingComponent* AKMInteractiveActorBase::GetCurveWarpingComponent() const
@@ -98,13 +106,26 @@ UPawnMovementComponent* AKMInteractiveActorBase::GetMovementComponent() const
 	return MovementComponent;
 }
 
-void AKMInteractiveActorBase::Crarry(UKMGameObjectInstance* carriedGameObjectInstance)
+void AKMInteractiveActorBase::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
 {
-	Receive_OnCarry(carriedGameObjectInstance);
+	Receive_OnStartCarry(carriedGameObjectInstance);
 }
 
-void AKMInteractiveActorBase::Crarried(UKMGameObjectInstance* carryGameObjectInstance)
+void AKMInteractiveActorBase::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
 {
+	PawnResponse = MoveShapeComponent->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
+	
 	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	Receive_OnCarried(carryGameObjectInstance);
+	Receive_OnStartCarried(carryGameObjectInstance);
+}
+
+void AKMInteractiveActorBase::ComplatePutdown(UKMGameObjectInstance* putDownedGameObjectInstance)
+{
+	Receive_OnComplatePutdown(putDownedGameObjectInstance);
+}
+
+void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
+{
+	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, PawnResponse);
+	Receive_OnComplatePutdowned(putDownGameObjectInstance);
 }
