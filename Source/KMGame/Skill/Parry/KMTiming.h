@@ -6,7 +6,7 @@
 class KMGAME_API FKMTimingControlBase : public FGCObject
 {
 public:
-	FKMTimingControlBase(class UKMCharacterInstance* ownerCharacterInstance);
+	FKMTimingControlBase(class UKMGameObjectInstance* ownerGameObjectInstance);
 	virtual ~FKMTimingControlBase() override;
 
 public:
@@ -18,7 +18,7 @@ protected:
 
 protected:
 	double StartTimeSeconds = 0.f; 
-	TWeakObjectPtr<class UKMCharacterInstance> OwnerCharacterInstance;
+	TWeakObjectPtr<class UKMGameObjectInstance> OwnerGameObjectInstance;
 };
 
 UENUM(BlueprintType, Blueprintable)
@@ -33,7 +33,7 @@ enum class EKMTimingResult : uint8
 class KMGAME_API FKMTimingParry : public FKMTimingControlBase
 {
 public:
-	FKMTimingParry(class UKMCharacterInstance* ownerCharacterInstance);
+	FKMTimingParry(class UKMGameObjectInstance* ownerGameObjectInstance);
 	virtual ~FKMTimingParry() override;
 
 public:

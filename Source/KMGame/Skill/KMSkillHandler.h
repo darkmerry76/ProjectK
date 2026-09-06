@@ -78,12 +78,11 @@ public:
 	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
 	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
-
+	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);
+	
 	void UseSkill_Release();
 	
 	void TransitionTechniqueSkill(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag);
-
-	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);
 
 	UFUNCTION(BlueprintCallable)
 	void TriggerEvent(const FGameplayTag& eventTag);

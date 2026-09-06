@@ -37,6 +37,12 @@ protected:
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMStatModifierBase> StatModifierClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UKMSensor> SensorClass;
+
+	UPROPERTY(BlueprintReadOnly, Transient, meta=(AllowPrivateAccess=true))
+	TObjectPtr<class UKMSensor> SensorInstance;
+
 public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay() override;
@@ -148,6 +154,26 @@ public:
 	UFUNCTION(BlueprintPure)
 	const class UKMGameObjectInstance* GetBestAggroTarget() const;
 
+	UFUNCTION(BlueprintCallable)
+	virtual bool UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData);
+
+	UFUNCTION(BlueprintCallable)
+	bool UseSkill(const FName skillName, int32 skillLevel);
+
+	UFUNCTION(BlueprintCallable)
+	void UseSkillDash(float dashDirection);
+
+	virtual void UseCombatSkill();
+	virtual void UseUltimateSkill();
+	virtual void UseTechniqueSkill();
+	virtual void UseTechniqueSkill_Release();
+	virtual bool UseParrySkill();
+
+	virtual bool UseGuardSkill();
+	virtual bool UseGuardSkill_Release();
+
+	virtual void OnSensorResult(const TArray<AActor*>& resultActors);
+
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
 	
 	static FKMDeathDelegate& GetDeathDelegate()
@@ -224,4 +250,10 @@ protected:
 
 	float Direction = 1.f;
 	float InteractionDirection = 1.f;
+
+	TSharedPtr<class FKMLockOnCluster> LockonTarget;
+	TSharedPtr<class FKMTimingParry> TimingParry;
+	TSharedPtr<class FKMTimingCancel> TimingCancel;
+	
+	FTimerHandle SensorHandle;
 };

@@ -6,9 +6,13 @@
 #include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
 #include "Skill/Ability/KMAbilityEffect.h"
+#include "Skill/Ability/KMAbilitySkillDirectionTag.h"
+#include "Skill/Parry/KMTiming.h"
+#include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
+#include "Util/KMUtil.h"
 
 UKMGameObjectInstance::UKMGameObjectInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -25,6 +29,15 @@ void UKMGameObjectInstance::BeginPlay()
 	StatModifier->Init();
 
 	SkillHandler = NewObject<UKMSkillHandler>(this, SkillHandlerClass, TEXT("SkillHandler"));
+
+	if (IsValid(SensorClass))
+	{
+		SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
+		SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
+		SensorInstance->Init();
+	}
+	
+	LockonTarget = MakeShared<FKMLockOnCluster>(this);
 }
 
 void UKMGameObjectInstance::EndPlay()
@@ -559,6 +572,213 @@ const UKMGameObjectInstance* UKMGameObjectInstance::GetBestAggroTarget() const
 		return nullptr;
 	}
 	return AggroTarget.begin()->Get();
+}
+
+bool UKMGameObjectInstance::UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData)
+{
+	TSharedPtr<FKMSkillInstance> skillInstance = GetSkillHandler()->UseSkill(FKMSkillKey(skillName,skillLevel), LockonTarget);
+	if (skillInstance.IsValid())
+	{
+		for (int32 assistSkillIndex = 0; assistSkillIndex < assistSkillData.Num(); ++assistSkillIndex)
+		{
+			TSharedPtr<FKMSkillInstance> assistSkillInstance =
+				GetSkillHandler()->UseAssistSkill(FKMSkillKey(assistSkillData[assistSkillIndex].SkillName,assistSkillData[assistSkillIndex].SkillLevel));
+					
+			skillInstance->AddAssistSkill(assistSkillInstance);
+
+			assistSkillInstance->Tags = assistSkillData[assistSkillIndex].Tags;
+		}
+		return true;
+	}
+	return false;
+}
+
+void UKMGameObjectInstance::UseCombatSkill()
+{
+	GetSkillHandler()->UseCombatSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+}
+
+void UKMGameObjectInstance::UseUltimateSkill()
+{
+	GetSkillHandler()->UseUltimateSkill();
+}
+
+void UKMGameObjectInstance::UseTechniqueSkill()
+{
+	GetSkillHandler()->UseTechniqueSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+}
+
+void UKMGameObjectInstance::UseTechniqueSkill_Release()
+{
+	GetSkillHandler()->UseSkill_Release();
+}
+
+bool UKMGameObjectInstance::UseParrySkill()
+{
+	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
+	if (SkillHandler->IsSkillActivated(guardSkillKey))
+	{
+		FKMSkillKey parrySkillKey = {};
+		if (TimingParry.IsValid())
+		{
+			TimingParry->SetUsed(true);
+			EKMTimingResult parryResult = TimingParry->GetResult();
+			if(parryResult == EKMTimingResult::Perfect)
+			{
+				parrySkillKey = FKMSkillKey(TEXT("sk_front_perfect_parry"), 0);
+				CombatMessageDelegate.Broadcast(this, EKMCommbatMessageType::PerfectParry, TEXT(""));
+			}
+			else if (parryResult == EKMTimingResult::Great)
+			{
+				parrySkillKey = FKMSkillKey(TEXT("sk_front_great_parry"), 0);
+				CombatMessageDelegate.Broadcast(this, EKMCommbatMessageType::GreatParry, TEXT(""));
+			}
+			else
+			{
+				parrySkillKey = FKMSkillKey(TEXT("sk_front_good_parry"), 0);
+			}
+			TWeakPtr<FKMSkillInstance> guardSkillInstance = TimingParry->GetGuardSkillInstance();
+			if (guardSkillInstance.IsValid())
+			{
+				guardSkillInstance.Pin()->SetForceComplete(true);
+			}
+			if(SkillHandler->CanUseSkill(parrySkillKey, LockonTarget))
+			{
+				SkillHandler->UseSkill(parrySkillKey, LockonTarget);
+			}
+			TimingParry = nullptr;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UKMGameObjectInstance::UseSkill(const FName skillName, int32 skillLevel)
+{
+	return UseSkillParam(skillName, skillLevel, TArray<FKMAssistSkillData>());
+}
+
+void UKMGameObjectInstance::UseSkillDash(float dashDirection)
+{
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Dash_Tag))
+	{
+		return;
+	}
+	
+	if (TimingCancel.IsValid() && TimingCancel->IsComplete())
+	{
+		TimingCancel = nullptr;
+	}
+	
+	if (TimingCancel.IsValid() && !TimingCancel->IsUsed())
+	{
+		EKM8WayDirection direction8way = UKMUtil::ConvertDegreesTo8WayDirection(dashDirection, GetDirection());
+
+		FKMSkillKey dashSkillKey;
+		EKMTimingResult cancelResult = TimingCancel->GetResult();
+		cancelResult = EKMTimingResult::Great;
+		if (cancelResult == EKMTimingResult::Perfect)
+		{
+			dashSkillKey = FKMSkillKey(TEXT("sk_perfect_cancel_dash"), 0);
+			CombatMessageDelegate.Broadcast(this, EKMCommbatMessageType::PerfectCancel, TEXT(""));
+		}
+		else if (cancelResult == EKMTimingResult::Great)
+		{
+			dashSkillKey = FKMSkillKey(TEXT("sk_great_cancel_dash"), 0);
+			CombatMessageDelegate.Broadcast(this, EKMCommbatMessageType::GreatCancel, TEXT(""));
+		}
+		else if (cancelResult == EKMTimingResult::Good)
+		{
+			dashSkillKey = FKMSkillKey(TEXT("sk_good_cancel_dash"), 0);
+			CombatMessageDelegate.Broadcast(this, EKMCommbatMessageType::GoodCancel, TEXT(""));
+		}
+		TimingCancel->SetUsed(true);
+		if (dashSkillKey.IsValid())
+		{
+			if (SkillHandler->CanUseSkill(dashSkillKey, nullptr))
+			{
+				SkillHandler->ClearActiveSkills(true);
+				TSharedPtr<FKMSkillInstance> cancelSkillInstance = SkillHandler->UseSkill(dashSkillKey, nullptr);
+				if (cancelSkillInstance.IsValid())
+				{
+					for (auto& ability : cancelSkillInstance->GetAbilitieAssets())
+					{
+						if (UKMAbilitySkillDirectionTag* abilitySkillDirectionTag = Cast<UKMAbilitySkillDirectionTag>(ability))
+						{
+							abilitySkillDirectionTag->ApplyAngle(direction8way, 150.f, 0.35f);
+						}
+					}
+				}
+			}
+			TimingCancel = nullptr;
+		}
+	}
+	else if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag))
+	{
+		SetDirection(dashDirection);
+		SkillHandler->UseSkill(FKMSkillKey(TEXT("sk_front_dash"), 0), nullptr);
+	}
+}
+
+bool UKMGameObjectInstance::UseGuardSkill()
+{
+	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
+	if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) || SkillHandler->CanUseSkill(guardSkillKey, LockonTarget))
+	{
+		TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->UseSkill(guardSkillKey, LockonTarget);
+		if (guardSkillInstance.IsValid())
+		{
+			TimingParry = MakeShared<FKMTimingParry>(this);
+			TimingParry->SetGuardSkillInstance(guardSkillInstance);
+		}
+	}
+
+	return true;
+}
+
+bool UKMGameObjectInstance::UseGuardSkill_Release()
+{
+	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
+	TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->GetSkillInstance(guardSkillKey);
+	if (guardSkillInstance.IsValid())
+	{
+		guardSkillInstance->RequestEnd();
+	}
+	
+	TimingParry = nullptr;
+	
+	return true;
+}
+
+void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
+{
+	check(LockonTarget.IsValid());
+	
+	LockonTarget->Targets.Empty();
+	for (auto actorItr = resultActors.CreateConstIterator(); actorItr; ++actorItr)
+	{
+		IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(*actorItr);
+		if (!pawnInterface)
+		{
+			continue;
+		}
+
+		UKMGameObjectInstance* targetGameObjectInstance = pawnInterface->GetGameObjectInstance();
+		if (!IsValid(targetGameObjectInstance))
+		{
+			continue;
+		}
+
+		if (targetGameObjectInstance->IsDead() ||
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Bound_Tag) ||
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
+		{
+			continue;
+		}
+		
+		LockonTarget->Targets.Emplace(targetGameObjectInstance->GetId());
+		break;
+	}
 }
 
 void UKMGameObjectInstance::Tick(float deltaSeconds)

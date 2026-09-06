@@ -63,12 +63,6 @@ public:
 
 	void SetTransform(const FTransform& newTransform);
 	virtual FTransform GetTransform() const override;
-	
-	UFUNCTION(BlueprintCallable)
-	bool UseSkill(const FName skillName, int32 skillLevel);
-
-	UFUNCTION(BlueprintCallable)
-	void UseSkillDash(float dashDirection);
 
 	virtual void SetDirectionVisual(float newDirection, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr) override;
 	virtual void SetDirection(float newDirection, bool bForceRotate = false) override;
@@ -88,18 +82,6 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsWalk() const;
-	
-	UFUNCTION(BlueprintCallable)
-	bool UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData);
-
-	void UseCombatSkill();
-	void UseUltimateSkill();
-	void UseTechniqueSkill();
-	void UseTechniqueSkill_Release();
-	bool UseParrySkill();
-
-	bool UseGuardSkill();
-	bool UseGuardSkill_Release();
 
 	virtual void OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue) override;
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent) override;
@@ -124,8 +106,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetMoveAccelate() const;
 	
-	void OnSensorResult(const TArray<AActor*>& resultActors);
-	
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
 protected:
@@ -145,19 +125,6 @@ protected:
 protected:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<class AKMCharacterBeast> Beast = nullptr;
-
-	TSharedPtr<class FKMTimingParry> TimingParry;
-	TSharedPtr<class FKMTimingCancel> TimingCancel;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UKMSensor> SensorClass;
-
-	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess=true))
-	TObjectPtr<class UKMSensor> SensorInstance;
-
-	FTimerHandle SensorHandle;
-
-	TSharedPtr<FKMLockOnCluster> LockonTarget;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<EKMDamagePowerType, TSubclassOf<class UCameraShakeBase>> InflictCameraShakes;

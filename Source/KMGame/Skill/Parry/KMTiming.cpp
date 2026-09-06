@@ -1,9 +1,9 @@
 #include "KMTiming.h"
 #include "GameObject/KMCharacterInstance.h"
 
-FKMTimingControlBase::FKMTimingControlBase(UKMCharacterInstance* ownerCharacterInstance) : OwnerCharacterInstance(ownerCharacterInstance)
+FKMTimingControlBase::FKMTimingControlBase(UKMGameObjectInstance* ownerGameObjectInstance) : OwnerGameObjectInstance(ownerGameObjectInstance)
 {
-	StartTimeSeconds = ownerCharacterInstance->GetWorld()->GetTimeSeconds();
+	StartTimeSeconds = ownerGameObjectInstance->GetWorld()->GetTimeSeconds();
 }
 
 FKMTimingControlBase::~FKMTimingControlBase()
@@ -12,7 +12,7 @@ FKMTimingControlBase::~FKMTimingControlBase()
 
 void FKMTimingControlBase::AddReferencedObjects(FReferenceCollector& collector)
 {
-	collector.AddReferencedObject(OwnerCharacterInstance);
+	collector.AddReferencedObject(OwnerGameObjectInstance);
 }
 
 FString FKMTimingControlBase::GetReferencerName() const
@@ -22,10 +22,10 @@ FString FKMTimingControlBase::GetReferencerName() const
 
 float FKMTimingControlBase::GetElapsedTime() const
 {
-	return OwnerCharacterInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
+	return OwnerGameObjectInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
 }
 
-FKMTimingParry::FKMTimingParry(UKMCharacterInstance* ownerCharacterInstance) : FKMTimingControlBase(ownerCharacterInstance)
+FKMTimingParry::FKMTimingParry(UKMGameObjectInstance* ownerGameObjectInstance) : FKMTimingControlBase(ownerGameObjectInstance)
 {
 }
 
@@ -41,18 +41,18 @@ FString FKMTimingParry::GetReferencerName() const
 
 EKMTimingResult FKMTimingParry::GetResult() const
 {
-	if (!OwnerCharacterInstance.IsValid())
+	if (!OwnerGameObjectInstance.IsValid())
 	{
 		return EKMTimingResult::None;
 	}
 	
-	float elapsedTime = OwnerCharacterInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
+	float elapsedTime = OwnerGameObjectInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
 	
-	if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetPerfectParry())
+	if (elapsedTime < OwnerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetPerfectParry())
 	{
 		return EKMTimingResult::Perfect;
 	}
-	else if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetGreatParry())
+	else if (elapsedTime < OwnerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetGreatParry())
 	{
 		return EKMTimingResult::Great;
 	}
@@ -120,22 +120,22 @@ bool FKMTimingCancel::IsUsed() const
 
 EKMTimingResult FKMTimingCancel::GetResult() const
 {
-	if (!OwnerCharacterInstance.IsValid())
+	if (!OwnerGameObjectInstance.IsValid())
 	{
 		return EKMTimingResult::None;
 	}
 	
-	float elapsedTime = OwnerCharacterInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
+	float elapsedTime = OwnerGameObjectInstance->GetWorld()->GetTimeSeconds() - StartTimeSeconds;
 
-	if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetPerfectCancel())
+	if (elapsedTime < OwnerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetPerfectCancel())
 	{
 		return EKMTimingResult::Perfect;
 	}
-	else if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetGreatCancel())
+	else if (elapsedTime < OwnerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetGreatCancel())
 	{
 		return EKMTimingResult::Great;
 	}
-	else if (elapsedTime < OwnerCharacterInstance->GetStatModifier()->GetEffectiveStat().GetGoodCancel())
+	else if (elapsedTime < OwnerGameObjectInstance->GetStatModifier()->GetEffectiveStat().GetGoodCancel())
 	{
 		return EKMTimingResult::Good;
 	}

@@ -23,17 +23,16 @@ FString UKMAnimNotifyState_Hit::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-void UKMAnimNotifyState_Hit::GetFinalTransform(const AKMCharacter* ownerCharacter, const USkeletalMeshComponent* meshComp, FTransform& outTransform) const
+void UKMAnimNotifyState_Hit::GetFinalTransform(const USceneComponent* ownerComponent, FTransform& outTransform) const
 {
-	if (!IsValid(ownerCharacter))
+	if (!IsValid(ownerComponent))
 	{
 		return;
 	}
-
-	outTransform = meshComp->GetSocketTransform(SocketName);
+	outTransform = ownerComponent->GetSocketTransform(SocketName);
 	if (!FollowSocketRotation)
 	{
-		outTransform.SetRotation(ownerCharacter->GetActorTransform().GetRotation());
+		outTransform.SetRotation(ownerComponent->GetOwner()->GetActorTransform().GetRotation());
 	}
 	
 	outTransform.SetRotation(outTransform.GetRotation() * HitTransform.GetRotation());
@@ -43,47 +42,40 @@ void UKMAnimNotifyState_Hit::GetFinalTransform(const AKMCharacter* ownerCharacte
 
 void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	AActor* ownerActor = meshComp->GetOwner();
-	if(!IsValid(ownerActor))
+	if (IsValid(meshComp))
 	{
-		return;
+		FTransform finalTransform;
+		GetFinalTransform(meshComp, finalTransform);
+		HitPreviousTransforms.FindOrAdd(meshComp->GetOwner()) = finalTransform;
 	}
-
-#if WITH_EDITOR
-	EditorDrawDebugComponent = ownerActor->FindComponentByClass<UKMEditorDrawDebugComponent>();
-	if (!IsValid(EditorDrawDebugComponent) && !meshComp->GetWorld()->IsGameWorld())
-	{
-		EditorDrawDebugComponent = Cast<UKMEditorDrawDebugComponent>(ownerActor->AddComponentByClass(UKMEditorDrawDebugComponent::StaticClass(), false, FTransform::Identity, false));
-	}
-#endif
-	
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	FTransform finalTransform;
-	GetFinalTransform(ownerCharacter, meshComp, finalTransform);
-	HitPreviousTransforms.FindOrAdd(meshComp) = finalTransform;
 }
 
-void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+void UKMAnimNotifyState_Hit::NotifyBeginEx(AActor* actor, UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	AActor* ownerActor = meshComp->GetOwner();
+	if (!IsValid(actor))
+	{
+		FTransform finalTransform;
+		GetFinalTransform(actor->GetRootComponent(), finalTransform);
+		HitPreviousTransforms.FindOrAdd(actor) = finalTransform;
+	}
+}
+
+void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const FAnimNotifyEventReference& eventReference)
+{
+	AActor* ownerActor = ownerComponent->GetOwner();
 	if(!IsValid(ownerActor))
 	{
 		return;
 	}
-
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
-	if (!IsValid(ownerCharacter))
+	
+	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor);
+	if (!pawnInterface)
 	{
 		return;
 	}
 
-	UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance();
-	if (!IsValid(ownerCharacter))
+	UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance();
+	if (!IsValid(ownerGameObjectInstance))
 	{
 		return;
 	}
@@ -103,25 +95,71 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 			}
 		}
 	}
-	if (!latestSkillInstance.IsValid() && IsValid(ownerCharacterInstance->GetSkillHandler()))
+	if (!latestSkillInstance.IsValid() && IsValid(ownerGameObjectInstance->GetSkillHandler()))
 	{
-		latestSkillInstance = ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
+		latestSkillInstance = ownerGameObjectInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
 	}
 	
-	FTransform& previousTransform = HitPreviousTransforms.FindOrAdd(meshComp);
+	FTransform& previousTransform = HitPreviousTransforms.FindOrAdd(ownerActor);
 	
 	FTransform finalTransform;
-	GetFinalTransform(ownerCharacter, meshComp, finalTransform);
+	GetFinalTransform(ownerComponent, finalTransform);
 
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		ownerCharacterInstance->BoxHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
 	else
 	{
-		ownerCharacterInstance->SphereHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
 	}
 	previousTransform = finalTransform;
+}
+
+void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(meshComp))
+	{
+		DoHit(meshComp, eventReference);
+	}
+}
+
+void UKMAnimNotifyState_Hit::NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(actor))
+	{
+		DoHit(actor->GetRootComponent(), eventReference);
+	}
+}
+
+void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
+{
+	if(!IsValid(meshComp))
+	{
+		return;
+	}
+	
+	AActor* ownerActor = meshComp->GetOwner();
+	HitPreviousTransforms.Remove(ownerActor);
+	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
+	{
+		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())
+		{
+			ownerGameObjectInstance->HitCheckClear();
+		}
+	}
+}
+
+void UKMAnimNotifyState_Hit::NotifyEndEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
+{
+	HitPreviousTransforms.Remove(actor);
+	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(actor))
+	{
+		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())
+		{
+			ownerGameObjectInstance->HitCheckClear();
+		}
+	}
 }
 
 #if WITH_EDITOR
@@ -151,31 +189,3 @@ void UKMAnimNotifyState_Hit::DrawInEditor(FPrimitiveDrawInterface* pDI, USkeleta
 	}
 }
 #endif
-
-void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
-{
-#if WITH_EDITOR
-	AActor* ownerActor = meshComp->GetOwner();
-	if(!IsValid(ownerActor))
-	{
-		return;
-	}
-	EditorDrawDebugComponent = ownerActor->FindComponentByClass<UKMEditorDrawDebugComponent>();
-	if (IsValid(EditorDrawDebugComponent))
-	{
-		EditorDrawDebugComponent->bAllowAnyoneToDestroyMe = true;
-		EditorDrawDebugComponent->DestroyComponent();
-	}
-#endif
-
-	HitPreviousTransforms.Remove(meshComp);
-
-	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor);
-	if (IsValid(ownerCharacter))
-	{
-		if (UKMCharacterInstance* ownerCharacterInstance = ownerCharacter->GetCharacterInstance())
-		{
-			ownerCharacterInstance->HitCheckClear();
-		}
-	}
-}

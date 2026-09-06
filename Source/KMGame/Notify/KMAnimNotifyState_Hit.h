@@ -49,7 +49,7 @@ protected:
 	bool FollowSocketRotation = true;
 
 	UPROPERTY()
-	TMap<class USkeletalMeshComponent*, FTransform> HitPreviousTransforms;
+	TMap<class AActor*, FTransform> HitPreviousTransforms;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY()
@@ -61,9 +61,15 @@ protected:
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 
+	virtual void NotifyBeginEx(class AActor* actor, class UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyEndEx(class AActor* actor, class UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference) override;
+
 protected:
 	virtual FString GetNotifyName_Implementation() const override;
-	void GetFinalTransform(const class AKMCharacter* ownerCharacter, const class USkeletalMeshComponent* meshComp, FTransform& outTransform) const;
+	void GetFinalTransform(const class USceneComponent* ownerComponent, FTransform& outTransform) const;
+
+	void DoHit(const class USceneComponent* ownerComponent, const FAnimNotifyEventReference& eventReference);
 
 #if WITH_EDITOR
 	virtual void DrawInEditor(FPrimitiveDrawInterface* pDI, USkeletalMeshComponent* meshComp, const UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const override;
