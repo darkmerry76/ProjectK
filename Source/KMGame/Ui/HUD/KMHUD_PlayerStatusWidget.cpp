@@ -54,14 +54,10 @@ void UKMHUD_PlayerStatusWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	if(IsValid(gameObjectSubsystem))
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
+	if(IsValid(authCharacterInstance))
 	{
-		UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
-		if(IsValid(authCharacterInstance))
-		{
-			authCharacterInstance->GetStatChangeEvent().RemoveAll(this);
-		}
+		authCharacterInstance->GetStatChangeEvent().RemoveAll(this);
 	}
 }
 

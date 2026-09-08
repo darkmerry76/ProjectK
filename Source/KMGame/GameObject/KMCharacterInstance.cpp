@@ -12,11 +12,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Ability/KMAbility.h"
-#include "Skill/Ability/KMAbilitySkillDirectionTag.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
-#include "System/KMTargetSubsystem.h"
+#include "System/KMGameObjectSubsystem.h"
 #include "Tables/Generated/KMTable_BaseStat_Beast.h"
 #include "Tables/Generated/KMTable_Object.h"
 #include "Tables/Generated/KMTable_Object_Character.h"
@@ -416,10 +415,10 @@ void UKMCharacterInstance::StartForceMove(const float& newDirection)
 	MoveAccelate = newDirection;
 }
 
-void UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
+bool UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
 {
-	Super::HitCollection(adjustSkillInstance, hitActor, hitLocation, hitNormal, hitTag);
+	return Super::HitCollection(adjustSkillInstance, hitActor, hitLocation, hitNormal, hitTag);
 }
 
 TSubclassOf<UCameraShakeBase> UKMCharacterInstance::GetCameraShakeByPowerType(EKMDamagePowerType powerType) const
@@ -436,7 +435,7 @@ void UKMCharacterInstance::Inflict(UKMGameObjectInstance* victimGameObject)
 {
 	if (IsValid(victimGameObject) && !victimGameObject->HasGameplayTag(FKMGameplayTagName::State_Parry_Tag))
 	{
-		Stiff(0.1f);
+		//Stiff(0.1f);
 	}
 
 	TimingCancel = nullptr;
@@ -557,17 +556,20 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 
 		if (InflectPowerType != EKMDamagePowerType::None)
 		{
-			if (AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
+			if (UKMGameObjectSubsystem::GetAuthCharacterInstance(this) == this)
 			{
-				TSubclassOf<UCameraShakeBase> cameraShakeClass = GetCameraShakeByPowerType(InflectPowerType);
-				if (!IsValid(cameraShakeClass))
+				if (AKMPlayerCameraManager* playerCameraManager = AKMPlayerCameraManager::GetActiveCameraManager(this))
 				{
-					cameraShakeClass = GetCameraShakeByPowerType(EKMDamagePowerType::Default);
-				}
-				
-				if (IsValid(cameraShakeClass))
-				{
-					playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+					TSubclassOf<UCameraShakeBase> cameraShakeClass = GetCameraShakeByPowerType(InflectPowerType);
+					if (!IsValid(cameraShakeClass))
+					{
+						cameraShakeClass = GetCameraShakeByPowerType(EKMDamagePowerType::Default);
+					}
+					
+					if (IsValid(cameraShakeClass))
+					{
+						playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+					}
 				}
 			}
 		}

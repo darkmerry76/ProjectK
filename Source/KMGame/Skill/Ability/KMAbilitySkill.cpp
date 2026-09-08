@@ -19,15 +19,15 @@ void UKMAbilitySkill::PostActivated()
 {
 	if (bIsDirectionFallow)
 	{
-		if (UKMCharacterInstance* ownerCharacterInstance = GetOwnerCharacterInstance())
+		if (UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance())
 		{
 			if (IsValid(GetTargetActor()))
 			{
-				FVector targetToDirection = GetTargetActor()->GetActorLocation() - GetOwnerCharacter()->GetActorLocation();
+				FVector targetToDirection = GetTargetActor()->GetActorLocation() - GetOwnerActor()->GetActorLocation();
 				targetToDirection.Z = 0.0f;
 				targetToDirection.Normalize();
 
-				ownerCharacterInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
+				ownerGameObjectInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(targetToDirection) * DirectionWeight), bIsForceRotation);
 			}
 		}
 	}
@@ -37,10 +37,13 @@ void UKMAbilitySkill::Deactivate(bool bCancel)
 {
 	Super::Deactivate(bCancel);
 
-	UKMGameObjectInstance* ownerCharacterInstance = GetOwnerCharacterInstance();
-	check(IsValid(ownerCharacterInstance));
+	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
+	if(!IsValid(ownerGameObjectInstance))
+	{
+		return;
+	}
 
-	UKMSkillHandler* skillHandler = ownerCharacterInstance->GetSkillHandler();
+	UKMSkillHandler* skillHandler = ownerGameObjectInstance->GetSkillHandler();
 	check(IsValid(skillHandler));
 
 	if (SkillInstance.IsValid() && !bCancel && EndingTag.IsValid())

@@ -68,6 +68,9 @@ struct FKMTable_SkillRow : public FEM_TableBaseRow
 	double               CostTempo = { 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EKMDamagePowerType   PowerEventType = { EKMDamagePowerType::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FName>        Effects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

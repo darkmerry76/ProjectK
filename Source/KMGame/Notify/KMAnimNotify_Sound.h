@@ -42,7 +42,11 @@ protected:
 
 protected:
 	virtual void Notify(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
-	class USoundBase* GetUsedSound(const class USkeletalMeshComponent* meshComp) const;
+	virtual void NotifyEx(class AActor* actor, class UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference) override;
+	
+	class USoundBase* GetUsedSound(const class USceneComponent* ownerComponent) const;
+
+	void PlaySound(class USceneComponent* ownerComponent);
 
 #if WITH_EDITOR
 	virtual void ValidateAssociatedAssets() override;

@@ -30,9 +30,9 @@ UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() cons
 	return MartialArtsComponent;
 }
 
-UMeshComponent* AKMInteractiveActorBase::GetMasterMeshComponent() const
+UMeshComponent* AKMInteractiveActorBase::GetPlacementMeshComponent() const
 {
-	return MasterMeshComponent;
+	return PlacementMeshComponent;
 }
 
 UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedBlendingComponent() const
@@ -40,7 +40,7 @@ UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedBlendingCompon
 	return AttachedComponent;
 }
 
-FTransform AKMInteractiveActorBase::GetCarryOffsetTransform() const
+FTransform AKMInteractiveActorBase::GetCarryOffsetTransform_Implementation() const
 {
 	return AttachedComponent->GetOffsetTransform();
 }
@@ -83,6 +83,15 @@ void AKMInteractiveActorBase::OnImpact(const TSharedPtr<FKMSkillEffectInstance>&
 
 void AKMInteractiveActorBase::OnDeath()
 {
+	if (IsValid(MoveShapeComponent))
+	{
+		MoveShapeComponent->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+	}
+
+	if (IsValid(MovementComponent))
+	{
+		MovementComponent->Deactivate();
+	}
 	Receive_OnDeath();
 }
 
@@ -128,4 +137,21 @@ void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGa
 {
 	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, PawnResponse);
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);
+}
+
+void AKMInteractiveActorBase::LandHit(const FHitResult& hitResult)
+{
+}
+
+void AKMInteractiveActorBase::WallHit(const FHitResult& hitResult)
+{
+}
+
+void AKMInteractiveActorBase::CeilingHit(const FHitResult& hitResult)
+{
+}
+
+const FHitResult AKMInteractiveActorBase::GetLatestWallHitResult_Implementation() const
+{
+	return LastWallHitResult;	
 }

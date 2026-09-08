@@ -109,9 +109,11 @@ protected:
 	virtual void HandleImpact(const FHitResult& impact, float timeSlice, const FVector& moveDelta) override;
 	virtual void MoveBlockProcessing(float deltaTime, int32 iterations);
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
-	virtual void ProcessLanded(const FHitResult& hit, float remainingTime, int32 iterations) override;
+	virtual void ProcessLanded(const FHitResult& hitResult, float remainingTime, int32 iterations) override;
+	virtual void ProcessWallHit(const FHitResult hitResult);
+	virtual void ProcessCeilingHit(const FHitResult hitResult);
 	virtual void StartNewPhysics(float deltaTime, int32 iterations) override;
-
+	
 	bool CustomMovementFalling(const FVector& adjusted, float deltaTime, int32 iterations);
 	bool CustomMovementFlying(const FVector& adjusted, float deltaTime, int32 iterations);
 	bool CustomMovementWalking(const FVector& adjusted, float deltaTime, int32 iterations);

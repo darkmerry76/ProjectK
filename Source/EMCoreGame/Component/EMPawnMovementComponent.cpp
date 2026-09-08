@@ -17,7 +17,10 @@ void UEMPawnMovementComponent::TickComponent(float deltaTime, enum ELevelTick ti
 {
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
 
-	CustomMovementDelegate.Broadcast(deltaTime, 1);
+	if (IsActive())
+	{
+		CustomMovementDelegate.Broadcast(deltaTime, 1);
+	}
 }
 
 bool UEMPawnMovementComponent::CustomMovement(EEMCustomMovementMode movementMode, const FVector& adjusted, float deltaTime, int32 iterations)

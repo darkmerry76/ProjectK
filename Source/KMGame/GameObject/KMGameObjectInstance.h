@@ -163,13 +163,28 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseSkillDash(float dashDirection);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void UseForceSkill(FName skillId);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void UseCombatSkill();
+
+	UFUNCTION(BlueprintCallable)
 	virtual void UseUltimateSkill();
+
+	UFUNCTION(BlueprintCallable)
 	virtual void UseTechniqueSkill();
+
+	UFUNCTION(BlueprintCallable)
 	virtual void UseTechniqueSkill_Release();
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool UseParrySkill();
 
+	UFUNCTION(BlueprintCallable)
 	virtual bool UseGuardSkill();
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool UseGuardSkill_Release();
 
 	virtual void OnSensorResult(const TArray<AActor*>& resultActors);
@@ -220,7 +235,7 @@ protected:
 
 	virtual void ShowDamage(EKMStatFactorType factorType, int32 damage);
 
-	virtual void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
+	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
 	void HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
 	
 	virtual void Tick(float deltaSeconds) override;

@@ -109,7 +109,7 @@ public:
 	virtual void RemoveGameplayTag(FGameplayTag Tag) override;
 
 protected:
-	virtual void HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag) override;
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;

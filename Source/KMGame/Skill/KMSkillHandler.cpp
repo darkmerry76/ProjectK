@@ -103,6 +103,19 @@ void UKMSkillHandler::ClearAllSkills()
 	ComboData.Reset();
 }
 
+void UKMSkillHandler::ClearEffects()
+{
+	for (auto effectInstanceItr = EffectInstances.CreateIterator(); effectInstanceItr; ++effectInstanceItr)
+	{
+		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = effectInstanceItr->Value;
+		if (!skillEffectInstance.IsValid())
+		{
+			continue;
+		}
+		skillEffectInstance->SetForceComplete(true);
+	}
+}
+
 int32 UKMSkillHandler::NumSkillByType(EKMSkillType skilltype) const
 {
 	int32 numSkill = 0;
@@ -565,6 +578,23 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 	}
 
 	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(bestSkillId, 0), nullptr);
+	if (!newSkillInstance.IsValid())
+	{
+		return nullptr;
+	}
+	
+	return newSkillInstance;
+}
+
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseForceSkill(FName skillId, const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
+{
+	FKMSkillKey skillKey(skillId, 0);
+	if (!HasOwnedSkill(skillKey))
+	{
+		RegisterSkill(skillKey);
+	}
+	
+	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(skillId, 0), lockOnCluster);
 	if (!newSkillInstance.IsValid())
 	{
 		return nullptr;
@@ -1224,7 +1254,10 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 	
 	if (!PendingNewAbilities.IsEmpty())
 	{
-		for (auto& pendingNewAbility : PendingNewAbilities)
+		TArray<TSharedPtr<FKMAbilityInstanceBase>> pendingNewAbilities = MoveTemp(PendingNewAbilities);
+		PendingNewAbilities.Reset();
+		
+		for (auto& pendingNewAbility : pendingNewAbilities)
 		{
 			if (!pendingNewAbility.IsValid())
 			{
@@ -1254,7 +1287,6 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 			pendingNewAbility->UniqueId = LastAbilityUniqueId; 
 			LastAbilityUniqueId++;
 		}
-		PendingNewAbilities.Empty();
 	}
 }
 

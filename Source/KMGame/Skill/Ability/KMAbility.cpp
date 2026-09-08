@@ -156,7 +156,7 @@ void UKMAbility::Deactivate(bool bCancel)
 
 			if (ImpulseInstanceId != INDEX_NONE)
 			{
-				curveWarping->StopLinearWarp(ImpulseInstanceId);
+				curveWarping->StopLinearWarp(ImpulseInstanceId, GetWorld()->GetTimeSeconds());
 			}
 		}
 	}

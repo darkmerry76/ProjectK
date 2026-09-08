@@ -33,7 +33,9 @@ public:
 	int32 SkillForSearchForClosestTarget(
 		const class UKMCharacterInstance* sourceCharacterInstance, const struct FKMSkillKey* skillKey, TArray<FKMObjectKey>& outCharacters) const;
 
-	UFUNCTION(BlueprintPure)
+	UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
+	static class UKMCharacterInstance* GetAuthCharacterInstance(const UObject* worldContextObject);
+
 	class UKMCharacterInstance* GetAuthCharacterInstance() const;
 
 	virtual void Tick(float DeltaTime) override;

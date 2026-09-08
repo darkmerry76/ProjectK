@@ -31,6 +31,10 @@ void UKMAbilityBlow::Trigger(const FGameplayTag& eventTag)
 	{
 		skillHandler->TriggerTransitionSkillEffect(FGameplayTag::RequestGameplayTag(TEXT("event.blow.landing")));
 	}
+	else
+	{
+		skillHandler->TriggerTransitionSkillEffect(eventTag);
+	}
 }
 
 void UKMAbilityBlow::Impact(const FTransform& newImpactTransform)

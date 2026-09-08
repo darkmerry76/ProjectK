@@ -22,21 +22,18 @@ FString UKMAnimNotifyState_NiagaraFX::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_NiagaraFX::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
-	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(targetMeshComp);
-	if (niagaraFXData && !niagaraFXData->NiagaraComponents.IsEmpty())
+	USkeletalMeshComponent* targetMeshComp = Cast<USkeletalMeshComponent>(GetTargetSceneComponent(meshComp));
+	if (IsValid(targetMeshComp))
 	{
-		int32 lastIndex = niagaraFXData->NiagaraComponents.Num() - 1;
-		niagaraFXData->NiagaraComponents.Emplace(niagaraFXData->NiagaraComponents[lastIndex]);
-		niagaraFXData->NiagaraComponents[lastIndex] = nullptr;
+		SpawnEffect(targetMeshComp);
 	}
-	else
+}
+
+void UKMAnimNotifyState_NiagaraFX::NotifyBeginEx(AActor* actor, UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(actor) && IsValid(actor->GetRootComponent()))
 	{
-		UNiagaraComponent* spawnedEffect = SpawnEffect(targetMeshComp, animation);
-		if (IsValid(spawnedEffect))
-		{
-			SpawnedEffects.FindOrAdd(targetMeshComp).NiagaraComponents.Emplace(spawnedEffect);
-		}
+		SpawnEffect(actor->GetRootComponent());
 	}
 }
 
@@ -44,11 +41,31 @@ void UKMAnimNotifyState_NiagaraFX::NotifyTick(USkeletalMeshComponent* meshComp, 
 {
 }
 
+void UKMAnimNotifyState_NiagaraFX::NotifyTickEx(AActor* actor, UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+{
+	
+}
+
 void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
-	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(targetMeshComp);
-	
+	if (USkeletalMeshComponent* targetMeshComp = Cast<USkeletalMeshComponent>(GetTargetSceneComponent(meshComp)))
+	{
+		EndEffect(targetMeshComp);
+	}
+}
+
+void UKMAnimNotifyState_NiagaraFX::NotifyEndEx(class AActor* actor, class UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(actor) && IsValid(actor->GetRootComponent()))
+	{
+		EndEffect(actor->GetRootComponent());
+	}
+}
+
+void UKMAnimNotifyState_NiagaraFX::EndEffect(const USceneComponent* ownerComponent)
+{
+	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(ownerComponent);
+		
 	if (!bIsContinue && niagaraFXData && !niagaraFXData->NiagaraComponents.IsEmpty())
 	{
 		if (IsValid(niagaraFXData->NiagaraComponents[0]))
@@ -59,13 +76,16 @@ void UKMAnimNotifyState_NiagaraFX::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	}
 	if (niagaraFXData && niagaraFXData->NiagaraComponents.IsEmpty())
 	{
-		SpawnedEffects.Remove(targetMeshComp);
+		SpawnedEffects.Remove(ownerComponent);
 	}
 }
 
-UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation)
+UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USceneComponent* ownerComponent)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
+	if (!IsValid(ownerComponent))
+	{
+		return nullptr;;
+	}
 	
 	UNiagaraComponent* returnComp = nullptr;
 	if (IsValid(Template))
@@ -76,13 +96,13 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshCompon
 		}
 		if (bIsAttached)
 		{
-			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, targetMeshComp, SocketName, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
+			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, ownerComponent, SocketName, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
 		}
 		else
 		{
-			const FTransform meshTransform = targetMeshComp->GetSocketTransform(SocketName);
+			const FTransform meshTransform = ownerComponent->GetSocketTransform(SocketName);
 			
-			returnComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(targetMeshComp->GetWorld(), Template,
+			returnComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(ownerComponent->GetWorld(), Template,
 				meshTransform.TransformPosition(LocationOffset), (meshTransform.GetRotation() * RotationOffset.Quaternion()).Rotator(), FVector(1.0f),true);
 		}
 		
@@ -94,11 +114,24 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USkeletalMeshCompon
 			returnComp->ComponentTags = Tags;
 			returnComp->SetAutoDestroy(true);
 
-			if (UEMIsolationSubsystem* isolationSubsystem = UEMIsolationSubsystem::GetIsolationSubsystem(meshComp))
+			if (UEMIsolationSubsystem* isolationSubsystem = UEMIsolationSubsystem::GetIsolationSubsystem(ownerComponent))
 			{
-				isolationSubsystem->AddExtraComponent(meshComp->GetOwner(), returnComp);
+				isolationSubsystem->AddExtraComponent(ownerComponent->GetOwner(), returnComp);
 			}
 		}
 	}
+
+	FKMAnimNotifyState_NiagaraFXData* niagaraFXData = SpawnedEffects.Find(ownerComponent);
+	if (niagaraFXData && !niagaraFXData->NiagaraComponents.IsEmpty())
+	{
+		int32 lastIndex = niagaraFXData->NiagaraComponents.Num() - 1;
+		niagaraFXData->NiagaraComponents.Emplace(niagaraFXData->NiagaraComponents[lastIndex]);
+		niagaraFXData->NiagaraComponents[lastIndex] = nullptr;
+	}
+	else
+	{
+		SpawnedEffects.FindOrAdd(ownerComponent).NiagaraComponents.Emplace(returnComp);
+	}
+
 	return returnComp;
 }

@@ -47,7 +47,7 @@ int32 UKMIndicatorSubsystem::SpawnPlacementMeshComponent(const UMeshComponent* o
 	{
 		return INDEX_NONE;
 	}
-	
+	newAddMeshComponent->SetHiddenInGame(false);
 	newPlacementPreviewActor->FinishAddComponent(newAddMeshComponent, false, FTransform::Identity);
 	newAddMeshComponent->SetupAttachment(newPlacementPreviewActor->GetRootScene());
 	newPlacementPreviewActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);

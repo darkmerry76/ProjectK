@@ -8,7 +8,7 @@
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-const float MIN_TICK_DIST = 1.f;
+constexpr float MIN_TICK_DIST = 1.f;
 
 UKMCharacterMovementComponent::UKMCharacterMovementComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -475,23 +475,18 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 	{
 		return;
 	}
-	
-	if (newMovementMode == EEMCustomMovementMode::CMODE_Falling)
-	{
-		if (interuptType == EEMCurveWarpingInteruptType::Landing)
-		{
-			SetMovementMode(MOVE_Walking);
-		}
-		else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("OnJumpInterrupt deltaTime=%.3f moveDelta=%s interuptType=%d newMovementMode=%d"), deltaTime, *moveDelta.ToString(), interuptType, newMovementMode));
-			//UE_LOG(LogTemp, Display, TEXT("OnJumpInterrupt deltaTime=%.3f moveDelta=%s interuptType=%d newMovementMode=%d"), deltaTime, *moveDelta.ToString(), interuptType, newMovementMode);
 
-			Velocity = moveDelta * (FMath::IsNearlyZero(deltaTime) ? 0.f : (1.f / deltaTime));
+	if (newMovementMode == EEMCustomMovementMode::CMODE_Falling || newMovementMode == EEMCustomMovementMode::CMODE_Flying)
+	{
+		check(!FMath::IsNearlyZero(moveDelta.Z));
+		check(!FMath::IsNearlyZero(deltaTime));
+		Velocity = moveDelta * (FMath::IsNearlyZero(deltaTime) ? 0.f : (1.f / deltaTime));
+		if (MovementMode != MOVE_Falling)
+		{
 			SetMovementMode(MOVE_Falling);
 		}
 	}
-	else
+	else if (MovementMode == MOVE_Custom)
 	{
 		SetMovementMode(MOVE_Walking);
 	}
@@ -554,9 +549,25 @@ bool UKMCharacterMovementComponent::CustomMovementWalking(const FVector& adjuste
 	return true;
 }
 
-void UKMCharacterMovementComponent::ProcessLanded(const FHitResult& hit, float remainingTime, int32 iterations)
+void UKMCharacterMovementComponent::ProcessLanded(const FHitResult& hitResult, float remainingTime, int32 iterations)
 {
-	Super::ProcessLanded(hit, remainingTime, iterations);
+	Super::ProcessLanded(hitResult, remainingTime, iterations);
+}
+
+void UKMCharacterMovementComponent::ProcessWallHit(const FHitResult hitResult)
+{
+	if(AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner()))
+	{
+		ownerCharacter->WallHit(hitResult);
+	}
+}
+
+void UKMCharacterMovementComponent::ProcessCeilingHit(const FHitResult hitResult)
+{
+	if(AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwner()))
+	{
+		ownerCharacter->CeilingHit(hitResult);
+	}
 }
 
 bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjusted, float deltaTime, int32 iterations)
@@ -576,7 +587,16 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 	bool bIgnoreLanded = ownerCharacterInstance->HasGameplayTag(FKMGameplayTagName::Event_Blow_IgnoreLanded_Tag);
 
 	float remainingTime = deltaTime;
-	int32 Iterations = 0.f;
+
+	if (remainingTime < MIN_TICK_TIME)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("CustomMovementFalling SKIP DeltaTime=%0.9f Adjusted=%s"),
+			deltaTime,
+			*adjusted.ToString());
+	}
+
+	int32 Iterations = 0;
 	while( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) )
 	{
 		Iterations++;
@@ -593,7 +613,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 		{
 			if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 			{
-				ProcessLanded(hitResult, remainingTime, Iterations);
+				ProcessLanded(hitResult, timeTick, Iterations);
 				return false;
 			}
 			else
@@ -606,11 +626,36 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 
 					if (!floorResult.bLineTrace && finalAdjusted.Z < 0.f && floorResult.IsWalkableFloor() && IsValidLandingSpot(pawnLocation, floorResult.HitResult))
 					{
-						ProcessLanded(floorResult.HitResult, remainingTime, Iterations);
+						ProcessLanded(floorResult.HitResult, timeTick, Iterations);
 						return false;
 					}
 				}
+				
+				if (hitResult.IsValidBlockingHit())
+				{
+					if (hitResult.ImpactNormal.Z < 0.3f && hitResult.ImpactNormal.Z > -0.5f)
+					{
+						FVector slideDelta = ComputeSlideVector(
+							finalAdjusted,
+							1.f - hitResult.Time,
+							hitResult.Normal,
+							hitResult
+						);
 
+						const float moveDistance = finalAdjusted.Size();
+						const float slideDistance = slideDelta.Size();
+
+						if (slideDistance < moveDistance * 0.3f)
+						{
+							ProcessWallHit(hitResult);
+						}
+					}
+					else if (hitResult.ImpactNormal.Z < -0.5f)
+					{
+						ProcessCeilingHit(hitResult);
+					}
+				}
+				
 				const FVector oldHitNormal = hitResult.Normal;
 				const FVector oldHitImpactNormal = hitResult.ImpactNormal;				
 				FVector delta = ComputeSlideVector(finalAdjusted, 1.f - hitResult.Time, oldHitNormal, hitResult);
@@ -623,7 +668,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 
 						if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult))
 						{
-							ProcessLanded(hitResult, remainingTime, Iterations);
+							ProcessLanded(hitResult, timeTick, Iterations);
 							return false;
 						}
 						lastMoveTimeSlice = subTimeTickRemaining;
@@ -653,7 +698,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 						}
 						if(bDitch || IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), hitResult) || hitResult.Time == 0.f)
 						{
-							ProcessLanded(hitResult, remainingTime, Iterations);
+							ProcessLanded(hitResult, timeTick, Iterations);
 							return false;
 						}
 					}

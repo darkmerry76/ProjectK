@@ -13,14 +13,10 @@ void UKMHUD_CombatMessageWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	if(IsValid(gameObjectSubsystem))
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
+	if(IsValid(authCharacterInstance))
 	{
-		UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
-		if(IsValid(authCharacterInstance))
-		{
-			authCharacterInstance->GetCombatMessageDelegate().AddUObject(this, &ThisClass::OnCommbatMessage);
-		}
+		authCharacterInstance->GetCombatMessageDelegate().AddUObject(this, &ThisClass::OnCommbatMessage);
 	}
 	
 	Refresh();
@@ -30,14 +26,10 @@ void UKMHUD_CombatMessageWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	if(IsValid(gameObjectSubsystem))
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
+	if(IsValid(authCharacterInstance))
 	{
-		UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
-		if(IsValid(authCharacterInstance))
-		{
-			authCharacterInstance->GetCombatMessageDelegate().RemoveAll(this);
-		}
+		authCharacterInstance->GetCombatMessageDelegate().RemoveAll(this);
 	}
 }
 

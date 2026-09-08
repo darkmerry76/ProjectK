@@ -76,6 +76,11 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 {
 	Super::Landed(hitResult);
 	
+	LandHit(hitResult);
+}
+
+void AKMCharacter::LandHit(const FHitResult& hitResult)
+{
 	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
 	{
 		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
@@ -85,6 +90,37 @@ void AKMCharacter::Landed(const FHitResult& hitResult)
 				MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
 				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
 				LasteLandedFrameCount = GFrameCounter;
+			}
+		}
+	}
+}
+
+void AKMCharacter::WallHit(const FHitResult& hitResult)
+{
+	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
+	{
+		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
+		{
+			if (GFrameCounter - LasteWallHitFrameCount > 1)
+			{
+				LastWallHitResult = hitResult;
+				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_WallHit_Tag);
+				LasteWallHitFrameCount = GFrameCounter;
+			}
+		}
+	}
+}
+
+void AKMCharacter::CeilingHit(const FHitResult& hitResult)
+{
+	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
+	{
+		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
+		{
+			if (GFrameCounter - LastetCeilingHitFrameCount > 1)
+			{
+				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_CeilingHit_Tag);
+				LastetCeilingHitFrameCount = GFrameCounter;
 			}
 		}
 	}
@@ -117,7 +153,7 @@ UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const
 }
 
 
-UMeshComponent* AKMCharacter::GetMasterMeshComponent() const
+UMeshComponent* AKMCharacter::GetPlacementMeshComponent() const
 {
 	return GetMesh();
 }
@@ -127,7 +163,7 @@ UKMAttachedBlendingComponent* AKMCharacter::GetAttachedBlendingComponent() const
 	return nullptr;
 }
 
-FTransform AKMCharacter::GetCarryOffsetTransform() const
+FTransform AKMCharacter::GetCarryOffsetTransform_Implementation() const
 {
 	return FTransform::Identity;
 }
@@ -150,6 +186,11 @@ const FVector& AKMCharacter::GetInputVelocity() const
 const FVector& AKMCharacter::GetLatestMoveInputVelocity() const
 {
 	return LastetMoveInputVelocity;
+}
+
+const FHitResult AKMCharacter::GetLatestWallHitResult_Implementation() const
+{
+	return LastWallHitResult;
 }
 
 UKMCharacterInstance* AKMCharacter::GetCharacterInstance() const

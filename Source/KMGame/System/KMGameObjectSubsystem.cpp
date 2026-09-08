@@ -262,6 +262,12 @@ UKMCharacterInstance* UKMGameObjectSubsystem::GetAuthCharacterInstance() const
 	return character->GetCharacterInstance();
 }
 
+UKMCharacterInstance* UKMGameObjectSubsystem::GetAuthCharacterInstance(const UObject* worldContextObject)
+{
+	UKMGameObjectSubsystem* gameObjectSubsystem = GetGameObjectSubsystem(worldContextObject);
+	return gameObjectSubsystem->GetAuthCharacterInstance();
+}
+
 template<typename _TL>
 int32 UKMGameObjectSubsystem::NumGameObject(bool bExcludeDead) const
 {

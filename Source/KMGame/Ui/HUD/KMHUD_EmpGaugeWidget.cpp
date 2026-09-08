@@ -15,10 +15,7 @@ void UKMHUD_EmpGaugeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem));
-	
-	UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
 	check(IsValid(authCharacterInstance));
 	
 	GaugeTweener = NewObject<UEMTweener>(this);
@@ -41,23 +38,16 @@ void UKMHUD_EmpGaugeWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	if(IsValid(gameObjectSubsystem))
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
+	if(IsValid(authCharacterInstance))
 	{
-		UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
-		if(IsValid(authCharacterInstance))
-		{
-			authCharacterInstance->GetStatChangeEvent().RemoveAll(this);
-		}
+		authCharacterInstance->GetStatChangeEvent().RemoveAll(this);
 	}
 }
 
 void UKMHUD_EmpGaugeWidget::Refresh()
 {
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	check(IsValid(gameObjectSubsystem));
-
-	UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
 	check(IsValid(authCharacterInstance));
 
 	FKMSecondaryStat& secondaryStat = authCharacterInstance->GetStatModifier()->GetEffectiveStat();

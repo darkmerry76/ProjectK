@@ -39,18 +39,20 @@ void UKMAbilityPutDown::Activate()
 
 	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetTargetActor()))
 	{
-		UMeshComponent* masterMeshComponent = pawnInterface->GetMasterMeshComponent();
-		if (IsValid(masterMeshComponent))
+		UMeshComponent* originPlacementMeshComponent = pawnInterface->GetPlacementMeshComponent();
+		if (IsValid(originPlacementMeshComponent))
 		{
 			UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
 			check(IsValid(indicatorSubsystem));
 
-			FTransform newTransform = pawnInterface->GetCarryOffsetTransform() * ItemTargetTransform;
+			FTransform newTransform = pawnInterface->GetCarryOffsetTransform_Implementation() * ItemTargetTransform;
 			newTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
-			PlacementMeshcomponentId = indicatorSubsystem->SpawnPlacementMeshComponent(masterMeshComponent, newTransform);
-			if (UMeshComponent* placementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
+			PlacementMeshcomponentId = indicatorSubsystem->SpawnPlacementMeshComponent(originPlacementMeshComponent, newTransform);
+			if (UMeshComponent* newPlacementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
 			{
-				placementComponent->SetRelativeTransform(masterMeshComponent->GetRelativeTransform());
+				FTransform newRelativeTransform = originPlacementMeshComponent->GetRelativeTransform();
+				newRelativeTransform.SetScale3D(originPlacementMeshComponent->GetComponentScale() * 1.05f);
+				newPlacementComponent->SetRelativeTransform(newRelativeTransform);
 			}
 		}
 	}

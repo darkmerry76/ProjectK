@@ -49,6 +49,10 @@ protected:
 	const class UKMBeastPDA* BeastPDA = nullptr;
 
 	uint64 LasteLandedFrameCount = 0;
+	uint64 LasteWallHitFrameCount = 0;
+	uint64 LastetCeilingHitFrameCount = 0;
+
+	FHitResult LastWallHitResult; 
 
 public:
 	UFUNCTION(BlueprintPure)
@@ -69,19 +73,23 @@ public:
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
 
 	UFUNCTION(BlueprintPure)
-	virtual class UMeshComponent* GetMasterMeshComponent() const override;
+	virtual class UMeshComponent* GetPlacementMeshComponent() const override;
 	
 	UFUNCTION(BlueprintPure)
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
 
-	UFUNCTION(BlueprintPure)
-	virtual FTransform GetCarryOffsetTransform() const override;
+	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
 
 	void SetMirror(bool bMirror);
 	bool GetMirror() const;
 
+	UFUNCTION(BlueprintPure)
 	const FVector& GetInputVelocity() const;
+	
+	UFUNCTION(BlueprintPure)
 	const FVector& GetLatestMoveInputVelocity() const;
+
+	virtual const FHitResult GetLatestWallHitResult_Implementation() const override;
 
 	UFUNCTION(BlueprintPure)
 	class UKMItemAppearanceInstance* GetWeaponInstance() const;
@@ -116,6 +124,9 @@ public:
 	const class UKMBeastPDA* GetBeastPDA() const;
 
 	virtual void Landed(const FHitResult& hitResult) override;
+	virtual void LandHit(const FHitResult& HitResult) override;
+	virtual void WallHit(const FHitResult& HitResult) override;
+	virtual void CeilingHit(const FHitResult& HitResult) override;
 
 	UFUNCTION(BlueprintPure)
 	bool IsAir() const;

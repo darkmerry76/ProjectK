@@ -56,6 +56,14 @@ void FKMAbilityInstanceBase::Leave()
 	DeactivatedAbility(bIsCancel);
 }
 
+UObject* FKMAbilityInstanceBase::GetOwnerObject() const
+{
+	if (!OwnerObject.IsValid())
+	{
+		return nullptr;
+	}
+	return OwnerObject.Pin().Get();
+}
 void FKMAbilityInstanceBase::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(OwnerObject);

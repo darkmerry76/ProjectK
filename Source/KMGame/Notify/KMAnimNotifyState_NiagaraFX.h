@@ -50,7 +50,7 @@ protected:
 	TArray<FName> Tags;
 
 	UPROPERTY()
-	TMap<class USkeletalMeshComponent*, FKMAnimNotifyState_NiagaraFXData> SpawnedEffects;
+	TMap<class USceneComponent*, FKMAnimNotifyState_NiagaraFXData> SpawnedEffects;
 	
 	FQuat RotationOffsetQuat = FQuat::Identity;
 
@@ -62,8 +62,13 @@ public:
 	virtual void NotifyTick(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference) override;
 
+	virtual void NotifyBeginEx(class AActor* actor, class UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
+	virtual void NotifyEndEx(class AActor* actor, class UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference) override;
+
 protected:
-	virtual class UNiagaraComponent* SpawnEffect(class USkeletalMeshComponent* meshComp, class UAnimSequenceBase* animation);
+	virtual class UNiagaraComponent* SpawnEffect(class USceneComponent* ownerComponent);
+	void EndEffect(const class USceneComponent* ownerComponent);
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

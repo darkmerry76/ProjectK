@@ -26,12 +26,13 @@ protected:
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<class UMeshComponent> MasterMeshComponent;
+	TObjectPtr<class UMeshComponent> PlacementMeshComponent;
 	
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class UKMInteractiveInstance> InteractiveInstance;
 
 	ECollisionResponse PawnResponse = ECollisionResponse::ECR_Block;
+	FHitResult LastWallHitResult;
 
 public:
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) override;
@@ -55,13 +56,10 @@ public:
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
 
 	UFUNCTION(BlueprintPure)
-	virtual class UMeshComponent* GetMasterMeshComponent() const;
-
+	virtual class UMeshComponent* GetPlacementMeshComponent() const override;
+	
 	UFUNCTION(BlueprintPure)
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual FTransform GetCarryOffsetTransform() const override;
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
@@ -86,6 +84,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) override;
+
+	virtual const FHitResult GetLatestWallHitResult_Implementation() const override;
+	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
+
+	virtual void LandHit(const FHitResult& hitResult) override;
+	virtual void WallHit(const FHitResult& hitResult) override;
+	virtual void CeilingHit(const FHitResult& hitResult) override;
 
 protected:
 	virtual class UPawnMovementComponent* GetMovementComponent() const override;

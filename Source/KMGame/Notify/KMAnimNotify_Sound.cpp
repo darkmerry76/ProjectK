@@ -23,57 +23,73 @@ FString UKMAnimNotify_Sound::GetNotifyName_Implementation() const
 	return notifyName;
 }
 
-USoundBase* UKMAnimNotify_Sound::GetUsedSound(const USkeletalMeshComponent* meshComp) const
+USoundBase* UKMAnimNotify_Sound::GetUsedSound(const USceneComponent* ownerComponent) const
 {
+	if (!IsValid(ownerComponent))
+	{
+		return nullptr;
+	}
+	
 	if (bIsUseSoundSet)
 	{
-		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(meshComp->GetOwner());
+		AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerComponent->GetOwner());
 		if (IsValid(ownerCharacter))
 		{
 			return ownerCharacter->GetSoundTag(SoundTag);
 		}
 	}
+	
 	return Sound; 
 }
 
-void UKMAnimNotify_Sound::Notify(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
+void UKMAnimNotify_Sound::PlaySound(USceneComponent* ownerComponent)
 {
-	if (!IsValid(meshComp) || !IsValid(meshComp->GetWorld()))
+	if (!IsValid(ownerComponent) || !IsValid(ownerComponent->GetWorld()))
 	{
 		return;
 	}
 	
-	USoundBase* usedSound = GetUsedSound(meshComp);
+	USoundBase* usedSound = GetUsedSound(ownerComponent);
 	if (!IsValid(usedSound))
 	{
 		return;
 	}
 	if (!usedSound->IsOneShot())
 	{
-		UE_LOG(LogAudio, Warning, TEXT("PlaySound notify: Anim %s tried to play a sound asset which is not a one-shot: '%s'. Spawning suppressed."), *GetNameSafe(animation), *GetNameSafe(usedSound));
+		UE_LOG(LogAudio, Warning, TEXT("PlaySound notify: Anim %s tried to play a sound asset which is not a one-shot: '%s'. Spawning suppressed."), *GetNameSafe(GetContainingAsset()), *GetNameSafe(usedSound));
 		return;
 	}
 
 #if WITH_EDITORONLY_DATA
-	UWorld* world = meshComp->GetWorld();
+	UWorld* world = ownerComponent->GetWorld();
 	if (bPreviewIgnoreAttenuation && world->WorldType == EWorldType::EditorPreview)
 	{
-		if (meshComp->IsPlaying())
-		{
-			UGameplayStatics::PlaySound2D(world, usedSound, VolumeMultiplier, PitchMultiplier);
-		}
+		UGameplayStatics::PlaySound2D(world, usedSound, VolumeMultiplier, PitchMultiplier);
 	}
 	else
 #endif
 	{
 		if (bFollow)
 		{
-			UGameplayStatics::SpawnSoundAttached(usedSound, meshComp, AttachName, FVector(ForceInit), EAttachLocation::SnapToTarget, false, VolumeMultiplier, PitchMultiplier);
+			UGameplayStatics::SpawnSoundAttached(usedSound, ownerComponent, AttachName, FVector(ForceInit), EAttachLocation::SnapToTarget, false, VolumeMultiplier, PitchMultiplier);
 		}
 		else
 		{
-			UGameplayStatics::PlaySoundAtLocation(meshComp->GetWorld(), usedSound, meshComp->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
+			UGameplayStatics::PlaySoundAtLocation(ownerComponent->GetWorld(), usedSound, ownerComponent->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
 		}
+	}
+}
+
+void UKMAnimNotify_Sound::Notify(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, const FAnimNotifyEventReference& eventReference)
+{
+	PlaySound(meshComp);
+}
+
+void UKMAnimNotify_Sound::NotifyEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(actor))
+	{
+		PlaySound(actor->GetRootComponent());
 	}
 }
 

@@ -10,7 +10,10 @@
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
+#include "System/KMGameObjectSubsystem.h"
 #include "System/KMTargetSubsystem.h"
+#include "Tables/Generated/KMTable_Skill.h"
+#include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
 #include "Util/KMUtil.h"
 
@@ -177,7 +180,11 @@ void UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstanc
 	{
 		return;
 	}
+	
 	SkillHandler->ClearActiveSkills();
+
+	bool bEqualsAttacker = attackerGameObjectInstance ==
+		(IsValid(latestSkillInstance->GetOwnerObject()) ? latestSkillInstance->GetOwnerObject()->GetTypedOuter<UKMGameObjectInstance>() : nullptr);
 
 	TArray<TSharedPtr<FKMSkillEffectInstance>> skillEffectInstances = SkillHandler->ApplyEffects(latestSkillInstance, FKMGameplayTagName::Event_Hit_Tag, hitTag);
 	for (auto skillEffectItr : skillEffectInstances)
@@ -209,34 +216,51 @@ void UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstanc
 		{
 			HitPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
 		}
-		if (attackerGameObjectInstance->InflectPowerType < skillEffectInstance->GetEffectTableRecord()->PowerEventType)
+		
+		if (!bEqualsAttacker)
 		{
-			attackerGameObjectInstance->InflectPowerType = skillEffectInstance->GetEffectTableRecord()->PowerEventType;
+			if (const FKMTable_SkillConditionRow* skillConditionRow = FKMTable_SkillConditionRow::FindRowPtr(latestSkillInstance->SkillKey.TableRecord->SkillCondition))
+			{
+				bEqualsAttacker = skillConditionRow->PairEff;
+			}
+		}
+		
+		if (!bEqualsAttacker)
+		{
+			if (HitPowerType < latestSkillInstance->SkillKey.TableRecord->PowerEventType)
+			{
+				HitPowerType = latestSkillInstance->SkillKey.TableRecord->PowerEventType;
+			}
+		}
+
+		if (attackerGameObjectInstance->InflectPowerType < latestSkillInstance->SkillKey.TableRecord->PowerEventType)
+		{
+			attackerGameObjectInstance->InflectPowerType = latestSkillInstance->SkillKey.TableRecord->PowerEventType;
 		}
 	}
 }
 
-void UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, AActor* hitActor, const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
+bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, AActor* hitActor, const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
 {
 	if (OwnerActor == hitActor)
 	{
-		return;
+		return false;
 	}
 
 	if (!adjustSkillInstance.IsValid())
 	{
-		return;
+		return false;
 	}
 
 	if (HitCheckData.Actors.Contains(hitActor))
 	{
-		return;
+		return false;
 	}
 
 	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(hitActor);
 	if (!pawnInterface)
 	{
-		return;
+		return false;
 	}
 
 	UKMGameObjectInstance* hitGameObjectInstance = pawnInterface->GetGameObjectInstance();
@@ -244,28 +268,33 @@ void UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 
 	if (hitGameObjectInstance->IsDead() || hitGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
 	{
-		return;
+		return false;
 	}
 
 	HitCheckData.Actors.FindOrAdd(hitActor);
 
 	Inflict(hitGameObjectInstance);
 	
-	if (adjustSkillInstance.IsValid())
+	if (!adjustSkillInstance.IsValid())
 	{
-		TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get()); 
-		duplicatSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
-		duplicatSkillInstance->Target->Targets.Emplace(hitGameObjectInstance->GetId());
-				
-		UKMSkillHandler* hitCharacterSkillHandler = hitGameObjectInstance->GetSkillHandler();
-		check(IsValid(hitCharacterSkillHandler));
-
-		hitGameObjectInstance->Hit(this, duplicatSkillInstance, hitLocation, hitTag);
+		return false;
 	}
+	
+	TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get()); 
+	duplicatSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
+	duplicatSkillInstance->Target->Targets.Emplace(hitGameObjectInstance->GetId());
+				
+	UKMSkillHandler* hitCharacterSkillHandler = hitGameObjectInstance->GetSkillHandler();
+	check(IsValid(hitCharacterSkillHandler));
+
+	hitGameObjectInstance->Hit(this, duplicatSkillInstance, hitLocation, hitTag);
+
+	return true;
 }
 
 void UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag)
 {
+	bool bIsHit = false;
 	for (const FHitResult& hitResult : hitResults)
 	{
 		if (AActor* actor = hitResult.GetActor())
@@ -274,7 +303,19 @@ void UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adj
 			{
 				continue;
 			}
-			HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag);
+			if (HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag))
+			{
+				bIsHit = true;
+			}
+		}
+	}
+
+	if (bIsHit)
+	{
+		UKMGameObjectInstance* casterGameObjectInstance = Cast<UKMGameObjectInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(adjustSkillInstance.Pin()->Caster));
+		if (IsValid(casterGameObjectInstance))
+		{
+			casterGameObjectInstance->Stiff(0.1f);
 		}
 	}
 }
@@ -326,6 +367,8 @@ void UKMGameObjectInstance::SphereHitImpact(
 	{
 		queryParams.AddIgnoredActor(OwnerActor.Get());
 	}
+
+	//DrawDebugSphere(GetWorld(), endOrientationTransform.GetLocation(), endOrientationTransform.GetScale3D().X * 100.f, 32, FColor::White, false, -1.f, 0, 2);
 	
 	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
 	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
@@ -352,6 +395,7 @@ void UKMGameObjectInstance::OnStatChange(EKMStatFactorType factorType, float pre
 		{
 			if (newValue <= 0)
 			{
+				SkillHandler->ClearEffects();
 				OnDeath();
 			}
 		}
@@ -591,6 +635,11 @@ bool UKMGameObjectInstance::UseSkillParam(const FName skillName, int32 skillLeve
 		return true;
 	}
 	return false;
+}
+
+void UKMGameObjectInstance::UseForceSkill(FName skillId)
+{
+	GetSkillHandler()->UseForceSkill(skillId, MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
 }
 
 void UKMGameObjectInstance::UseCombatSkill()

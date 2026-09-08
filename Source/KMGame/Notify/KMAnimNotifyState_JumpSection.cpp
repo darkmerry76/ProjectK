@@ -21,7 +21,11 @@ FString UKMAnimNotifyState_JumpSection::GetNotifyName_Implementation() const
 
 void UKMAnimNotifyState_JumpSection::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	USkeletalMeshComponent* targetMeshComp = GetTargetSkeletalMeshComponent(meshComp);
+	USkeletalMeshComponent* targetMeshComp = Cast<USkeletalMeshComponent>(GetTargetSceneComponent(meshComp));
+	if (!IsValid(targetMeshComp))
+	{
+		return;
+	}
 
 	const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>();
 	if (!martialArtsData)

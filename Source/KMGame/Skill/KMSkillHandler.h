@@ -69,6 +69,8 @@ public:
 	void ClearActiveSkills(bool bCancel = false);
 	void ClearPassiveSkills();
 	void ClearAllSkills();
+
+	void ClearEffects();
 	
 	void ClearResisterSkillSet();
 
@@ -76,6 +78,7 @@ public:
 
 	TSharedPtr<FKMSkillInstance> UseAssistSkill(const FKMSkillKey& skillKey);
 	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
+	TSharedPtr<FKMSkillInstance> UseForceSkill(FName skillId, const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);

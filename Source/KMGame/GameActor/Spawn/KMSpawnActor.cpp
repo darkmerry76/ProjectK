@@ -38,11 +38,7 @@ void AKMSpawnInteractive::BeginPlay()
 	UKMInteractiveInstance* interactiveInstance = gameObjectSubsystem->SpawnInteractiveObject(InteractiveId, GetActorTransform());
 	check(IsValid(interactiveInstance));
 
-	if (InteractiveId.ToString().Contains(TEXT("Rice")))
-	{
-		interactiveInstance = interactiveInstance;
-	}
-	
+	AActor* ownerActor = interactiveInstance->GetOwnerActor();
 	AKMInteractiveActorBase* interactiveActor = Cast<AKMInteractiveActorBase>(interactiveInstance->GetOwnerActor());
 	check(IsValid(interactiveActor));
 
@@ -60,7 +56,7 @@ void AKMSpawnInteractive::BeginPlay()
 	{
 		halfHeight = sphereComponent->GetScaledSphereRadius();
 	}
-	
+
 	FVector startLocation = GetActorLocation() + FVector(0.f, 0.f, halfHeight);
 	FVector targetLocation = startLocation + FVector(0.f, 0.f, -10000.f);
 

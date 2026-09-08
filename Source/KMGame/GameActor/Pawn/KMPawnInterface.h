@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "KMPawnInterface.generated.h"
 
-UINTERFACE(meta=(CannotImplementInterfaceInBlueprint))
+UINTERFACE(Blueprintable, BlueprintType)
 class KMGAME_API UKMPawnInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -20,10 +20,14 @@ public:
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const = 0;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
 
-	virtual class UMeshComponent* GetMasterMeshComponent() const = 0;
+	virtual class UMeshComponent* GetPlacementMeshComponent() const = 0;
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const = 0;
 
-	virtual FTransform GetCarryOffsetTransform() const = 0;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FTransform GetCarryOffsetTransform() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	const FHitResult GetLatestWallHitResult() const;
 
 	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
 	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;
@@ -35,4 +39,8 @@ public:
 
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) = 0;
 	virtual void OnDeath() = 0;
+
+	virtual void LandHit(const FHitResult& hitResult) = 0;
+	virtual void WallHit(const FHitResult& HitResult) = 0;
+	virtual void CeilingHit(const FHitResult& HitResult) = 0;
 };

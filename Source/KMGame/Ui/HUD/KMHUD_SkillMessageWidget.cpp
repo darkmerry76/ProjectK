@@ -43,14 +43,10 @@ void UKMHUD_SkillMessageWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
-	if(IsValid(gameObjectSubsystem))
+	UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this);
+	if(IsValid(authCharacterInstance))
 	{
-		UKMCharacterInstance* authCharacterInstance = gameObjectSubsystem->GetAuthCharacterInstance();
-		if(IsValid(authCharacterInstance))
-		{
-			authCharacterInstance->GetCombatMessageDelegate().RemoveAll(this);
-		}
+		authCharacterInstance->GetCombatMessageDelegate().RemoveAll(this);
 	}
 }
 

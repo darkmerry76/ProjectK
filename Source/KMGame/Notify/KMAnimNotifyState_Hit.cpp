@@ -52,7 +52,7 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnim
 
 void UKMAnimNotifyState_Hit::NotifyBeginEx(AActor* actor, UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (!IsValid(actor))
+	if (IsValid(actor))
 	{
 		FTransform finalTransform;
 		GetFinalTransform(actor->GetRootComponent(), finalTransform);

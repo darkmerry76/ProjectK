@@ -27,7 +27,7 @@ void UKMNarrativeNodeMovie::Activate()
 	UObject* movieAsset = UKMAssetManager::GetAssetManager()->GetAsset(MovieTableRow->MovieAsset);
 	if (UEMMartialArts* martialArts = Cast<UEMMartialArts>(movieAsset))
 	{
-		if (UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetAuthCharacterInstance())
+		if (UKMCharacterInstance* authCharacterInstance = UKMGameObjectSubsystem::GetAuthCharacterInstance(this))
 		{
 			if (AKMCharacter* authCharacter = authCharacterInstance->GetCharacter())
 			{

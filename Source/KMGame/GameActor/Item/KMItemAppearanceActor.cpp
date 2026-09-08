@@ -1,4 +1,6 @@
 ﻿#include "KMItemAppearanceActor.h"
+
+#include "Compression/lz4.h"
 #include "GameActor/Pawn/Character/KMChainAnimInstance.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
@@ -284,13 +286,17 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 	{
 		if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 		{
-			FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
-			socketTransform.SetScale3D(FVector(RingRadius));
-			ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
-				PreviousTransform, socketTransform,
-				{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(), NAME_None);
-
-			PreviousTransform = socketTransform;
+			
+			if (IsValid(ownerCharacterInstance->GetSkillHandler()) &&
+				ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance().IsValid())
+			{
+				FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
+				socketTransform.SetScale3D(FVector(RingRadius));
+				ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
+					PreviousTransform, socketTransform,
+					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(), NAME_None);
+				PreviousTransform = socketTransform;
+			}		
 		}
 	}
 }

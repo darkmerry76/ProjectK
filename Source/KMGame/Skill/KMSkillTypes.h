@@ -97,6 +97,8 @@ public:
 
 	void Cancel() { bIsCancel = true; };
 
+	UObject* GetOwnerObject() const;
+
 	int32 UniqueId = INDEX_NONE;
 	
 protected:
