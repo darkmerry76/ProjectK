@@ -94,9 +94,11 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USceneComponent* ow
 		{
 			return returnComp;
 		}
+		
 		if (bIsAttached)
 		{
-			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, ownerComponent, SocketName, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
+			FRotator finalRotation = RotationOffset + (bIsAbsoluteRotation ? ownerComponent->GetComponentRotation() : FRotator(0.0f, 0.0f, 0.0f));
+			returnComp = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, ownerComponent, SocketName, LocationOffset, finalRotation, EAttachLocation::KeepRelativeOffset, true);
 		}
 		else
 		{
@@ -105,6 +107,12 @@ UNiagaraComponent* UKMAnimNotifyState_NiagaraFX::SpawnEffect(USceneComponent* ow
 			returnComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(ownerComponent->GetWorld(), Template,
 				meshTransform.TransformPosition(LocationOffset), (meshTransform.GetRotation() * RotationOffset.Quaternion()).Rotator(), FVector(1.0f),true);
 		}
+
+		if (bIsAbsoluteRotation)
+		{
+			returnComp->SetUsingAbsoluteRotation(bIsAbsoluteRotation);
+		}
+
 		
 		if (IsValid(returnComp))
 		{

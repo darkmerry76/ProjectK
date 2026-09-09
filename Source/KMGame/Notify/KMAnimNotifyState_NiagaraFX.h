@@ -40,7 +40,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="LocationOffset"))
 	FRotator RotationOffset = FRotator(0.f, 0.f, 0.f);
 
-	UPROPERTY(EditAnywhere, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="RotationOffset"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName="AbsoluteRotation", meta=(AllowPrivateAccess=true, DisplayAfter="RotationOffset"))
+	bool bIsAbsoluteRotation = false;
+
+	UPROPERTY(EditAnywhere, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="bIsAbsoluteRotation"))
 	FVector Scale = FVector(1.0f, 1.0f, 1.0f);
 
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "AnimNotify", meta=(AllowPrivateAccess=true, DisplayAfter="Scale"))
