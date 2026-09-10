@@ -13,6 +13,16 @@ enum class EKMObjectType : uint8
 	Monster = 2 , // 몬스터
 	Beast = 3 , // 비스트
 	Breakable = 4 , // 부서지는물체
+	Weapon = 5 , // 무기
+};
+
+// 역할
+UENUM(BlueprintType)
+enum class EKMTakeActionType : uint8
+{
+	None = 0 , // 플레이어
+	Carry = 1 , // NPC
+	Pickup = 2 , // 몬스터
 };
 
 // 역할

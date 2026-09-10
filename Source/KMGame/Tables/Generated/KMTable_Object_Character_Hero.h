@@ -21,6 +21,9 @@ struct FKMTable_Object_Character_HeroRow : public FKMTable_Object_CharacterRow
 	FString              AwakeDescription;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 IsCarryable = { false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMFightStyleType    FightStyle = { EKMFightStyleType::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

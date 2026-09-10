@@ -53,6 +53,12 @@ const FGameplayTag FKMGameplayTagName::State_Invincible_Tag = FGameplayTag::Requ
 const FGameplayTag FKMGameplayTagName::State_Intangible_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Intangible"));
 const FGameplayTag FKMGameplayTagName::State_Unselectable_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Unselectable"));
 const FGameplayTag FKMGameplayTagName::State_Thrown_OverlapDamage_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Thrown.OverlapDamage"));
+const FGameplayTag FKMGameplayTagName::State_Carry_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Carry"));
+const FGameplayTag FKMGameplayTagName::State_Carried_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Carried"));
+const FGameplayTag FKMGameplayTagName::State_Take_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Take"));
+const FGameplayTag FKMGameplayTagName::State_Taken_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Taken"));
+const FGameplayTag FKMGameplayTagName::State_Take_Weapon_Knife_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Take.Weapon.Knife"));
+const FGameplayTag FKMGameplayTagName::State_Taken_Weapon_Knife_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Taken.Weapon.Knife"));
 
 const FGameplayTag FKMGameplayTagName::State_Immune_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Immune"));
 const FGameplayTag FKMGameplayTagName::State_Immune_Abnormal_Hit_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Immune.Abnormal"));

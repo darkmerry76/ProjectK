@@ -427,7 +427,7 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
             FTransform sourceBoneTransform;
             animSequence->GetBoneTransform(sourceBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractContext, false);
             FTransform blendBoneTransform;
-            blendBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha * blendAlpha);
+            blendBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha);
 
         	FTransform finalBoneTransform = bIsBlending ?  blendBoneTransform : sourceBoneTransform;
 

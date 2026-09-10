@@ -818,7 +818,14 @@ void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 			continue;
 		}
 
+		const FKMTable_ObjectRow* objectTableRow = targetGameObjectInstance->GetTable();
+		if (!objectTableRow)
+		{
+			continue;
+		}
+		
 		if (targetGameObjectInstance->IsDead() ||
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Carried_Tag) ||
 			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Bound_Tag) ||
 			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
 		{

@@ -30,6 +30,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag TakeTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag TakenTag;
+
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TObjectPtr<class UKMItemAppearanceInstance> WeaponInstance;
 
@@ -158,13 +164,13 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarry")
-	void Receive_OnStartCarry(class UKMGameObjectInstance* carriedGameObjectInstance);
+	void Receive_OnStartCarry(class UKMGameObjectInstance* carryGameObjectInstance);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarried")
 	void Receive_OnStartCarried(class UKMGameObjectInstance* carryGameObjectInstance);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdown")
-	void Receive_OnComplatePutdown(class UKMGameObjectInstance* downedGameObjectInstance);
+	void Receive_OnComplatePutdown(class UKMGameObjectInstance* downGameObjectInstance);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdowned")
 	void Receive_OnComplatePutdowned(class UKMGameObjectInstance* downGameObjectInstance);

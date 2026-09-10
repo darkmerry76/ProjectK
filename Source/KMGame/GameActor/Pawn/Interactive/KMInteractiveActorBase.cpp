@@ -122,6 +122,18 @@ void AKMInteractiveActorBase::StartCrarry(UKMGameObjectInstance* carriedGameObje
 
 void AKMInteractiveActorBase::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
 {
+	if (IsValid(carryGameObjectInstance))
+	{
+		carryGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carry_Tag);
+		carryGameObjectInstance->AddGameplayTag(TakeTag);
+	}
+
+	if (UKMGameObjectInstance* carriedGameObjectInstance = GetGameObjectInstance())
+	{
+		carriedGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carried_Tag);
+		carriedGameObjectInstance->AddGameplayTag(TakenTag);
+	}
+	
 	PawnResponse = MoveShapeComponent->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
 	
 	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
@@ -135,6 +147,17 @@ void AKMInteractiveActorBase::ComplatePutdown(UKMGameObjectInstance* putDownedGa
 
 void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
 {
+	if (IsValid(putDownGameObjectInstance))
+	{
+		putDownGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carry_Tag);
+		putDownGameObjectInstance->RemoveGameplayTag(TakeTag);
+	}
+
+	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
+	{
+		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
+		putDownedGameObjectInstance->AddGameplayTag(TakenTag);
+	}
 	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, PawnResponse);
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);
 }

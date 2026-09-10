@@ -368,6 +368,12 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, TShare
 
 float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const UKMGameObjectInstance* targetGameObjectInstance, const FGameplayTag& eventTag) const
 {
+	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
+	if (!IsValid(ownerGameObjectInstance))
+	{
+		return -1.f;
+	}
+
 	const FKMTable_SkillConditionRow* skillConditionRow = FKMTable_SkillConditionRow::FindRowPtr(skillConditionName);
 	if (!skillConditionRow)
 	{
@@ -379,16 +385,51 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		return -1.f;
 	}
 
-	if (skillConditionRow->Grabable && !targetGameObjectInstance->GetTable()->IsGrabable)
-	{
-		return -1.f;
-	}
-	
-	if (skillConditionRow->Carryable && !targetGameObjectInstance->GetTable()->IsCarryable)
+	if (IsValid(targetGameObjectInstance) && skillConditionRow->Grabable && !targetGameObjectInstance->GetTable()->IsGrabable)
 	{
 		return -1.f;
 	}
 
+	if (IsValid(targetGameObjectInstance) && skillConditionRow->TakeActionType == EKMTakeActionType::None && !targetGameObjectInstance->GetTable()->IsDestroy)
+	{
+		return -1.f;
+	}
+	if (IsValid(targetGameObjectInstance) && skillConditionRow->TakeActionType != EKMTakeActionType::None &&
+		skillConditionRow->TakeActionType != targetGameObjectInstance->GetTable()->TakeableActionType)
+	{
+		return -1.f;
+	}
+	
+	if (skillConditionRow->Take.IsEmpty() && ownerGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Take_Tag))
+	{
+		return -1.f;
+	}
+	
+	if (!skillConditionRow->Take.IsEmpty())
+	{
+		bool bTakeExist = false;
+		for (auto take : skillConditionRow->Take)
+		{
+			if (take == TEXT("state.takefree"))
+			{
+				if (!ownerGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Take_Tag))
+				{
+					bTakeExist = true;
+					break;
+				}
+			}
+			else if (ownerGameObjectInstance->HasGameplayTag(FGameplayTag::RequestGameplayTag(take)))
+			{
+				bTakeExist = true;
+				break;
+			}
+		}
+		if (!bTakeExist)
+		{
+			return -1.f;
+		}
+	}
+	
 	if (skillConditionRow->LockonType == EKMTargetLockonType::Stand)
 	{
 		if (targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
@@ -396,13 +437,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			return -1;
 		}
 	}
-	
-	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
-	if (!IsValid(ownerGameObjectInstance))
-	{
-		return -1.f;
-	}
-	
+
 	if (skillConditionRow->TransitionSkill != NAME_None)
 	{
 		bool bPreviousSkillMatching = false;

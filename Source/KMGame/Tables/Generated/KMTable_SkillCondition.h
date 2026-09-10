@@ -40,10 +40,13 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	TArray<FName>        ReadTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FName>        Take;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 Grabable = { false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool                 Carryable = { false };
+	EKMTakeActionType    TakeActionType = { EKMTakeActionType::None };
 
 	// 페어여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -59,6 +59,12 @@ public:
 	static const FGameplayTag State_Intangible_Tag;
 	static const FGameplayTag State_Unselectable_Tag;
 	static const FGameplayTag State_Thrown_OverlapDamage_Tag;
+	static const FGameplayTag State_Carry_Tag;
+	static const FGameplayTag State_Carried_Tag;
+	static const FGameplayTag State_Take_Tag;
+	static const FGameplayTag State_Taken_Tag;
+	static const FGameplayTag State_Take_Weapon_Knife_Tag;
+	static const FGameplayTag State_Taken_Weapon_Knife_Tag;
 	
 	static const FGameplayTag State_Immune_Tag;
 	static const FGameplayTag State_Immune_Abnormal_Hit_Tag;

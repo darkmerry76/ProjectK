@@ -355,6 +355,18 @@ void AKMCharacter::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
 
 void AKMCharacter::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
 {
+	if (IsValid(carryGameObjectInstance))
+	{
+		carryGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carry_Tag);
+		carryGameObjectInstance->AddGameplayTag(TakeTag);
+	}
+
+	if (UKMGameObjectInstance* carriedGameObjectInstance = GetGameObjectInstance())
+	{
+		carriedGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carried_Tag);
+		carriedGameObjectInstance->AddGameplayTag(TakenTag);
+	}
+
 	Receive_OnStartCarried(carryGameObjectInstance);
 }
 
@@ -365,5 +377,17 @@ void AKMCharacter::ComplatePutdown(UKMGameObjectInstance* putDownedGameObjectIns
 
 void AKMCharacter::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
 {
+	if (IsValid(putDownGameObjectInstance))
+	{
+		putDownGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carry_Tag);
+		putDownGameObjectInstance->RemoveGameplayTag(TakeTag);
+	}
+
+	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
+	{
+		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
+		putDownedGameObjectInstance->AddGameplayTag(TakenTag);
+	}
+	
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);
 }

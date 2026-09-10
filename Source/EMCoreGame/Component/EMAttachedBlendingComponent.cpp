@@ -57,6 +57,7 @@ void UEMAttachedBlendingComponent::UpdateBlending()
 		
 		SetWorldLocation(worldTransform.GetLocation());
 		SetWorldRotation(worldTransform.GetRotation());
+		SetWorldScale3D(worldTransform.GetScale3D());
 	}
 }
 

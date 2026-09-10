@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameActor/Pawn/KMPawnInterface.h"
 #include "KMInteractiveActorBase.generated.h"
 
@@ -27,7 +28,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UMeshComponent> PlacementMeshComponent;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag TakeTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag TakenTag;
+
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class UKMInteractiveInstance> InteractiveInstance;
 
