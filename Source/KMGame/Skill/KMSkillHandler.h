@@ -81,6 +81,7 @@ public:
 	TSharedPtr<FKMSkillInstance> UseForceSkill(FName skillId, const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
+	TSharedPtr<FKMSkillInstance> UseInteractionSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseSkill(const FKMSkillKey& skillKey, TSharedPtr<class FKMLockOnCluster> lockOnCluster);
 	
 	void UseSkill_Release();
@@ -108,8 +109,8 @@ public:
 	
 	float GetConditionScore(const FName& skillConditionName, TSharedPtr<class FKMLockOnCluster> lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag ) const;
 	float GetConditionScore(const FName& skillConditionName, const class UKMGameObjectInstance* targetGameObjectInstance, const FGameplayTag& eventTag = FGameplayTag::EmptyTag) const;
-	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster) const;
-	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance) const;
+	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const;
+	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const;
 
 	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag = NAME_None);
 
@@ -131,6 +132,7 @@ public:
 	
 protected:
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
+	TSharedPtr<FKMSkillInstance> UseInteractionSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
 	
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	void OnRemoveAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);

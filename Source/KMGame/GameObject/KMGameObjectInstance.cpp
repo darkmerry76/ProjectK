@@ -12,6 +12,7 @@
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "System/KMTargetSubsystem.h"
+#include "Tables/Generated/KMTable_Object_Interactive.h"
 #include "Tables/Generated/KMTable_Skill.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
@@ -41,6 +42,7 @@ void UKMGameObjectInstance::BeginPlay()
 	}
 	
 	LockonTarget = MakeShared<FKMLockOnCluster>(this);
+	InteractionTarget = MakeShared<FKMLockOnCluster>(this);
 }
 
 void UKMGameObjectInstance::EndPlay()
@@ -110,7 +112,14 @@ AActor* UKMGameObjectInstance::GetOwnerActor() const
 
 void UKMGameObjectInstance::AddGameplayTag(FGameplayTag newTag)
 {
-	GameplayTagContainer.AddTag(newTag);
+	if (newTag == FKMGameplayTagName::State_Carried_Tag)
+	{
+		GameplayTagContainer.AddTag(newTag);
+	}
+	else
+	{
+		GameplayTagContainer.AddTag(newTag);
+	}
 
 	OnAddGameplayTag(newTag);
 }
@@ -121,7 +130,14 @@ void UKMGameObjectInstance::OnAddGameplayTag_Implementation(const FGameplayTag& 
 
 void UKMGameObjectInstance::RemoveGameplayTag(FGameplayTag removedTag)
 {
-	GameplayTagContainer.RemoveTag(removedTag);
+	if (removedTag == FKMGameplayTagName::State_Carried_Tag)
+	{
+		GameplayTagContainer.RemoveTag(removedTag);
+	}
+	else
+	{
+		GameplayTagContainer.RemoveTag(removedTag);
+	}
 
 	OnRemoveGameplayTag(removedTag);
 }
@@ -799,11 +815,24 @@ bool UKMGameObjectInstance::UseGuardSkill_Release()
 	return true;
 }
 
+bool UKMGameObjectInstance::UseInteractionSkill()
+{
+	GetSkillHandler()->UseInteractionSkill(MakeShared<FKMLockOnCluster>(*InteractionTarget.Get()));
+	return true;
+}
+
+bool UKMGameObjectInstance::UseInteractionSkill_Release()
+{
+	GetSkillHandler()->UseSkill_Release();
+	return true;
+}
+
 void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 {
 	check(LockonTarget.IsValid());
 	
 	LockonTarget->Targets.Empty();
+	InteractionTarget->Targets.Empty();
 	for (auto actorItr = resultActors.CreateConstIterator(); actorItr; ++actorItr)
 	{
 		IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(*actorItr);
@@ -831,10 +860,58 @@ void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 		{
 			continue;
 		}
-		
-		LockonTarget->Targets.Emplace(targetGameObjectInstance->GetId());
-		break;
+		if (objectTableRow->IsDestroy)
+		{
+			if (LockonTarget->Targets.IsEmpty())
+			{
+				LockonTarget->Targets.Emplace(targetGameObjectInstance->GetId());
+			}
+		}
+		if (IsRowA<FKMTable_Object_InteractiveRow>(objectTableRow))
+		{
+			if (InteractionTarget->Targets.IsEmpty())
+			{
+				InteractionTarget->Targets.Emplace(targetGameObjectInstance->GetId());
+			}
+		}
 	}
+}
+
+void UKMGameObjectInstance::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
+{
+	if (IKMPawnInterface* carryPawnInterface = Cast<IKMPawnInterface>(carryGameObjectInstance->GetOwnerActor()))
+	{
+		carryGameObjectInstance->CarriedObject = this;
+		carryPawnInterface->StartCrarry(this);
+	}
+	
+	if (IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	{
+		carriedPawnInterface->StartCrarried(carryGameObjectInstance);
+	}
+}
+
+void UKMGameObjectInstance::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
+{
+	if (IKMPawnInterface* carryPawnInterface = Cast<IKMPawnInterface>(putDownGameObjectInstance->GetOwnerActor()))
+	{
+		putDownGameObjectInstance->CarriedObject = nullptr;;
+		carryPawnInterface->ComplatePutdown(this);
+	}
+	if (IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	{
+		carriedPawnInterface->ComplatePutdowned(putDownGameObjectInstance);	
+	}
+}
+
+UKMGameObjectInstance* UKMGameObjectInstance::GetCarriedGameObjectInstance() const
+{
+	if (!CarriedObject.IsValid())
+	{
+		return nullptr;
+	}
+
+	return CarriedObject.Get();
 }
 
 void UKMGameObjectInstance::Tick(float deltaSeconds)

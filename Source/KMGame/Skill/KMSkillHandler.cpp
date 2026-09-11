@@ -686,7 +686,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseCombatSkill(const TSharedPtr<FK
 	
 	if (!ComboData.IsValid())
 	{
-		skillSet = EvaluateSkillSet(lockOnCluster);
+		skillSet = EvaluateSkillSet(lockOnCluster, true, false, false, false);
 		ComboData.skillSet = skillSet;
 		ComboData.CurrentCombo = -1;
 		ComboData.NextCombo = 0;
@@ -815,17 +815,67 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseTechniqueSkill_Internal(const T
 	return nullptr;
 }
 
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseInteractionSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
+{
+	if (ComboData.SkillInstance.IsValid())
+	{
+		return nullptr;
+	}
+	return UseInteractionSkill_Internal(lockOnCluster);
+}
+
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseInteractionSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag)
+{
+	float bestScore = 0.f;
+	FName bestSkillId = NAME_None;
+
+	TSharedPtr<FKMLockOnCluster> newLockOnCluster = MakeShared<FKMLockOnCluster>(*lockOnCluster.Get());
+	for (auto skillsetItr = OwnenSkillSets.CreateConstIterator(); skillsetItr; ++skillsetItr)
+	{
+		const FKMTable_SkillSetRow* skillSetRow = *skillsetItr;
+
+		if (!skillSetRow->Interaction)
+		{
+			continue;
+		}
+
+		for (int32 skillIndex = 0; skillIndex < skillSetRow->Skills.Num(); ++skillIndex)
+		{
+			float currentSkillScore = GetConditionScore(skillSetRow->Skills[skillIndex], newLockOnCluster, eventTag);
+			if (currentSkillScore > bestScore)
+			{
+				bestScore = currentSkillScore;
+				bestSkillId = skillSetRow->Skills[skillIndex];
+			}
+		}
+	}
+	if (bestSkillId == NAME_None)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(bestSkillId, 0), newLockOnCluster);
+	if (!newSkillInstance.IsValid())
+	{
+		return nullptr;
+	}
+	
+	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Grab_Tag);
+	return nullptr;
+}
+
+
 void UKMSkillHandler::TransitionTechniqueSkill(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag)
 {
 	UseTechniqueSkill_Internal(skillInstance->Target, eventTag);
 }
 
-const FKMTable_SkillSetRow* UKMSkillHandler::EvaluateSkillSet(const TSharedPtr<FKMLockOnCluster>& lockOnCluster) const
+const FKMTable_SkillSetRow* UKMSkillHandler::EvaluateSkillSet(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const
 {
-	return EvaluateSkillSet(lockOnCluster->GetBestTarget());
+	return EvaluateSkillSet(lockOnCluster->GetBestTarget(), bCombat, bTechnique, bInteraction, bUltimate);
 }
 
-const FKMTable_SkillSetRow* UKMSkillHandler::EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance) const
+const FKMTable_SkillSetRow* UKMSkillHandler::EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const
 {
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
 	check(IsValid(ownerGameObjectInstance));
@@ -835,7 +885,7 @@ const FKMTable_SkillSetRow* UKMSkillHandler::EvaluateSkillSet(const UKMGameObjec
 	for (auto skillsetItr = OwnenSkillSets.CreateConstIterator(); skillsetItr; ++skillsetItr)
 	{
 		const FKMTable_SkillSetRow* skillSetTableRow = *skillsetItr;
-		if (skillSetTableRow->Technique)
+		if (skillSetTableRow->Combat != bCombat || skillSetTableRow->Technique != bTechnique || skillSetTableRow->Interaction != bInteraction || skillSetTableRow->Ultimate != bUltimate)
 		{
 			continue;
 		}

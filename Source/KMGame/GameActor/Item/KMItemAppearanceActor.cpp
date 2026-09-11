@@ -4,6 +4,7 @@
 #include "GameActor/Pawn/Character/KMChainAnimInstance.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
+#include "System/KMTargetSubsystem.h"
 
 UKMItemAppearanceInstance::UKMItemAppearanceInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -75,7 +76,7 @@ void UKMItemAppearanceInstance::Launch_Implementation()
 	USkeletalMeshComponent* skeletalMeshComponent = GetSpawnedkeletalMeshComponent();
 	check(IsValid(skeletalMeshComponent));
 
-	skeletalMeshComponent->SetRelativeRotation(GetCharacter()->GetActorRotation());
+	//skeletalMeshComponent->SetRelativeRotation(GetCharacter()->GetActorRotation());
 	skeletalMeshComponent->SetSimulatePhysics(false);
 	if (IsValid(SpawnedActor))
 	{
@@ -203,9 +204,15 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		return;
 	}
 
+	TWeakObjectPtr<UKMGameObjectInstance> targetGameObejctInstance;
 	if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 	{
 		ownerCharacterInstance->HitCheckClear();
+		TSharedPtr<FKMSkillInstance> skillInstance = ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
+		if (skillInstance.IsValid() && skillInstance->Target.IsValid())
+		{
+			targetGameObejctInstance = skillInstance->Target->GetBestTarget();
+		}
 	}
 	if (IsValid(ChainMesh))
 	{
@@ -214,8 +221,16 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		PreviousTransform = socketTransform;
 	}
 	
-	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
+	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance, targetGameObejctInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
 	{
+		if (targetGameObejctInstance.IsValid())
+		{
+			if (AActor* targetActor = targetGameObejctInstance.Pin()->GetOwnerActor())
+			{
+				chainAnimInstance->SetTargetLocation(targetActor->GetActorLocation());
+			}
+		}
+		
 		switch (eventType)
 		{
 		case eTickerEventType::CREATED:
@@ -286,7 +301,6 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 	{
 		if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 		{
-			
 			if (IsValid(ownerCharacterInstance->GetSkillHandler()) &&
 				ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance().IsValid())
 			{

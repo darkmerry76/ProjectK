@@ -386,7 +386,7 @@ void AKMCharacter::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectIns
 	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
 	{
 		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		putDownedGameObjectInstance->AddGameplayTag(TakenTag);
+		putDownedGameObjectInstance->RemoveGameplayTag(TakenTag);
 	}
 	
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);

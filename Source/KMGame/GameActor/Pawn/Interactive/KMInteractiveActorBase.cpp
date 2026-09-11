@@ -156,7 +156,7 @@ void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGa
 	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
 	{
 		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		putDownedGameObjectInstance->AddGameplayTag(TakenTag);
+		putDownedGameObjectInstance->RemoveGameplayTag(TakenTag);
 	}
 	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, PawnResponse);
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);

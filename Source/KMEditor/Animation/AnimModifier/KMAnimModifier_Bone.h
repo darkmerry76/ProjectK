@@ -58,7 +58,7 @@ public:
 	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	FName BoneName = FName("Pelvis");
+	FName BoneName = FName("Bip001-Pelvis");
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	int32 X = 0;
@@ -189,7 +189,10 @@ protected:
 	UAnimSequence* TargetAnimationSequence;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	FTransform TargetRootTransform = FTransform::Identity;
+	FName TargetBoneName = FName("Bip001-Pelvis");
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FTransform TargetTransform = FTransform::Identity;
 	
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float AddTime = 0.f;
@@ -217,4 +220,30 @@ public:
 protected:
 	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
 	bool IsBlendBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const;
+};
+
+UCLASS()
+class UKMMixToAnimationModifier : public UAnimationModifier
+{
+	GENERATED_BODY()
+	
+protected:
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	UAnimSequence* TargetAnimationSequence;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	FName MixBoneName = FName("Bip001-Spine");
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float MixStartTime = 0.f;
+
+	UPROPERTY(EditAnywhere, DisplayName="Inverse", Category = "Settings")
+	bool bIsInverse = false;
+
+public:
+	UKMMixToAnimationModifier();
+	
+protected:
+	virtual void OnApply_Implementation(UAnimSequence* animSequence) override;
+	bool IsMixBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const;
 };

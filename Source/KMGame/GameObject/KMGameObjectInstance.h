@@ -187,9 +187,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool UseGuardSkill_Release();
 
+	UFUNCTION(BlueprintCallable)
+	virtual bool UseInteractionSkill();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool UseInteractionSkill_Release();
+
+	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance);
+	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance);
+
 	virtual void OnSensorResult(const TArray<AActor*>& resultActors);
 
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
+
+	UFUNCTION(BlueprintPure)
+	UKMGameObjectInstance* GetCarriedGameObjectInstance() const;
 	
 	static FKMDeathDelegate& GetDeathDelegate()
 	{
@@ -267,8 +279,12 @@ protected:
 	float InteractionDirection = 1.f;
 
 	TSharedPtr<class FKMLockOnCluster> LockonTarget;
+	TSharedPtr<class FKMLockOnCluster> InteractionTarget;
 	TSharedPtr<class FKMTimingParry> TimingParry;
 	TSharedPtr<class FKMTimingCancel> TimingCancel;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UKMGameObjectInstance> CarriedObject;
 	
 	FTimerHandle SensorHandle;
 };

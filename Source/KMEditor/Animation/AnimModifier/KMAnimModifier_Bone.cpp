@@ -379,6 +379,8 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
     newRotation.SetNum(refSkeleton.GetNum());
     newScale.SetNum(refSkeleton.GetNum());
 
+	int32 addBoneIndex = animSequence->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(TargetBoneName);
+
     TArray<FTransform> targetBoneTransform;
     for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
     {
@@ -387,28 +389,30 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
 
         TargetAnimationSequence->GetBoneTransform(boneTransform, FSkeletonPoseBoneIndex(boneIndex), extractBaseContext, false);
 
-    	if (boneIndex == 1)
+    	if (boneIndex == addBoneIndex)
     	{
-    		targetBoneTransform.Emplace(boneTransform * TargetRootTransform);
+    		targetBoneTransform.Emplace(boneTransform * TargetTransform);
     	}
     	else
     	{
     	    targetBoneTransform.Emplace(boneTransform);
     	}
     }
+
+	FTransform addBoneTransform = FTransform::Identity;
+	if (addBoneIndex != INDEX_NONE)
+	{
+		FTransform addSourceBoneTransform;
+		FAnimExtractContext addExtractContext(static_cast<double>(AddTime), animSequence->bEnableRootMotion);
+		animSequence->GetBoneTransform(addSourceBoneTransform, FSkeletonPoseBoneIndex(addBoneIndex), addExtractContext, false);
+
+		FVector addLocation = targetBoneTransform[addBoneIndex].GetLocation() - addSourceBoneTransform.GetLocation();
+		//addLocation.Y = 0.f;
+		FQuat addRotation = targetBoneTransform[addBoneIndex].GetRotation().Inverse() * addSourceBoneTransform.GetRotation();
+		
+		addBoneTransform = FTransform(addRotation, addLocation, FVector::One());
+	}
 	
-	int32 addBoneIndex = 1;
-	
-	FTransform addSourceBoneTransform;
-	FAnimExtractContext addExtractContext(static_cast<double>(AddTime), animSequence->bEnableRootMotion);
-	animSequence->GetBoneTransform(addSourceBoneTransform, FSkeletonPoseBoneIndex(addBoneIndex), addExtractContext, false);
-
-	FVector addLocation = targetBoneTransform[addBoneIndex].GetLocation() - addSourceBoneTransform.GetLocation();
-	addLocation.Y = 0.f;
-	FQuat addRotation = targetBoneTransform[addBoneIndex].GetRotation().Inverse() * addSourceBoneTransform.GetRotation();
-
-	FTransform addBoneTransform = FTransform(addRotation, addLocation, FVector::One());
-
     const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
     for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
@@ -430,16 +434,25 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
             blendBoneTransform.Blend(sourceBoneTransform,targetBoneTransform[boneIndex], blendAlpha);
 
         	FTransform finalBoneTransform = bIsBlending ?  blendBoneTransform : sourceBoneTransform;
-
-        	if (boneIndex == 1)
+        	if (time >= BlendingStartTime)
         	{
-        		if (bIsAddTranslate)
+        		if (boneIndex == addBoneIndex)
         		{
-        			finalBoneTransform.SetLocation(finalBoneTransform.GetLocation() + (addBoneTransform.GetLocation() * blendAlpha));
+        			if (bIsAddTranslate)
+        			{
+        				finalBoneTransform.SetLocation(addBoneTransform.GetLocation());
+        			}
+        			if (bIsAddRotation)
+        			{
+        				finalBoneTransform.SetRotation(finalBoneTransform.GetRotation() * (addBoneTransform.GetRotation()));
+        			}
         		}
-        		if (bIsAddRotation)
+        		else if (boneIndex == 1)
         		{
-        			finalBoneTransform.SetRotation(finalBoneTransform.GetRotation() * (addBoneTransform.GetRotation() * blendAlpha));
+        			if (bIsAddTranslate)
+        			{
+        				finalBoneTransform.SetLocation(FVector(0.f, finalBoneTransform.GetLocation().Y, 0.f));
+        			}
         		}
         	}
         	
@@ -454,6 +467,111 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
     {
         const FName boneName = refSkeleton.GetBoneName(boneIndex);
     	if (!IsBlendBone(refSkeleton, boneIndex))
+    	{
+    		continue;
+    	}
+    	
+		controller.AddBoneCurve(boneName);
+        controller.SetBoneTrackKeys(boneName,newLocation[boneIndex], newRotation[boneIndex],newScale[boneIndex]);
+    }
+
+    controller.CloseBracket();
+}
+
+UKMMixToAnimationModifier::UKMMixToAnimationModifier() : Super()
+{
+}
+
+bool UKMMixToAnimationModifier::IsMixBone(const FReferenceSkeleton& refSkeleton, int32 boneIndex) const
+{
+	const int32 maxBoneIndex = refSkeleton.FindBoneIndex(MixBoneName);
+	if (maxBoneIndex == INDEX_NONE)
+	{
+		return false;
+	}
+	
+	if (boneIndex == maxBoneIndex)
+	{
+		return true;
+	}
+	
+	if (refSkeleton.BoneIsChildOf(boneIndex, maxBoneIndex))
+	{
+		return true;
+	}
+	return false;
+}
+
+void UKMMixToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequence)
+{
+    if (!IsValid(animSequence))
+    {
+        return;
+    }
+    
+    if (!IsValid(TargetAnimationSequence))
+    {
+        return;
+    }
+
+    if (animSequence->GetSkeleton() != TargetAnimationSequence->GetSkeleton())
+    {
+        return;
+    }
+	
+    IAnimationDataController& controller = animSequence->GetController();
+    const FReferenceSkeleton& refSkeleton = animSequence->GetSkeleton()->GetReferenceSkeleton();
+    
+    TArray<TArray<FVector>> newLocation;
+    TArray<TArray<FQuat>> newRotation;
+    TArray<TArray<FVector>> newScale;
+
+    newLocation.SetNum(refSkeleton.GetNum());
+    newRotation.SetNum(refSkeleton.GetNum());
+    newScale.SetNum(refSkeleton.GetNum());
+
+	int32 mixBoneIndex = animSequence->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(MixBoneName);
+	if (mixBoneIndex == INDEX_NONE)
+	{
+		return;
+	}
+	
+    const int32 numKeys = animSequence->GetNumberOfSampledKeys();
+
+    for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+    {
+        const float time = static_cast<float>(animSequence->GetTimeAtFrame(keyIndex));
+    	for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
+    	{
+    		FAnimExtractContext extractContext(static_cast<double>(time), animSequence->bEnableRootMotion);
+    		FTransform sourceBoneTransform;
+    		animSequence->GetBoneTransform(sourceBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractContext, false);
+    	
+            FTransform finalBoneTransform = sourceBoneTransform;
+
+    		if (time >= MixStartTime)
+    		{
+    			if (IsMixBone(refSkeleton, boneIndex))
+    			{
+    				FTransform targetBoneTransform;
+    				const float targetTime = bIsInverse ? (TargetAnimationSequence->GetPlayLength() - (time - MixStartTime)) : (time - MixStartTime);
+    				FAnimExtractContext extractTargetContext(static_cast<double>(targetTime), animSequence->bEnableRootMotion);
+    				TargetAnimationSequence->GetBoneTransform(targetBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractTargetContext, false);
+
+    				finalBoneTransform = targetBoneTransform;
+    			}
+    		}
+            newLocation[boneIndex].Emplace(finalBoneTransform.GetLocation());
+            newRotation[boneIndex].Emplace(finalBoneTransform.GetRotation());
+            newScale[boneIndex].Emplace(finalBoneTransform.GetScale3D());
+        }
+    }
+
+	controller.OpenBracket(FText::FromString(TEXT("Mix To Animation")));
+    for (int32 boneIndex = 0; boneIndex < refSkeleton.GetNum(); ++boneIndex)
+    {
+        const FName boneName = refSkeleton.GetBoneName(boneIndex);
+    	if (!IsMixBone(refSkeleton, boneIndex))
     	{
     		continue;
     	}

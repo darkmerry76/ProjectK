@@ -36,6 +36,9 @@ struct FKMTable_SkillSetRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 Ultimate = { false };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool                 Interaction = { false };
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline virtual void PostLoadRowTable() override;
 

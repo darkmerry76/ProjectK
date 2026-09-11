@@ -50,8 +50,10 @@ bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)
 	}
 	
 	FTransform targetWorldTransform = targetAttachedBlendingComponent->GetComponentToWorld();
-	ownerPawnInterface->StartCrarry(targetPawnInterface->GetGameObjectInstance());
-	targetPawnInterface->StartCrarried(ownerPawnInterface->GetGameObjectInstance());
+	if (UKMGameObjectInstance* targetGameObjectInstance = GetTargetGameObjectInstance())
+	{
+		targetGameObjectInstance->StartCrarried(ownerPawnInterface->GetGameObjectInstance());
+	}
 	targetActor->AttachToComponent(ownerActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 	{

@@ -20,7 +20,7 @@ FKMSkillKey UKMBTService_AutoSelectSkill::EvaluateBestSkill(const UKMCharacterIn
 	UKMSkillHandler* ownerSkillHandler = casterCharacterInstance->GetSkillHandler();
 	check(IsValid(ownerSkillHandler));
 
-	const FKMTable_SkillSetRow* bestSkillSet = ownerSkillHandler->EvaluateSkillSet(targetCharacterInstance);
+	const FKMTable_SkillSetRow* bestSkillSet = ownerSkillHandler->EvaluateSkillSet(targetCharacterInstance, true, false, false, false);
 	if (!bestSkillSet)
 	{
 		return FKMSkillKey::Null();

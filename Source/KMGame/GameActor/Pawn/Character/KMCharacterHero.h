@@ -39,6 +39,9 @@ public:
 	class UInputAction* GuardAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
+	class UInputAction* InteractionAction;
+
+	UPROPERTY(EditAnywhere, Category="Input")
 	class UInputAction* Debug1Action;
 
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -95,6 +98,9 @@ protected:
 
 	void OnGuardSkillAction();
 	void OnGuardSkillAction_Release();
+
+	void OnInteractionSkillAction();
+	void OnInteractionSkillAction_Release();
 
 	void OnDebug1Action();
 	void OnDebug1Action_Release();

@@ -48,6 +48,9 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnGuardSkillAction);
 		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnGuardSkillAction_Release);
 
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnInteractionSkillAction);
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnInteractionSkillAction_Release);
+
 		EnhancedInputComponent->BindAction(Debug1Action, ETriggerEvent::Started, this, &AKMCharacterHero::OnDebug1Action);
 		EnhancedInputComponent->BindAction(Debug1Action, ETriggerEvent::Completed, this, &AKMCharacterHero::OnDebug1Action_Release);
 
@@ -222,6 +225,16 @@ void AKMCharacterHero::OnGuardSkillAction()
 void AKMCharacterHero::OnGuardSkillAction_Release()
 {
 	GetCharacterInstance()->UseGuardSkill_Release();
+}
+
+void AKMCharacterHero::OnInteractionSkillAction()
+{
+	GetCharacterInstance()->UseInteractionSkill();
+}
+
+void AKMCharacterHero::OnInteractionSkillAction_Release()
+{
+	GetCharacterInstance()->UseInteractionSkill_Release();
 }
 
 void AKMCharacterHero::OnDebug1Action()

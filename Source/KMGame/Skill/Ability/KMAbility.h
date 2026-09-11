@@ -108,19 +108,19 @@ public:
 	class AKMCharacter* GetOwnerCharacter() const;
 
 	UFUNCTION(BlueprintPure)
-	class UKMGameObjectInstance* GetTargetGameObjectInstance() const;
+	virtual class UKMGameObjectInstance* GetTargetGameObjectInstance() const;
 	
 	UFUNCTION(BlueprintPure)
-	class UKMCharacterInstance* GetTargetCharacterInstance() const;
+	virtual class UKMCharacterInstance* GetTargetCharacterInstance() const;
 
 	UFUNCTION(BlueprintPure)
 	class UEMMartialArtsComponent* GetMartialArtsComponent() const;
 
 	UFUNCTION(BlueprintPure)
-	class AActor* GetTargetActor() const;
+	virtual class AActor* GetTargetActor() const;
 
 	UFUNCTION(BlueprintPure)
-	class AKMCharacter* GetTargetCharacter() const;
+	virtual class AKMCharacter* GetTargetCharacter() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetMontageRate(float newRate);

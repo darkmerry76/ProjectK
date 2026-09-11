@@ -63,4 +63,7 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStartPutDown();
+
+	virtual class UKMGameObjectInstance* GetTargetGameObjectInstance() const override;
+	virtual class AActor* GetTargetActor() const override;
 };

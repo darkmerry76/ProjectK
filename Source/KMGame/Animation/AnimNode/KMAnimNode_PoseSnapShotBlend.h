@@ -47,4 +47,7 @@ public:
 	virtual void Initialize_AnyThread(const FAnimationInitializeContext& context) override;
 	virtual void Update_AnyThread(const FAnimationUpdateContext& context) override;
 	virtual void Evaluate_AnyThread(FPoseContext& output) override;
+
+protected:
+	FQuat CalcChainTargetRotation(const FPoseContext& output, const FVector& targetLocation) const;
 };

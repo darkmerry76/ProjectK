@@ -33,38 +33,38 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 	output = attackContext;
 
 	const FBoneContainer& boneContainer = output.Pose.GetBoneContainer();
-	const UKMChainAnimInstance* animInstance = Cast<UKMChainAnimInstance>(attackContext.GetAnimInstanceObject());
 
-	FPoseSnapshot snapshot = animInstance->Snapshot;
-	if (animInstance->GetWorld()->IsGameWorld() == true)
+	FKMChainAnimInstanceProxy* chainAnimInstanceProxy = static_cast<FKMChainAnimInstanceProxy*>(attackContext.AnimInstanceProxy);
+	check(chainAnimInstanceProxy);
+
+	if (output.GetAnimInstanceObject()->GetWorld()->IsGameWorld() == true)
 	{
-		if (!ChainRootIndex.IsValid() || !animInstance->EnableAttack)
+		if (!ChainRootIndex.IsValid() || !chainAnimInstanceProxy->IsEnableAttack())
 		{
 			return;
 		}
 	}
 	
-    const float clampedAlpha = animInstance->EnableAttack ? animInstance->BlendAlpha : Alpha;
+    const float clampedAlpha = chainAnimInstanceProxy->IsEnableAttack() ? chainAnimInstanceProxy->GetBlendAlpha() : Alpha;
 
 	int32 rootIndex = ChainRootIndex.GetInt();
     int32 boneCount = output.Pose.GetNumBones();
 
-	float prevAngle = 0;
+	float prevAngleX = 0.f;
+	float prevAngleZ = 0.f;
 	int32 chainLength = boneCount - rootIndex;
     for (int32 i = rootIndex; i < boneCount; i++)
     {
         FCompactPoseBoneIndex boneIndex(i);
-        if (!boneContainer.BoneIsChildOf(boneIndex, ChainRootIndex))
-            continue;
-
-    	FTransform boneTM = output.Pose[boneIndex];
+    	
     	if (boneIndex == ChainRootIndex)
     	{
-    		boneTM.SetRotation(FQuat::Identity);
-    		output.Pose[boneIndex] = boneTM;
+    		output.Pose[boneIndex] = output.Pose[boneIndex] *
+    			FTransform(CalcChainTargetRotation(output, chainAnimInstanceProxy->GetTargetLocation()));
     		continue;
     	}
-    	
+
+    	FTransform boneTM = output.Pose[boneIndex];
         FVector refLoc = boneTM.GetTranslation();
     	FVector newLoc = refLoc * clampedAlpha;
 
@@ -76,15 +76,50 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
     	const float envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
     	const float finalAmplitude = WaveAmplitude * envelope * (1.0f - clampedAlpha);
     	const float phase = chainIndex * WaveFrequency + Time * WaveSpeed - chainIndex;
-    	const float angle = FMath::Sin(phase) * finalAmplitude;
+    	
+    	const float angleX = FMath::Sin(phase) * finalAmplitude;
+    	const float angleZ = FMath::Sin(phase) * finalAmplitude;
 
-    	const float localAngle = angle - prevAngle;
-    	prevAngle = angle;
+    	const float localAngleX = angleX - prevAngleX;
+    	const float localAngleZ = angleZ - prevAngleZ;
 
-    	const FQuat WaveRot(FVector::UpVector,FMath::DegreesToRadians(localAngle));
-    	const FQuat WaveRot2(FVector::RightVector,FMath::DegreesToRadians(localAngle));
+    	prevAngleX = angleX;
+    	prevAngleZ = angleZ;
 
-    	boneTM.SetRotation(WaveRot);
+    	const FQuat waveRotX(FVector::ForwardVector,FMath::DegreesToRadians(localAngleX));
+
+    	const FQuat waveRotZ(FVector::UpVector, FMath::DegreesToRadians(localAngleZ));
+
+    	boneTM.SetRotation(waveRotZ);
     	output.Pose[boneIndex] = boneTM;
     }
+}
+
+FQuat FKMAnimNode_PoseSnapShotBlend::CalcChainTargetRotation(const FPoseContext& output, const FVector& targetLocation) const
+{
+	if (!ChainRootIndex.IsValid())
+	{
+		return FQuat::Identity;
+	}
+
+	FCSPose<FCompactPose> componentPose;
+	componentPose.InitPose(output.Pose);
+
+	const FTransform chainRootComponentTM = componentPose.GetComponentSpaceTransform(ChainRootIndex);
+	const FAnimInstanceProxy* animInstanceProxy = output.AnimInstanceProxy;
+	if (!animInstanceProxy)
+	{
+		return FQuat::Identity;
+	}
+
+	const FTransform componentTransform = animInstanceProxy->GetComponentTransform();
+	const FVector chainRootWorldLocation = componentTransform.TransformPosition(chainRootComponentTM.GetLocation());
+	FVector targetDirectionWorld = targetLocation - chainRootWorldLocation;
+	if (!targetDirectionWorld.Normalize())
+	{
+		return output.Pose[ChainRootIndex].GetRotation();
+	}
+
+	const FVector targetDirectionComponent = componentTransform.InverseTransformVectorNoScale(targetDirectionWorld).GetSafeNormal();
+	return FQuat::FindBetweenNormals(FVector::ForwardVector, targetDirectionComponent);
 }
