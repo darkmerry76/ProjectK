@@ -178,3 +178,8 @@ const FHitResult AKMInteractiveActorBase::GetLatestWallHitResult_Implementation(
 {
 	return LastWallHitResult;	
 }
+
+FTransform AKMInteractiveActorBase::GetApproachPullPoint(EKMApproachPullPointType approachPullPointType) const
+{
+	return GetActorTransform();
+}

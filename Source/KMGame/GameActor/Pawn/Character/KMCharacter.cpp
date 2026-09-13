@@ -391,3 +391,13 @@ void AKMCharacter::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectIns
 	
 	Receive_OnComplatePutdowned(putDownGameObjectInstance);
 }
+
+FTransform AKMCharacter::GetApproachPullPoint(EKMApproachPullPointType approachPullPointType) const
+{
+	USkeletalMeshComponent* skeletalMeshComponent = GetMesh();
+	if (!IsValid(skeletalMeshComponent))
+	{
+		return GetActorTransform();
+	}
+	return skeletalMeshComponent->GetSocketTransform(TEXT("PullPointNeckSocket"));
+}

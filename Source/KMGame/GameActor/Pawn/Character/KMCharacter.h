@@ -159,6 +159,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) override;
 
+	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;

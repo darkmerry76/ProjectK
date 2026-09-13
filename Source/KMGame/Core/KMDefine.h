@@ -151,6 +151,14 @@ enum class EKMAnimSlotType : uint8
 	UpperSlot,
 };
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMApproachPullPointType : uint8
+{
+	None,
+	Auto,
+	Neck,
+};
+
 USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMProjectileEventData
 {

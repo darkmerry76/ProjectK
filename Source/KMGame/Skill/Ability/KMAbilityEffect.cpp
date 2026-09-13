@@ -120,3 +120,74 @@ FKMSkillEffectInstance* UKMAbilityEffect::GetSkillEffectInstance() const
 {
 	return SkillEffectInstance.IsValid() ? SkillEffectInstance.Pin().Get() : nullptr;
 }
+
+FVector UKMAbilityEffect::GetOffsetAlongCasterForward(float offsetDistance, float weight, bool bIgnoreZ) const
+{
+	AActor* casterActor = GetCasterActor();
+	check(IsValid(casterActor));
+
+	FVector result = casterActor->GetActorLocation() + (casterActor->GetActorForwardVector() * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
+}
+
+FVector UKMAbilityEffect::GetOffsetToCasterByOwnerForward(float offsetDistance, float weight, bool bIgnoreZ) const
+{
+	AActor* casterActor = GetCasterActor();
+	check(IsValid(casterActor));
+
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
+
+	FVector result = casterActor->GetActorLocation() + (ownerActor->GetActorForwardVector() * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
+}
+
+FVector UKMAbilityEffect::GetOffsetToCasterByOwnerForward2D(FVector2D offset, float weight, bool bIgnoreZ) const
+{
+	AActor* casterActor = GetCasterActor();
+	check(IsValid(casterActor));
+
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
+
+	FVector result = casterActor->GetActorLocation() + (ownerActor->GetActorForwardVector() * offset.X * weight) + (ownerActor->GetActorRightVector() * offset.Y * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
+}
+
+FVector UKMAbilityEffect::GetOffsetOwnerAlongCasterDirection(float offsetDistance, float weight, bool bIgnoreZ) const
+{
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
+
+	AActor* casterActor = GetCasterActor();
+	if(!IsValid(casterActor))
+	{
+		return ownerActor->GetActorLocation(); 
+	}
+	
+	FVector casterToOwner = casterActor->GetActorLocation() - ownerActor->GetActorLocation();
+	casterToOwner.Normalize();
+
+	FVector result = ownerActor->GetActorLocation() + (casterToOwner * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
+}
+
+FVector UKMAbilityEffect::GetOffsetCasterAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ) const
+{
+	AActor* ownerActor = GetOwnerActor();
+	check(IsValid(ownerActor));
+
+	AActor* casterActor = GetCasterActor();
+	if(!IsValid(casterActor))
+	{
+		return ownerActor->GetActorLocation(); 
+	}
+	
+	FVector casterToOwner = ownerActor->GetActorLocation() - casterActor->GetActorLocation();
+	casterToOwner.Normalize();
+
+	FVector result = casterActor->GetActorLocation() + (casterToOwner * offsetDistance * weight);
+	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
+}
+
+

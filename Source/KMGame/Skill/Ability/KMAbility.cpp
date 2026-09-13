@@ -556,13 +556,13 @@ void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetL
 
 void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ)
 {
-	AKMCharacter* character = GetOwnerCharacter();
-	if(!IsValid(character))
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if(!ownerPawnInterface)
 	{
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarpingComponent();
+	UKMCurveWarpingComponent* curveWarping = ownerPawnInterface->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
@@ -570,13 +570,13 @@ void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurv
 
 void UKMAbility::PlayOwnerLinearWarping(FVector newTargetLocation, float newPlayLength)
 {
-	AKMCharacter* character = GetOwnerCharacter();
-	if(!IsValid(character))
+	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
+	if(!ownerPawnInterface)
 	{
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = character->GetCurveWarpingComponent();
+	UKMCurveWarpingComponent* curveWarping = ownerPawnInterface->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayLinearWarp(newTargetLocation, newPlayLength);

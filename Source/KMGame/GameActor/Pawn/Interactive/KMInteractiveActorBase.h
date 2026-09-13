@@ -99,6 +99,8 @@ public:
 	virtual void WallHit(const FHitResult& hitResult) override;
 	virtual void CeilingHit(const FHitResult& hitResult) override;
 
+	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
+
 protected:
 	virtual class UPawnMovementComponent* GetMovementComponent() const override;
 

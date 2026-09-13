@@ -44,7 +44,17 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 			return;
 		}
 	}
+
+	const FTransform componentTransform = chainAnimInstanceProxy->GetComponentTransform();
+
+	FCSPose<FCompactPose> componentPose;
+	componentPose.InitPose(output.Pose);
 	
+	const FTransform chainRootComponentTM = componentPose.GetComponentSpaceTransform(ChainRootIndex);
+	const FVector chainRootWorldLocation = componentTransform.TransformPosition(chainRootComponentTM.GetLocation());
+
+	const float targetDistance = FVector::Distance(chainRootWorldLocation, chainAnimInstanceProxy->GetTargetLocation());
+
     const float clampedAlpha = chainAnimInstanceProxy->IsEnableAttack() ? chainAnimInstanceProxy->GetBlendAlpha() : Alpha;
 
 	int32 rootIndex = ChainRootIndex.GetInt();
@@ -53,6 +63,11 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 	float prevAngleX = 0.f;
 	float prevAngleZ = 0.f;
 	int32 chainLength = boneCount - rootIndex;
+
+	float chainLengthScale = FMath::Max(targetDistance / 525.f, 1.f);
+
+	float currentChainLength = 0.f;
+	
     for (int32 i = rootIndex; i < boneCount; i++)
     {
         FCompactPoseBoneIndex boneIndex(i);
@@ -63,34 +78,46 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
     			FTransform(CalcChainTargetRotation(output, chainAnimInstanceProxy->GetTargetLocation()));
     		continue;
     	}
-
-    	FTransform boneTM = output.Pose[boneIndex];
-        FVector refLoc = boneTM.GetTranslation();
-    	FVector newLoc = refLoc * clampedAlpha;
-
-    	boneTM.SetTranslation(newLoc);
-
-	   	const int32 chainIndex = i - rootIndex;
-
-    	const float t = static_cast<float>(chainIndex) / static_cast<float>(chainLength);
-    	const float envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
-    	const float finalAmplitude = WaveAmplitude * envelope * (1.0f - clampedAlpha);
-    	const float phase = chainIndex * WaveFrequency + Time * WaveSpeed - chainIndex;
     	
-    	const float angleX = FMath::Sin(phase) * finalAmplitude;
-    	const float angleZ = FMath::Sin(phase) * finalAmplitude;
+    	FTransform boneTM = output.Pose[boneIndex];
+    	
+    	currentChainLength += output.Pose[boneIndex].GetTranslation().Size();
+    	if (currentChainLength < targetDistance)
+    	{
+    		FVector refLoc = boneTM.GetTranslation();
+    		FVector newLoc = refLoc * clampedAlpha;
 
-    	const float localAngleX = angleX - prevAngleX;
-    	const float localAngleZ = angleZ - prevAngleZ;
+    		boneTM.SetTranslation(newLoc);
 
-    	prevAngleX = angleX;
-    	prevAngleZ = angleZ;
+    		const int32 chainIndex = i - rootIndex;
 
-    	const FQuat waveRotX(FVector::ForwardVector,FMath::DegreesToRadians(localAngleX));
+    		const float t = static_cast<float>(chainIndex) / static_cast<float>(chainLength);
+    		const float envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
+    		const float finalAmplitude = WaveAmplitude * envelope * (1.0f - clampedAlpha);
+    		const float phase = chainIndex * WaveFrequency + Time * WaveSpeed - chainIndex;
+    		
+    		const float angleX = FMath::Sin(phase) * finalAmplitude;
+    		const float angleZ = FMath::Sin(phase) * finalAmplitude;
 
-    	const FQuat waveRotZ(FVector::UpVector, FMath::DegreesToRadians(localAngleZ));
+    		const float localAngleX = angleX - prevAngleX;
+    		const float localAngleZ = angleZ - prevAngleZ;
 
-    	boneTM.SetRotation(waveRotZ);
+    		prevAngleX = angleX;
+    		prevAngleZ = angleZ;
+
+    		const FQuat waveRotX(FVector::ForwardVector,FMath::DegreesToRadians(localAngleX));
+
+    		const FQuat waveRotZ(FVector::UpVector, FMath::DegreesToRadians(localAngleZ));
+
+    		boneTM.SetRotation(waveRotZ);
+    	}
+    	else
+    	{
+    		boneTM.SetScale3D(FVector::ZeroVector);
+    	}
+
+    	boneTM.SetLocation(boneTM.GetTranslation() * chainLengthScale);
+    		
     	output.Pose[boneIndex] = boneTM;
     }
 }

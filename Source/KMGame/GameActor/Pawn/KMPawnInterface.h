@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/KMDefine.h"
 #include "KMPawnInterface.generated.h"
 
 UINTERFACE(Blueprintable, BlueprintType)
@@ -43,4 +44,6 @@ public:
 	virtual void LandHit(const FHitResult& hitResult) = 0;
 	virtual void WallHit(const FHitResult& HitResult) = 0;
 	virtual void CeilingHit(const FHitResult& HitResult) = 0;
+	
+	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const = 0;
 };

@@ -52,6 +52,21 @@ public:
 	virtual void Deactivate(bool bCancel = false) override;
 	virtual void Impact(const FTransform& newImpactTransform) override;
 
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetAlongCasterForward(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
+
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetToCasterByOwnerForward(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
+
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetToCasterByOwnerForward2D(FVector2D offset, float weight = 1.f, bool bIgnoreZ = false) const;
+
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetOwnerAlongCasterDirection(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
+	
+	UFUNCTION(BlueprintPure)
+	FVector GetOffsetCasterAlongOwnerDirection(float offsetDistance, float weight = 1.f, bool bIgnoreZ = false) const;
+
 	void SetSkillEffectInstance(const TSharedPtr<class FKMSkillEffectInstance>& newSkillEffectInstance);
 	class FKMSkillEffectInstance* GetSkillEffectInstance() const;
 };
