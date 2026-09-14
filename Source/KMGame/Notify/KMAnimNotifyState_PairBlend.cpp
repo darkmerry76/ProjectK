@@ -38,6 +38,7 @@ void UKMAnimNotifyState_PairBlend::FollowAnimation(const USkeletalMeshComponent*
 	{
 		return;
 	}
+	
 	if (!pairContext->IsValid())
 	{
 		const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>();
@@ -78,7 +79,7 @@ void UKMAnimNotifyState_PairBlend::FollowAnimation(const USkeletalMeshComponent*
 		}
 	}
 
-	if (!pairContext->IsValid())
+	if (!pairContext->IsValid() || pairContext->bIsPlaying)
 	{
 		return;
 	}
@@ -89,6 +90,7 @@ void UKMAnimNotifyState_PairBlend::FollowAnimation(const USkeletalMeshComponent*
 	}
 
 	pairContext->FollowerCharacterInstance->SetTimeDilation(TEXT("Follow"), pairContext->LeaderCharacterInstance->GetTimeDilation());
+	pairContext->bIsPlaying = true;
 }
 
 void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
@@ -112,6 +114,7 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 	}
 
 	TSharedPtr<FKMAnimNotifyState_Pair_Context> newPairContext = MakeShared<FKMAnimNotifyState_Pair_Context>();
+	PairContexts.Remove(meshComp);
 	PairContexts.Emplace(meshComp,newPairContext);
 
 	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
@@ -163,7 +166,7 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 	{
 		return;
 	}
-
+	
 	const TSharedPtr<FKMAnimNotifyState_Pair_Context>* pairContext = PairContexts.Find(meshComp);
 
 	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
@@ -189,10 +192,9 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 
 	if (pairContext && (*pairContext)->IsValid())
 	{
-		if ((*pairContext)->FollowerMontageInstance->GetMontageSyncLeader() == (*pairContext)->LeaderMontageInstance)
+		if ((*pairContext)->LeaderMontageInstance->IsValid())
 		{
-			(*pairContext)->FollowerMontageInstance->MontageSync_StopFollowing();
-			(*pairContext)->LeaderMontageInstance->MontageSync_StopLeading();
+			(*pairContext)->LeaderMontageInstance->MontageSync_StopFollowing();
 			(*pairContext)->FollowerCharacterInstance->RemoveTimeDilation(TEXT("Follow"));
 		}
 	}

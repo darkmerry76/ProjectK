@@ -117,6 +117,9 @@ protected:
 
 	FTransform PreviousTransform;
 
+	UPROPERTY(Transient)
+	TWeakObjectPtr<class UKMGameObjectInstance> TargetGameObejctInstance;
+
 protected:
 	virtual TObjectPtr<UKMItemAppearanceInstance> CreateInstance(UObject* ownerObject, TSubclassOf<UKMItemAppearanceInstance> instanceClass) const override;
 

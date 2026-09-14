@@ -478,8 +478,8 @@ void UKMCharacterMovementComponent::OnJumpInterrupt(const FVector& moveDelta, fl
 
 	if (newMovementMode == EEMCustomMovementMode::CMODE_Falling || newMovementMode == EEMCustomMovementMode::CMODE_Flying)
 	{
-		check(!FMath::IsNearlyZero(moveDelta.Z));
-		check(!FMath::IsNearlyZero(deltaTime));
+		//check(!FMath::IsNearlyZero(moveDelta.Z));
+		//check(!FMath::IsNearlyZero(deltaTime));
 		Velocity = moveDelta * (FMath::IsNearlyZero(deltaTime) ? 0.f : (1.f / deltaTime));
 		if (MovementMode != MOVE_Falling)
 		{

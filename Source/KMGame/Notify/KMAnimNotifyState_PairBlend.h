@@ -19,7 +19,7 @@ struct KMGAME_API FKMAnimNotifyState_Pair_Context
 	TObjectPtr<class UKMCharacterInstance> FollowerCharacterInstance = nullptr;
 	struct FAnimMontageInstance* FollowerMontageInstance = nullptr;
 
-	float ElapsedTime = 0.f;
+	bool bIsPlaying = false;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

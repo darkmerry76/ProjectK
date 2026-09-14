@@ -215,8 +215,10 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		socketTransform.SetScale3D(FVector(RingRadius));
 		PreviousTransform = socketTransform;
 	}
+
+	TWeakObjectPtr<UKMCharacterInstance> weakOwnerCharacterInstance = GetCharacterInstance();
 	
-	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, chainAnimInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
+	tickerSubsystem->AddTicker(FBTMTickerDelegate::CreateLambda([this, weakOwnerCharacterInstance, chainAnimInstance](eTickerEventType eventType, float deltaSeconds, float elipsedTime, float duration)
 	{
 		switch (eventType)
 		{
@@ -232,6 +234,10 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = ChainLengthWeight;
 			bIsCollisionCheck = false;
+			if (weakOwnerCharacterInstance.IsValid())
+			{
+				weakOwnerCharacterInstance->HitCheckClear();
+			}
 			break;
 		default:break;
 		}
@@ -268,7 +274,6 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = 0.f;
 			SetVisbility(false);
-			ownerCharacterInstance->HitCheckClear();
 			break;
 		default:break;
 		}
@@ -286,7 +291,6 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 
 	if (IsValid(ChainMesh))
 	{
-		TWeakObjectPtr<UKMGameObjectInstance> targetGameObejctInstance;
 		if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 		{
 			if (IsValid(ownerCharacterInstance->GetSkillHandler()))
@@ -294,17 +298,17 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 				TSharedPtr<FKMSkillInstance> skillInstance = ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
 				if (skillInstance.IsValid() && skillInstance->Target.IsValid())
 				{
-					targetGameObejctInstance = skillInstance->Target->GetBestTarget();
+					TargetGameObejctInstance = skillInstance->Target->GetBestTarget();
 				}
 			}
 		}
 
-		if (targetGameObejctInstance.IsValid())
+		if (TargetGameObejctInstance.IsValid())
 		{
 			TWeakObjectPtr<UKMChainAnimInstance> chainAnimInstance = Cast<UKMChainAnimInstance>(ChainMesh->GetAnimInstance());
 			if (chainAnimInstance.IsValid())
 			{
-				if (IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(targetGameObejctInstance.Pin()->GetOwnerActor()))
+				if (IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(TargetGameObejctInstance.Pin()->GetOwnerActor()))
 				{
 					chainAnimInstance->SetTargetLocation(targetPawnInterface->GetApproachPullPoint().GetLocation());
 				}
@@ -316,8 +320,7 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 	{
 		if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 		{
-			if (IsValid(ownerCharacterInstance->GetSkillHandler()) &&
-				ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance().IsValid())
+			if (IsValid(ownerCharacterInstance->GetSkillHandler()) && ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance().IsValid())
 			{
 				FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
 				socketTransform.SetScale3D(FVector(RingRadius));

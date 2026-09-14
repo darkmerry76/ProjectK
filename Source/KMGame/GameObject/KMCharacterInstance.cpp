@@ -774,7 +774,7 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 	{
 		if (UKMItemAppearanceInstance* weaponInstance = ownerCharacter->GetWeaponInstance())
 		{
-			weaponInstance->LaunchStop();
+			//weaponInstance->LaunchStop();
 		}
 	}
 }
