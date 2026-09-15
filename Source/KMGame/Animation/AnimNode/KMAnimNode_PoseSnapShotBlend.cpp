@@ -53,7 +53,9 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 	const FTransform chainRootComponentTM = componentPose.GetComponentSpaceTransform(ChainRootIndex);
 	const FVector chainRootWorldLocation = componentTransform.TransformPosition(chainRootComponentTM.GetLocation());
 
-	const float targetDistance = FVector::Distance(chainRootWorldLocation, chainAnimInstanceProxy->GetTargetLocation());
+	const float targetDistance = output.GetAnimInstanceObject()->GetWorld()->IsGameWorld() ? FVector::Distance(chainRootWorldLocation, chainAnimInstanceProxy->GetTargetLocation()) : 525.f;
+
+	FQuat targetQut = output.GetAnimInstanceObject()->GetWorld()->IsGameWorld() ? CalcChainTargetRotation(output, chainAnimInstanceProxy->GetTargetLocation()) : FQuat::Identity;
 
     const float clampedAlpha = chainAnimInstanceProxy->IsEnableAttack() ? chainAnimInstanceProxy->GetBlendAlpha() : Alpha;
 
@@ -67,20 +69,34 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 	float chainLengthScale = FMath::Max(targetDistance / 525.f, 1.f);
 
 	float currentChainLength = 0.f;
+
+	const FVector rootVelocity = (chainRootWorldLocation - PreviousChainRootLocation) / output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds();
+
+	const FVector targetVelocity = (chainAnimInstanceProxy->GetTargetLocation() - PreviousTargetLocation) / output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds();
 	
-    for (int32 i = rootIndex; i < boneCount; i++)
+	const float speed = FMath::Max(rootVelocity.Size() * 0.5f, targetVelocity.Size());
+	
+	constexpr float waveStartSpeed = 150.f;
+	constexpr float waveMaxSpeed = 550.f;
+
+	const float targetSpeedAlpha = FMath::GetMappedRangeValueClamped(FVector2D(waveStartSpeed, waveMaxSpeed),FVector2D(0.f, 1.f), speed);
+	WaveAlpha = FMath::FInterpTo(WaveAlpha, targetSpeedAlpha, output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds(), WaveInterpSpeed);
+
+	FTransform parentWorldTM = FTransform::Identity;
+
+    for (int32 i = rootIndex; i < boneCount - 2; i++)
     {
         FCompactPoseBoneIndex boneIndex(i);
     	
     	if (boneIndex == ChainRootIndex)
     	{
-    		output.Pose[boneIndex] = output.Pose[boneIndex] *
-    			FTransform(CalcChainTargetRotation(output, chainAnimInstanceProxy->GetTargetLocation()));
+    		output.Pose[boneIndex] = output.Pose[boneIndex] * FTransform(targetQut);
     		continue;
     	}
     	
     	FTransform boneTM = output.Pose[boneIndex];
-    	
+
+    	float previusChainLength = currentChainLength;
     	currentChainLength += output.Pose[boneIndex].GetTranslation().Size();
     	if (currentChainLength < targetDistance)
     	{
@@ -92,11 +108,28 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
     		const int32 chainIndex = i - rootIndex;
 
     		const float t = static_cast<float>(chainIndex) / static_cast<float>(chainLength);
+
     		const float envelope = FMath::Pow(FMath::Sin(t * PI), 1.5f);
-    		const float finalAmplitude = WaveAmplitude * envelope * (1.0f - clampedAlpha);
-    		const float phase = chainIndex * WaveFrequency + Time * WaveSpeed - chainIndex;
+    	
+    		float finalAmplitude = 0.f;
+    		float finalWaveFrequency = 0.f;
+
+    		if (clampedAlpha < 1.f)
+    		{
+    			finalAmplitude = WaveAmplitude * envelope * (1.f - clampedAlpha);
+    			finalWaveFrequency = WaveFrequency;
+    		}
+    		else
+    		{
+    			finalAmplitude = FMath::Lerp(WaveAmplitude, WaveAmplitude2, WaveAlpha) * envelope * (1.01f - clampedAlpha);
+
+    			const float distanceScale = FMath::Clamp(targetDistance / 1000.f, 0.f, 1.f);
+    			finalWaveFrequency = FMath::Lerp(WaveFrequency2, WaveFrequency, distanceScale);
+    		}
+
+    		const float phase = chainIndex * finalWaveFrequency + Time * WaveSpeed - chainIndex;
     		
-    		const float angleX = FMath::Sin(phase) * finalAmplitude;
+    		const float angleX = FMath::Sin(phase * 0.5f) * finalAmplitude;
     		const float angleZ = FMath::Sin(phase) * finalAmplitude;
 
     		const float localAngleX = angleX - prevAngleX;
@@ -111,15 +144,24 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 
     		boneTM.SetRotation(waveRotZ);
     	}
-    	else
+    	
+    	if (previusChainLength < targetDistance && currentChainLength >= targetDistance)
     	{
-    		boneTM.SetScale3D(FVector::ZeroVector);
+    		boneTM.SetLocation(FVector(0.f, previusChainLength - targetDistance, 0.f));
+    	}
+    	else if (currentChainLength >= targetDistance)
+    	{
+    		boneTM.SetLocation(FVector::ZeroVector);
     	}
 
     	boneTM.SetLocation(boneTM.GetTranslation() * chainLengthScale);
-    		
+
     	output.Pose[boneIndex] = boneTM;
     }
+	
+	PreviousChainRootLocation = chainRootWorldLocation;
+	PreviousTargetLocation = chainAnimInstanceProxy->GetTargetLocation();
+
 }
 
 FQuat FKMAnimNode_PoseSnapShotBlend::CalcChainTargetRotation(const FPoseContext& output, const FVector& targetLocation) const

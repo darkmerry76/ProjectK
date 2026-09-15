@@ -31,16 +31,36 @@ public:
 	float WaveAmplitude = 80.f;
 
 	UPROPERTY(EditAnywhere, Category="Chain")
+	float WaveAmplitude2 = 80.f;
+	
+	UPROPERTY(EditAnywhere, Category="Chain")
 	float WaveSpeed = 8.f;
 
 	UPROPERTY(EditAnywhere, Category="Chain")
 	float WaveFrequency = 100.f;
 
 	UPROPERTY(EditAnywhere, Category="Chain")
+	float WaveFrequency2 = 100.f;
+
+	UPROPERTY(EditAnywhere, Category="Chain")
 	float WavePropagation = 0.2f;
 
 	UPROPERTY(EditAnywhere, Category="Chain")
 	float DeltaTime = 1.f / 60.f;
+
+	UPROPERTY(EditAnywhere, Category="Chain")
+	float WaveInterpSpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, Category="Chain")
+	float WorldBoneLagScale = 0.f;
+	
+	float WaveAlpha = 0.f;
+
+	FVector PreviousChainRootLocation;
+	FVector PreviousTargetLocation;
+
+	TArray<FTransform> PreviousWorldBoneTransforms;
+	TArray<float> WorldBoneInterpAlphas;
 
 public:
 	virtual void CacheBones_AnyThread(const FAnimationCacheBonesContext& context) override;

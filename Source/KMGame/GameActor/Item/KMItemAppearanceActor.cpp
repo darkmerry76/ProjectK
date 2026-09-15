@@ -177,9 +177,12 @@ void AKMItemAppearanceActor::LaunchStop_Implementation()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AKMItemAppearanceChainActor::AKMItemAppearanceChainActor(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
+	SceneRoot = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RootScene"));
+	SetRootComponent(SceneRoot);
+	
 	ChainMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChainMesh"));
 	ChainMesh->SetupAttachment(GetRootComponent());
-
+	
 	ChainMesh->SetCustomDepthStencilValue(1);
 	ChainMesh->SetRenderCustomDepth(true);
 
@@ -191,6 +194,19 @@ TObjectPtr<UKMItemAppearanceInstance> AKMItemAppearanceChainActor::CreateInstanc
 	UKMItemAppearanceInstance* newInstance = NewObject<UKMItemAppearanceInstance>(ownerObject, instanceClass);
 	newInstance->AppearanceClass = GetClass();
 	return newInstance;
+}
+
+void AKMItemAppearanceChainActor::SetTargetTransform(const FTransform& targetTransform)
+{
+	if (IsValid(ChainMesh))
+	{
+		FBodyInstance* bodyInstance = ChainMesh->GetBodyInstance(TEXT("Chain_096"));
+		if (!bodyInstance)
+		{
+			return;
+		}
+		bodyInstance->SetBodyTransform(targetTransform, ETeleportType::None);
+	}
 }
 
 void AKMItemAppearanceChainActor::Launch_Implementation()
@@ -223,6 +239,7 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		switch (eventType)
 		{
 		case eTickerEventType::CREATED:
+			//ChainMesh->SetSimulatePhysics(false);
 			chainAnimInstance->EnableAttack = true;
 			chainAnimInstance->BlendAlpha = 0.f;
 			SetVisbility(true);
@@ -233,6 +250,7 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 			break;
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = ChainLengthWeight;
+			//ChainMesh->SetSimulatePhysics(true);
 			bIsCollisionCheck = false;
 			if (weakOwnerCharacterInstance.IsValid())
 			{
@@ -265,6 +283,7 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 		switch (eventType)
 		{
 		case eTickerEventType::CREATED:
+			//ChainMesh->SetSimulatePhysics(false);
 			chainAnimInstance->EnableAttack = true;
 			chainAnimInstance->BlendAlpha = ChainLengthWeight;
 			break;
@@ -273,6 +292,7 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 			break;
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = 0.f;
+			
 			SetVisbility(false);
 			break;
 		default:break;
@@ -310,10 +330,23 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 			{
 				if (IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(TargetGameObejctInstance.Pin()->GetOwnerActor()))
 				{
-					chainAnimInstance->SetTargetLocation(targetPawnInterface->GetApproachPullPoint().GetLocation());
+					if (IsValid(EndMesh))
+					{
+						FTransform newTargetTransform = targetPawnInterface->GetApproachPullPoint();
+						newTargetTransform.SetRotation(EndMesh->GetComponentToWorld().GetRotation());
+						newTargetTransform.SetScale3D(EndMesh->GetComponentToWorld().GetScale3D());
+						chainAnimInstance->SetTargetLocation(newTargetTransform.GetLocation());
+						//EndMesh->SetWorldTransform(newTargetTransform);
+					}
+					
 				}
 			}
 		}
+	}
+
+	if (IsValid(EndMesh))
+	{
+		//SetTargetTransform(EndMesh->GetComponentToWorld());
 	}
 
 	if (bIsCollisionCheck && IsValid(ChainMesh))

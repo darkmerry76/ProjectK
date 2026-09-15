@@ -96,7 +96,13 @@ class KMGAME_API AKMItemAppearanceChainActor : public AKMItemAppearanceActor
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USceneComponent> SceneRoot;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USkeletalMeshComponent> ChainMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> EndMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float ThrowDuration = 0.2f;
@@ -128,4 +134,8 @@ protected:
 
 	virtual void Launch_Implementation() override;
 	virtual void LaunchStop_Implementation() override;
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetTargetTransform(const FTransform& targetTransform);
 };
