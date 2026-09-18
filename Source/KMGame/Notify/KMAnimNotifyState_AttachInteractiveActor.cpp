@@ -3,6 +3,7 @@
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/Ability/KMAbility.h"
 #include "Skill/Ability/KMAbilityCarry.h"
+#include "Skill/Ability/KMAbilityInteraction.h"
 #include "Skill/Ability/KMAbilityPutDown.h"
 
 UKMAnimNotifyState_AttachInteractiveActor::UKMAnimNotifyState_AttachInteractiveActor(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -30,6 +31,10 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyBegin(USkeletalMeshCompone
 		{
 			abilityPutDown->StartPutDown(AttachSocket, totalDuration);
 		}
+		else if (UKMAbilityInteraction* abilityInteraction = Cast<UKMAbilityInteraction>(martialArtsData->GetAbility()))
+		{
+			abilityInteraction->StartInteraction(AttachSocket, totalDuration);
+		}
 	}
 }
 
@@ -48,6 +53,9 @@ void UKMAnimNotifyState_AttachInteractiveActor::NotifyEnd(USkeletalMeshComponent
 		else if (UKMAbilityPutDown* abilityPutDown = Cast<UKMAbilityPutDown>(martialArtsData->GetAbility()))
 		{
 			abilityPutDown->CompletePutDown();
+		}
+		else if (UKMAbilityInteraction* abilityInteraction = Cast<UKMAbilityInteraction>(martialArtsData->GetAbility()))
+		{
 		}
 	}
 }

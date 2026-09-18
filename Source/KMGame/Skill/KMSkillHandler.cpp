@@ -506,6 +506,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	}
 	
 	float targetDistanceScore = !FMath::IsNearlyZero(skillConditionRow->TargetRange) ? 0.f : 1.f;
+	float targetHeightScore = !FMath::IsNearlyZero(skillConditionRow->TargetHalfHeight) ? 0.f : 1.f;
 	float targetAngleScore = !FMath::IsNearlyZero(skillConditionRow->TargetDir) ?  0.f : 1.f;
 	float inputAngleScore = !FMath::IsNearlyZero(skillConditionRow->InputDir) ?  0.f : 1.f;
 	if (IsValid(targetGameObjectInstance))
@@ -527,6 +528,20 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 
 			targetDistanceScore = 1.f - (FMath::Abs(horizontalDistance - center) / halfRange);
 			targetDistanceScore = FMath::Clamp(targetDistanceScore, 0.f, 1.f);
+		}
+
+		if (!FMath::IsNearlyZero(skillConditionRow->TargetHalfHeight))
+		{
+			if (skillConditionRow->TargetHalfHeight < verticallDistance)
+			{
+				return -1.f;
+			}
+
+			float center = (skillConditionRow->TargetHalfHeightMin + skillConditionRow->TargetHalfHeight) * 0.5f;
+			float halfRange = (skillConditionRow->TargetHalfHeight - skillConditionRow->TargetHalfHeightMin) * 0.5f;
+
+			targetHeightScore = 1.f - (FMath::Abs(verticallDistance - center) / halfRange);
+			targetHeightScore = FMath::Clamp(targetHeightScore, 0.f, 1.f);
 		}
 		
 		if (!FMath::IsNearlyZero(skillConditionRow->TargetDir))
@@ -569,7 +584,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 			}
 		}
 	}
-	float resultScore = inputAngleScore * 2.f + targetAngleScore * 2.f + targetDistanceScore * 1.5f;
+	float resultScore = inputAngleScore * 2.f + targetAngleScore * 2.f + targetDistanceScore * 1.5f + targetHeightScore * 2.f;
 	return resultScore; 
 }
 

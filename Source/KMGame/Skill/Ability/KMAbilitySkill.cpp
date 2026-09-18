@@ -9,7 +9,7 @@ UKMAbilitySkill::UKMAbilitySkill(const FObjectInitializer& objectInitializer) : 
 
 void UKMAbilitySkill::Activate()
 {
-	PlayMartialArts(nullptr, Rate, bIsLoop);	
+	PlayMartialArts(nullptr, Rate, bIsLoop);
 	PostActivated();
 
 	Super::Activate();

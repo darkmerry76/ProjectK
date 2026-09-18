@@ -440,7 +440,7 @@ void UKMBlendToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequ
         		{
         			if (bIsAddTranslate)
         			{
-        				finalBoneTransform.SetLocation(addBoneTransform.GetLocation());
+        				finalBoneTransform.SetLocation(targetBoneTransform[boneIndex].GetLocation());
         			}
         			if (bIsAddRotation)
         			{
@@ -538,6 +538,8 @@ void UKMMixToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequen
 	
     const int32 numKeys = animSequence->GetNumberOfSampledKeys();
 
+	float mixLengthScale = animSequence->GetPlayLength() / TargetAnimationSequence->GetPlayLength();
+	
     for (int32 keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
         const float time = static_cast<float>(animSequence->GetTimeAtFrame(keyIndex));
@@ -554,8 +556,9 @@ void UKMMixToAnimationModifier::OnApply_Implementation(UAnimSequence* animSequen
     			if (IsMixBone(refSkeleton, boneIndex))
     			{
     				FTransform targetBoneTransform;
-    				const float targetTime = bIsInverse ? (TargetAnimationSequence->GetPlayLength() - (time - MixStartTime)) : (time - MixStartTime);
-    				FAnimExtractContext extractTargetContext(static_cast<double>(targetTime), animSequence->bEnableRootMotion);
+    				const float targetTime = bIsInverse ? (time - MixStartTime) : (animSequence->GetPlayLength() - (time - MixStartTime));
+    				
+    				FAnimExtractContext extractTargetContext(static_cast<double>(targetTime * mixLengthScale), animSequence->bEnableRootMotion);
     				TargetAnimationSequence->GetBoneTransform(targetBoneTransform, FSkeletonPoseBoneIndex(boneIndex), extractTargetContext, false);
 
     				finalBoneTransform = targetBoneTransform;

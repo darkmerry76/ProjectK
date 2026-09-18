@@ -76,8 +76,8 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 	
 	const float speed = FMath::Max(rootVelocity.Size() * 0.5f, targetVelocity.Size());
 	
-	constexpr float waveStartSpeed = 150.f;
-	constexpr float waveMaxSpeed = 550.f;
+	constexpr float waveStartSpeed = 350.f;
+	constexpr float waveMaxSpeed = 750.f;
 
 	const float targetSpeedAlpha = FMath::GetMappedRangeValueClamped(FVector2D(waveStartSpeed, waveMaxSpeed),FVector2D(0.f, 1.f), speed);
 	WaveAlpha = FMath::FInterpTo(WaveAlpha, targetSpeedAlpha, output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds(), WaveInterpSpeed);

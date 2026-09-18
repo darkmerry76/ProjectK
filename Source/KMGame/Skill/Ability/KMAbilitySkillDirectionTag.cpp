@@ -9,6 +9,9 @@ UKMAbilitySkillDirectionTag::UKMAbilitySkillDirectionTag(const FObjectInitialize
 
 void UKMAbilitySkillDirectionTag::Activate()
 {
+	PlayMartialArts(nullptr, Rate, bIsLoop);
+	PostActivated();
+	
 	UKMAbility::Activate();
 }
 

@@ -66,7 +66,7 @@ protected:
 	float AddPelvisDirection = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LerpDirectionSpeed = 20.f;
+	float LerpDirectionSpeed = 10.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FName> HiddenBones;

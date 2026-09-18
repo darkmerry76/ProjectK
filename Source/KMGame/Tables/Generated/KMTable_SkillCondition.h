@@ -86,6 +86,12 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                InputDir = { 0.f };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float                TargetHalfHeight = { 0.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float                TargetHalfHeightMin = { 0.f };
+
 	// 적이 공중일때 발동각
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float                AirAngle = { 0.f };

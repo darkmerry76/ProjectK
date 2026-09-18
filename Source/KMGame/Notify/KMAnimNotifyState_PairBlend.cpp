@@ -79,18 +79,18 @@ void UKMAnimNotifyState_PairBlend::FollowAnimation(const USkeletalMeshComponent*
 		}
 	}
 
-	if (!pairContext->IsValid() || pairContext->bIsPlaying)
+	if (!pairContext->IsValid())
 	{
 		return;
 	}
 
-	if (pairContext->FollowerMontageInstance->GetMontageSyncLeader() != pairContext->LeaderMontageInstance)
+	if (!pairContext->bIsPlaying)
 	{
 		pairContext->FollowerMontageInstance->MontageSync_Follow(pairContext->LeaderMontageInstance);
+		pairContext->bIsPlaying = true;
 	}
-
 	pairContext->FollowerCharacterInstance->SetTimeDilation(TEXT("Follow"), pairContext->LeaderCharacterInstance->GetTimeDilation());
-	pairContext->bIsPlaying = true;
+	
 }
 
 void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float totalDuration, const FAnimNotifyEventReference& eventReference)
@@ -190,11 +190,19 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 		}
 	}
 
-	if (pairContext && (*pairContext)->IsValid())
+	if (pairContext)
 	{
-		if ((*pairContext)->LeaderMontageInstance->IsValid())
+		if ((*pairContext)->FollowerMontageInstance && (*pairContext)->FollowerMontageInstance->GetMontageSyncLeader() == (*pairContext)->LeaderMontageInstance)
 		{
-			(*pairContext)->LeaderMontageInstance->MontageSync_StopFollowing();
+			(*pairContext)->FollowerMontageInstance->MontageSync_StopFollowing();
+			if ((*pairContext)->LeaderMontageInstance)
+			{
+				(*pairContext)->LeaderMontageInstance->MontageSync_StopLeading();
+			}
+		}
+		
+		if (IsValid((*pairContext)->FollowerCharacterInstance))
+		{
 			(*pairContext)->FollowerCharacterInstance->RemoveTimeDilation(TEXT("Follow"));
 		}
 	}
