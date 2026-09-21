@@ -518,7 +518,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		
 		if (!FMath::IsNearlyZero(skillConditionRow->TargetRange))
 		{
-			if (skillConditionRow->TargetRange < horizontalDistance)
+			if (skillConditionRow->TargetRange < horizontalDistance || (!FMath::IsNearlyZero(skillConditionRow->TargetRangeMin) && skillConditionRow->TargetRangeMin > horizontalDistance))
 			{
 				return -1.f;
 			}
@@ -532,7 +532,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 
 		if (!FMath::IsNearlyZero(skillConditionRow->TargetHalfHeight))
 		{
-			if (skillConditionRow->TargetHalfHeight < verticallDistance)
+			if (skillConditionRow->TargetHalfHeight < verticallDistance || (!FMath::IsNearlyZero(skillConditionRow->TargetHalfHeightMin) && skillConditionRow->TargetHalfHeightMin > verticallDistance))
 			{
 				return -1.f;
 			}
@@ -588,7 +588,7 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 	return resultScore; 
 }
 
-TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
+TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster)
 {
 	if (ComboData.SkillInstance.IsValid())
 	{
@@ -618,8 +618,8 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 
 		for (int32 skillIndex = 0; skillIndex < skillSetRow->Skills.Num(); ++skillIndex)
 		{
-			float currentSkillScore = GetConditionScore(skillSetRow->Skills[skillIndex], nullptr);
-			if (currentSkillScore > bestScore)
+			float currentSkillScore = GetConditionScore(skillSetRow->Skills[skillIndex], lockOnCluster);
+			if (currentSkillScore > bestScore && currentSkillScore >= 0.f)
 			{
 				bestScore = currentSkillScore;
 				bestSkillId = skillSetRow->Skills[skillIndex];
@@ -627,7 +627,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill()
 		}
 	}
 
-	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(bestSkillId, 0), nullptr);
+	TSharedPtr<FKMSkillInstance> newSkillInstance = UseSkill(FKMSkillKey(bestSkillId, 0), lockOnCluster);
 	if (!newSkillInstance.IsValid())
 	{
 		return nullptr;

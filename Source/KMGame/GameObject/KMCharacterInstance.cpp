@@ -580,7 +580,15 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 		ShakeRoot(5.f, 10.f, 0.2f);
 	}
 
-	if (InflectPowerType != EKMDamagePowerType::None || HitPowerType != EKMDamagePowerType::None)
+	if (InflectPowerType == EKMDamagePowerType::Low || HitPowerType == EKMDamagePowerType::Low)
+	{
+		Stiff(0.1f);
+	}
+	else if (InflectPowerType == EKMDamagePowerType::Medium || HitPowerType == EKMDamagePowerType::Medium)
+	{
+		Stiff(0.1f);
+	}
+	else if (InflectPowerType == EKMDamagePowerType::High || HitPowerType == EKMDamagePowerType::High)
 	{
 		Stiff(0.1f);
 	}
@@ -774,7 +782,7 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 	{
 		if (UKMItemAppearanceInstance* weaponInstance = ownerCharacter->GetWeaponInstance())
 		{
-			//weaponInstance->LaunchStop();
+			weaponInstance->LaunchStop();
 		}
 	}
 }

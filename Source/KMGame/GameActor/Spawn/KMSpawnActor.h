@@ -12,6 +12,9 @@ class AKMSpawnCharacter : public AActor
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CharacterId = NAME_None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="FloorSnap")
+	bool bIsFloorSnap = true;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -25,6 +28,9 @@ class AKMSpawnInteractive : public AActor
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName InteractiveId = NAME_None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="FloorSnap")
+	bool bIsFloorSnap = true;
 	
 protected:
 	virtual void BeginPlay() override;

@@ -1,6 +1,7 @@
 #include "KMAnimNode_PoseSnapShotBlend.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Animation/AttributesRuntime.h"
+#include "GameActor/Pawn/KMPawnInterface.h"
 #include "GameActor/Pawn/Character/KMChainAnimInstance.h"
 
 void FKMAnimNode_PoseSnapShotBlend::Initialize_AnyThread(const FAnimationInitializeContext& context)
@@ -12,7 +13,8 @@ void FKMAnimNode_PoseSnapShotBlend::Update_AnyThread(const FAnimationUpdateConte
 {
 	AttackPose.Update(context);
 
-	Time += context.GetDeltaTime() * 20.f;
+	FKMChainAnimInstanceProxy* chainAnimInstanceProxy = static_cast<FKMChainAnimInstanceProxy*>(context.AnimInstanceProxy);
+	DeltaSeconds = context.GetDeltaTime() * chainAnimInstanceProxy->GetCustomTimeDilation(); 
 }
 
 void FKMAnimNode_PoseSnapShotBlend::CacheBones_AnyThread(const FAnimationCacheBonesContext& context)
@@ -45,6 +47,11 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 		}
 	}
 
+
+	float deltaSeconds = DeltaSeconds;
+
+	Time += deltaSeconds * 20.f;
+
 	const FTransform componentTransform = chainAnimInstanceProxy->GetComponentTransform();
 
 	FCSPose<FCompactPose> componentPose;
@@ -70,17 +77,19 @@ void FKMAnimNode_PoseSnapShotBlend::Evaluate_AnyThread(FPoseContext& output)
 
 	float currentChainLength = 0.f;
 
-	const FVector rootVelocity = (chainRootWorldLocation - PreviousChainRootLocation) / output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds();
-
-	const FVector targetVelocity = (chainAnimInstanceProxy->GetTargetLocation() - PreviousTargetLocation) / output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds();
-	
-	const float speed = FMath::Max(rootVelocity.Size() * 0.5f, targetVelocity.Size());
+	float speed = 0.f;
+	if (deltaSeconds > 0.0001f)
+	{
+		const FVector rootVelocity = (chainRootWorldLocation - PreviousChainRootLocation) / (deltaSeconds > 0.0001f ? deltaSeconds : 1.f);
+		const FVector targetVelocity = (chainAnimInstanceProxy->GetTargetLocation() - PreviousTargetLocation) / deltaSeconds;
+		speed = FMath::Max(rootVelocity.Size() * 0.5f, targetVelocity.Size());
+	}
 	
 	constexpr float waveStartSpeed = 350.f;
 	constexpr float waveMaxSpeed = 750.f;
 
 	const float targetSpeedAlpha = FMath::GetMappedRangeValueClamped(FVector2D(waveStartSpeed, waveMaxSpeed),FVector2D(0.f, 1.f), speed);
-	WaveAlpha = FMath::FInterpTo(WaveAlpha, targetSpeedAlpha, output.GetAnimInstanceObject()->GetWorld()->GetDeltaSeconds(), WaveInterpSpeed);
+	WaveAlpha = FMath::FInterpTo(WaveAlpha, targetSpeedAlpha, deltaSeconds, WaveInterpSpeed);
 
 	FTransform parentWorldTM = FTransform::Identity;
 

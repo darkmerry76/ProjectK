@@ -13,6 +13,7 @@ public:
 	float GetBlendAlpha() const;
 	bool IsEnableAttack() const;
 	const FVector& GetTargetLocation() const;
+	float GetCustomTimeDilation() const;
 
 protected:
 	virtual void PreUpdate(UAnimInstance* animInstance, float deltaSeconds) override;
@@ -22,6 +23,8 @@ protected:
 	float BlendAlpha = 0.f;
 	bool EnableAttack = false;
 	FVector TargetLocation = FVector::ZeroVector;
+
+	float CustomTimeDilation = 1.f;
 };
 
 UCLASS(Blueprintable, BlueprintType, abstract)
@@ -43,6 +46,9 @@ public:
 	
 	void SetTargetLocation(const FVector& newTargetlocation);
 
+	float CustomTimeDilation = 1.f;
+
 protected:
 	virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
+	virtual void NativeUpdateAnimation(float deltaSeconds) override;
 };

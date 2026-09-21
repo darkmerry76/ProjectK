@@ -56,6 +56,8 @@ public:
 	
 	float WaveAlpha = 0.f;
 
+	float DeltaSeconds = 0.f;
+
 	FVector PreviousChainRootLocation;
 	FVector PreviousTargetLocation;
 

@@ -77,7 +77,7 @@ public:
 	int32 NumSkillByType(EKMSkillType skilltype = EKMSkillType::Active) const;
 
 	TSharedPtr<FKMSkillInstance> UseAssistSkill(const FKMSkillKey& skillKey);
-	TSharedPtr<FKMSkillInstance> UseUltimateSkill();
+	TSharedPtr<FKMSkillInstance> UseUltimateSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseForceSkill(FName skillId, const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseCombatSkill(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster);
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);

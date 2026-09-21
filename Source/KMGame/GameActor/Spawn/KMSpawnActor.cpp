@@ -66,13 +66,16 @@ void AKMSpawnInteractive::BeginPlay()
 	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	FCollisionQueryParams queryParams;
-	queryParams.AddIgnoredActor(interactiveActor);
-
-	bool bHit = GetWorld()->LineTraceSingleByObjectType(hitResult, startLocation,targetLocation, objectQueryParams, queryParams);
-	if (bHit == true)
+	if (bIsFloorSnap)
 	{
-		interactiveActor->SetActorLocation(
-			FVector(startLocation.X, startLocation.Y,hitResult.ImpactPoint.Z + halfHeight));
+		FCollisionQueryParams queryParams;
+		queryParams.AddIgnoredActor(interactiveActor);
+
+		bool bHit = GetWorld()->LineTraceSingleByObjectType(hitResult, startLocation,targetLocation, objectQueryParams, queryParams);
+		if (bHit == true)
+		{
+			interactiveActor->SetActorLocation(
+				FVector(startLocation.X, startLocation.Y,hitResult.ImpactPoint.Z + halfHeight));
+		}
 	}
 }

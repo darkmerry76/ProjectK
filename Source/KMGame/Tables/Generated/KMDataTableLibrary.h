@@ -60,6 +60,7 @@
 #include "KMTable_SkillSet.h"
 #include "KMTable_SkillSet_Beast.h"
 #include "KMTable_SkillSet_Hero.h"
+#include "KMTable_SkillTransition.h"
 #include "KMTable_Stage.h"
 #include "KMTable_Stage_Dungeon.h"
 #include "KMTable_Stage_Field.h"
@@ -627,6 +628,20 @@ public:
 	static const FKMTable_SkillSetRow& GetTableKMTable_SkillSetByKey(FName IdKey, bool& IsFind)
 	{
 		return *GetTableEM<FKMTable_SkillSetRow>(*FKMTable_SkillSetRow::MakeTableKeyToString(IdKey), IsFind);
+	}
+
+	// KMTable_SkillTransition FName으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_SkillTransitionRow& GetTableKMTable_SkillTransition(FName IndexName, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_SkillTransitionRow>(IndexName, IsFind);
+	}
+
+	// KMTable_SkillTransition Key값으로 검색되는 블루프린트 노출함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static const FKMTable_SkillTransitionRow& GetTableKMTable_SkillTransitionByKey(FName IdKey, FName NameKey, bool& IsFind)
+	{
+		return *GetTableEM<FKMTable_SkillTransitionRow>(*FKMTable_SkillTransitionRow::MakeTableKeyToString(IdKey, NameKey), IsFind);
 	}
 
 	// KMTable_Stage FName으로 검색되는 블루프린트 노출함수

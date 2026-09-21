@@ -16,6 +16,7 @@ void FKMChainAnimInstanceProxy::PreUpdate(UAnimInstance* animInstance, float del
 	BlendAlpha = castAnimInstance->BlendAlpha;
 	EnableAttack = castAnimInstance->EnableAttack;
 	TargetLocation = castAnimInstance->TargetLocation;
+	CustomTimeDilation = castAnimInstance->CustomTimeDilation;
 }
 
 const FPoseSnapshot& FKMChainAnimInstanceProxy::GetPoseSnapshot() const
@@ -38,6 +39,10 @@ const FVector& FKMChainAnimInstanceProxy::GetTargetLocation() const
 	return TargetLocation;
 }
 
+float FKMChainAnimInstanceProxy::GetCustomTimeDilation() const
+{
+	return CustomTimeDilation;
+}
 
 void UKMChainAnimInstance::SetTargetLocation(const FVector& newTargetlocation)
 {
@@ -47,4 +52,15 @@ void UKMChainAnimInstance::SetTargetLocation(const FVector& newTargetlocation)
 FAnimInstanceProxy* UKMChainAnimInstance::CreateAnimInstanceProxy()
 {
 	return new FKMChainAnimInstanceProxy(this);
+}
+
+void UKMChainAnimInstance::NativeUpdateAnimation(float deltaSeconds)
+{
+	Super::NativeUpdateAnimation(deltaSeconds);
+
+	if (AActor* ownerActor = GetTypedOuter<AActor>())
+	{
+		CustomTimeDilation = ownerActor->CustomTimeDilation;
+	}
+	
 }

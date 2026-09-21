@@ -665,7 +665,7 @@ void UKMGameObjectInstance::UseCombatSkill()
 
 void UKMGameObjectInstance::UseUltimateSkill()
 {
-	GetSkillHandler()->UseUltimateSkill();
+	GetSkillHandler()->UseUltimateSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
 }
 
 void UKMGameObjectInstance::UseTechniqueSkill()
@@ -741,6 +741,7 @@ void UKMGameObjectInstance::UseSkillDash(float dashDirection)
 
 		FKMSkillKey dashSkillKey;
 		EKMTimingResult cancelResult = TimingCancel->GetResult();
+		cancelResult = EKMTimingResult::Good;
 		if (cancelResult == EKMTimingResult::Perfect)
 		{
 			dashSkillKey = FKMSkillKey(TEXT("sk_perfect_cancel_dash"), 0);

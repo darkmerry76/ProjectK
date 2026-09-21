@@ -309,6 +309,11 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (AActor* parentActor = GetOwner())
+	{
+		CustomTimeDilation = parentActor->CustomTimeDilation;
+	}
+
 	if (IsValid(ChainMesh))
 	{
 		if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
