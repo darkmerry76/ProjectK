@@ -134,8 +134,10 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 
 			if (bIsStartBlend)
 			{
-				FVector warpLocation = casterCharacter->GetActorLocation() + (casterCharacter->GetActorForwardVector() * PairOffset.X) + (casterCharacter->GetActorRightVector() * PairOffset.Y);
-				curveWarpingComponent->PlayLinearWarp(warpLocation, 0.1f);
+				ownerCharacterMovementComponent->StartFollowActor(casterCharacter, LeaderMontageInstanceTag, FollowMontageInstanceTag, FTransform(PairOffset), StartBlendTime);
+				//FVector warpLocation = casterCharacter->GetActorLocation() + (casterCharacter->GetActorForwardVector() * PairOffset.X) + (casterCharacter->GetActorRightVector() * PairOffset.Y);
+				//curveWarpingComponent->PlayLinearWarp(warpLocation, 0.1f);
+				
 			}
 			if (bIsBlockReflection)
 			{
@@ -183,13 +185,19 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			{
 				return;
 			}
+			
+			if (bIsStartBlend)
+			{
+				characterMovementComponent->StopFollowActor(casterCharacter, 0.2f);
+			}
+			
 			if (bIsBlockReflection)
 			{
 				casterCharacterMovementComponent->UnregisterMoveBlockReflection(ownerCharacter);
 			}
 		}
 	}
-
+	
 	if (pairContext)
 	{
 		if ((*pairContext)->FollowerMontageInstance && (*pairContext)->FollowerMontageInstance->GetMontageSyncLeader() == (*pairContext)->LeaderMontageInstance)

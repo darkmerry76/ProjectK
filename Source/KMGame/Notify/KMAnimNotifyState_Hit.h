@@ -12,13 +12,19 @@ enum class EKMCollisonType : uint8
 	Capsule,
 };
 
-USTRUCT(BlueprintType)
-struct KMGAME_API FKMHitCheckData
+USTRUCT()
+struct FKMAnimNotifyState_Hit_Context
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY()
-	TSet<class AActor*> Actors;
+	FTransform PreviousTransform;
+
+	UPROPERTY()
+	int32 HitCount = 0;
+
+	UPROPERTY()
+	float ElapsedTime = 0.f;
 };
 
 UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Hit")
@@ -29,8 +35,11 @@ class KMGAME_API UKMAnimNotifyState_Hit : public UKMAnimNotifyState
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
 	EKMCollisonType CollisonType = EKMCollisonType::Box;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="Once", meta=(AllowPrivateAccess=true, DisplayAfter="GroupType"))
+	bool bIsOnce = false;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="CollisonType"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="bIsOnce"))
 	FTransform HitTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="HitTransform"))
@@ -48,11 +57,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="ActorClassFilter"))
 	bool FollowSocketRotation = true;
 
-	UPROPERTY()
-	TMap<class AActor*, FTransform> HitPreviousTransforms;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="HitCheckerClear", meta=(AllowPrivateAccess=true, DisplayAfter="FollowSocketRotation"))
+	bool bIsHitCheckerClear = true;
+
+	UPROPERTY(Transient)
+	TMap<class AActor*, FKMAnimNotifyState_Hit_Context> Context;
 
 #if WITH_EDITORONLY_DATA
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TObjectPtr<class UKMEditorDrawDebugComponent> EditorDrawDebugComponent;
 #endif
 
@@ -70,6 +82,8 @@ protected:
 	void GetFinalTransform(const class USceneComponent* ownerComponent, FTransform& outTransform) const;
 
 	void DoHit(const class USceneComponent* ownerComponent, const FAnimNotifyEventReference& eventReference);
+
+	void HitCheckClear(AActor* actor);
 
 #if WITH_EDITOR
 	virtual void DrawInEditor(FPrimitiveDrawInterface* pDI, USkeletalMeshComponent* meshComp, const UAnimSequenceBase* animation, const FAnimNotifyEvent& notifyEvent) const override;

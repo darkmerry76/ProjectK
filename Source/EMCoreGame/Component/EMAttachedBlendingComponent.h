@@ -1,13 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EMTransformUpdateInterface.h"
 #include "EMAttachedBlendingComponent.generated.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UEMAttachedBlendingComponent
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UCLASS(Abstract)
-class EMCOREGAME_API UEMAttachedBlendingComponent : public USceneComponent
+class EMCOREGAME_API UEMAttachedBlendingComponent : public USceneComponent, public IEMTransformUpdateInterface
 {
 	GENERATED_UCLASS_BODY()
 	
@@ -22,7 +23,7 @@ public:
 	virtual void StartBlending(class USceneComponent* newParentComponent, FName newAttachSocketName, const FTransform& newTargetWorldTransform, float newDuration = 0.2f);
 	virtual void StopBlending();
 
-	virtual void UpdateBlending();
+	virtual void UpdateTransform(float deltaTime) override;
 
 	const FTransform& GetOffsetTransform() const;
 	

@@ -4,8 +4,9 @@
 #include "Animation/AnimExecutionContext.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Animation/AnimNodeReference.h"
+#include "AnimNode/KMAnimNode_BonePoseTransform.h"
 #include "AnimNode/KMAnimNode_MultiSlot.h"
-#include "AnimNode/KMAnimNode_Shake.h"
+#include "Core/KMDefine.h"
 #include "KMAnimInstance.generated.h"
 
 struct FKMPairPositionBlendInfo
@@ -17,6 +18,7 @@ struct FKMPairPositionBlendInfo
 	
 	bool bIsEnableBlend = false;
 	FTransform StartWorldTransform = FTransform::Identity;
+	FTransform OffsetTransform = FTransform::Identity;
 	FVector PreviousWorldOffset = FVector::ZeroVector;
 	FVector WorldOffset = FVector::ZeroVector;
 
@@ -95,12 +97,14 @@ protected:
 
 	int32 LastPlayedMontageInstanceId = INDEX_NONE;
 
+	FKMFollowerMovementData FollowerMovementData;
+
 protected:
 	float NextDirection = 0.f;
 
 protected:
 	virtual void NativeInitializeAnimation() override;
-	virtual void NativeUpdateAnimation(float deltaSeconds) override;
+	virtual void PreUpdateAnimation(float deltaSeconds) override;
 	
 	virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 
@@ -137,6 +141,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	void BlendPairPosition(const FTransform& startWorldTransform, const FVector& targetWorldOffset, float newDuration = 0.2f);
+
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	void SetPairOffsetTransform(const FKMFollowerMovementData& followerMovementData);
+
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	void SetStopOffsetTransform();
 
 	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
 	int32 GetLastPlayedMontageInstanceId() const;

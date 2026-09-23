@@ -43,6 +43,9 @@ class KMGAME_API UKMAnimNotifyState : public UEMAnimNotifyStateMA
 	
 public:
 	UPROPERTY(EditAnywhere, Category=AnimNotify)
+	bool bIsEnable = true;
+
+	UPROPERTY(EditAnywhere, Category=AnimNotify)
 	TArray<FKMCompareTagData> CompareTags;
 
 protected:

@@ -12,7 +12,7 @@ void UKMAttachedBlendingComponent::StartBlending(USceneComponent* newParentCompo
 {
 	if (UKMSkeletalMeshComponent* parentSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(newParentComponent))
 	{
-		parentSkeletalMeshComponent->AttachBlendingComponent(this);
+		parentSkeletalMeshComponent->AttachTransformUpdateComponent(this);
 	}
 
 	Super::StartBlending(newParentComponent, newAttachSocketName, targetWorldTransform, newDuration);
@@ -22,7 +22,7 @@ void UKMAttachedBlendingComponent::StopBlending()
 {
 	if (UKMSkeletalMeshComponent* parentSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(AttachedParentComponent.Get()))
 	{
-		parentSkeletalMeshComponent->DetachBlendingComponent(this);
+		parentSkeletalMeshComponent->DetachTransformUpdateComponent(this);
 	}
 	
 	Super::StopBlending();

@@ -447,14 +447,14 @@ void UKMCharacterInstance::Inflict(UKMGameObjectInstance* victimGameObject)
 	InflictDelegate.Broadcast(++ComboCount, victimGameObject);
 }
 
-void UKMCharacterInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
+bool UKMCharacterInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag)
 {
 	if (UseParrySkill())
 	{
-		return;
+		return false;
 	}
 	
-	Super::Hit(attackerGameObjectInstance, latestSkillInstance, hitClosestPoint, hitTag);
+	return Super::Hit(attackerGameObjectInstance, latestSkillInstance, hitClosestPoint, hitTag);
 }
 
 void UKMCharacterInstance::ShakeRoot(float newDistance, float newFrequency, float newDuration)

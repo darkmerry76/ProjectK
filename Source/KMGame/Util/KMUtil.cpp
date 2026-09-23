@@ -1,7 +1,6 @@
 #include "KMUtil.h"
 #include <Tables/Generated/KMTable_Chapter.h>
 #include "AIController.h"
-#include "MotionWarpingComponent.h"
 #include "Animation/BlendSpace1D.h"
 #include "Animation/KMAnimInstance.h"
 #include "Core/KMGameInstance.h"
@@ -15,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Tables/Generated/KMTable_Object_Beast.h"
 #include "Tables/Generated/KMTable_Object_Character.h"
+#include "BoneContainer.h"
 
 double UKMUtil::GameElipsedStartTime = 0.f;
 
@@ -613,4 +613,91 @@ void UKMUtil::ExtractLocalSpacePose(const UAnimSequenceBase* animation, const FB
 		const FAnimTrack& animTrack = animMontage->SlotAnimTracks[0].AnimTrack;
 		animTrack.GetAnimationPose(animationPoseData, context);
 	}
+}
+
+bool UKMUtil::GetMontageBoneCSTransform(FName boneName, const UAnimMontage* montage, float position, FTransform& outTransform)
+{
+	if (!IsValid(montage) || montage->SlotAnimTracks.IsEmpty())
+	{
+		return false;
+	}
+
+	const USkeleton* skeleton = montage->GetSkeleton();
+	if (!IsValid(skeleton))
+	{
+		return false;
+	}
+
+	const FReferenceSkeleton& refSkeleton = skeleton->GetReferenceSkeleton();
+	const int32 boneIndex = refSkeleton.FindBoneIndex(boneName);
+	if (boneIndex == INDEX_NONE)
+	{
+		return false;
+	}
+
+	TArray<FBoneIndexType> requiredBones;
+	requiredBones.Reserve(refSkeleton.GetNum());
+
+	for (int32 i = 0; i < refSkeleton.GetNum(); ++i)
+	{
+		requiredBones.Add(static_cast<FBoneIndexType>(i));
+	}
+
+	FMemMark Mark(FMemStack::Get());
+	
+	FBoneContainer boneContainer;
+	UE::Anim::FCurveFilterSettings curveFilterSettings;
+
+	boneContainer.InitializeTo(requiredBones, curveFilterSettings, *skeleton);
+
+	FCompactPose pose;
+	pose.SetBoneContainer(&boneContainer);
+
+	FBlendedCurve curve;
+	curve.InitFrom(boneContainer);
+
+	UE::Anim::FStackAttributeContainer attributes;
+	FAnimationPoseData poseData(pose, curve, attributes);
+
+	FAnimExtractContext extractContext(static_cast<double>(position),false);
+
+	const FAnimTrack& animTrack = montage->SlotAnimTracks[0].AnimTrack;
+	animTrack.GetAnimationPose(poseData, extractContext);
+
+	FCSPose<FCompactPose> csPose;
+	csPose.InitPose(pose);
+
+	const FCompactPoseBoneIndex compactIndex = boneContainer.GetCompactPoseIndexFromSkeletonPoseIndex(FSkeletonPoseBoneIndex(boneIndex));
+	if (compactIndex == INDEX_NONE)
+	{
+		return false;
+	}
+	
+	outTransform = csPose.GetComponentSpaceTransform(compactIndex);
+	return true;
+}
+
+bool UKMUtil::GetPairFollowerOffsetTransform(FName boneName, const UAnimMontage* leaderMontage, const UAnimMontage* followerMontage, float position, FTransform& outTransform)
+{
+    if (!IsValid(leaderMontage) || !IsValid(followerMontage))
+    {
+        return false;
+    }
+
+	FTransform leaderBoneTransform;
+	FTransform followerBoneTransform;
+
+	if (!GetMontageBoneCSTransform(boneName, leaderMontage, position, leaderBoneTransform))
+	{
+		return false;
+	}
+
+	if (!GetMontageBoneCSTransform(boneName, followerMontage, position,followerBoneTransform))
+	{
+		return false;
+	}
+
+	outTransform = followerBoneTransform;
+
+	return true;
 }

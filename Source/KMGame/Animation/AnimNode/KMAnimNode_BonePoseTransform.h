@@ -5,7 +5,7 @@
 #include "Animation/AnimTypes.h"
 #include "Animation/AnimNodeBase.h"
 #include "Animation/BoneReference.h"
-#include "KMAnimNode_Shake.generated.h"
+#include "KMAnimNode_BonePoseTransform.generated.h"
 
 struct KMGAME_API FKMAnimNodeShakeData
 {
@@ -27,27 +27,33 @@ struct KMGAME_API FKMAnimNodeShakeData
 };
 
 USTRUCT(BlueprintInternalUseOnly)
-struct KMGAME_API FKMAnimNode_Shake : public FAnimNode_Base
+struct KMGAME_API FKMAnimNode_BonePoseTransform : public FAnimNode_Base
 {
 	GENERATED_USTRUCT_BODY()
 	
 	UPROPERTY(EditAnywhere, Category=Links)
 	FPoseLink Source;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Settings)
+	bool bUsedShake = false;
 
-	UPROPERTY(EditAnywhere, Category=Settings)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Settings, meta=(EditCondition=bUsedShake))
 	TObjectPtr<class UCurveVector> ShakeCurve;
-
-	UPROPERTY(EditAnywhere, Category=Settings)
+	
+	UPROPERTY(EditAnywhere, Category=Settings, meta=(EditCondition=bUsedShake))
 	FBoneReference ShakeBone;
 
-	UPROPERTY(EditAnywhere, Category=Settings)
-	FBoneReference RootBone;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Settings)
+	bool bUsedPairBone = false;
+
+	UPROPERTY(EditAnywhere, Category=Settings, meta=(EditCondition=bUsedPairBone))
+	FBoneReference PairRootBone;
 
 	FCompactPoseBoneIndex ShakeBoneIndex;
-	FCompactPoseBoneIndex RootBoneIndex;
+	FCompactPoseBoneIndex PairRootBoneIndex;
 
 public:	
-	FKMAnimNode_Shake();
+	FKMAnimNode_BonePoseTransform();
 
 	virtual void Initialize_AnyThread(const FAnimationInitializeContext& context) override;
 	virtual void CacheBones_AnyThread(const FAnimationCacheBonesContext& context) override;

@@ -107,9 +107,15 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	static FTransform GetExtractComponentSpaceBoneTransform(const class UAnimInstance* animInstance, const class UAnimSequenceBase* animation, float time, FName boneName, bool bExtractRootMotion = false);
-	
-	static void ExtractLocalSpacePose(const class UAnimSequenceBase* Animation, const FBoneContainer& BoneContainer, float Time, bool bExtractRootMotion, FCompactPose& OutPose);
 
+	static void ExtractLocalSpacePose(const class UAnimSequenceBase* Animation, const FBoneContainer& BoneContainer, float Time, bool bExtractRootMotion, FCompactPose& OutPose);
+	
+	UFUNCTION(BlueprintPure)
+	static bool GetPairFollowerOffsetTransform(FName boneName, const UAnimMontage* laaderMontage, const UAnimMontage* followerMontage, float position, FTransform& outTransform);
+
+	UFUNCTION(BlueprintPure)
+	static bool GetMontageBoneCSTransform(FName boneName, const UAnimMontage* montage, float position, FTransform& outTransform);
+	
 	static struct FAnimMontageInstance* FindMontageInstaceTagByCharacter(const class AKMCharacter* character, const FName& montageInstancetag);
 
 	static struct FAnimMontageInstance* GetActiveMontageInstance(const class AKMCharacter* character);

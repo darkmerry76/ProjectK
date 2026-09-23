@@ -160,6 +160,15 @@ enum class EKMApproachPullPointType : uint8
 };
 
 USTRUCT(Blueprintable, BlueprintType)
+struct KMGAME_API FKMHitCheckData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	TSet<class AActor*> Actors;
+};
+
+USTRUCT(Blueprintable, BlueprintType)
 struct KMGAME_API FKMProjectileEventData
 {
 	GENERATED_USTRUCT_BODY()
@@ -244,4 +253,38 @@ struct KMGAME_API FEMAnimationSetTag
 
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimMontage> Montage;
+};
+
+UENUM(Blueprintable, BlueprintType)
+enum class EKMFollowerMovementStateType : uint8
+{
+	None,
+	Paried,
+	Stoped,
+};
+
+USTRUCT(BlueprintType)
+struct KMGAME_API FKMFollowerMovementData
+{
+	GENERATED_USTRUCT_BODY()
+	
+	bool IsValid() const
+	{
+		return LeaderActor.IsValid() && FollowActor.IsValid();
+	}
+
+	EKMFollowerMovementStateType State = EKMFollowerMovementStateType::None;
+	
+	FTransform StartWorldTransform;
+	FTransform OffsetTransform;
+
+	FName LeaderMontageInstanceId = NAME_None;
+	FName FollowMontageInstanceId = NAME_None;
+
+	TWeakObjectPtr<class AActor> LeaderActor;
+	TWeakObjectPtr<class AActor> FollowActor;
+
+	float HeightOffset = 0.f;
+	float ElipsedTime = 0.f;
+	float Duration = 0.1f;
 };

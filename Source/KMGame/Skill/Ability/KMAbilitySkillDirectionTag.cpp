@@ -54,7 +54,7 @@ float UKMAbilitySkillDirectionTag::Get8WayDirectionWeight(EKM8WayDirection direc
 	return Angle0_DirectionWeight;
 }
 
-void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float moveInstance, float moveDuration, bool bIngnoreZ)
+void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction)
 {
 	FGameplayTag finalAnimTag = Get8WayDirectionAnimTag(direction);
 
@@ -76,9 +76,9 @@ void UKMAbilitySkillDirectionTag::ApplyAngle(EKM8WayDirection direction, float m
 	FVector newDirection = UKMUtil::GetYawRotation(character->GetActorForwardVector(), yawAngle).Vector();
 	
 	ownerCharacterInstance->SetDirection(UKMUtil::GetCircularAngle2D(FVector2D(newDirection.X, newDirection.Y) * directionWeight));
-	FVector newTargetLocation = GetOffsetAlongOwnerDirection(newDirection, moveInstance, 1.f, bIngnoreZ);
+	FVector newTargetLocation = GetOffsetAlongOwnerDirection(newDirection, TargetDistance, 1.f, true);
 
 	AddOwnerMotionWarpingLocation(MotionWarpingTarget, newTargetLocation);
 
-	OnApplyAngle(direction, moveInstance, moveDuration);
+	OnApplyAngle(direction);
 }

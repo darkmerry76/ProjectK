@@ -61,10 +61,9 @@ void UKMAnimInstance::NativeInitializeAnimation()
 	OnMontageStarted.AddDynamic(this, &UKMAnimInstance::OnMontageStarted_Internal);
 }
 
-void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
+void UKMAnimInstance::PreUpdateAnimation(float deltaSeconds)
 {
-	Super::NativeUpdateAnimation(deltaSeconds);
-
+	int32 currFrameCount = GFrameCounter;
 	TickSlotBlend(deltaSeconds);
 	TickShake(GetWorld()->GetDeltaSeconds());
 	TickPairBlend(GetWorld()->GetDeltaSeconds());
@@ -88,6 +87,8 @@ void UKMAnimInstance::NativeUpdateAnimation(float deltaSeconds)
 			}
 		}
 	}
+
+	Super::PreUpdateAnimation(deltaSeconds);
 }
 
 FAnimInstanceProxy* UKMAnimInstance::CreateAnimInstanceProxy()
@@ -143,32 +144,72 @@ void UKMAnimInstance::BlendPairPosition(const FTransform& startWorldTransform, c
 	PairBlendInfo.FinalWorldPosition = ownerCharacter->GetActorLocation() - PairBlendInfo.StartWorldTransform.GetLocation();
 }
 
+void UKMAnimInstance::SetPairOffsetTransform(const FKMFollowerMovementData& followerMovementData)
+{
+	//PairBlendInfo.bIsEnableBlend = true;
+	//PairBlendInfo.OffsetTransform = newPairOffsetTransform;
+
+	FollowerMovementData = followerMovementData;
+}
+
+void UKMAnimInstance::SetStopOffsetTransform()
+{
+	FollowerMovementData.LeaderActor = nullptr;
+	FollowerMovementData.FollowActor = nullptr;
+	PairBlendInfo.OffsetTransform = FTransform::Identity;
+}
+
 void UKMAnimInstance::TickPairBlend(float deltaTime)
 {
-	if (!PairBlendInfo.bIsEnableBlend)
+	if (!FollowerMovementData.IsValid())
 	{
-		return;
+		return;		
 	}
 
-	if (PairBlendInfo.EplisedTime > PairBlendInfo.Duration)
-	{
-		//PairBlendInfo.bIsEnableBlend = false;
-	}
-	
-	ACharacter* ownerCharacter = Cast<ACharacter>(GetSkelMeshComponent()->GetOwner());
-	if (!IsValid(ownerCharacter))
-	{
-		return;
-	}
-	
-	float alpha = FMath::Clamp(PairBlendInfo.EplisedTime / PairBlendInfo.Duration, 0.f, 1.f);
-	
-	//const FVector worldPosition = FMath::Lerp(PairBlendInfo.StartWorldTransform.GetLocation(), ownerCharacter->GetActorLocation() + PairBlendInfo.WorldOffset , 0.f);
-	const FVector worldPosition = FMath::Lerp(PairBlendInfo.StartWorldTransform.GetLocation(),ownerCharacter->GetActorLocation() + PairBlendInfo.WorldOffset, alpha);
+	int32 currentFrameCount = GFrameCounter;
 
-	const FVector worldVector = ownerCharacter->GetActorLocation() - worldPosition;
-	PairBlendInfo.FinalWorldPosition = worldVector;
-	PairBlendInfo.EplisedTime += deltaTime;
+	float blendAlpha = (FollowerMovementData.Duration < 0.0001f) ? 1.f : (FollowerMovementData.ElipsedTime / FollowerMovementData.Duration);
+	
+	if (AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor))
+	{
+		if (const FAnimMontageInstance* laaderMontageInsance = UKMUtil::FindMontageInstaceTagByCharacter(leaderCharacter, FollowerMovementData.LeaderMontageInstanceId))
+		{
+			if (const AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+			{
+				if (const FAnimMontageInstance* followMontageInsance = UKMUtil::FindMontageInstaceTagByCharacter(followerCharacter, FollowerMovementData.FollowMontageInstanceId))
+				{
+					FTransform leaderBoneTransform;
+					FTransform followerBoneTransform;
+
+					const FName boneName = TEXT("Root");
+
+					float position = laaderMontageInsance->GetPosition();
+
+					UKMUtil::GetMontageBoneCSTransform(boneName, laaderMontageInsance->Montage, position, leaderBoneTransform);
+					UKMUtil::GetMontageBoneCSTransform(boneName, followMontageInsance->Montage, position, followerBoneTransform);
+
+					FVector finalLocation = (leaderBoneTransform.GetLocation()) - (followerBoneTransform.GetLocation() * -1.f);
+					finalLocation.Z = 0.f;
+					finalLocation += FollowerMovementData.OffsetTransform.GetLocation();
+
+					if (blendAlpha < 1.f)
+					{
+						FTransform followFinalWorldTransform;
+						followFinalWorldTransform.Blend(FollowerMovementData.StartWorldTransform, followerCharacter->GetMesh()->GetComponentTransform() * FTransform(finalLocation), blendAlpha);
+
+						finalLocation = (followFinalWorldTransform * followerCharacter->GetMesh()->GetComponentTransform().Inverse()).GetLocation();
+					}
+
+					FTransform finalOffsetTransform = FTransform::Identity;
+					finalOffsetTransform.SetLocation(finalLocation);
+
+					PairBlendInfo.OffsetTransform = finalOffsetTransform;
+				}
+			}
+		}
+	}
+
+	FollowerMovementData.ElipsedTime += deltaTime;
 }
 
 void UKMAnimInstance::BlendSlot(EKMAnimSlotType newSlotType, float newWeight, float blendTime)

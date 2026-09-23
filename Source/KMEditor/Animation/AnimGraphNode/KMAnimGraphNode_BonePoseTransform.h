@@ -4,16 +4,16 @@
 #include "UObject/ObjectMacros.h"
 #include "EdGraph/EdGraphNodeUtils.h"
 #include "AnimGraphNode_Base.h"
-#include "Animation/AnimNode/KMAnimNode_Shake.h"
-#include "KMAnimGraphNode_Shake.generated.h"
+#include "Animation/AnimNode/KMAnimNode_BonePoseTransform.h"
+#include "KMAnimGraphNode_BonePoseTransform.generated.h"
 
 UCLASS()
-class UKMAnimGraphNode_Shake : public UAnimGraphNode_Base
+class UKMAnimGraphNode_BonePoseTransform : public UAnimGraphNode_Base
 {
 	GENERATED_UCLASS_BODY()
-
+	
 	UPROPERTY(EditAnywhere, Category=Settings)
-	FKMAnimNode_Shake Node;
+	FKMAnimNode_BonePoseTransform Node;
 
 	virtual FLinearColor GetNodeTitleColor() const override;
 	virtual FText GetTooltipText() const override;

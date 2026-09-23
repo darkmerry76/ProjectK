@@ -10,11 +10,11 @@ class KMGAME_API UKMSkeletalMeshComponent : public USkeletalMeshComponent
 	
 protected:
 	UPROPERTY(Transient)
-	TArray<TWeakObjectPtr<class UKMAttachedBlendingComponent>> BlendingComponentChilds;
+	TArray<TWeakObjectPtr<class UActorComponent>> TransformUpdateComponentChilds;
 	
 public:
-	void AttachBlendingComponent(class UKMAttachedBlendingComponent* newBlendingComponent);
-	void DetachBlendingComponent(class UKMAttachedBlendingComponent* blendingComponent);
+	void AttachTransformUpdateComponent(class UActorComponent* newActorComponent);
+	void DetachTransformUpdateComponent(class UActorComponent* actorComponent);
 	
 protected:
 	virtual void BeginPlay() override;

@@ -632,7 +632,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill(const TSharedPtr<
 	{
 		return nullptr;
 	}
-	
+	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Grab_Tag);
 	return newSkillInstance;
 }
 
@@ -1089,7 +1089,7 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 			targetInstances.FindOrAdd(targetGameObjectInstance);
 		}
 	}
-	
+
 	for (auto skillEffectItr : skillInstance->SkillKey.TableRecord->Effects)
 	{
 		FName skillEffectName;

@@ -364,7 +364,7 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 				socketTransform.SetScale3D(FVector(RingRadius));
 				ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
 					PreviousTransform, socketTransform,
-					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(), NAME_None);
+					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false,  NAME_None);
 				PreviousTransform = socketTransform;
 			}		
 		}

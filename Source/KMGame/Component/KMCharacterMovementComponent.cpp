@@ -1,12 +1,15 @@
 #include "KMCharacterMovementComponent.h"
 #include "EMCurveWarpingComponent.h"
+#include "KMCapsuleComponent.h"
 #include "KMCurveWarpingComponent.h"
+#include "KMSkeletalMeshComponent.h"
 #include "Animation/AnimSequenceHelpers.h"
 #include "Animation/KMAnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Util/KMUtil.h"
 
 constexpr float MIN_TICK_DIST = 1.f;
 
@@ -74,6 +77,22 @@ void UKMCharacterMovementComponent::SetMovementMode(EMovementMode newMovementMod
 	Super::SetMovementMode(newMovementMode, newCustomMode);
 }
 
+void UKMCharacterMovementComponent::TickCharacterPose(float deltaTime)
+{
+	Super::TickCharacterPose(deltaTime);
+}
+
+void UKMCharacterMovementComponent::PerformMovement(float deltaTime)
+{
+	MoveFollowProcessing(deltaTime, 1);
+	Super::PerformMovement(deltaTime);
+}
+
+void UKMCharacterMovementComponent::UpdateBasedMovement(float deltaTime)
+{
+	Super::UpdateBasedMovement(deltaTime);
+}
+
 void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction)
 {
 	if (FMath::IsNearlyZero(deltaTime))
@@ -89,6 +108,10 @@ void UKMCharacterMovementComponent::TickComponent(float deltaTime, ELevelTick ti
 	BlockMoveDelta = FVector(adjusted.X - actualDelta.X,adjusted.Y - actualDelta.Y,0.f);
 
 	MoveBlockProcessing(deltaTime, 1);
+}
+
+void UKMCharacterMovementComponent::UpdateTransform(float deltaTime)
+{
 }
 
 void UKMCharacterMovementComponent::ProcessOverlapDamage(float deltaSeconds, const FVector& oldLocation, const FVector& newLocation)
@@ -784,43 +807,119 @@ bool UKMCharacterMovementComponent::IsAir() const
 	return IsFalling();
 }
 
-void UKMCharacterMovementComponent::StartFollowActor(AActor* newFollowActor, const FVector& targetOffset, float duration)
+void UKMCharacterMovementComponent::StartFollowActor(AActor* newLeaderActor, FName leaderMontageInstanceId, FName followMontageInstanceId, const FTransform& offsetTransform, float duration)
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	if (!IsValid(ownerCharacter))
+	if (!IsValid(newLeaderActor))
 	{
 		return;
 	}
-
-	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
-	if (!IsValid(animInstance))
-	{
-		return;
-	}
-
-	FollowActor = newFollowActor;
 	
-	FTransform startTransform = ownerCharacter->GetActorTransform();
-	ownerCharacter->SetActorLocation(newFollowActor->GetActorLocation());
-	animInstance->BlendPairPosition(startTransform, targetOffset, duration);
+	AKMCharacter* followerCharacter = GetOwnerCharacter();
+	AKMCharacter* leaderCharacter = Cast<AKMCharacter>(newLeaderActor);
+	FollowerMovementData.State = EKMFollowerMovementStateType::Paried;
+	FollowerMovementData.LeaderActor = newLeaderActor;
+	FollowerMovementData.FollowActor = GetOwner();
+	FollowerMovementData.LeaderMontageInstanceId = leaderMontageInstanceId;
+	FollowerMovementData.FollowMontageInstanceId = followMontageInstanceId;
+	FollowerMovementData.OffsetTransform = offsetTransform;
+	FollowerMovementData.StartWorldTransform = FollowerMovementData.FollowActor->GetActorTransform();
+	FollowerMovementData.ElipsedTime = 0.f;
+	FollowerMovementData.HeightOffset = 0.f;
+	FollowerMovementData.Duration = duration;
+
+	float maxRadius = 0.f;
+	float maxHeight = 0.f;
+
+	if (IsValid(followerCharacter))
+	{
+		UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance());
+		check(IsValid(followerAnimInstance));
+
+		FollowerMovementData.StartWorldTransform = followerCharacter->GetMesh()->GetComponentToWorld() * followerAnimInstance->GetPairBlendInfo().OffsetTransform;
+		followerAnimInstance->SetPairOffsetTransform(FollowerMovementData);
+		followerCharacter->SetAnimRootMotionTranslationScale(0.f);
+
+		maxRadius = followerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
+		maxHeight = followerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+	}
+	
+	if (IsValid(leaderCharacter))
+	{
+		float prevHeight = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+		
+		if (maxRadius > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius())
+		{
+			leaderCharacter->GetCapsuleComponent()->SetCapsuleRadius(maxRadius);
+		}
+		else
+		{
+			maxRadius = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
+		}
+		
+		if (maxHeight > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight())
+		{
+			leaderCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(maxHeight);
+		}
+		else
+		{
+			maxHeight = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+		}
+
+		FVector newLeaderMeshRelativeLocation = leaderCharacter->GetMesh()->GetRelativeLocation();
+		newLeaderMeshRelativeLocation.Z -= maxHeight - prevHeight;
+		leaderCharacter->GetMesh()->SetRelativeLocation(newLeaderMeshRelativeLocation);
+		leaderCharacter->SetActorLocation(leaderCharacter->GetActorLocation() + FVector(0.f, 0.f, maxHeight - prevHeight));
+		
+		FollowerMovementData.HeightOffset = followerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - leaderCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	}
+
+	if (IsValid(followerCharacter))
+	{
+		FVector newLeaderMeshRelativeLocation = leaderCharacter->GetMesh()->GetRelativeLocation();
+		if (maxHeight > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight())
+		{
+			newLeaderMeshRelativeLocation.Z -= maxHeight - leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+		}
+		
+		leaderCharacter->GetMesh()->SetRelativeLocation(newLeaderMeshRelativeLocation);
+	}
 }
 
-void UKMCharacterMovementComponent::StopFollowActor(float duration)
+void UKMCharacterMovementComponent::StopFollowActor(AActor* followActor, float duration)
 {
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	if (!IsValid(ownerCharacter))
+	if (!FollowerMovementData.IsValid() || FollowerMovementData.LeaderActor != followActor)
 	{
 		return;
 	}
 
-	UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(ownerCharacter->GetMesh()->GetAnimInstance());
-	if (!IsValid(animInstance))
+	FollowerMovementData.State = EKMFollowerMovementStateType::Stoped;
+	FollowerMovementData.Duration = duration;
+	FollowerMovementData.ElipsedTime = 0.f;
+
+	if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+	{
+		if (UKMCapsuleComponent* capsuleComponent = Cast<UKMCapsuleComponent>(followerCharacter->GetCapsuleComponent()))
+		{
+			capsuleComponent->RevertOrigin();	
+		}
+		
+		if (UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance()))
+		{
+			followerAnimInstance->SetStopOffsetTransform();
+		}
+		followerCharacter->SetAnimRootMotionTranslationScale(1.f);
+	}
+}
+
+void UKMCharacterMovementComponent::MoveFollowProcessing(float deltaTime, int32 iterations)
+{
+	if (!FollowerMovementData.IsValid())
 	{
 		return;
 	}
-	
-	FollowActor = nullptr;
-
-	ownerCharacter->AddActorLocalOffset(animInstance->GetPairBlendInfo().FinalWorldPosition);
-	animInstance->BlendPairPosition(ownerCharacter->GetActorTransform(), FVector::ZeroVector, duration);
+	if (FollowerMovementData.State == EKMFollowerMovementStateType::Paried)
+	{
+		FollowerMovementData.FollowActor->SetActorLocation(FVector(FollowerMovementData.LeaderActor->GetActorLocation().X, FollowerMovementData.LeaderActor->GetActorLocation().Y, FollowerMovementData.FollowActor->GetActorLocation().Z));
+		FollowerMovementData.FollowActor->SetActorRotation((FollowerMovementData.LeaderActor->GetActorForwardVector() * -1.f).Rotation());
+	}
 }

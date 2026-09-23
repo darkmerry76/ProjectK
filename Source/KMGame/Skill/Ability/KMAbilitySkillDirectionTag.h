@@ -85,8 +85,8 @@ public:
 	float Get8WayDirectionWeight(EKM8WayDirection direction) const;
 
 	UFUNCTION(BlueprintCallable)
-	void ApplyAngle(EKM8WayDirection direction, float moveInstance, float moveDuration, bool bIngnoreZ = true);
+	void ApplyAngle(EKM8WayDirection direction);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnApplyAngle(EKM8WayDirection direction, float moveInstance, float moveDuration);
+	void OnApplyAngle(EKM8WayDirection direction);
 };

@@ -44,9 +44,11 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnim
 {
 	if (IsValid(meshComp))
 	{
+		HitCheckClear(meshComp->GetOwner());
+		
 		FTransform finalTransform;
 		GetFinalTransform(meshComp, finalTransform);
-		HitPreviousTransforms.FindOrAdd(meshComp->GetOwner()) = finalTransform;
+		Context.FindOrAdd(meshComp->GetOwner()).PreviousTransform = finalTransform;
 	}
 }
 
@@ -54,9 +56,11 @@ void UKMAnimNotifyState_Hit::NotifyBeginEx(AActor* actor, UEMMartialArts* martia
 {
 	if (IsValid(actor))
 	{
+		HitCheckClear(actor);
+		
 		FTransform finalTransform;
 		GetFinalTransform(actor->GetRootComponent(), finalTransform);
-		HitPreviousTransforms.FindOrAdd(actor) = finalTransform;
+		Context.FindOrAdd(actor).PreviousTransform = finalTransform;
 	}
 }
 
@@ -64,6 +68,17 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 {
 	AActor* ownerActor = ownerComponent->GetOwner();
 	if(!IsValid(ownerActor))
+	{
+		return;
+	}
+	
+	FKMAnimNotifyState_Hit_Context* hitContext = Context.Find(ownerActor);
+	if (!hitContext)
+	{
+		return;
+	}
+
+	if (bIsOnce && hitContext->HitCount > 0)
 	{
 		return;
 	}
@@ -100,25 +115,31 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 		latestSkillInstance = ownerGameObjectInstance->GetSkillHandler()->GetLatestActiveSkillInstance();
 	}
 	
-	FTransform& previousTransform = HitPreviousTransforms.FindOrAdd(ownerActor);
-	
 	FTransform finalTransform;
 	GetFinalTransform(ownerComponent, finalTransform);
 
+	if (HitTag != NAME_None)
+	{
+		HitTag = HitTag;
+	}
+
+	int32 hitCount = 0;
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		hitCount = ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, HitTag);
 	}
 	else
 	{
-		ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, previousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, HitTag);
+		hitCount = ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, HitTag);
 	}
-	previousTransform = finalTransform;
+
+	hitContext->HitCount += hitCount;
+	hitContext->PreviousTransform = finalTransform;
 }
 
 void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(meshComp))
+	if (IsValid(meshComp) && bIsEnable)
 	{
 		DoHit(meshComp, eventReference);
 	}
@@ -126,7 +147,7 @@ void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimS
 
 void UKMAnimNotifyState_Hit::NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(actor))
+	if (IsValid(actor) && bIsEnable)
 	{
 		DoHit(actor->GetRootComponent(), eventReference);
 	}
@@ -140,19 +161,26 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSe
 	}
 	
 	AActor* ownerActor = meshComp->GetOwner();
-	HitPreviousTransforms.Remove(ownerActor);
-	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
+	Context.Remove(ownerActor);
+
+	if (bIsHitCheckerClear)
 	{
-		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())
-		{
-			ownerGameObjectInstance->HitCheckClear();
-		}
+		HitCheckClear(ownerActor);
 	}
 }
 
 void UKMAnimNotifyState_Hit::NotifyEndEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
 {
-	HitPreviousTransforms.Remove(actor);
+	Context.Remove(actor);
+
+	if (bIsHitCheckerClear)
+	{
+		HitCheckClear(actor);
+	}
+}
+
+void UKMAnimNotifyState_Hit::HitCheckClear(AActor* actor)
+{
 	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(actor))
 	{
 		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())

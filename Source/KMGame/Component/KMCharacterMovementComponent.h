@@ -4,6 +4,8 @@
 #include "EMCurveWarpingInterface.h"
 #include "Component/EMCharacterMovementComponent.h"
 #include "EMCurveWarpingComponent.h"
+#include "Component/EMTransformUpdateInterface.h"
+#include "Core/KMDefine.h"
 #include "KMCharacterMovementComponent.generated.h"
 
 struct KMGAME_API FKMBlockReflectionData
@@ -16,7 +18,7 @@ struct KMGAME_API FKMBlockReflectionData
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnHitDelegate, const TArray<FHitResult>& hitResults);
 
 UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
-class KMGAME_API UKMCharacterMovementComponent : public UEMCharacterMovementComponent, public IEMCurveWarpingInterface
+class KMGAME_API UKMCharacterMovementComponent : public UEMCharacterMovementComponent, public IEMCurveWarpingInterface, public IEMTransformUpdateInterface
 {
 	GENERATED_UCLASS_BODY()
 	
@@ -53,12 +55,10 @@ public:
 
 	TArray<TSharedPtr<FKMBlockReflectionData>> BlockReflections;
 
+	FKMFollowerMovementData FollowerMovementData;
+
 	FHitResult BlockHitResult;
 	FVector BlockMoveDelta = FVector::ZeroVector;
-
-protected:
-	UPROPERTY()
-	class AActor* FollowActor = nullptr;
 
 public:
 	void CustomJump();
@@ -83,10 +83,10 @@ public:
 	virtual void DisableCustomWalking();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void StartFollowActor(class AActor* newFollowerActor, const FVector& targetOffset, float duration = 0.2f);
+	virtual void StartFollowActor(class AActor* newFollowerActor, FName leaderMontageInstanceId, FName followMontageInstanceId, const FTransform& offsetTransform, float duration = 0.2f);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void StopFollowActor(float duration = 0.2f);
+	virtual void StopFollowActor(class AActor* followActor, float duration = 0.2f);
 
 	UFUNCTION(BlueprintPure)
 	bool IsCustomWalking() const;
@@ -104,15 +104,20 @@ protected:
 	virtual void SetMovementMode(EMovementMode NewMovementMode, uint8 NewCustomMode = 0) override;
 	
 	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction) override;
+	virtual void PerformMovement(float deltaTime) override;
+	virtual void UpdateBasedMovement(float deltaTime) override;
+	virtual void TickCharacterPose(float deltaTime) override;
 	virtual void PhysCustom(float deltaTime, int32 iterations) override;
 	virtual void PhysWalking(float deltaTime, int32 iterations) override;
 	virtual void HandleImpact(const FHitResult& impact, float timeSlice, const FVector& moveDelta) override;
 	virtual void MoveBlockProcessing(float deltaTime, int32 iterations);
+	virtual void MoveFollowProcessing(float deltaTime, int32 iterations);
 	virtual void OnMovementUpdated(float deltaSeconds, const FVector& oldLocation, const FVector& oldVelocity) override;
 	virtual void ProcessLanded(const FHitResult& hitResult, float remainingTime, int32 iterations) override;
 	virtual void ProcessWallHit(const FHitResult hitResult);
 	virtual void ProcessCeilingHit(const FHitResult hitResult);
 	virtual void StartNewPhysics(float deltaTime, int32 iterations) override;
+	virtual void UpdateTransform(float deltaTime) override;
 	
 	bool CustomMovementFalling(const FVector& adjusted, float deltaTime, int32 iterations);
 	bool CustomMovementFlying(const FVector& adjusted, float deltaTime, int32 iterations);

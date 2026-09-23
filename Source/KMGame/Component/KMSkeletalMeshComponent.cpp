@@ -39,19 +39,19 @@ void UKMSkeletalMeshComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
 	Super::EndPlay(endPlayReason);
 }
 
-void UKMSkeletalMeshComponent::AttachBlendingComponent(UKMAttachedBlendingComponent* newBlendingComponent)
+void UKMSkeletalMeshComponent::AttachTransformUpdateComponent(UActorComponent* newActorComponent)
 {
-	if (!BlendingComponentChilds.Contains(newBlendingComponent))
+	if (!TransformUpdateComponentChilds.Contains(newActorComponent))
 	{
-		BlendingComponentChilds.AddUnique(newBlendingComponent);
+		TransformUpdateComponentChilds.AddUnique(newActorComponent);
 	}
 }
 
-void UKMSkeletalMeshComponent::DetachBlendingComponent(UKMAttachedBlendingComponent* blendingComponent)
+void UKMSkeletalMeshComponent::DetachTransformUpdateComponent(UActorComponent* actorComponent)
 {
-	if (!BlendingComponentChilds.Contains(blendingComponent))
+	if (TransformUpdateComponentChilds.Contains(actorComponent))
 	{
-		BlendingComponentChilds.Remove(blendingComponent);
+		TransformUpdateComponentChilds.Remove(actorComponent);
 	}
 }
 
@@ -70,17 +70,21 @@ void UKMSkeletalMeshComponent::SetMaterial(int32 elementIndex, UMaterialInterfac
 }
 
 void UKMSkeletalMeshComponent::FinalizeBoneTransform()
-{
-	Super::FinalizeBoneTransform();
-
-	for (auto childComp : BlendingComponentChilds)
+{	
+	for (auto childComp : TransformUpdateComponentChilds)
 	{
 		if (!childComp.IsValid())
 		{
 			continue;
 		}
-		childComp->UpdateBlending();
+		IEMTransformUpdateInterface* transformUpdateInterface = Cast<IEMTransformUpdateInterface>(childComp);
+		if (!transformUpdateInterface)
+		{
+			continue;
+		}
+		transformUpdateInterface->UpdateTransform(GetWorld()->GetDeltaSeconds() * GetOwner()->CustomTimeDilation);
 	}
+	Super::FinalizeBoneTransform();
 }
 
 void UKMSkeletalMeshComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)

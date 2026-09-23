@@ -4,7 +4,6 @@
 #include "GameplayTagContainer.h"
 #include "Core/KMGameplayTag.h"
 #include "GameObject/EMGameObjectInstance.h"
-#include "Notify/KMAnimNotifyState_Hit.h"
 #include "KMGame/Tables/Generated/KMTableEnums.h"
 #include "KMGame/Stat\KMSecondaryBaseStat.h"
 #include "KMGameObjectInstance.generated.h"
@@ -134,16 +133,16 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual bool IsAir() const;
 	
-	virtual void Hit(class UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
+	virtual bool Hit(class UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 
-	void BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+	int32 BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag);
 
-	void SphereHitImpact(
+	int32 SphereHitImpact(
 		const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, const FName& hitTag);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Inflict(class UKMGameObjectInstance* victimGameObjectInstance);
@@ -248,11 +247,13 @@ protected:
 	virtual void ShowDamage(EKMStatFactorType factorType, int32 damage);
 
 	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
-	void HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
+	int32 HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
 	
 	virtual void Tick(float deltaSeconds) override;
 
 	void OnStiffRelease();
+
+	void ResolveNearestHitResult(const FTransform& orientationTransform, TArray<FHitResult>& hitResults);
 
 protected:
 	FKMGameplayTagContainer GameplayTagContainer;

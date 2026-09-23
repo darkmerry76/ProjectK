@@ -101,7 +101,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShakeRoot(float newDistance, float newFrequency, float newDuration = 0.2f);
 
-	virtual void Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
+	virtual bool Hit(UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 	
 	UFUNCTION(BlueprintCallable)
 	float GetMoveAccelate() const;
