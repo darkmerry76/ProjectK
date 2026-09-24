@@ -1,6 +1,7 @@
 #include "KMSkeletalMeshComponent.h"
 
 #include "KMAttachedBlendingComponent.h"
+#include "Animation/KMAnimInstance.h"
 #include "Core/KMParameterLayerSystem.h"
 
 UKMSkeletalMeshComponent::UKMSkeletalMeshComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -11,6 +12,8 @@ UKMSkeletalMeshComponent::UKMSkeletalMeshComponent(const FObjectInitializer& obj
 void UKMSkeletalMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OriginRelativeTransform = GetRelativeTransform();
 }
 
 void UKMSkeletalMeshComponent::OnRegister()
@@ -85,6 +88,18 @@ void UKMSkeletalMeshComponent::FinalizeBoneTransform()
 		transformUpdateInterface->UpdateTransform(GetWorld()->GetDeltaSeconds() * GetOwner()->CustomTimeDilation);
 	}
 	Super::FinalizeBoneTransform();
+}
+
+void UKMSkeletalMeshComponent::RevertOriginTransform()
+{
+	SetRelativeTransform(OriginRelativeTransform);
+
+	if (UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(GetAnimInstance()))
+	{
+		followerAnimInstance->UpdateAnimation(0.f, true);
+	}
+	UpdateComponentToWorld();
+	RefreshBoneTransforms();
 }
 
 void UKMSkeletalMeshComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)

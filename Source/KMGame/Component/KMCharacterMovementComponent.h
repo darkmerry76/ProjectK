@@ -133,5 +133,4 @@ protected:
 	class UKMCharacterInstance* GetOwnerCharacterInstance() const;
 
 	void ProcessOverlapDamage(float deltaSeconds, const FVector& oldLocation, const FVector& newLocation);
-	
 };

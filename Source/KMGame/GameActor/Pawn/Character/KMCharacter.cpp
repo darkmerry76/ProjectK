@@ -25,6 +25,7 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 {
 	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
+	CameraTarget = CreateDefaultSubobject<USceneComponent>(TEXT("CameraTarget"));
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{
 		characterMovement->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
@@ -32,6 +33,8 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 
 	GetMesh()->SetCustomDepthStencilValue(1);
 	GetMesh()->SetRenderCustomDepth(true);
+
+	CameraTarget->SetupAttachment(GetMesh());
 }
 
 void AKMCharacter::BeginPlay()
@@ -163,6 +166,11 @@ UMeshComponent* AKMCharacter::GetPlacementMeshComponent() const
 UKMAttachedBlendingComponent* AKMCharacter::GetAttachedBlendingComponent() const
 {
 	return nullptr;
+}
+
+USceneComponent* AKMCharacter::GetCameraTarget() const
+{
+	return CameraTarget;
 }
 
 FTransform AKMCharacter::GetCarryOffsetTransform_Implementation() const

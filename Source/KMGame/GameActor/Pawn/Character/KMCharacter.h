@@ -31,6 +31,9 @@ protected:
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class USceneComponent> CameraTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag TakeTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -83,6 +86,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	class USceneComponent* GetCameraTarget() const;
 
 	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
 

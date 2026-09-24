@@ -696,6 +696,7 @@ void UKMCharacterInstance::SetDirection(float newDirection, bool bForceRotate)
 		SetDirectionVisual(newDirection, bForceRotate);
 		if (!ownerCharacter->GetMesh()->IsPostEvaluatingAnimation())
 		{
+			ownerCharacter->GetMesh()->UpdateComponentToWorld();
 			ownerCharacter->GetMesh()->RefreshBoneTransforms();
 		}
 	}

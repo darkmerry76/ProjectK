@@ -11,10 +11,14 @@ class KMGAME_API UKMSkeletalMeshComponent : public USkeletalMeshComponent
 protected:
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<class UActorComponent>> TransformUpdateComponentChilds;
+
+	FTransform OriginRelativeTransform;
 	
 public:
 	void AttachTransformUpdateComponent(class UActorComponent* newActorComponent);
 	void DetachTransformUpdateComponent(class UActorComponent* actorComponent);
+
+	void RevertOriginTransform();
 	
 protected:
 	virtual void BeginPlay() override;

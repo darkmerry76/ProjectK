@@ -135,14 +135,14 @@ public:
 	
 	virtual bool Hit(class UKMGameObjectInstance* attackerGameObjectInstance, TSharedPtr<class FKMSkillInstance> latestSkillInstance, const FVector& hitClosestPoint, const FName& hitTag);
 
-	int32 BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
+	bool BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults);
 
-	int32 SphereHitImpact(
+	bool SphereHitImpact(
 		const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Inflict(class UKMGameObjectInstance* victimGameObjectInstance);

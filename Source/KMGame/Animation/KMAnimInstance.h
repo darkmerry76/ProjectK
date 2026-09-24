@@ -160,8 +160,10 @@ public:
 	const FKMMultiSlotBlendInfo& GetSlotBlendInfo() const;
 	const FKMMultiSlotBlendInfo& GetNextSlotBlendInfo() const;
 	const FKMPairPositionBlendInfo& GetPairBlendInfo() const;
-
 	const FKMAnimNodeShakeData& GetShakeData() const;
+
+	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
+	FTransform GetPairBlendWorldTransform() const;
 
 protected:
 	void TickSlotBlend(float deltaTime);

@@ -362,9 +362,11 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 			{
 				FTransform socketTransform = ChainMesh->GetSocketTransform(RingSocketName);
 				socketTransform.SetScale3D(FVector(RingRadius));
+
+				TArray<FHitResult> hitResults;
 				ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
 					PreviousTransform, socketTransform,
-					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false,  NAME_None);
+					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false, false, NAME_None, hitResults);
 				PreviousTransform = socketTransform;
 			}		
 		}

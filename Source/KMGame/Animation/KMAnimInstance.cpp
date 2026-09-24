@@ -166,10 +166,9 @@ void UKMAnimInstance::TickPairBlend(float deltaTime)
 		return;		
 	}
 
-	int32 currentFrameCount = GFrameCounter;
-
 	float blendAlpha = (FollowerMovementData.Duration < 0.0001f) ? 1.f : (FollowerMovementData.ElipsedTime / FollowerMovementData.Duration);
-	
+
+	PairBlendInfo.OffsetTransform = FTransform::Identity;
 	if (AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor))
 	{
 		if (const FAnimMontageInstance* laaderMontageInsance = UKMUtil::FindMontageInstaceTagByCharacter(leaderCharacter, FollowerMovementData.LeaderMontageInstanceId))
@@ -210,6 +209,16 @@ void UKMAnimInstance::TickPairBlend(float deltaTime)
 	}
 
 	FollowerMovementData.ElipsedTime += deltaTime;
+}
+
+FTransform UKMAnimInstance::GetPairBlendWorldTransform() const
+{
+	if (ACharacter* ownerCharacter = Cast<ACharacter>(GetOwningActor()))
+	{
+		return ownerCharacter->GetMesh()->GetSocketTransform(TEXT("Root"));
+	}
+	
+	return GetOwningActor()->GetActorTransform();
 }
 
 void UKMAnimInstance::BlendSlot(EKMAnimSlotType newSlotType, float newWeight, float blendTime)

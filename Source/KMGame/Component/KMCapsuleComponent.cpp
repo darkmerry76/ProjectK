@@ -22,6 +22,10 @@ void UKMCapsuleComponent::EndPlay(const EEndPlayReason::Type endPlayReason)
 
 void UKMCapsuleComponent::RevertOrigin()
 {
-	CapsuleRadius = OriginCapsuleRadius;
-	CapsuleHalfHeight = OriginCapsuleHalfHeight;
+	FVector offsetDelta(0.f, 0.f, OriginCapsuleHalfHeight - CapsuleHalfHeight);
+	
+	SetCapsuleRadius(OriginCapsuleRadius);
+	SetCapsuleHalfHeight(OriginCapsuleHalfHeight);
+	AddWorldOffset(offsetDelta);
+	UpdateComponentToWorld();
 }

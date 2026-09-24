@@ -81,3 +81,13 @@ void UKMAbilitySkill::ForceComplate()
 		SkillInstance.Pin()->SetForceComplete(true);
 	}
 }
+
+void UKMAbilitySkill::AppendHitResult(const TArray<FHitResult>& hitResults)
+{
+	HitResults.Append(hitResults);
+}
+
+void UKMAbilitySkill::ClearHitResults()
+{
+	HitResults.Empty();
+}

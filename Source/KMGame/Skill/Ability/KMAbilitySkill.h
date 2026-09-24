@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bIsDirectionFallow"))
 	float DirectionWeight = 1.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FHitResult> HitResults;
+
 protected:
 	TWeakPtr<class FKMSkillInstance> SkillInstance;
 
@@ -33,6 +36,9 @@ public:
 
 	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
 	TWeakPtr<class FKMSkillInstance> GetSkillInstance() const;
+	
+	void AppendHitResult(const TArray<FHitResult>& hitResults);
+	void ClearHitResults();
 
 protected:
 	virtual void ForceComplate() override;

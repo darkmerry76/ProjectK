@@ -273,10 +273,28 @@ struct KMGAME_API FKMFollowerMovementData
 		return LeaderActor.IsValid() && FollowActor.IsValid();
 	}
 
+	void Reset()
+	{
+		LeaderActor = nullptr;
+		FollowActor = nullptr;
+		HeightOffset = 0.f;
+		ElipsedTime = 0.f;
+		Duration = 0.1f;
+
+		LeaderMontageInstanceId = NAME_None;
+		FollowMontageInstanceId = NAME_None;
+		
+		State = EKMFollowerMovementStateType::None;
+
+		StartWorldTransform = FTransform::Identity;
+		OffsetTransform = FTransform::Identity;
+	}
+
 	EKMFollowerMovementStateType State = EKMFollowerMovementStateType::None;
 	
-	FTransform StartWorldTransform;
-	FTransform OffsetTransform;
+	FTransform StartWorldTransform = FTransform::Identity;
+	FTransform OffsetTransform = FTransform::Identity;
+	FTransform LatestRootWorldTransform = FTransform::Identity;
 
 	FName LeaderMontageInstanceId = NAME_None;
 	FName FollowMontageInstanceId = NAME_None;

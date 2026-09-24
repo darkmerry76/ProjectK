@@ -78,7 +78,7 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 		return;
 	}
 
-	if (bIsOnce && hitContext->HitCount > 0)
+	if (bIsOnce && hitContext->HitResults.Num() > 0)
 	{
 		return;
 	}
@@ -96,11 +96,13 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 	}
 
 	TWeakPtr<FKMSkillInstance> latestSkillInstance = nullptr;
+
 	if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
 	{
 		if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(martialArtsData->GetAbility()))
 		{
 			latestSkillInstance = abilitySkill->GetSkillInstance();
+			abilitySkill->ClearHitResults();
 		}
 		else if (UKMAbilityEffect* abilityEffect = Cast<UKMAbilityEffect>(martialArtsData->GetAbility()))
 		{
@@ -118,22 +120,20 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 	FTransform finalTransform;
 	GetFinalTransform(ownerComponent, finalTransform);
 
-	if (HitTag != NAME_None)
-	{
-		HitTag = HitTag;
-	}
-
-	int32 hitCount = 0;
+	TArray<FHitResult> hitResults;
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		hitCount = ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, HitTag);
+		ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, hitResults);
 	}
 	else
 	{
-		hitCount = ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, HitTag);
+		ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, hitResults);
 	}
-
-	hitContext->HitCount += hitCount;
+	
+	if (!hitResults.IsEmpty() && bIsAppendSkillHitResult)
+	{
+		hitContext->HitResults.Append(hitResults);
+	}
 	hitContext->PreviousTransform = finalTransform;
 }
 
@@ -161,12 +161,27 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSe
 	}
 	
 	AActor* ownerActor = meshComp->GetOwner();
-	Context.Remove(ownerActor);
 
 	if (bIsHitCheckerClear)
 	{
 		HitCheckClear(ownerActor);
 	}
+
+	if (FKMAnimNotifyState_Hit_Context* hitContext = Context.Find(ownerActor))
+	{
+		if (!hitContext->HitResults.IsEmpty())
+		{
+			if (const FKMMartialArtsSkillContextData* martialArtsData = eventReference.GetContextData<FKMMartialArtsSkillContextData>())
+			{
+				if (UKMAbilitySkill* abilitySkill = Cast<UKMAbilitySkill>(martialArtsData->GetAbility()))
+				{
+					abilitySkill->AppendHitResult(hitContext->HitResults);
+				}
+			}
+		}
+	}
+
+	Context.Remove(ownerActor);
 }
 
 void UKMAnimNotifyState_Hit::NotifyEndEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)

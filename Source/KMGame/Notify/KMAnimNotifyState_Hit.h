@@ -21,7 +21,7 @@ struct FKMAnimNotifyState_Hit_Context
 	FTransform PreviousTransform;
 
 	UPROPERTY()
-	int32 HitCount = 0;
+	TArray<FHitResult> HitResults;
 
 	UPROPERTY()
 	float ElapsedTime = 0.f;
@@ -45,7 +45,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="HitTransform"))
 	FName HitTag = NAME_None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="HitTag"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="OnlyHitTest", meta=(AllowPrivateAccess=true, DisplayAfter="HitTag"))
+	bool bIsOnlyHitTest = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="AppendSkillHitResult", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOnlyHitTest"))
+	bool bIsAppendSkillHitResult = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="bIsAppendSkillHitResult"))
 	FName SocketName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="SocketName"))

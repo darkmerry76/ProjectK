@@ -1,6 +1,7 @@
 ﻿#include "KMCameraActorSpringArm.h"
 #include "KMSpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 
 AKMCameraActorSpringArm::AKMCameraActorSpringArm(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -22,6 +23,13 @@ void AKMCameraActorSpringArm::Tick(float deltaTime)
 
 	if (TargetActor.IsValid())
 	{
-		SetActorLocation(TargetActor->GetActorLocation());
+		if (AKMCharacter* targetCharacter = Cast<AKMCharacter>(TargetActor))
+		{
+			SetActorLocation(targetCharacter->GetCameraTarget()->GetComponentLocation());
+		}
+		else
+		{
+			SetActorLocation(TargetActor->GetActorLocation());
+		}
 	}
 }

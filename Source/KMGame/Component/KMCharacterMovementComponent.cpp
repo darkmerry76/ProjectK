@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
+#include "GameActor/Pawn/Character/KMCharacterBeast.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Util/KMUtil.h"
 
@@ -896,17 +897,38 @@ void UKMCharacterMovementComponent::StopFollowActor(AActor* followActor, float d
 	FollowerMovementData.Duration = duration;
 	FollowerMovementData.ElipsedTime = 0.f;
 
-	if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+	if (AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor))
 	{
-		if (UKMCapsuleComponent* capsuleComponent = Cast<UKMCapsuleComponent>(followerCharacter->GetCapsuleComponent()))
+		if (UKMCapsuleComponent* leaderCapsuleComponent = Cast<UKMCapsuleComponent>(leaderCharacter->GetCapsuleComponent()))
 		{
-			capsuleComponent->RevertOrigin();	
+			leaderCapsuleComponent->RevertOrigin();	
 		}
 		
+		if (UKMSkeletalMeshComponent* leaderSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(leaderCharacter->GetMesh()))
+		{
+			leaderSkeletalMeshComponent->RevertOriginTransform();
+		}
+	}
+
+	if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+	{
+		followerCharacter->SetActorLocation(FVector(FollowerMovementData.LatestRootWorldTransform.GetLocation().X, FollowerMovementData.LatestRootWorldTransform.GetLocation().Y, followerCharacter->GetActorLocation().Z));
 		if (UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance()))
 		{
 			followerAnimInstance->SetStopOffsetTransform();
 		}
+
+		if (UKMCapsuleComponent* followerCapsuleComponent = Cast<UKMCapsuleComponent>(followerCharacter->GetCapsuleComponent()))
+		{
+			followerCapsuleComponent->RevertOrigin();
+		}
+
+		if (UKMSkeletalMeshComponent* followerSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(followerCharacter->GetMesh()))
+		{
+			followerSkeletalMeshComponent->RevertOriginTransform();
+		}
+		
+		FollowerMovementData.Reset();
 		followerCharacter->SetAnimRootMotionTranslationScale(1.f);
 	}
 }
@@ -917,9 +939,30 @@ void UKMCharacterMovementComponent::MoveFollowProcessing(float deltaTime, int32 
 	{
 		return;
 	}
+	
 	if (FollowerMovementData.State == EKMFollowerMovementStateType::Paried)
 	{
 		FollowerMovementData.FollowActor->SetActorLocation(FVector(FollowerMovementData.LeaderActor->GetActorLocation().X, FollowerMovementData.LeaderActor->GetActorLocation().Y, FollowerMovementData.FollowActor->GetActorLocation().Z));
 		FollowerMovementData.FollowActor->SetActorRotation((FollowerMovementData.LeaderActor->GetActorForwardVector() * -1.f).Rotation());
+
+		if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+		{
+			FollowerMovementData.LatestRootWorldTransform = followerCharacter->GetMesh()->GetSocketTransform(TEXT("Root"));
+		}
 	}
+	
+	else if (FollowerMovementData.State == EKMFollowerMovementStateType::Stoped)
+	{
+		if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
+		{
+			if (UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance()))
+			{
+				//followerCharacter->SetActorLocation(FVector(FollowerMovementData.LatestRootWorldTransform.GetLocation().X, FollowerMovementData.LatestRootWorldTransform.GetLocation().Y, followerCharacter->GetActorLocation().Z));
+				//FollowerMovementData.Reset();
+				//followerCharacter->SetAnimRootMotionTranslationScale(1.f);
+			}
+		}
+	}
+
+	FollowerMovementData.ElipsedTime += deltaTime;
 }

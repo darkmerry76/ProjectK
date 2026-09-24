@@ -401,9 +401,9 @@ void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientatio
 	}
 }
 
-int32 UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
+bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -414,34 +414,34 @@ int32 UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adju
 		actorClassFilter = AActor::StaticClass();
 	}
 	
-	TArray<FHitResult> hitResults;
+	
 	FCollisionQueryParams queryParams;
 	if (OwnerActor.IsValid())
 	{
 		queryParams.AddIgnoredActor(OwnerActor.Get());
 	}
 
-	int32 hitCount = 0;
-	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),
+	outHitResults.Empty();
+	if (GetWorld()->SweepMultiByObjectType(outHitResults,startOrientationTransform.GetLocation(),
 	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
 		if (bOnce)
 		{
-			ResolveNearestHitResult(endOrientationTransform, hitResults);
+			ResolveNearestHitResult(endOrientationTransform, outHitResults);
 		}
-		if (!hitResults.IsEmpty())
+		if (!outHitResults.IsEmpty() && !bOnlyHitTest)
 		{
-			hitCount = HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
+			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag);
 		}
 	}
 	
-	return hitCount;
+	return !outHitResults.IsEmpty();
 }
 
-int32 UKMGameObjectInstance::SphereHitImpact(
+bool UKMGameObjectInstance::SphereHitImpact(
 	const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, const FName& hitTag)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -451,8 +451,7 @@ int32 UKMGameObjectInstance::SphereHitImpact(
 	{
 		actorClassFilter = AActor::StaticClass();
 	}
-
-	TArray<FHitResult> hitResults;
+	
 	FCollisionQueryParams queryParams;
 	if (OwnerActor.IsValid())
 	{
@@ -460,22 +459,21 @@ int32 UKMGameObjectInstance::SphereHitImpact(
 	}
 
 	//DrawDebugSphere(GetWorld(), endOrientationTransform.GetLocation(), endOrientationTransform.GetScale3D().X * 100.f, 32, FColor::White, false, -1.f, 0, 2);
-
-	int32 hitCount = 0;
-	if (GetWorld()->SweepMultiByObjectType(hitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
+	outHitResults.Empty();
+	if (GetWorld()->SweepMultiByObjectType(outHitResults,startOrientationTransform.GetLocation(),endOrientationTransform.GetLocation(),
 	FQuat::Identity,objectTypeQuery, FCollisionShape::MakeSphere(endOrientationTransform.GetScale3D().X * 100.f), queryParams))
 	{
 		if (bOnce)
 		{
-			ResolveNearestHitResult(endOrientationTransform, hitResults);
+			ResolveNearestHitResult(endOrientationTransform, outHitResults);
 		}
-		if (!hitResults.IsEmpty())
+		if (!outHitResults.IsEmpty() && !bOnlyHitTest)
 		{
-			hitCount = HitCollections(adjustSkillInstance, hitResults, actorClassFilter, hitTag);
+			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag);
 		}
 	}
 
-	return hitCount;
+	return !outHitResults.IsEmpty();
 }
 
 void UKMGameObjectInstance::OnStatChange(EKMStatFactorType factorType, float prevValue, float newValue)
