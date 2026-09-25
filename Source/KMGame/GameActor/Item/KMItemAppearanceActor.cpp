@@ -222,7 +222,7 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 
 	if (UKMCharacterInstance* ownerCharacterInstance = GetCharacterInstance())
 	{
-		ownerCharacterInstance->HitCheckClear();
+		ownerCharacterInstance->HitCheckClear(TEXT("default"));
 	}
 	
 	if (IsValid(ChainMesh))
@@ -254,7 +254,7 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 			bIsCollisionCheck = false;
 			if (weakOwnerCharacterInstance.IsValid())
 			{
-				weakOwnerCharacterInstance->HitCheckClear();
+				weakOwnerCharacterInstance->HitCheckClear(TEXT("default"));
 			}
 			break;
 		default:break;
@@ -366,7 +366,7 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 				TArray<FHitResult> hitResults;
 				ownerCharacterInstance->BoxHitImpact(ownerCharacterInstance->GetSkillHandler()->GetLatestActiveSkillInstance(),
 					PreviousTransform, socketTransform,
-					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false, false, NAME_None, hitResults);
+					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false, false, NAME_None, TEXT("default"), hitResults);
 				PreviousTransform = socketTransform;
 			}		
 		}

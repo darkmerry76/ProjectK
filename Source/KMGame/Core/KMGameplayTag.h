@@ -65,6 +65,8 @@ public:
 	static const FGameplayTag State_Taken_Tag;
 	static const FGameplayTag State_Take_Weapon_Knife_Tag;
 	static const FGameplayTag State_Taken_Weapon_Knife_Tag;
+	static const FGameplayTag State_Grab_Tag;
+	static const FGameplayTag State_Grabbed_Tag;
 	
 	static const FGameplayTag State_Immune_Tag;
 	static const FGameplayTag State_Immune_Abnormal_Hit_Tag;

@@ -133,7 +133,9 @@ public:
 protected:
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
 	TSharedPtr<FKMSkillInstance> UseInteractionSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
-	
+
+	void WriteAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance);
+	void RemoveAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance);
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	void OnRemoveAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
 	

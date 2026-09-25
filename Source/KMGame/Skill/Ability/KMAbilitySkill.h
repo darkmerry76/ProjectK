@@ -23,6 +23,9 @@ public:
 	float DirectionWeight = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bUsedHitResult = false;
+	
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FHitResult> HitResults;
 
 protected:

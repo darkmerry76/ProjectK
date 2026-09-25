@@ -1047,6 +1047,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMGameObjectInst
 	PendingNewAbilities.Emplace(newSkillInstance);
 	newSkillInstance->Init();
 
+	WriteAbilityGameplayTags(newSkillInstance);
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Skill_Start_Tag);
 
 	return newSkillInstance;
@@ -1265,6 +1266,7 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 	
 	PendingNewAbilities.Emplace(newSkillEffectInstance);
 	newSkillEffectInstance->Init();
+	WriteAbilityGameplayTags(newSkillEffectInstance);
 	return newSkillEffectInstance;
 }
 
@@ -1324,6 +1326,7 @@ bool UKMSkillHandler::UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& a
 	if (abilityInstance->IsComplete())
 	{
 		abilityInstance->Leave();
+		RemoveAbilityGameplayTags(abilityInstance);
 		OnRemoveAbilityInstance(abilityInstance);
 		return false;
 	}
@@ -1390,11 +1393,13 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 	}
 }
 
-void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
+void UKMSkillHandler::WriteAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
-	AbilityEvents.FindOrAdd(abilityInstance);
-	
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
+	if (!IsValid(ownerGameObjectInstance))
+	{
+		return;
+	}
 	if (abilityInstance->IsA<FKMSkillInstance>())
 	{
 		TSharedPtr<FKMSkillInstance> skillInstance = StaticCastSharedPtr<FKMSkillInstance>(abilityInstance);
@@ -1402,7 +1407,6 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerGameObjectInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill start:"));
 	}
 	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
@@ -1411,13 +1415,11 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 		{
 			ownerGameObjectInstance->AddGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect start:"));
 	}
 }
 
-void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
+void UKMSkillHandler::RemoveAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
-	AbilityEvents.Remove(abilityInstance);
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
 	if (!IsValid(ownerGameObjectInstance))
 	{
@@ -1431,7 +1433,6 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerGameObjectInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
-		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill end:"));
 	}
 	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
 	{
@@ -1440,6 +1441,44 @@ void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase>
 		{
 			ownerGameObjectInstance->RemoveGameplayTag(FGameplayTag::RequestGameplayTag(tag));
 		}
+	}
+}
+
+void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
+{
+	AbilityEvents.FindOrAdd(abilityInstance);
+
+	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
+	if (!IsValid(ownerGameObjectInstance))
+	{
+		return;
+	}
+	if (abilityInstance->IsA<FKMSkillInstance>())
+	{
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill start:"));
+	}
+	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
+	{
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect start:"));
+	}
+}
+
+void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
+{
+	AbilityEvents.Remove(abilityInstance);
+
+	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
+	if (!IsValid(ownerGameObjectInstance))
+	{
+		return;
+	}
+	
+	if (abilityInstance->IsA<FKMSkillInstance>())
+	{
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("skill end:"));
+	}
+	else if (abilityInstance->IsA<FKMSkillEffectInstance>())
+	{
 		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(ownerGameObjectInstance, abilityInstance, TEXT("effect end:"));
 	}
 }

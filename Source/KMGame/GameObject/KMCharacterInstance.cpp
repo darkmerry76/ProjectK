@@ -416,9 +416,9 @@ void UKMCharacterInstance::StartForceMove(const float& newDirection)
 }
 
 bool UKMCharacterInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
-	AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
+	AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag, const FName hitCheckLayerId)
 {
-	return Super::HitCollection(adjustSkillInstance, hitActor, hitLocation, hitNormal, hitTag);
+	return Super::HitCollection(adjustSkillInstance, hitActor, hitLocation, hitNormal, hitTag, hitCheckLayerId);
 }
 
 TSubclassOf<UCameraShakeBase> UKMCharacterInstance::GetCameraShakeByPowerType(EKMDamagePowerType powerType) const

@@ -1,6 +1,7 @@
 #include "KMAbilitySkill.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
+#include "System/KMTargetSubsystem.h"
 #include "Util/KMUtil.h"
 
 UKMAbilitySkill::UKMAbilitySkill(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -48,6 +49,25 @@ void UKMAbilitySkill::Deactivate(bool bCancel)
 
 	if (SkillInstance.IsValid() && !bCancel && EndingTag.IsValid())
 	{
+		if (bUsedHitResult && SkillInstance.IsValid())
+		{
+			if (SkillInstance.Pin()->Target.IsValid())
+			{
+				SkillInstance.Pin()->Target->Targets.Empty();
+			}
+			
+			if (!HitResults.IsEmpty() && SkillInstance.Pin()->Target.IsValid())
+			{
+				if (AKMCharacter* targetCharacter = Cast<AKMCharacter>(HitResults[0].GetActor()))
+				{
+					if (UKMGameObjectInstance* targetGameObjectInstance = targetCharacter->GetGameObjectInstance())
+					{
+						SkillInstance.Pin()->Target->Targets.Emplace(targetGameObjectInstance->GetId());
+					}
+				}
+			}
+		}
+		
 		skillHandler->TransitionTechniqueSkill(SkillInstance.Pin(), EndingTag);
 	}
 

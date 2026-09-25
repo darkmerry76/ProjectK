@@ -110,7 +110,7 @@ public:
 
 protected:
 	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
-		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag) override;
+		AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag, const FName hitCheckLayerId = TEXT("default")) override;
 	
 	virtual void OnAddGameplayTag_Implementation(const FGameplayTag& newTag) override;
 	virtual void OnRemoveGameplayTag_Implementation(const FGameplayTag& removedTag) override;

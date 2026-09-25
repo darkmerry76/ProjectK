@@ -27,6 +27,15 @@ struct FKMAnimNotifyState_Hit_Context
 	float ElapsedTime = 0.f;
 };
 
+UENUM(Blueprintable, BlueprintType)
+enum class EKMHitUpdateType : uint8
+{
+	ALWAYS,
+	BEGIN,
+	END,
+	BEGIN_END,
+};
+
 UCLASS(Blueprintable, BlueprintType, DisplayName="[KM] Hit")
 class KMGAME_API UKMAnimNotifyState_Hit : public UKMAnimNotifyState
 {
@@ -45,10 +54,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="HitTransform"))
 	FName HitTag = NAME_None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="OnlyHitTest", meta=(AllowPrivateAccess=true, DisplayAfter="HitTag"))
-	bool bIsOnlyHitTest = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AllowPrivateAccess=true, DisplayAfter="HitTag"))
+	FName HitCheckLayerId = TEXT("default");
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="AppendSkillHitResult", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOnlyHitTest"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="OnlyHitTest", meta=(AllowPrivateAccess=true, DisplayAfter="HitCheckLayerId"))
+	bool bIsOnlyHitTest = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="HitUpdateType", meta=(AllowPrivateAccess=true, DisplayAfter="bIsOnlyHitTest"))
+    EKMHitUpdateType HitUpdateType = EKMHitUpdateType::ALWAYS;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, DisplayName="AppendSkillHitResult", meta=(AllowPrivateAccess=true, DisplayAfter="HitUpdateType"))
 	bool bIsAppendSkillHitResult = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AnimNotify, meta=(AnimNotifyBoneName=true, AllowPrivateAccess=true, DisplayAfter="bIsAppendSkillHitResult"))
@@ -82,6 +97,10 @@ protected:
 	virtual void NotifyBeginEx(class AActor* actor, class UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference) override;
 	virtual void NotifyEndEx(class AActor* actor, class UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference) override;
+
+	void OnNotifyBegin(class AActor* actor, const USceneComponent* sceneComponent, const FAnimNotifyEventReference& eventReference);
+	void OnNotifyTick(const class USceneComponent* sceneComponent, float frameDeltaTime, const FAnimNotifyEventReference& eventReference);
+	void OnNotifyEnd(class AActor* actor, const USceneComponent* sceneComponent, const FAnimNotifyEventReference& eventReference);
 
 protected:
 	virtual FString GetNotifyName_Implementation() const override;

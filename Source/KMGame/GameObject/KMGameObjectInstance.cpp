@@ -112,15 +112,7 @@ AActor* UKMGameObjectInstance::GetOwnerActor() const
 
 void UKMGameObjectInstance::AddGameplayTag(FGameplayTag newTag)
 {
-	if (newTag == FKMGameplayTagName::State_Carried_Tag)
-	{
-		GameplayTagContainer.AddTag(newTag);
-	}
-	else
-	{
-		GameplayTagContainer.AddTag(newTag);
-	}
-
+	GameplayTagContainer.AddTag(newTag);
 	OnAddGameplayTag(newTag);
 }
 
@@ -130,15 +122,7 @@ void UKMGameObjectInstance::OnAddGameplayTag_Implementation(const FGameplayTag& 
 
 void UKMGameObjectInstance::RemoveGameplayTag(FGameplayTag removedTag)
 {
-	if (removedTag == FKMGameplayTagName::State_Carried_Tag)
-	{
-		GameplayTagContainer.RemoveTag(removedTag);
-	}
-	else
-	{
-		GameplayTagContainer.RemoveTag(removedTag);
-	}
-
+	GameplayTagContainer.RemoveTag(removedTag);
 	OnRemoveGameplayTag(removedTag);
 }
 
@@ -166,9 +150,30 @@ UKMStatModifierBase* UKMGameObjectInstance::GetStatModifier() const
 	return StatModifier;
 }
 
-void UKMGameObjectInstance::HitCheckClear()
+void UKMGameObjectInstance::AddHitCheck(const FName layerId, AActor* newHitActor)
 {
-	HitCheckData.Actors.Empty();	
+	HitCheckData.FindOrAdd(layerId).Actors.FindOrAdd(newHitActor);
+}
+
+void UKMGameObjectInstance::HitCheckClear(const FName layerId)
+{
+	FName finalLayerId = layerId;
+	if (finalLayerId == NAME_None)
+	{
+		finalLayerId = TEXT("default");
+	}
+	
+	HitCheckData.Remove(finalLayerId);
+}
+
+bool UKMGameObjectInstance::HasHitCheck(const FName layerId, AActor* hitActor)
+{
+	const FKMHitCheckData* hitCheckData = HitCheckData.Find(layerId);
+	if (!hitCheckData)
+	{
+		return false;
+	}
+	return hitCheckData->Actors.Contains(hitActor);
 }
 
 bool UKMGameObjectInstance::IsDead() const
@@ -258,7 +263,7 @@ bool UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstanc
 	return !skillEffectInstances.IsEmpty();
 }
 
-bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, AActor* hitActor, const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag)
+bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, AActor* hitActor, const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag, const FName hitCheckLayer)
 {
 	if (OwnerActor == hitActor)
 	{
@@ -270,7 +275,7 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 		return false;
 	}
 
-	if (HitCheckData.Actors.Contains(hitActor))
+	if (HasHitCheck(hitCheckLayer, hitActor))
 	{
 		return false;
 	}
@@ -289,7 +294,7 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 		return false;
 	}
 
-	HitCheckData.Actors.FindOrAdd(hitActor);
+	AddHitCheck(hitCheckLayer, hitActor);
 
 	Inflict(hitGameObjectInstance);
 	
@@ -308,7 +313,7 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 	return hitGameObjectInstance->Hit(this, duplicatSkillInstance, hitLocation, hitTag);
 }
 
-int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag)
+int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag, const FName hitCheckLayerId)
 {
 	int32 hitCount = 0;
 	for (const FHitResult& hitResult : hitResults)
@@ -319,7 +324,7 @@ int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& ad
 			{
 				continue;
 			}
-			if (HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag))
+			if (HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag, hitCheckLayerId))
 			{
 				hitCount++;
 			}
@@ -338,9 +343,9 @@ int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& ad
 	return hitCount;
 }
 
-void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientationTransform, TArray<FHitResult>& hitResults)
+void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientationTransform, UClass* actorClassFilter, TArray<FHitResult>& hitResults)
 {
-	if (hitResults.Num() <= 1)
+	if (hitResults.IsEmpty())
 	{
 		return;
 	}
@@ -357,6 +362,11 @@ void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientatio
 	for (int32 i = 0; i < hitResults.Num(); ++i)
 	{
 		const FHitResult& hitResult = hitResults[i];
+
+		if (!IsValid(hitResult.GetActor()) || !hitResult.GetActor()->IsA(actorClassFilter))
+		{
+			continue;
+		}
 
 		FVector toTarget = hitResult.ImpactPoint - origin;
 		const float distance = toTarget.Size();
@@ -395,15 +405,18 @@ void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientatio
 	if (bestIndex != INDEX_NONE)
 	{
 		const FHitResult bestHitResult = hitResults[bestIndex];
-
 		hitResults.Reset(1);
 		hitResults.Add(bestHitResult);
+	}
+	else
+	{
+		hitResults.Empty();
 	}
 }
 
 bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, const FName hitCheckLayerId, TArray<FHitResult>& outHitResults)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -427,11 +440,11 @@ bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjus
 	{
 		if (bOnce)
 		{
-			ResolveNearestHitResult(endOrientationTransform, outHitResults);
+			ResolveNearestHitResult(endOrientationTransform, actorClassFilter, outHitResults);
 		}
 		if (!outHitResults.IsEmpty() && !bOnlyHitTest)
 		{
-			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag);
+			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag, hitCheckLayerId);
 		}
 	}
 	
@@ -441,7 +454,7 @@ bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjus
 bool UKMGameObjectInstance::SphereHitImpact(
 	const TWeakPtr<FKMSkillInstance>& adjustSkillInstance,
 	const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, const FName hitCheckLayerId, TArray<FHitResult>& outHitResults)
 {
 	if (objectTypeQuery.IsEmpty())
 	{
@@ -465,11 +478,11 @@ bool UKMGameObjectInstance::SphereHitImpact(
 	{
 		if (bOnce)
 		{
-			ResolveNearestHitResult(endOrientationTransform, outHitResults);
+			ResolveNearestHitResult(endOrientationTransform, actorClassFilter, outHitResults);
 		}
 		if (!outHitResults.IsEmpty() && !bOnlyHitTest)
 		{
-			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag);
+			HitCollections(adjustSkillInstance, outHitResults, actorClassFilter, hitTag, hitCheckLayerId);
 		}
 	}
 

@@ -92,7 +92,13 @@ public:
 	class UKMStatModifierBase* GetStatModifier() const;
 
 	UFUNCTION(BlueprintCallable)
-	void HitCheckClear();
+	void AddHitCheck(const FName layerId, class AActor* newHitActor);
+
+	UFUNCTION(BlueprintCallable)
+	void HitCheckClear(const FName layerId);
+
+	UFUNCTION(BlueprintPure)
+	bool HasHitCheck(const FName layerId, class AActor* hitActor);
 	
 	UFUNCTION(BlueprintCallable)
 	void Stiff(float duration, bool bReset = false);
@@ -137,12 +143,12 @@ public:
 
 	bool BoxHitImpact(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, const FName hitCheckLayerId, TArray<FHitResult>& outHitResults);
 
 	bool SphereHitImpact(
 		const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance,
 		const FTransform& startOrientationTransform, const FTransform& endOrientationTransform,
-		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, TArray<FHitResult>& outHitResults);
+		TArray<TEnumAsByte<EObjectTypeQuery>> objectTypeQuery, UClass* actorClassFilter, bool bOnce, bool bOnlyHitTest, const FName& hitTag, const FName hitCheckLayerId, TArray<FHitResult>& outHitResults);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Inflict(class UKMGameObjectInstance* victimGameObjectInstance);
@@ -246,14 +252,14 @@ protected:
 
 	virtual void ShowDamage(EKMStatFactorType factorType, int32 damage);
 
-	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag);
-	int32 HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag);
+	virtual bool HitCollection(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, AActor* hitActor,const FVector& hitLocation, const FVector& hitNormal, const FName& hitTag, const FName hitCheckLayerId = TEXT("default"));
+	int32 HitCollections(const TWeakPtr<class FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag, const FName hitCheckLayerId = TEXT("default"));
 	
 	virtual void Tick(float deltaSeconds) override;
 
 	void OnStiffRelease();
 
-	void ResolveNearestHitResult(const FTransform& orientationTransform, TArray<FHitResult>& hitResults);
+	void ResolveNearestHitResult(const FTransform& orientationTransform, UClass* actorClassFilter, TArray<FHitResult>& hitResults);
 
 protected:
 	FKMGameplayTagContainer GameplayTagContainer;
@@ -262,7 +268,7 @@ protected:
 	FKMInflictDelegate InflictDelegate;
 	FKMCommbatMessageDelegate CombatMessageDelegate;
 	
-	FKMHitCheckData HitCheckData;
+	TMap<FName, FKMHitCheckData> HitCheckData;
 
 	FTimerHandle StiffTimerHandle;
 

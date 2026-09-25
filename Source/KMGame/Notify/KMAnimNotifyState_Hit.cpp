@@ -44,23 +44,34 @@ void UKMAnimNotifyState_Hit::NotifyBegin(USkeletalMeshComponent* meshComp, UAnim
 {
 	if (IsValid(meshComp))
 	{
-		HitCheckClear(meshComp->GetOwner());
-		
-		FTransform finalTransform;
-		GetFinalTransform(meshComp, finalTransform);
-		Context.FindOrAdd(meshComp->GetOwner()).PreviousTransform = finalTransform;
+		OnNotifyBegin(meshComp->GetOwner(), meshComp, eventReference);
 	}
 }
 
 void UKMAnimNotifyState_Hit::NotifyBeginEx(AActor* actor, UEMMartialArts* martialArts, float totalDuration, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(actor))
+	OnNotifyBegin(actor, actor->GetRootComponent(), eventReference);
+}
+
+void UKMAnimNotifyState_Hit::OnNotifyBegin(AActor* actor, const USceneComponent* sceneComponent, const FAnimNotifyEventReference& eventReference)
+{
+	if (!IsValid(actor))
+	{
+		return;
+	}
+
+	if (bIsHitCheckerClear)
 	{
 		HitCheckClear(actor);
-		
-		FTransform finalTransform;
-		GetFinalTransform(actor->GetRootComponent(), finalTransform);
-		Context.FindOrAdd(actor).PreviousTransform = finalTransform;
+	}
+	
+	FTransform finalTransform;
+	GetFinalTransform(actor->GetRootComponent(), finalTransform);
+	Context.FindOrAdd(actor).PreviousTransform = finalTransform;
+
+	if (HitUpdateType == EKMHitUpdateType::BEGIN || HitUpdateType == EKMHitUpdateType::BEGIN_END)
+	{
+		DoHit(sceneComponent, eventReference);
 	}
 }
 
@@ -123,33 +134,44 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 	TArray<FHitResult> hitResults;
 	if (CollisonType == EKMCollisonType::Box)
 	{
-		ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, hitResults);
+		ownerGameObjectInstance->BoxHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, HitCheckLayerId, hitResults);
 	}
 	else
 	{
-		ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, hitResults);
+		ownerGameObjectInstance->SphereHitImpact(latestSkillInstance, hitContext->PreviousTransform, finalTransform, ObjectTypeQuery, ActorClassFilter, bIsOnce, bIsOnlyHitTest, HitTag, HitCheckLayerId, hitResults);
 	}
 	
 	if (!hitResults.IsEmpty() && bIsAppendSkillHitResult)
 	{
 		hitContext->HitResults.Append(hitResults);
 	}
+	
 	hitContext->PreviousTransform = finalTransform;
 }
 
 void UKMAnimNotifyState_Hit::NotifyTick(USkeletalMeshComponent* meshComp, UAnimSequenceBase* animation, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(meshComp) && bIsEnable)
-	{
-		DoHit(meshComp, eventReference);
-	}
+	OnNotifyTick(meshComp, frameDeltaTime, eventReference);
 }
 
 void UKMAnimNotifyState_Hit::NotifyTickEx(class AActor* actor, class UEMMartialArts* martialArts, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
 {
-	if (IsValid(actor) && bIsEnable)
+	if (IsValid(actor))
 	{
-		DoHit(actor->GetRootComponent(), eventReference);
+		OnNotifyTick(actor->GetRootComponent(), frameDeltaTime, eventReference);
+	}
+}
+
+void UKMAnimNotifyState_Hit::OnNotifyTick(const USceneComponent* sceneComponent, float frameDeltaTime, const FAnimNotifyEventReference& eventReference)
+{
+	if (!bIsEnable || !IsValid(sceneComponent))
+	{
+		return;
+	}
+
+	if (HitUpdateType == EKMHitUpdateType::ALWAYS)
+	{
+		DoHit(sceneComponent, eventReference);
 	}
 }
 
@@ -162,12 +184,25 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSe
 	
 	AActor* ownerActor = meshComp->GetOwner();
 
-	if (bIsHitCheckerClear)
-	{
-		HitCheckClear(ownerActor);
-	}
+	OnNotifyEnd(ownerActor, meshComp, eventReference);
+}
 
-	if (FKMAnimNotifyState_Hit_Context* hitContext = Context.Find(ownerActor))
+void UKMAnimNotifyState_Hit::NotifyEndEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
+{
+	if (IsValid(actor))
+	{
+		OnNotifyEnd(actor, actor->GetRootComponent(), eventReference);
+	}
+}
+
+void UKMAnimNotifyState_Hit::OnNotifyEnd(AActor* actor, const USceneComponent* sceneComponent, const FAnimNotifyEventReference& eventReference)
+{
+	if (HitUpdateType == EKMHitUpdateType::END || HitUpdateType == EKMHitUpdateType::BEGIN_END)
+	{
+		DoHit(sceneComponent, eventReference);
+	}
+	
+	if (FKMAnimNotifyState_Hit_Context* hitContext = Context.Find(actor))
 	{
 		if (!hitContext->HitResults.IsEmpty())
 		{
@@ -181,17 +216,7 @@ void UKMAnimNotifyState_Hit::NotifyEnd(USkeletalMeshComponent* meshComp, UAnimSe
 		}
 	}
 
-	Context.Remove(ownerActor);
-}
-
-void UKMAnimNotifyState_Hit::NotifyEndEx(AActor* actor, UEMMartialArts* martialArts, const FAnimNotifyEventReference& eventReference)
-{
-	Context.Remove(actor);
-
-	if (bIsHitCheckerClear)
-	{
-		HitCheckClear(actor);
-	}
+	Context.Remove(actor);	
 }
 
 void UKMAnimNotifyState_Hit::HitCheckClear(AActor* actor)
@@ -200,7 +225,7 @@ void UKMAnimNotifyState_Hit::HitCheckClear(AActor* actor)
 	{
 		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())
 		{
-			ownerGameObjectInstance->HitCheckClear();
+			ownerGameObjectInstance->HitCheckClear(HitCheckLayerId);
 		}
 	}
 }
