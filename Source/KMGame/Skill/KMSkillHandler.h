@@ -150,8 +150,10 @@ protected:
 	void RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityInstances, bool bCancel = false);
 	
 	TSharedPtr<FKMSkillEffectInstance> ApplyEffectInternal(const TSharedPtr<class FKMSkillInstance>& skillInstance, const FName& effectName);
+	bool FinalizeApplyEffect(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance);
 	
 	TSharedPtr<FKMSkillInstance> UseSkillInternal(class UKMGameObjectInstance* ownerGameObjectInstance, const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
+	bool FinalizeUseSkill(const TSharedPtr<FKMSkillInstance>& newSkillInstance);
 
 	bool UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& abilityInstance, float deltaSeconds);
 	

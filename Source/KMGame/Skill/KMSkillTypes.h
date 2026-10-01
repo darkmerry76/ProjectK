@@ -198,6 +198,7 @@ public:
 	FKMSkillKey SkillKey;
 	int32 Caster = INDEX_NONE;
 	TSharedPtr<class FKMLockOnCluster> Target;
+	TSharedPtr<class FKMLockOnCluster> AdjustTarget;
 	TMap<FName, FName> Tags;
 
 protected:

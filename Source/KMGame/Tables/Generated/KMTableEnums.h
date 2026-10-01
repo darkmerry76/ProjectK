@@ -271,7 +271,4 @@ enum class EKMTargetLockonType : uint8
 {
 	None = 0 , 
 	Lockon = 1 , 
-	Stand = 2 , 
-	Down = 3 , 
-	Air = 4 , 
 };

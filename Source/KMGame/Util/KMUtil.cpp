@@ -701,3 +701,10 @@ bool UKMUtil::GetPairFollowerOffsetTransform(FName boneName, const UAnimMontage*
 
 	return true;
 }
+
+void UKMUtil::SetPIEPause(bool bPause)
+{
+#if WITH_EDITOR
+	GEditor->SetPIEWorldsPaused(bPause);
+#endif
+}

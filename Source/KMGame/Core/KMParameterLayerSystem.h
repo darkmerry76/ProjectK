@@ -93,7 +93,7 @@ public:
 };
 
 UCLASS()
-class UKMParameterLayerSubsystem : public UTickableWorldSubsystem
+class UKMParameterLayerSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
@@ -101,18 +101,18 @@ public:
 	UFUNCTION(BlueprintPure, meta=(WorldContext="worldContextObject"))
 	static UKMParameterLayerSubsystem* GetParameterLayerSubsystem(const UObject* worldContextObject);
 	
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Initialize(FSubsystemCollectionBase& collection) override;
 	virtual void Deinitialize() override;
 	
 	TSharedPtr<FKMSkeletalMeshComponentParameterLayer> GetSkeletalMeshComponentLayer(class USkeletalMeshComponent* mesh);
 
 	UFUNCTION()
-	void OnComponentRemoved(UActorComponent* Component);
+	void OnComponentRemoved(UActorComponent* component);
 
-	virtual void Tick(float DeltaTime) override;
-	virtual ETickableTickType GetTickableTickType() const override;
-	virtual TStatId GetStatId() const override;
-	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
+protected:
+	void Tick(UWorld* world, ELevelTick levelTick ,float deltaTime);
+	virtual bool DoesSupportWorldType(const EWorldType::Type worldType) const override;
+	
 private:
 	TMap<TWeakObjectPtr<class USkeletalMeshComponent>, TSharedPtr<FKMSkeletalMeshComponentParameterLayer>> Systems;
 };

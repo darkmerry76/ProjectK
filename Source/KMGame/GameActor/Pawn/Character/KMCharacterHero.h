@@ -36,7 +36,7 @@ public:
 	class UInputAction* TechniqueSkillAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
-	class UInputAction* GuardAction;
+	class UInputAction* ChargeAction;
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	class UInputAction* InteractionAction;
@@ -96,8 +96,8 @@ protected:
 	void OnTachniqueSkillAction();
 	void OnTachniqueSkillAction_Release();
 
-	void OnGuardSkillAction();
-	void OnGuardSkillAction_Release();
+	void OnChargeSkillAction();
+	void OnChargeSkillAction_Release();
 
 	void OnInteractionSkillAction();
 	void OnInteractionSkillAction_Release();

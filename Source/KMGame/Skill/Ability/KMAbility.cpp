@@ -502,6 +502,10 @@ FVector UKMAbility::GetOffsetOwnerAlongTargetDirection(float offsetDistance, flo
 	}
 	
 	FVector targetToOwner = targetActor->GetActorLocation() - ownerActor->GetActorLocation();
+	if (bIgnoreZ)
+	{
+		targetToOwner.Z = 0.f;
+	}
 	targetToOwner.Normalize();
 
 	FVector result = ownerActor->GetActorLocation() + (targetToOwner * offsetDistance * weight);
@@ -520,6 +524,10 @@ FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, flo
 	}
 	
 	FVector targetToOwner = ownerActor->GetActorLocation() - targetActor->GetActorLocation();
+	if (bIgnoreZ)
+	{
+		targetToOwner.Z = 0.f;
+	}
 	targetToOwner.Normalize();
 
 	FVector result = targetActor->GetActorLocation() + (targetToOwner * offsetDistance * weight);

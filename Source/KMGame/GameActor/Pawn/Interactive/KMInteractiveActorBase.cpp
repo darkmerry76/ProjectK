@@ -174,6 +174,20 @@ void AKMInteractiveActorBase::CeilingHit(const FHitResult& hitResult)
 {
 }
 
+bool AKMInteractiveActorBase::IsAir() const
+{
+	if (UKMPawnMovementComponent* pawnMovementComponent = Cast<UKMPawnMovementComponent>(GetMovementComponent()))
+	{
+		return pawnMovementComponent->IsAir();
+	}
+	return false;
+}
+
+bool AKMInteractiveActorBase::IsLand() const
+{
+	return !IsAir();	
+}
+
 const FHitResult AKMInteractiveActorBase::GetLatestWallHitResult_Implementation() const
 {
 	return LastWallHitResult;	

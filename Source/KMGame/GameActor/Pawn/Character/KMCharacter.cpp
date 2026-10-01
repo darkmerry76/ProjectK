@@ -168,6 +168,20 @@ UKMAttachedBlendingComponent* AKMCharacter::GetAttachedBlendingComponent() const
 	return nullptr;
 }
 
+bool AKMCharacter::IsAir() const
+{
+	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		return characterMovement->IsAir();
+	}
+	return false;
+}
+
+bool AKMCharacter::IsLand() const
+{
+	return !IsAir();
+}
+
 USceneComponent* AKMCharacter::GetCameraTarget() const
 {
 	return CameraTarget;
@@ -347,15 +361,6 @@ void AKMCharacter::SetBeastPDA(const UKMBeastPDA* newBeastPDA)
 const UKMBeastPDA* AKMCharacter::GetBeastPDA() const
 {
 	return BeastPDA;
-}
-
-bool AKMCharacter::IsAir() const
-{
-	if (UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		return characterMovementComponent->IsAir();
-	}
-	return false;
 }
 
 void AKMCharacter::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)

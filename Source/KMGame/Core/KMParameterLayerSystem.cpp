@@ -295,11 +295,15 @@ UKMParameterLayerSubsystem* UKMParameterLayerSubsystem::GetParameterLayerSubsyst
 void UKMParameterLayerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	FWorldDelegates::OnWorldTickStart.AddUObject(this, &ThisClass::Tick);
 }
 
 void UKMParameterLayerSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
+
+	FWorldDelegates::OnWorldTickStart.RemoveAll(this);
 }
 
 void UKMParameterLayerSubsystem::OnComponentRemoved(UActorComponent* Component)
@@ -336,29 +340,17 @@ TSharedPtr<FKMSkeletalMeshComponentParameterLayer> UKMParameterLayerSubsystem::G
 	return newSkeletalMeshComponentParameterLayer;
 }
 
-void UKMParameterLayerSubsystem::Tick(float DeltaTime)
+void UKMParameterLayerSubsystem::Tick(UWorld* world, ELevelTick levelTick ,float deltaTime)
 {
+	if (world != GetWorld())
+	{
+		return;
+	}
+	
 	for (auto systemItr : Systems)
 	{
-		systemItr.Value->ApplyMaterialParameter();
+		//systemItr.Value->ApplyMaterialParameter();
 	}
-}
-
-ETickableTickType UKMParameterLayerSubsystem::GetTickableTickType() const
-{
-	if (GetWorld())
-	{
-		if (GetWorld()->IsEditorWorld())
-		{
-			return Super::GetTickableTickType();
-		}
-	}
-	return ETickableTickType::Never;
-}
-
-TStatId UKMParameterLayerSubsystem::GetStatId() const
-{
-	RETURN_QUICK_DECLARE_CYCLE_STAT(UKMParameterLayerSubsystem, STATGROUP_Tickables)
 }
 
 bool UKMParameterLayerSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const

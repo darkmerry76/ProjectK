@@ -120,6 +120,9 @@ public:
 
 	static struct FAnimMontageInstance* GetActiveMontageInstance(const class AKMCharacter* character);
 
+	UFUNCTION(BlueprintCallable)
+	static void SetPIEPause(bool bPause);
+
 protected:
 	static double GameElipsedStartTime;
 };

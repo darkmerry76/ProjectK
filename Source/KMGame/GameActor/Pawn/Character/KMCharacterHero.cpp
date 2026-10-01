@@ -45,8 +45,8 @@ void AKMCharacterHero::SetupPlayerInputComponent(UInputComponent* playerInputCom
 		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnTachniqueSkillAction);
 		EnhancedInputComponent->BindAction(TechniqueSkillAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnTachniqueSkillAction_Release);
 
-		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnGuardSkillAction);
-		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnGuardSkillAction_Release);
+		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnChargeSkillAction);
+		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnChargeSkillAction_Release);
 
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Started, this, &AKMCharacterHero::OnInteractionSkillAction);
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Completed, this, &AKMCharacterHero::OnInteractionSkillAction_Release);
@@ -217,14 +217,14 @@ void AKMCharacterHero::OnTachniqueSkillAction_Release()
 	GetCharacterInstance()->UseTechniqueSkill_Release();
 }
 
-void AKMCharacterHero::OnGuardSkillAction()
+void AKMCharacterHero::OnChargeSkillAction()
 {
-	GetCharacterInstance()->UseGuardSkill();
+	GetCharacterInstance()->UseChargeSkillAction();
 }
 
-void AKMCharacterHero::OnGuardSkillAction_Release()
+void AKMCharacterHero::OnChargeSkillAction_Release()
 {
-	GetCharacterInstance()->UseGuardSkill_Release();
+	GetCharacterInstance()->UseChargeSkillAction_Release();
 }
 
 void AKMCharacterHero::OnInteractionSkillAction()

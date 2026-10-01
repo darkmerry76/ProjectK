@@ -27,6 +27,7 @@ void UKMGameObjectSubsystem::Initialize()
 	Super::Initialize();
 
 	FWorldDelegates::OnPreWorldFinishDestroy.AddUObject(this, &ThisClass::OnPreWorldFinishDestroy);
+	FWorldDelegates::OnWorldTickStart.AddUObject(this, &ThisClass::Tick);
 }
 
 void UKMGameObjectSubsystem::Deinitialize()
@@ -34,6 +35,7 @@ void UKMGameObjectSubsystem::Deinitialize()
 	Super::Deinitialize();
 
 	FWorldDelegates::OnPreWorldFinishDestroy.RemoveAll(this);
+	FWorldDelegates::OnWorldTickStart.RemoveAll(this);
 }
 
 void UKMGameObjectSubsystem::InitializeActorFeatures()
@@ -203,7 +205,7 @@ int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 	if (skillKey)
 	{
 		if (const FKMTable_Skill_NormalRow* normalSkillTable = CastRow<FKMTable_Skill_NormalRow>(skillKey->TableRecord))
-		{
+		{	
 			if (normalSkillTable->ScopeType == EKMSkillScopeType::Single)
 			{
 				if (newOutCharacters.Num() > 1)
@@ -226,9 +228,14 @@ int32 UKMGameObjectSubsystem::SkillForSearchForClosestTarget(
 	return bestTargetIndex;
 }
 
-void UKMGameObjectSubsystem::Tick(float deltaTime)
+void UKMGameObjectSubsystem::Tick(UWorld* world, ELevelTick levelTick ,float deltaTime)
 {
-	float worldDeltaSeconds = GetWorld()->GetDeltaSeconds();
+	if (world != GetWorld())
+	{
+		return;
+	}
+	
+	float worldDeltaSeconds = GetWorld()->IsPaused() ? 0.f : GetWorld()->GetDeltaSeconds();
 	for (auto objectItr = GameObjectMap.CreateIterator(); objectItr; ++objectItr)
 	{
 		float timeDilation = 1.f;
@@ -299,19 +306,4 @@ int32 UKMGameObjectSubsystem::NumHero(bool bExcludeDead) const
 int32 UKMGameObjectSubsystem::NumMonster(bool bExcludeDead) const
 {
 	return NumGameObject<UKMMonsterInstance>(bExcludeDead);
-}
-
-TStatId UKMGameObjectSubsystem::GetStatId() const
-{
-	RETURN_QUICK_DECLARE_CYCLE_STAT(UKMGameObjectSubsystem, STATGROUP_Tickables)
-}
-
-ETickableTickType UKMGameObjectSubsystem::GetTickableTickType() const
-{
-	return ETickableTickType::Conditional;
-}
-
-bool UKMGameObjectSubsystem::IsTickable() const
-{
-	return !HasAnyFlags(RF_ClassDefaultObject) && !GetWorld()->IsPaused();
 }

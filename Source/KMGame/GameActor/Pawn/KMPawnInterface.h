@@ -23,6 +23,8 @@ public:
 
 	virtual class UMeshComponent* GetPlacementMeshComponent() const = 0;
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const = 0;
+	virtual bool IsAir() const = 0;
+	virtual bool IsLand() const = 0;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FTransform GetCarryOffsetTransform() const;

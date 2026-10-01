@@ -77,7 +77,7 @@ void UKMAnimInstance::PreUpdateAnimation(float deltaSeconds)
 	{
 		if (UKMCharacterInstance* characterInstance = ownerCharacter->GetCharacterInstance())
 		{
-			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag) && !characterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
+			if (!characterInstance->HasGameplayTag(FKMGameplayTagName::State_Down_Tag) && !characterInstance->HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
 			{
 				CurrentDirection = UKMUtil::FInterpToCircular(CurrentDirection, NextDirection, deltaSeconds, LerpDirectionSpeed);
 				if (PrevActorDirection != characterInstance->GetDirection())
@@ -166,7 +166,7 @@ void UKMAnimInstance::TickPairBlend(float deltaTime)
 		return;		
 	}
 
-	float blendAlpha = (FollowerMovementData.Duration < 0.0001f) ? 1.f : (FollowerMovementData.ElipsedTime / FollowerMovementData.Duration);
+	float blendAlpha = (FollowerMovementData.Duration < 0.0001f) ? 1.f : FMath::Min(1.f, FollowerMovementData.ElipsedTime / FollowerMovementData.Duration);
 
 	PairBlendInfo.OffsetTransform = FTransform::Identity;
 	if (AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor))
@@ -193,8 +193,10 @@ void UKMAnimInstance::TickPairBlend(float deltaTime)
 
 					if (blendAlpha < 1.f)
 					{
+						FTransform targetTransform = FTransform(finalLocation) * followerCharacter->GetMesh()->GetComponentTransform();
+						
 						FTransform followFinalWorldTransform;
-						followFinalWorldTransform.Blend(FollowerMovementData.StartWorldTransform, followerCharacter->GetMesh()->GetComponentTransform() * FTransform(finalLocation), blendAlpha);
+						followFinalWorldTransform.Blend(FollowerMovementData.StartWorldTransform, targetTransform, blendAlpha);
 
 						finalLocation = (followFinalWorldTransform * followerCharacter->GetMesh()->GetComponentTransform().Inverse()).GetLocation();
 					}

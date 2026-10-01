@@ -1,8 +1,10 @@
 #include "KMGameObjectInstance.h"
 
 #include "Component/KMMoveShapeComponent.h"
+#include "FSM/KMStateMachine.h"
 #include "Tables/Generated/KMTable_Object.h"
 #include "GameActor/Pawn/KMPawnInterface.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
 #include "Skill/Ability/KMAbilityEffect.h"
@@ -39,6 +41,13 @@ void UKMGameObjectInstance::BeginPlay()
 		SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
 		SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
 		SensorInstance->Init();
+	}
+
+	if (IsValid(StateMachineClass))
+	{
+		StateMachine = NewObject<UKMStateMachine>(this, StateMachineClass, TEXT("StateMachine"));
+		StateMachine->Initialize();
+		StateMachine->Start();
 	}
 	
 	LockonTarget = MakeShared<FKMLockOnCluster>(this);
@@ -132,7 +141,47 @@ void UKMGameObjectInstance::OnRemoveGameplayTag_Implementation(const FGameplayTa
 
 bool UKMGameObjectInstance::HasGameplayTag(FGameplayTag tag) const
 {
+	if (tag == FKMGameplayTagName::State_Air_Tag || tag == FKMGameplayTagName::State_Land_Tag)
+	{
+		if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+		{
+			if (pawnInterface->IsAir() && tag == FKMGameplayTagName::State_Air_Tag)
+			{
+				return true;
+			}
+			else if (pawnInterface->IsLand() && tag == FKMGameplayTagName::State_Land_Tag)
+			{
+				return true;
+			}
+		}
+		
+	}
+	if (GameplayTagContainer.IsEmpty())
+	{
+		return false;
+	}
 	return GameplayTagContainer.HasTag(tag);
+}
+
+bool UKMGameObjectInstance::HasGameplayTags(const TArray<FName>& tags) const
+{
+	int32 tagEqualCount = 0;
+	for (auto tag : tags)
+	{
+		FString tagToString = tag.ToString();
+		if (tagToString.StartsWith(TEXT("!")))
+		{
+			if (!HasGameplayTag(FGameplayTag::RequestGameplayTag(*tagToString.RightChop(1))))
+			{
+				++tagEqualCount;
+			}
+		}
+		else if (HasGameplayTag(FGameplayTag::RequestGameplayTag(tag)))
+		{
+			++tagEqualCount;
+		}
+	}
+	return tagEqualCount == tags.Num();
 }
 
 int32 UKMGameObjectInstance::GetGameplayTagCount(FGameplayTag tag) const
@@ -303,9 +352,9 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 		return false;
 	}
 	
-	TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get()); 
-	duplicatSkillInstance->Target = MakeShared<FKMLockOnCluster>(this);
-	duplicatSkillInstance->Target->Targets.Emplace(hitGameObjectInstance->GetId());
+	TSharedPtr<FKMSkillInstance> duplicatSkillInstance = MakeShared<FKMSkillInstance>(*adjustSkillInstance.Pin().Get());
+	duplicatSkillInstance->AdjustTarget = MakeShared<FKMLockOnCluster>(this);
+	duplicatSkillInstance->AdjustTarget->Targets.AddUnique(hitGameObjectInstance->GetId());
 				
 	UKMSkillHandler* hitCharacterSkillHandler = hitGameObjectInstance->GetSkillHandler();
 	check(IsValid(hitCharacterSkillHandler));
@@ -316,6 +365,21 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& adjustSkillInstance, TArray<FHitResult> hitResults, UClass* actorClassFilter, const FName& hitTag, const FName hitCheckLayerId)
 {
 	int32 hitCount = 0;
+	for (const FHitResult& hitResult : hitResults)
+	{
+		if (AActor* actor = hitResult.GetActor())
+		{
+			if (actor->IsA(actorClassFilter))
+			{
+				++hitCount;
+			}
+		}
+	}
+	if (hitCount > 1)
+	{
+		hitCount = 0;
+	}
+	hitCount = 0;
 	for (const FHitResult& hitResult : hitResults)
 	{
 		if (AActor* actor = hitResult.GetActor())
@@ -881,7 +945,7 @@ void UKMGameObjectInstance::UseSkillDash(float dashDirection)
 	}
 }
 
-bool UKMGameObjectInstance::UseGuardSkill()
+bool UKMGameObjectInstance::UseChargeSkillAction()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) || SkillHandler->CanUseSkill(guardSkillKey, LockonTarget))
@@ -897,7 +961,7 @@ bool UKMGameObjectInstance::UseGuardSkill()
 	return true;
 }
 
-bool UKMGameObjectInstance::UseGuardSkill_Release()
+bool UKMGameObjectInstance::UseChargeSkillAction_Release()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
 	TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->GetSkillInstance(guardSkillKey);
@@ -951,7 +1015,7 @@ void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 		
 		if (targetGameObjectInstance->IsDead() ||
 			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Carried_Tag) ||
-			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Down_Tag))
 		{
 			continue;
 		}
@@ -1013,5 +1077,6 @@ void UKMGameObjectInstance::Tick(float deltaSeconds)
 {
 	StatModifier->ComputePreEffectStat();
 	SkillHandler->Tick(deltaSeconds);
+	StateMachine->Tick(deltaSeconds);
 	StatModifier->ComputePostEffectStat();
 }

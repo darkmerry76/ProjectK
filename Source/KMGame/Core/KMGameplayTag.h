@@ -39,11 +39,15 @@ public:
 	static const FGameplayTag Event_PutDown_Tag;
 	
 	static const FGameplayTag State_Tag;
+	static const FGameplayTag State_Idle_Tag;
+	static const FGameplayTag State_Air_Tag;
+	static const FGameplayTag State_Land_Tag;
+	static const FGameplayTag State_Down_Tag;
+	static const FGameplayTag State_Getup_Tag;
+	static const FGameplayTag State_Bound_Tag;
 	static const FGameplayTag State_Dead_Tag;
 	static const FGameplayTag State_Blow_Tag;
 	static const FGameplayTag State_Blow_Bound_Tag;
-	static const FGameplayTag State_Blow_Down_Tag;
-	static const FGameplayTag State_Blow_Getup_Tag;
 	static const FGameplayTag State_Move_Tag;
 	static const FGameplayTag State_Move_Walk_Tag;
 	static const FGameplayTag State_Move_Run_Tag;
@@ -107,6 +111,8 @@ public:
 	void AddTag(const FGameplayTag& tagToAdd);
 	bool HasTag(const FGameplayTag& tag) const;
 	void RemoveTag(const FGameplayTag& tag);
+
+	bool IsEmpty() const;
 
 	FGameplayTagContainer& GetOwnerTagContainer() { return OwnerTagContainer; };
 

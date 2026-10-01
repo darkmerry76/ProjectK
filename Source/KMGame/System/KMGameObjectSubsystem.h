@@ -9,7 +9,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FKMSpawnGameObjectInstanceDelegate, class UK
 DECLARE_DELEGATE_TwoParams(FKMOnActorInstancePreSpawn, class UKMActorInstance* actorInstance, int32 createdIndex);
 
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class KMGAME_API UKMGameObjectSubsystem : public UEMGameObjectSubsystem, public FTickableGameObject
+class KMGAME_API UKMGameObjectSubsystem : public UEMGameObjectSubsystem
 {
 	GENERATED_BODY()
 
@@ -38,10 +38,7 @@ public:
 
 	class UKMCharacterInstance* GetAuthCharacterInstance() const;
 
-	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override;
-	virtual ETickableTickType GetTickableTickType() const override;
-	virtual bool IsTickable() const override;
+	void Tick(UWorld* world, ELevelTick levelTick ,float deltaTime);
 
 	UFUNCTION(BlueprintPure)
 	int32 NumHero(bool bExcludeDead = true) const;

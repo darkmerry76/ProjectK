@@ -22,6 +22,7 @@ public:
 	virtual ~FKMLockOnCluster() override { }
 
 	TArray<FKMObjectKey> Targets;
+	TArray<FKMObjectKey> LockTargets;
 	
 	class UKMGameObjectInstance* GetBestTarget() const;
 	FKMObjectKey GetBestTargetKey() const;

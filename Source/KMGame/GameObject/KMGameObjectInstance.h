@@ -34,6 +34,12 @@ protected:
 	TObjectPtr<class UKMSkillHandler> SkillHandler = nullptr;
 
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
+	TSubclassOf<class UKMStateMachine> StateMachineClass;
+	
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
+	TObjectPtr<class UKMStateMachine> StateMachine = nullptr;
+
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMStatModifierBase> StatModifierClass;
 
 	UPROPERTY(EditAnywhere)
@@ -75,6 +81,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual bool HasGameplayTag(FGameplayTag tag) const;
+
+	UFUNCTION(BlueprintPure)
+	bool HasGameplayTags(const TArray<FName>& tags) const;
 
 	UFUNCTION(BlueprintPure)
 	int32 GetGameplayTagCount(FGameplayTag tag) const;
@@ -187,10 +196,10 @@ public:
 	virtual bool UseParrySkill();
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool UseGuardSkill();
+	virtual bool UseChargeSkillAction();
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool UseGuardSkill_Release();
+	virtual bool UseChargeSkillAction_Release();
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool UseInteractionSkill();

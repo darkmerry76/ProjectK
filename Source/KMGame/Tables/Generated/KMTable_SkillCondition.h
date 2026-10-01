@@ -55,6 +55,9 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMTargetLockonType  LockonType = { EKMTargetLockonType::None };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FName>        TargetReadTag;
+
 	// 이전스킬
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool                 IsCancel = { false };
@@ -65,10 +68,6 @@ struct FKMTable_SkillConditionRow : public FEM_TableBaseRow
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EKMSkillTransitionBehaviorType TransitionSkillBehavior = { EKMSkillTransitionBehaviorType::None };
-
-	// 스킬발동 로코모션
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EKMLocomotionStateType LocomotionState = { EKMLocomotionStateType::None };
 
 	// 스킬발동 최대거리
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

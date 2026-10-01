@@ -7,6 +7,7 @@
 #include "Ability/KMAbilityEffect.h"
 #include "Ability/KMAbilitySkill.h"
 #include "DataAsset/KMAssetManager.h"
+#include "GameActor/Pawn/KMPawnInterface.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"
@@ -504,7 +505,7 @@ void FKMSkillEffectInstance::SetForceComplete(bool bForceComplete)
 
 void FKMSkillEffectInstance::Enter()
 {
-	FKMAbilityInstanceBase::Enter();	
+	FKMAbilityInstanceBase::Enter();
 }
 
 void FKMSkillEffectInstance::Leave()

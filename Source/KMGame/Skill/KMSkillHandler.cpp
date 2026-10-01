@@ -390,10 +390,18 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		return -1.f;
 	}
 
-	if (IsValid(targetGameObjectInstance) && skillConditionRow->TakeActionType == EKMTakeActionType::None && !targetGameObjectInstance->GetTable()->IsDestroy)
+	if (IsValid(targetGameObjectInstance) && skillConditionRow->TakeActionType == EKMTakeActionType::None)
 	{
-		return -1.f;
+		if (!targetGameObjectInstance->GetTable()->IsDestroy)
+		{
+			return -1.f;
+		}
+		if (!skillConditionRow->TargetReadTag.IsEmpty() && !targetGameObjectInstance->HasGameplayTags(skillConditionRow->TargetReadTag))
+		{
+			return -1.f;
+		}
 	}
+
 	if (IsValid(targetGameObjectInstance) && skillConditionRow->TakeActionType != EKMTakeActionType::None &&
 		skillConditionRow->TakeActionType != targetGameObjectInstance->GetTable()->TakeableActionType)
 	{
@@ -430,14 +438,6 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 		}
 	}
 	
-	if (skillConditionRow->LockonType == EKMTargetLockonType::Stand)
-	{
-		if (targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Blow_Down_Tag))
-		{
-			return -1;
-		}
-	}
-
 	if (skillConditionRow->TransitionSkill != NAME_None)
 	{
 		bool bPreviousSkillMatching = false;
@@ -468,42 +468,14 @@ float UKMSkillHandler::GetConditionScore(const FName& skillConditionName, const 
 
 	if (!skillConditionRow->ReadTag.IsEmpty())
 	{
-		FName eventTagName = *eventTag.ToString();
-		bool bExistTag = false;
-		for (auto tag : skillConditionRow->ReadTag)
-		{
-			if (tag == eventTagName)
-			{
-				bExistTag = true;
-				break;
-			}
-		}
-		if (!bExistTag)
-		{
-			for (auto tag : skillConditionRow->ReadTag)
-			{
-				if (ownerGameObjectInstance->HasGameplayTag(FGameplayTag::RequestGameplayTag(tag)))
-				{
-					bExistTag = true;
-					break;
-				}
-			}
-		}
-		if (!bExistTag)
+		bool bExist = skillConditionRow->ReadTag.Contains(*eventTag.ToString());
+		if (!bExist && !ownerGameObjectInstance->HasGameplayTags(skillConditionRow->ReadTag))
 		{
 			return -1.f;
 		}
 	}
 	
 	FVector ownerForward = ownerGameObjectInstance->GetOwnerActor()->GetActorForwardVector();
-	if (skillConditionRow->LocomotionState == EKMLocomotionStateType::Land && ownerGameObjectInstance->IsAir())
-	{
-		return -1.f;
-	}
-	else if (skillConditionRow->LocomotionState == EKMLocomotionStateType::Air && !ownerGameObjectInstance->IsAir())
-	{
-		return -1.f;
-	}
 	
 	float targetDistanceScore = !FMath::IsNearlyZero(skillConditionRow->TargetRange) ? 0.f : 1.f;
 	float targetHeightScore = !FMath::IsNearlyZero(skillConditionRow->TargetHalfHeight) ? 0.f : 1.f;
@@ -931,6 +903,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkill(const FKMSkillKey& skillK
 	TSharedPtr<FKMSkillInstance> newSkillInstance = MakeShared<FKMSkillInstance>(this, skillKey);
 	newSkillInstance->Caster = GetOwner()->GetId();
 	newSkillInstance->Target = lockOnCluster;
+	newSkillInstance->AdjustTarget = lockOnCluster;
 	return UseSkillInternal(newSkillInstance);
 }
 
@@ -1045,12 +1018,18 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseSkillInternal(UKMGameObjectInst
 	
 	ResetCooltime(newSkillInstance->SkillKey);
 	PendingNewAbilities.Emplace(newSkillInstance);
+
 	newSkillInstance->Init();
 
-	WriteAbilityGameplayTags(newSkillInstance);
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Skill_Start_Tag);
 
 	return newSkillInstance;
+}
+
+bool UKMSkillHandler::FinalizeUseSkill(const TSharedPtr<FKMSkillInstance>& newSkillInstance)
+{
+	newSkillInstance->Enter();
+	return true;
 }
 
 void UKMSkillHandler::UseSkill_Release()
@@ -1078,11 +1057,11 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 	check(IsValid(casterGameObjectInstance));
 	
 	TSet<UKMGameObjectInstance*> targetInstances;
-	if (skillInstance->Target.IsValid())
+	if (skillInstance->AdjustTarget.IsValid())
 	{
-		for (int32 targetIndex = 0; targetIndex < skillInstance->Target->NumTarget(); ++targetIndex)
+		for (int32 targetIndex = 0; targetIndex < skillInstance->AdjustTarget->NumTarget(); ++targetIndex)
 		{
-			UKMGameObjectInstance* targetGameObjectInstance = Cast<UKMGameObjectInstance>(skillInstance->Target->GetTargetByIndex(targetIndex));
+			UKMGameObjectInstance* targetGameObjectInstance = Cast<UKMGameObjectInstance>(skillInstance->AdjustTarget->GetTargetByIndex(targetIndex));
 			if (!IsValid(targetGameObjectInstance))
 			{
 				continue;
@@ -1097,7 +1076,14 @@ TArray<TSharedPtr<FKMSkillEffectInstance>> UKMSkillHandler::ApplyEffects(const T
 		FName skillEffectTagValue;
 		
 		UKMUtil::ParseIndexedName(skillEffectItr, '[', ']', skillEffectName, skillEffectTagValue);
-		if (skillEffectTagValue != hitTag)
+		if (skillEffectTagValue == TEXT("lockon"))
+		{
+			if (!skillInstance->Target->Targets.Contains(ownerGameObjectInstance->GetId()))
+			{
+				targetInstances.Remove(ownerGameObjectInstance);
+			}
+		}
+		else if (skillEffectTagValue != hitTag)
 		{
 			continue;
 		}
@@ -1233,21 +1219,6 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 		}
 	}
 	
-	for (auto readTag: skillEffectTable->ReadGameplaytag)
-	{
-		bool isNot = false;
-		FString tagToString = readTag.ToString();
-		if (tagToString.StartsWith(TEXT("!")))
-		{
-			isNot = true;
-			tagToString = tagToString.RightChop(1);
-		}
-		if (ownerGameObjectInstance->HasGameplayTag(FGameplayTag::RequestGameplayTag(*tagToString)) == isNot)
-		{
-			return nullptr;
-		}
-	}
-
 	TSharedPtr<FKMSkillEffectInstance> newSkillEffectInstance;
 	switch (skillEffectTable->Type)
 	{
@@ -1263,11 +1234,28 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 	default: return nullptr;	
 	}
 	check(newSkillEffectInstance.IsValid());
-	
 	PendingNewAbilities.Emplace(newSkillEffectInstance);
 	newSkillEffectInstance->Init();
-	WriteAbilityGameplayTags(newSkillEffectInstance);
 	return newSkillEffectInstance;
+}
+
+bool UKMSkillHandler::FinalizeApplyEffect(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance)
+{
+	UKMGameObjectSubsystem* gameObjectSubsystem = UKMGameObjectSubsystem::GetGameObjectSubsystem(this);
+	check(IsValid(gameObjectSubsystem));
+
+	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
+	check(IsValid(ownerGameObjectInstance));
+
+	if (!newSkillEffectInstance->GetEffectTableRecord()->ReadGameplaytag.IsEmpty() &&
+		!ownerGameObjectInstance->HasGameplayTags(newSkillEffectInstance->GetEffectTableRecord()->ReadGameplaytag))
+	{
+		return false;
+	}
+
+	newSkillEffectInstance->Enter();
+	
+	return true;
 }
 
 int32 UKMSkillHandler::GetScoreSkill(const FKMSkillKey& skillKey) const
@@ -1326,7 +1314,6 @@ bool UKMSkillHandler::UpdateAbilitiy(const TSharedPtr<FKMAbilityInstanceBase>& a
 	if (abilityInstance->IsComplete())
 	{
 		abilityInstance->Leave();
-		RemoveAbilityGameplayTags(abilityInstance);
 		OnRemoveAbilityInstance(abilityInstance);
 		return false;
 	}
@@ -1367,13 +1354,27 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 				continue;
 			}
 
-			pendingNewAbility->Enter();
+			if (pendingNewAbility->IsA<FKMSkillInstance>())
+			{
+				if (!FinalizeUseSkill(StaticCastSharedPtr<FKMSkillInstance>(pendingNewAbility)))
+				{
+					continue;
+				}
+			}
+			else if(pendingNewAbility->IsA<FKMSkillEffectInstance>())
+			{
+				if (!FinalizeApplyEffect(StaticCastSharedPtr<FKMSkillEffectInstance>(pendingNewAbility)))
+				{
+					continue;
+				}
+			}
 			OnAddAbilityInstance(pendingNewAbility);
 
 			if (!UpdateAbilitiy(pendingNewAbility, deltaSeconds))
 			{
 				continue;
 			}
+			
 			if (pendingNewAbility->IsA<FKMSkillInstance>())
 			{
 				SkillInstances.Emplace(LastAbilityUniqueId, StaticCastSharedPtr<FKMSkillInstance>(pendingNewAbility));
@@ -1448,6 +1449,8 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 {
 	AbilityEvents.FindOrAdd(abilityInstance);
 
+	WriteAbilityGameplayTags(abilityInstance);
+	
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
 	if (!IsValid(ownerGameObjectInstance))
 	{
@@ -1466,6 +1469,8 @@ void UKMSkillHandler::OnAddAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> ab
 void UKMSkillHandler::OnRemoveAbilityInstance(TSharedPtr<FKMAbilityInstanceBase> abilityInstance)
 {
 	AbilityEvents.Remove(abilityInstance);
+
+	RemoveAbilityGameplayTags(abilityInstance);
 
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
 	if (!IsValid(ownerGameObjectInstance))
@@ -1543,13 +1548,18 @@ void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag
 			continue;
 		}
 
+		if (skillEffectInstance->GetForceComplete())
+		{
+			continue;
+		}
+
 		const FKMTable_SkillEffectTransitionRow* effectTransitionRow =
 			FKMTable_SkillEffectTransitionRow::FindRowPtr(skillEffectInstance->GetEffectTableRecord()->TransitionId, effectTag.GetTagName());
 		if (!effectTransitionRow)
 		{
 			continue;
 		}
-		check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == ownerGameObjectInstance);
+		//check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == ownerGameObjectInstance);
 		skillEffectInstance->SetForceComplete(true);
 		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
 	}

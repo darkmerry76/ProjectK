@@ -33,11 +33,14 @@ const FGameplayTag FKMGameplayTagName::Event_Blow_IgnoreLanded_Tag = FGameplayTa
 const FGameplayTag FKMGameplayTagName::Event_PutDown_Tag =  FGameplayTag::RequestGameplayTag(TEXT("Event.PutDown"));
 
 const FGameplayTag FKMGameplayTagName::State_Tag = FGameplayTag::RequestGameplayTag(TEXT("State"));
+const FGameplayTag FKMGameplayTagName::State_Idle_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Idle"));
+const FGameplayTag FKMGameplayTagName::State_Air_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Air"));
+const FGameplayTag FKMGameplayTagName::State_Land_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Land"));
+const FGameplayTag FKMGameplayTagName::State_Down_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Down"));
+const FGameplayTag FKMGameplayTagName::State_Getup_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Getup"));
 const FGameplayTag FKMGameplayTagName::State_Dead_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Dead"));
 const FGameplayTag FKMGameplayTagName::State_Blow_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Blow"));
-const FGameplayTag FKMGameplayTagName::State_Blow_Bound_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Blow.Bound"));
-const FGameplayTag FKMGameplayTagName::State_Blow_Down_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Blow.Down"));
-const FGameplayTag FKMGameplayTagName::State_Blow_Getup_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Blow.Getup"));
+const FGameplayTag FKMGameplayTagName::State_Bound_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Bound"));
 const FGameplayTag FKMGameplayTagName::State_Move_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Move"));
 const FGameplayTag FKMGameplayTagName::State_Move_Walk_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Move.Walk"));
 const FGameplayTag FKMGameplayTagName::State_Move_Run_Tag = FGameplayTag::RequestGameplayTag(TEXT("State.Move.Run"));
@@ -139,6 +142,11 @@ void FKMGameplayTagContainer::RemoveTag(const FGameplayTag& tagToRemove)
 
 		currentTag = currentTag.RequestDirectParent();
 	}
+}
+
+bool FKMGameplayTagContainer::IsEmpty() const
+{
+	return TagRefCounts.IsEmpty();
 }
 
 bool FKMGameplayTagContainer::HasTag(const FGameplayTag& tag) const

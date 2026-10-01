@@ -99,6 +99,12 @@ public:
 	virtual void WallHit(const FHitResult& hitResult) override;
 	virtual void CeilingHit(const FHitResult& hitResult) override;
 
+	UFUNCTION(BlueprintPure)
+	virtual bool IsAir() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual bool IsLand() const override;
+
 	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
 
 protected:

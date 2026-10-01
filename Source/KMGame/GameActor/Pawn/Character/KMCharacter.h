@@ -88,6 +88,12 @@ public:
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
 
 	UFUNCTION(BlueprintPure)
+	virtual bool IsAir() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual bool IsLand() const override;
+	
+	UFUNCTION(BlueprintPure)
 	class USceneComponent* GetCameraTarget() const;
 
 	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
@@ -139,10 +145,7 @@ public:
 	virtual void LandHit(const FHitResult& HitResult) override;
 	virtual void WallHit(const FHitResult& HitResult) override;
 	virtual void CeilingHit(const FHitResult& HitResult) override;
-
-	UFUNCTION(BlueprintPure)
-	bool IsAir() const;
-\
+	\
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 
 	UFUNCTION(BlueprintImplementableEvent)

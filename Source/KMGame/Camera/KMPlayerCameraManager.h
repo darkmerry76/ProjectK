@@ -73,7 +73,7 @@ protected:
 	TArray<TSharedPtr<FKMCameraLayerPlayInstance>> CameraLayerPlayInstances; 
 
 protected:
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float deltaTime) override;
 	virtual void UpdateViewTarget(FTViewTarget& outVT, float deltaTime) override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
