@@ -18,7 +18,7 @@ public:
 	virtual void BeginPlay() { }
 	virtual void EndPlay() { }
 	
-	virtual void Tick(float DeltaSeconds) { };
+	virtual void Tick(float deltaSeconds) { };
 
 private:
 	int32 Id;

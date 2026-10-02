@@ -29,11 +29,12 @@ void UKMAbilityBlow::Trigger(const FGameplayTag& eventTag)
 
 	if (eventTag == FKMGameplayTagName::Event_Move_Landing_Tag)
 	{
-		skillHandler->TriggerTransitionSkillEffect(FGameplayTag::RequestGameplayTag(TEXT("event.blow.landing")));
+		UKMGameObjectInstance::GetSkillMessageDelegate().Broadcast(GetOwnerGameObjectInstance(), GetSkillEffectInstance()->AsShared(), TEXT("effect landing:"));
+		skillHandler->TriggerTransitionSkillEffect(SkillEffectInstance.Pin(), FGameplayTag::RequestGameplayTag(TEXT("event.blow.landing")));
 	}
 	else
 	{
-		skillHandler->TriggerTransitionSkillEffect(eventTag);
+		skillHandler->TriggerTransitionSkillEffect(SkillEffectInstance.Pin(), eventTag);
 	}
 }
 

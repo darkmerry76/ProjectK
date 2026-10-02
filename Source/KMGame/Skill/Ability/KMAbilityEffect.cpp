@@ -61,7 +61,7 @@ void UKMAbilityEffect::Deactivate(bool bCancel)
 
 	if (SkillEffectInstance.IsValid() && !bCancel && EndingTag.IsValid())
 	{
-		skillHandler->TriggerTransitionSkillEffect(EndingTag);
+		skillHandler->TriggerTransitionSkillEffect(SkillEffectInstance.Pin(), EndingTag);
 	}
 
 	if (bIsDirectionFallow)
@@ -189,5 +189,3 @@ FVector UKMAbilityEffect::GetOffsetCasterAlongOwnerDirection(float offsetDistanc
 	FVector result = casterActor->GetActorLocation() + (casterToOwner * offsetDistance * weight);
 	return FVector(result.X, result.Y, bIgnoreZ ? casterActor->GetActorLocation().Z : result.Z);
 }
-
-

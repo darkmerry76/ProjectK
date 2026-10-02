@@ -77,11 +77,14 @@ public:
 // UEMTickerSubsystem
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UCLASS(Blueprintable, BlueprintType)
-class EMCOREGAME_API UEMTickerSubsystem : public UWorldSubsystem, public FTickableGameObject
+class EMCOREGAME_API UEMTickerSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& collection) override;
+	virtual void Deinitialize() override;
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (WorldContext = "worldContextObject"))
 	static UEMTickerSubsystem* GetTickerSubsystem(UObject* worldContextObject);
 
@@ -114,15 +117,8 @@ public:
 	void RemoveTickerAt(int32 TickerIndex);
 
 protected:
-	// FTickableGameObject begin
-	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override;
-	virtual bool IsTickableWhenPaused() const override { return true; }
-	virtual bool IsTickableInEditor() const override { return true; }
-	virtual ETickableTickType GetTickableTickType() const override;
-	virtual bool IsTickable() const override;
-	// FTickableGameObject end
-
+	void Tick(UWorld* world, ELevelTick levelTick, float deltaTime);
+	
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 
 protected:

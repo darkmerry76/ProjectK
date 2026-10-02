@@ -18,6 +18,20 @@ UEMTickerSubsystem* UEMTickerSubsystem::GetTickerSubsystem(UObject* worldContext
 	return world->GetSubsystem<UEMTickerSubsystem>();
 }
 
+void UEMTickerSubsystem::Initialize(FSubsystemCollectionBase& collection)
+{
+	Super::Initialize(collection);
+
+	FWorldDelegates::OnWorldTickStart.AddUObject(this, &UEMTickerSubsystem::Tick);
+}
+
+void UEMTickerSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+
+	FWorldDelegates::OnWorldTickStart.RemoveAll(this);
+}
+
 FEMTickerHandle UEMTickerSubsystem::AddTicker(UObject* WorldContextObject, FBTMTickerDynamicDelegate EventDelegate, double Duration, double StartEplipseTime)
 {
 	UEMTickerSubsystem* TickerSubsystem = GetTickerSubsystem(WorldContextObject);
@@ -171,49 +185,38 @@ void UEMTickerSubsystem::RemoveAllTicker()
 	Tickers.Empty();
 }
 
-void UEMTickerSubsystem::Tick(float DeltaTime)
+void UEMTickerSubsystem::Tick(UWorld* world, ELevelTick levelTick, float deltaTime)
 {
-	double WorldSeconds = GetWorld()->GetTimeSeconds();
-
-	for(int32 TickerIndex = 0; TickerIndex < Tickers.Num(); )
+	if (world != GetWorld())
 	{
-		if(false == Tickers[TickerIndex].Data.IsValid())
+		return;
+	}
+	
+	float worldDeltaSeconds = GetWorld()->GetTimeSeconds();
+
+	for(int32 tickerIndex = 0; tickerIndex < Tickers.Num(); )
+	{
+		if(false == Tickers[tickerIndex].Data.IsValid())
 		{
-			RemoveTickerAt(TickerIndex);
+			RemoveTickerAt(tickerIndex);
 			continue;
 		}
-		double EplipsedSeconds = Tickers[TickerIndex].Data->GetElipsedSeconds(WorldSeconds);
-		if (Tickers[TickerIndex].Data->GetElipsedSecondsAbs(WorldSeconds) >= FMath::Abs(Tickers[TickerIndex].Data->Duration))
+		double elipsedSeconds = Tickers[tickerIndex].Data->GetElipsedSeconds(worldDeltaSeconds);
+		if (Tickers[tickerIndex].Data->GetElipsedSecondsAbs(worldDeltaSeconds) >= FMath::Abs(Tickers[tickerIndex].Data->Duration))
 		{
-			Tickers[TickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::REMOVED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
-			Tickers[TickerIndex].Data->EventDynamic.ExecuteIfBound(eTickerEventType::REMOVED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
-			RemoveTickerAt(TickerIndex);
+			Tickers[tickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::REMOVED, worldDeltaSeconds, elipsedSeconds, Tickers[tickerIndex].Data->Duration);
+			Tickers[tickerIndex].Data->EventDynamic.ExecuteIfBound(eTickerEventType::REMOVED, worldDeltaSeconds, elipsedSeconds, Tickers[tickerIndex].Data->Duration);
+			RemoveTickerAt(tickerIndex);
 			continue;
 		}
 		else
 		{
-			Tickers[TickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::UPDATED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
-			Tickers[TickerIndex].Data->EventDynamic.ExecuteIfBound(eTickerEventType::UPDATED, DeltaTime, EplipsedSeconds, Tickers[TickerIndex].Data->Duration);
+			Tickers[tickerIndex].Data->Event.ExecuteIfBound(eTickerEventType::UPDATED, deltaTime, elipsedSeconds, Tickers[tickerIndex].Data->Duration);
+			Tickers[tickerIndex].Data->EventDynamic.ExecuteIfBound(eTickerEventType::UPDATED, deltaTime, elipsedSeconds, Tickers[tickerIndex].Data->Duration);
 		}
-		++TickerIndex;
+		++tickerIndex;
 	}
 }
-
-TStatId UEMTickerSubsystem::GetStatId() const
-{
-	RETURN_QUICK_DECLARE_CYCLE_STAT(UBTMTickerSubsystem, STATGROUP_Tickables);
-}
-
-bool UEMTickerSubsystem::IsTickable() const
-{
-	return !HasAnyFlags(RF_ClassDefaultObject);
-}
-
-ETickableTickType UEMTickerSubsystem::GetTickableTickType() const
-{
-	return HasAnyFlags(RF_ClassDefaultObject) ? ETickableTickType::Never : ETickableTickType::Always;
-}
-
 bool UEMTickerSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
 {
 	return true;

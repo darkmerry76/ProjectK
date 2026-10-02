@@ -604,6 +604,7 @@ TSharedPtr<FKMSkillInstance> UKMSkillHandler::UseUltimateSkill(const TSharedPtr<
 	{
 		return nullptr;
 	}
+	
 	ApplyEffects(newSkillInstance, FKMGameplayTagName::Event_Grab_Tag);
 	return newSkillInstance;
 }
@@ -1169,6 +1170,44 @@ void UKMSkillHandler::RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityI
 	}
 }
 
+void UKMSkillHandler::ClearGroup(const TArray<FName>& clearGroups)
+{
+	if (clearGroups.IsEmpty())
+	{
+		return;
+	}
+	for (auto skillEffectItr : EffectInstances)
+	{
+		if (skillEffectItr.Value->GetEffectTableRecord()->OverlapGroup.IsNone())
+		{
+			continue;
+		}
+		if (skillEffectItr.Value->IsComplete())
+		{
+			continue;;
+		}
+		
+		if (clearGroups.Contains(skillEffectItr.Value->GetEffectTableRecord()->OverlapGroup))
+		{
+			skillEffectItr.Value->SetForceComplete(true);
+		}
+	}
+	
+	for (auto abilityItr = PendingNewAbilities.CreateIterator(); abilityItr; ++abilityItr)
+	{
+		if (!(*abilityItr)->IsA<FKMSkillEffectInstance>())
+		{
+			continue;
+		}
+		FKMSkillEffectInstance* skillEffectInstance = static_cast<FKMSkillEffectInstance*>((*abilityItr).Get());
+
+		if (clearGroups.Contains(skillEffectInstance->GetEffectTableRecord()->OverlapGroup))
+		{
+			abilityItr.RemoveCurrent();
+		}
+	}
+}
+
 TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TSharedPtr<FKMSkillInstance>& skillInstance, const FName& effectName)
 {
 	if (!skillInstance.IsValid())
@@ -1188,6 +1227,8 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
 	check(IsValid(ownerGameObjectInstance));
 
+	ClearGroup(skillEffectTable->ClearGroups);
+
 	TArray<TSharedPtr<FKMSkillEffectInstance>> overlapSkillInstances;
 	int32 overlapCount = GetSkillEffectOverlapCount(skillEffectTable->OverlapGroup, skillEffectTable->Id, &overlapSkillInstances);
 	if (overlapCount >= skillEffectTable->OverlapCount)
@@ -1201,21 +1242,6 @@ TSharedPtr<FKMSkillEffectInstance> UKMSkillHandler::ApplyEffectInternal(const TS
 			break;
 		default:
 			return nullptr;
-		}
-	}
-
-	if (!skillEffectTable->ClearGroups.IsEmpty())
-	{
-		for (auto skillEffectItr : EffectInstances)
-		{
-			if (skillEffectItr.Value->IsComplete())
-			{
-				continue;;
-			}
-			if (skillEffectTable->ClearGroups.Contains(skillEffectItr.Value->GetEffectTableRecord()->OverlapGroup))
-			{
-				skillEffectItr.Value->SetForceComplete(true);
-			}
 		}
 	}
 	
@@ -1532,35 +1558,19 @@ bool UKMSkillHandler::IsSkillActivated(const FKMSkillKey& skillKey) const
 	return false;
 }
 
-void UKMSkillHandler::TriggerTransitionSkillEffect(const FGameplayTag& effectTag)
+void UKMSkillHandler::TriggerTransitionSkillEffect(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FGameplayTag& effectTag)
 {
-	UKMGameObjectInstance* ownerGameObjectInstance = Cast<UKMGameObjectInstance>(GetOwner());
-	if (!IsValid(ownerGameObjectInstance))
+	if (!skillEffectInstance.IsValid() || skillEffectInstance->GetForceComplete())
 	{
 		return;
 	}
-
-	for (auto effectItr = EffectInstances.CreateIterator(); effectItr; ++effectItr)
+	
+	const FKMTable_SkillEffectTransitionRow* effectTransitionRow =
+		FKMTable_SkillEffectTransitionRow::FindRowPtr(skillEffectInstance->GetEffectTableRecord()->TransitionId, effectTag.GetTagName());
+	if (!effectTransitionRow)
 	{
-		TSharedPtr<FKMSkillEffectInstance> skillEffectInstance = effectItr->Value;  
-		if (skillEffectInstance->GetEffectTableRecord()->TransitionId == NAME_None)
-		{
-			continue;
-		}
-
-		if (skillEffectInstance->GetForceComplete())
-		{
-			continue;
-		}
-
-		const FKMTable_SkillEffectTransitionRow* effectTransitionRow =
-			FKMTable_SkillEffectTransitionRow::FindRowPtr(skillEffectInstance->GetEffectTableRecord()->TransitionId, effectTag.GetTagName());
-		if (!effectTransitionRow)
-		{
-			continue;
-		}
-		//check(skillEffectInstance->GetOwnerSkillInstance()->Target->GetBestTarget() == ownerGameObjectInstance);
-		skillEffectInstance->SetForceComplete(true);
-		ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
+		return;
 	}
+	
+	ApplyEffectInternal(skillEffectInstance->GetOwnerSkillInstance(), effectTransitionRow->BranchEffectId);
 }

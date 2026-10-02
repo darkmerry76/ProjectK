@@ -24,7 +24,7 @@ void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& m
 	{
 		switch(movementMode)
 		{
-		case EEMCustomMovementMode::CMODE_Falling: skillHandler->TriggerTransitionSkillEffect(FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
+		case EEMCustomMovementMode::CMODE_Falling: skillHandler->TriggerTransitionSkillEffect(SkillEffectInstance.Pin(), FKMGameplayTagName::Event_Bound_Wall_Tag); break; 
 		default:break;
 		}
 	}

@@ -36,3 +36,8 @@ bool UEMPawnMovementComponent::CustomMovement(EEMCustomMovementMode movementMode
 	}
 	return true;
 }
+
+bool UEMPawnMovementComponent::IsAir() const
+{
+	return false;
+}

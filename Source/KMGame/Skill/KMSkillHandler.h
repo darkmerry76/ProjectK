@@ -46,6 +46,12 @@ struct FKMComboData
 	}
 };
 
+struct FKMSkillEffectTransitionData
+{
+	TWeakPtr<class FKMSkillEffectInstance> EffectInstance;
+	FGameplayTag TransitionTag;
+};
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FKMSkillProjectileTriggerDelegate, const TSharedPtr<class FKMSkillInstance>& skillInstance);
 UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API UKMSkillHandler : public UObject
@@ -111,7 +117,7 @@ public:
 	float GetConditionScore(const FName& skillConditionName, const class UKMGameObjectInstance* targetGameObjectInstance, const FGameplayTag& eventTag = FGameplayTag::EmptyTag) const;
 	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const TSharedPtr<class FKMLockOnCluster>& lockOnCluster, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const;
 	const struct FKMTable_SkillSetRow* EvaluateSkillSet(const UKMGameObjectInstance* targetGameObjectInstance, bool bCombat, bool bTechnique, bool bInteraction, bool bUltimate) const;
-
+	
 	TArray<TSharedPtr<FKMSkillEffectInstance>> ApplyEffects(const TSharedPtr<FKMSkillInstance>& skillInstance, const FGameplayTag& eventTag, const FName& hitTag = NAME_None);
 
 	void Tick(float deltaSeconds);
@@ -122,7 +128,8 @@ public:
 		return ProjectileTriggerDelegate;
 	}
 
-	void TriggerTransitionSkillEffect(const FGameplayTag& effectTag);
+	void TriggerTransitionSkillEffect(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FGameplayTag& effectTag);
+	
 	void ActivatedNextComboSkill(const TSharedPtr<FKMLockOnCluster>& lockOnCluster);
 
 	UFUNCTION(BlueprintPure)
@@ -133,7 +140,7 @@ public:
 protected:
 	TSharedPtr<FKMSkillInstance> UseTechniqueSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
 	TSharedPtr<FKMSkillInstance> UseInteractionSkill_Internal(const TSharedPtr<FKMLockOnCluster>& lockOnCluster, const FGameplayTag& eventTag = FGameplayTag::EmptyTag);
-
+	
 	void WriteAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance);
 	void RemoveAbilityGameplayTags(TSharedPtr<FKMAbilityInstanceBase> abilityInstance);
 	void OnAddAbilityInstance(TSharedPtr<class FKMAbilityInstanceBase> abilityInstance);
@@ -148,6 +155,8 @@ protected:
 	
 	template<typename _TL>
 	void RemoveForceAbility(const TArray<TSharedPtr<_TL>>& abilityInstances, bool bCancel = false);
+
+	void ClearGroup(const TArray<FName>& clearGroups);
 	
 	TSharedPtr<FKMSkillEffectInstance> ApplyEffectInternal(const TSharedPtr<class FKMSkillInstance>& skillInstance, const FName& effectName);
 	bool FinalizeApplyEffect(const TSharedPtr<FKMSkillEffectInstance>& newSkillEffectInstance);
