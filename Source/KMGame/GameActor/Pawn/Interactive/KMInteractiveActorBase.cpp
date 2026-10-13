@@ -4,6 +4,7 @@
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMMoveShapeComponent.h"
 #include "Component/KMPawnMovementComponent.h"
+#include "Component/KMWidgetComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
@@ -22,12 +23,20 @@ AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objec
 	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
 
+	WidgetComponent = CreateDefaultSubobject<UKMWidgetComponent>(TEXT("Widget"));
+	WidgetComponent->SetupAttachment(GetRootComponent());
+
 	MovementComponent->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
 }
 
 UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() const
 {
 	return MartialArtsComponent;
+}
+
+UKMWidgetComponent* AKMInteractiveActorBase::GetWidgetComponent() const
+{
+	return WidgetComponent;
 }
 
 UMeshComponent* AKMInteractiveActorBase::GetPlacementMeshComponent() const

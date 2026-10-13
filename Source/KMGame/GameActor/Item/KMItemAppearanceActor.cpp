@@ -239,19 +239,19 @@ void AKMItemAppearanceChainActor::Launch_Implementation()
 		switch (eventType)
 		{
 		case eTickerEventType::CREATED:
-			//ChainMesh->SetSimulatePhysics(false);
 			chainAnimInstance->EnableAttack = true;
 			chainAnimInstance->BlendAlpha = 0.f;
+			bIsCollisionCheck = true;
+			bIsReservedRemovedCollisionCheck = false;
 			SetVisbility(true);
 			break;
 		case eTickerEventType::UPDATED:
 			chainAnimInstance->BlendAlpha = (elipsedTime / duration) * ChainLengthWeight;
-			bIsCollisionCheck = true;
+			
 			break;
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = ChainLengthWeight;
-			//ChainMesh->SetSimulatePhysics(true);
-			bIsCollisionCheck = false;
+			bIsReservedRemovedCollisionCheck = true;
 			if (weakOwnerCharacterInstance.IsValid())
 			{
 				weakOwnerCharacterInstance->HitCheckClear(TEXT("default"));
@@ -283,7 +283,6 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 		switch (eventType)
 		{
 		case eTickerEventType::CREATED:
-			//ChainMesh->SetSimulatePhysics(false);
 			chainAnimInstance->EnableAttack = true;
 			chainAnimInstance->BlendAlpha = ChainLengthWeight;
 			break;
@@ -292,7 +291,6 @@ void AKMItemAppearanceChainActor::LaunchStop_Implementation()
 			break;
 		case eTickerEventType::REMOVED:
 			chainAnimInstance->BlendAlpha = 0.f;
-			
 			SetVisbility(false);
 			break;
 		default:break;
@@ -305,9 +303,9 @@ void AKMItemAppearanceChainActor::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AKMItemAppearanceChainActor::Tick(float DeltaTime)
+void AKMItemAppearanceChainActor::Tick(float deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(deltaTime);
 
 	if (AActor* parentActor = GetOwner())
 	{
@@ -341,6 +339,11 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 						newTargetTransform.SetRotation(EndMesh->GetComponentToWorld().GetRotation());
 						newTargetTransform.SetScale3D(EndMesh->GetComponentToWorld().GetScale3D());
 						chainAnimInstance->SetTargetLocation(newTargetTransform.GetLocation());
+						if (bIsReservedRemovedCollisionCheck)
+						{
+							chainAnimInstance->UpdateAnimation(deltaTime, true);
+							ChainMesh->RefreshBoneTransforms();
+						}
 						//EndMesh->SetWorldTransform(newTargetTransform);
 					}
 					
@@ -369,6 +372,12 @@ void AKMItemAppearanceChainActor::Tick(float DeltaTime)
 					{ UEngineTypes::ConvertToObjectType(ECC_Damage), UEngineTypes::ConvertToObjectType(ECC_Destructible) }, AActor::StaticClass(),false, false, NAME_None, TEXT("default"), hitResults);
 				PreviousTransform = socketTransform;
 			}		
+		}
+
+		if (bIsReservedRemovedCollisionCheck)
+		{
+			bIsCollisionCheck = false;
+			bIsReservedRemovedCollisionCheck = false;
 		}
 	}
 }

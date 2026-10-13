@@ -5,6 +5,7 @@
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
+#include "Component/KMWidgetComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
@@ -25,7 +26,10 @@ AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
 {
 	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
 	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
+	WidgetComponent	= CreateDefaultSubobject<UKMWidgetComponent>(TEXT("Widget"));
 	CameraTarget = CreateDefaultSubobject<USceneComponent>(TEXT("CameraTarget"));
+
+	WidgetComponent->SetupAttachment(GetMesh());
 	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
 	{
 		characterMovement->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
@@ -150,6 +154,11 @@ UPrimitiveComponent* AKMCharacter::GetMovementShapeComponent() const
 UKMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
 {
 	return MartialArtsComponent;
+}
+
+UKMWidgetComponent* AKMCharacter::GetWidgetComponent() const
+{
+	return WidgetComponent;
 }
 
 UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const

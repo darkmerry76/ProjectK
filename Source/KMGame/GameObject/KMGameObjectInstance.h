@@ -214,6 +214,12 @@ public:
 
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
 
+	UFUNCTION(BlueprintCallable)
+	void SetEnableLockOnTag(bool bEnable);
+
+	UFUNCTION(BlueprintPure)
+	bool GetEnableLockOnTag() const;
+
 	UFUNCTION(BlueprintPure)
 	UKMGameObjectInstance* GetCarriedGameObjectInstance() const;
 	
@@ -270,6 +276,8 @@ protected:
 
 	void ResolveNearestHitResult(const FTransform& orientationTransform, UClass* actorClassFilter, TArray<FHitResult>& hitResults);
 
+	void SetLockOnTagVisiblity(class FKMLockOnCluster* lockOnCluster, bool bVisible);
+
 protected:
 	FKMGameplayTagContainer GameplayTagContainer;
 	FKMStatChangeDelegate StatChangeEvent;
@@ -303,4 +311,6 @@ protected:
 	TWeakObjectPtr<UKMGameObjectInstance> CarriedObject;
 	
 	FTimerHandle SensorHandle;
+
+	bool bIsLockOnTagEnable = false;
 };

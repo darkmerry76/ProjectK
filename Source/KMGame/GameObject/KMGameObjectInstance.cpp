@@ -1,6 +1,7 @@
 #include "KMGameObjectInstance.h"
 
 #include "Component/KMMoveShapeComponent.h"
+#include "Component/KMWidgetComponent.h"
 #include "FSM/KMStateMachine.h"
 #include "Tables/Generated/KMTable_Object.h"
 #include "GameActor/Pawn/KMPawnInterface.h"
@@ -18,6 +19,7 @@
 #include "Tables/Generated/KMTable_Skill.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
+#include "Ui/Component/KMHeadTagWidget.h"
 #include "Util/KMUtil.h"
 
 UKMGameObjectInstance::UKMGameObjectInstance(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -343,6 +345,8 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 		return false;
 	}
 
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::Printf(TEXT("HitCollection=%s"), *hitActor->GetName()));
+
 	AddHitCheck(hitCheckLayer, hitActor);
 
 	Inflict(hitGameObjectInstance);
@@ -369,25 +373,11 @@ int32 UKMGameObjectInstance::HitCollections(const TWeakPtr<FKMSkillInstance>& ad
 	{
 		if (AActor* actor = hitResult.GetActor())
 		{
-			if (actor->IsA(actorClassFilter))
-			{
-				++hitCount;
-			}
-		}
-	}
-	if (hitCount > 1)
-	{
-		hitCount = 0;
-	}
-	hitCount = 0;
-	for (const FHitResult& hitResult : hitResults)
-	{
-		if (AActor* actor = hitResult.GetActor())
-		{
 			if (!actor->IsA(actorClassFilter))
 			{
 				continue;
 			}
+			
 			if (HitCollection(adjustSkillInstance, actor, hitResult.ImpactPoint, hitResult.ImpactNormal, hitTag, hitCheckLayerId))
 			{
 				hitCount++;
@@ -490,15 +480,30 @@ bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjus
 	{
 		actorClassFilter = AActor::StaticClass();
 	}
-	
-	
+
 	FCollisionQueryParams queryParams;
 	if (OwnerActor.IsValid())
 	{
 		queryParams.AddIgnoredActor(OwnerActor.Get());
 	}
 
+/*	const FVector start = startOrientationTransform.GetLocation();
+	const FVector end = endOrientationTransform.GetLocation();
+	const FQuat rotation = endOrientationTransform.GetRotation();
+	const FVector extent = endOrientationTransform.GetScale3D();
+	
 	outHitResults.Empty();
+	DrawDebugBox(
+	GetWorld(),
+	end,
+	extent,
+	rotation,
+	FColor::Green,
+	false,
+	10.0f,
+	0,
+	2.0f
+);*/
 	if (GetWorld()->SweepMultiByObjectType(outHitResults,startOrientationTransform.GetLocation(),
 	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
@@ -987,9 +992,33 @@ bool UKMGameObjectInstance::UseInteractionSkill_Release()
 	return true;
 }
 
+void UKMGameObjectInstance::SetLockOnTagVisiblity(FKMLockOnCluster* lockOnCluster, bool bVisible)
+{
+	if (!bIsLockOnTagEnable || !lockOnCluster)
+	{
+		return;
+	}
+	
+	if (UKMGameObjectInstance* oldBestTargetObjectInstance = lockOnCluster->GetBestTarget())
+	{
+		if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(oldBestTargetObjectInstance->GetOwnerActor()))
+		{
+			if (UKMWidgetComponent* widgetComponent = pawnInterface->GetWidgetComponent())
+			{
+				if (UKMHeadTagWidget* headTagWidget = Cast<UKMHeadTagWidget>(widgetComponent->GetWidget()))
+				{
+					headTagWidget->SetVisibileLockOnImage(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+				}
+			}
+		}
+	}
+}
+
 void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 {
 	check(LockonTarget.IsValid());
+
+	SetLockOnTagVisiblity(LockonTarget.Get(), false);
 	
 	LockonTarget->Targets.Empty();
 	InteractionTarget->Targets.Empty();
@@ -1034,6 +1063,8 @@ void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 			}
 		}
 	}
+
+	SetLockOnTagVisiblity(LockonTarget.Get(), true);
 }
 
 void UKMGameObjectInstance::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
@@ -1071,6 +1102,16 @@ UKMGameObjectInstance* UKMGameObjectInstance::GetCarriedGameObjectInstance() con
 	}
 
 	return CarriedObject.Get();
+}
+
+void UKMGameObjectInstance::SetEnableLockOnTag(bool bEnable)
+{
+	bIsLockOnTagEnable = bEnable;
+}
+
+bool UKMGameObjectInstance::GetEnableLockOnTag() const
+{
+	return bIsLockOnTagEnable;
 }
 
 void UKMGameObjectInstance::Tick(float deltaSeconds)

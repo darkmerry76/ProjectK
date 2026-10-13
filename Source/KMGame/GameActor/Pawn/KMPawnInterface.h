@@ -20,6 +20,7 @@ public:
 	virtual class UPrimitiveComponent* GetMovementShapeComponent() const = 0;
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const = 0;
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const = 0;
+	virtual class UKMWidgetComponent* GetWidgetComponent() const = 0;
 
 	virtual class UMeshComponent* GetPlacementMeshComponent() const = 0;
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const = 0;

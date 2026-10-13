@@ -120,6 +120,7 @@ protected:
 	float RingRadius = 10.f;
 
 	bool bIsCollisionCheck = false;
+	bool bIsReservedRemovedCollisionCheck = false;
 
 	FTransform PreviousTransform;
 

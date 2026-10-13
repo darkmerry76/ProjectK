@@ -47,6 +47,8 @@ void AKMGameModeStage::RestartPlayer(AController* newPlayer)
 		check(IsValid(heroInstance));
 		newPlayer->Possess(heroInstance->GetCharacter());
 		OnSpawnHeroInstance(heroInstance);
+
+		heroInstance->SetEnableLockOnTag(true);
 	}
 }
 

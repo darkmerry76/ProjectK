@@ -28,6 +28,9 @@ protected:
 	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMWidgetComponent> WidgetComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -77,6 +80,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
+
+	UFUNCTION(BlueprintPure)
+	virtual class UKMWidgetComponent* GetWidgetComponent() const override;
 
 	UFUNCTION(BlueprintPure)
 	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
