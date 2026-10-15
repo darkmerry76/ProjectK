@@ -36,6 +36,5 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	const FTransform& GetCenterTransform() const;
-
 };
 	

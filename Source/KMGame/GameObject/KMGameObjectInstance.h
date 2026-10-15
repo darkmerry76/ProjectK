@@ -27,13 +27,13 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TWeakObjectPtr<class AActor> OwnerActor;
 
-	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMSkillHandler> SkillHandlerClass;
 
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TObjectPtr<class UKMSkillHandler> SkillHandler = nullptr;
 
-	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMStateMachine> StateMachineClass;
 	
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
@@ -42,11 +42,17 @@ protected:
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMStatModifierBase> StatModifierClass;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UKMSensor> SensorClass;
 
 	UPROPERTY(BlueprintReadOnly, Transient, meta=(AllowPrivateAccess=true))
 	TObjectPtr<class UKMSensor> SensorInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameObjectInstance", meta=(AllowPrivateAccess=true))
+	TSubclassOf<class UKMLockOnProcessBase> LockOnClass;
+
+	UPROPERTY(BlueprintReadOnly, Transient, meta=(AllowPrivateAccess=true))
+	TObjectPtr<class UKMLockOnProcessBase> LockOnInstance;
 
 public:
 	virtual void BeginPlay() override;
@@ -66,6 +72,12 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	virtual FTransform GetTransform() const;
+
+	UFUNCTION()
+	FText GetHeadTagText();
+
+	TSharedPtr<class FKMLockOnCluster> GetLockOnTarget() const;
+	TSharedPtr<class FKMLockOnCluster> GetInteractionTarget() const;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddGameplayTag(FGameplayTag newTag);
@@ -209,9 +221,7 @@ public:
 
 	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance);
 	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance);
-
-	virtual void OnSensorResult(const TArray<AActor*>& resultActors);
-
+	
 	virtual void BroadCastDamageEvent(const FKMDamageEvent& newDamageEvent);
 
 	UFUNCTION(BlueprintCallable)
@@ -222,6 +232,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	UKMGameObjectInstance* GetCarriedGameObjectInstance() const;
+
+	void OnSensorResult(const TArray<AActor*>& resultActors);
 	
 	static FKMDeathDelegate& GetDeathDelegate()
 	{
@@ -276,8 +288,6 @@ protected:
 
 	void ResolveNearestHitResult(const FTransform& orientationTransform, UClass* actorClassFilter, TArray<FHitResult>& hitResults);
 
-	void SetLockOnTagVisiblity(class FKMLockOnCluster* lockOnCluster, bool bVisible);
-
 protected:
 	FKMGameplayTagContainer GameplayTagContainer;
 	FKMStatChangeDelegate StatChangeEvent;
@@ -301,9 +311,7 @@ protected:
 
 	float Direction = 1.f;
 	float InteractionDirection = 1.f;
-
-	TSharedPtr<class FKMLockOnCluster> LockonTarget;
-	TSharedPtr<class FKMLockOnCluster> InteractionTarget;
+	
 	TSharedPtr<class FKMTimingParry> TimingParry;
 	TSharedPtr<class FKMTimingCancel> TimingCancel;
 
@@ -311,6 +319,4 @@ protected:
 	TWeakObjectPtr<UKMGameObjectInstance> CarriedObject;
 	
 	FTimerHandle SensorHandle;
-
-	bool bIsLockOnTagEnable = false;
 };

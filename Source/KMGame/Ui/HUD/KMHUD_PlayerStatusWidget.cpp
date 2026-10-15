@@ -23,7 +23,7 @@ void UKMHUD_PlayerStatusWidget::NativeConstruct()
 	check(IsValid(authCharacterInstance));
 	
 	HpGaugeTweener = NewObject<UEMTweener>(this);
-	HpGaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](float prevGauge, float nextGauge, float eplipseTime, float duration)
+	HpGaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](eTickerEventType eventType, float prevGauge, float nextGauge, float eplipseTime, float duration)
 	{
 		if (!IsValid(HpGaugeWidget))
 		{
@@ -35,7 +35,7 @@ void UKMHUD_PlayerStatusWidget::NativeConstruct()
 	}));
 
 	TempoGaugeTweener = NewObject<UEMTweener>(this);
-	TempoGaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](float prevGauge, float nextGauge, float eplipseTime, float duration)
+	TempoGaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](eTickerEventType eventType, float prevGauge, float nextGauge, float eplipseTime, float duration)
 	{
 		if (!IsValid(TempoGaugeWidget))
 		{

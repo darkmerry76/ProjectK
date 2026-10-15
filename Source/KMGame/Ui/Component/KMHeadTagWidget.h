@@ -15,14 +15,29 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidget))
 	TObjectPtr<class UImage> LockOnImage;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<class UEMTweener> GaugeTweener;
 	
 public:
 	UKMHeadTagWidget(const FObjectInitializer& objectInitializer);
 	virtual void NativeConstruct() override;
 
+	UFUNCTION(BlueprintPure)
+	class UEMTextBlock* GetTitleText() const;
+
+	UFUNCTION(BlueprintPure)
+	class UImage* GetLockOnImage() const;
+
+	UFUNCTION(BlueprintCallable)
 	void SetVisibileTitleText(ESlateVisibility newVisibility);
+
+	UFUNCTION(BlueprintPure)
 	ESlateVisibility GetVisibileTitleText() const;
 
+	UFUNCTION(BlueprintCallable)
 	void SetVisibileLockOnImage(ESlateVisibility newVisibility);
+
+	UFUNCTION(BlueprintPure)
 	ESlateVisibility GetVisibileLockOnImage() const;
 };

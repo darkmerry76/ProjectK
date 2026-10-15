@@ -19,7 +19,7 @@ void UKMHUD_EmpGaugeWidget::NativeConstruct()
 	check(IsValid(authCharacterInstance));
 	
 	GaugeTweener = NewObject<UEMTweener>(this);
-	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](float prevGauge, float nextGauge, float eplipseTime, float duration)
+	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](eTickerEventType eventType, float prevGauge, float nextGauge, float eplipseTime, float duration)
 	{
 		if (!IsValid(EmpGaugeWidget))
 		{

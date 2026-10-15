@@ -16,7 +16,7 @@ void UKMHUD_NPCStatusWidget::NativeConstruct()
 	UKMCharacterInstance::GetGlobalStatChangeEvent().AddUObject(this, &UKMHUD_NPCStatusWidget::OnStatChange);
 
 	GaugeTweener = NewObject<UEMTweener>(this);
-	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](float prevGauge, float nextGauge, float eplipseTime, float duration)
+	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](eTickerEventType eventType, float prevGauge, float nextGauge, float eplipseTime, float duration)
 	{
 		if (!IsValid(CurrHpGuageWidget))
 		{
@@ -27,7 +27,7 @@ void UKMHUD_NPCStatusWidget::NativeConstruct()
 		CurrHpGuageWidget->SetPercent(currHpPercent);
 	}));
 
-	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](float prevGauge, float nextGauge, float eplipseTime, float duration)
+	GaugeTweener->AddTweenDelegate(FEMTweenDelegate::CreateLambda([this](eTickerEventType eventType, float prevGauge, float nextGauge, float eplipseTime, float duration)
 	{
 		if (!IsValid(PrevHpGuageWidget))
 		{

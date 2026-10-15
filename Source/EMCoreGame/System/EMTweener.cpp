@@ -18,12 +18,12 @@ void UEMTweener::OnTweenUpdate(eTickerEventType eventType, float deltaTime, floa
 	
 	for (auto& delegateItr : TweenDelegates)
 	{
-		delegateItr.ExecuteIfBound(StartValue, NextValue, elapsedTime, duration);
+		delegateItr.ExecuteIfBound(eventType, StartValue, NextValue, elapsedTime, duration);
 	}
 
 	for (auto& delegateItr : TweenDynamicDelegates)
 	{
-		delegateItr.ExecuteIfBound(StartValue, NextValue, elapsedTime, duration);
+		delegateItr.ExecuteIfBound(eventType, StartValue, NextValue, elapsedTime, duration);
 	}
 }
 

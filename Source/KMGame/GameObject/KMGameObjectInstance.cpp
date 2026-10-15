@@ -1,5 +1,4 @@
 #include "KMGameObjectInstance.h"
-
 #include "Component/KMMoveShapeComponent.h"
 #include "Component/KMWidgetComponent.h"
 #include "FSM/KMStateMachine.h"
@@ -11,14 +10,15 @@
 #include "Skill/Ability/KMAbilityEffect.h"
 #include "Skill/Ability/KMAbilitySkillDirectionTag.h"
 #include "Skill/Parry/KMTiming.h"
+#include "Skill/Sensor/KMLockOnProcess.h"
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"
 #include "System/KMTargetSubsystem.h"
-#include "Tables/Generated/KMTable_Object_Interactive.h"
 #include "Tables/Generated/KMTable_Skill.h"
 #include "Tables/Generated/KMTable_SkillCondition.h"
 #include "Tables/Generated/KMTable_SkillEffect_Normal.h"
+#include "UI/Component/EMTextBlock.h"
 #include "Ui/Component/KMHeadTagWidget.h"
 #include "Util/KMUtil.h"
 
@@ -37,14 +37,7 @@ void UKMGameObjectInstance::BeginPlay()
 	StatModifier->Init();
 
 	SkillHandler = NewObject<UKMSkillHandler>(this, SkillHandlerClass, TEXT("SkillHandler"));
-
-	if (IsValid(SensorClass))
-	{
-		SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
-		SensorInstance->ResultDelegate.BindUObject(this, &ThisClass::OnSensorResult);
-		SensorInstance->Init();
-	}
-
+	
 	if (IsValid(StateMachineClass))
 	{
 		StateMachine = NewObject<UKMStateMachine>(this, StateMachineClass, TEXT("StateMachine"));
@@ -52,8 +45,34 @@ void UKMGameObjectInstance::BeginPlay()
 		StateMachine->Start();
 	}
 	
-	LockonTarget = MakeShared<FKMLockOnCluster>(this);
-	InteractionTarget = MakeShared<FKMLockOnCluster>(this);
+	if (IsValid(LockOnClass))
+	{
+		LockOnInstance = NewObject<UKMLockOnProcessBase>(this, LockOnClass, TEXT("LockOn"));
+		LockOnInstance->Initalize();
+	}
+
+	if (IsValid(SensorClass))
+	{
+		SensorInstance = NewObject<UKMSensor>(this, SensorClass, TEXT("Sensor"));
+		SensorInstance->ResultDelegate.BindUObject(this, &UKMGameObjectInstance::OnSensorResult);
+		SensorInstance->Init();
+	}
+
+	if (IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	{
+		if (UKMWidgetComponent* widgetComponent = ownerPawnInterface->GetWidgetComponent())
+		{
+			if (UKMHeadTagWidget* headTagWidget = Cast<UKMHeadTagWidget>(widgetComponent->GetWidget()))
+			{
+				headTagWidget->GetTitleText()->TextDelegate.BindDynamic(this, &UKMGameObjectInstance::GetHeadTagText);
+			}
+		}
+	}
+}
+
+FText UKMGameObjectInstance::GetHeadTagText()
+{
+	return FText::FromString(StateMachine->GetCurrentState()->GetStateTag().ToString());	
 }
 
 void UKMGameObjectInstance::EndPlay()
@@ -96,6 +115,16 @@ FString UKMGameObjectInstance::GetObjectName() const
 		return TEXT("");
 	}
 	return ObjectTable->Name;
+}
+
+TSharedPtr<FKMLockOnCluster> UKMGameObjectInstance::GetLockOnTarget() const
+{
+	return LockOnInstance->GetLockonTarget();
+}
+
+TSharedPtr<FKMLockOnCluster> UKMGameObjectInstance::GetInteractionTarget() const
+{
+	return LockOnInstance->GetLockonTarget();
 }
 
 FTransform UKMGameObjectInstance::GetTransform() const
@@ -487,23 +516,6 @@ bool UKMGameObjectInstance::BoxHitImpact(const TWeakPtr<FKMSkillInstance>& adjus
 		queryParams.AddIgnoredActor(OwnerActor.Get());
 	}
 
-/*	const FVector start = startOrientationTransform.GetLocation();
-	const FVector end = endOrientationTransform.GetLocation();
-	const FQuat rotation = endOrientationTransform.GetRotation();
-	const FVector extent = endOrientationTransform.GetScale3D();
-	
-	outHitResults.Empty();
-	DrawDebugBox(
-	GetWorld(),
-	end,
-	extent,
-	rotation,
-	FColor::Green,
-	false,
-	10.0f,
-	0,
-	2.0f
-);*/
 	if (GetWorld()->SweepMultiByObjectType(outHitResults,startOrientationTransform.GetLocation(),
 	endOrientationTransform.GetLocation(),endOrientationTransform.GetRotation(),objectTypeQuery, FCollisionShape::MakeBox(endOrientationTransform.GetScale3D()), queryParams))
 	{
@@ -801,7 +813,7 @@ const UKMGameObjectInstance* UKMGameObjectInstance::GetBestAggroTarget() const
 
 bool UKMGameObjectInstance::UseSkillParam(const FName skillName, int32 skillLevel, const TArray<FKMAssistSkillData> assistSkillData)
 {
-	TSharedPtr<FKMSkillInstance> skillInstance = GetSkillHandler()->UseSkill(FKMSkillKey(skillName,skillLevel), LockonTarget);
+	TSharedPtr<FKMSkillInstance> skillInstance = GetSkillHandler()->UseSkill(FKMSkillKey(skillName,skillLevel), GetLockOnTarget());
 	if (skillInstance.IsValid())
 	{
 		for (int32 assistSkillIndex = 0; assistSkillIndex < assistSkillData.Num(); ++assistSkillIndex)
@@ -820,22 +832,22 @@ bool UKMGameObjectInstance::UseSkillParam(const FName skillName, int32 skillLeve
 
 void UKMGameObjectInstance::UseForceSkill(FName skillId)
 {
-	GetSkillHandler()->UseForceSkill(skillId, MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseForceSkill(skillId, MakeShared<FKMLockOnCluster>(*GetLockOnTarget().Get()));
 }
 
 void UKMGameObjectInstance::UseCombatSkill()
 {
-	GetSkillHandler()->UseCombatSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseCombatSkill(MakeShared<FKMLockOnCluster>(*GetLockOnTarget().Get()));
 }
 
 void UKMGameObjectInstance::UseUltimateSkill()
 {
-	GetSkillHandler()->UseUltimateSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseUltimateSkill(MakeShared<FKMLockOnCluster>(*GetLockOnTarget().Get()));
 }
 
 void UKMGameObjectInstance::UseTechniqueSkill()
 {
-	GetSkillHandler()->UseTechniqueSkill(MakeShared<FKMLockOnCluster>(*LockonTarget.Get()));
+	GetSkillHandler()->UseTechniqueSkill(MakeShared<FKMLockOnCluster>(*GetLockOnTarget().Get()));
 }
 
 void UKMGameObjectInstance::UseTechniqueSkill_Release()
@@ -872,9 +884,9 @@ bool UKMGameObjectInstance::UseParrySkill()
 			{
 				guardSkillInstance.Pin()->SetForceComplete(true);
 			}
-			if(SkillHandler->CanUseSkill(parrySkillKey, LockonTarget))
+			if(SkillHandler->CanUseSkill(parrySkillKey, GetLockOnTarget()))
 			{
-				SkillHandler->UseSkill(parrySkillKey, LockonTarget);
+				SkillHandler->UseSkill(parrySkillKey, GetLockOnTarget());
 			}
 			TimingParry = nullptr;
 			return true;
@@ -953,9 +965,9 @@ void UKMGameObjectInstance::UseSkillDash(float dashDirection)
 bool UKMGameObjectInstance::UseChargeSkillAction()
 {
 	const FKMSkillKey guardSkillKey(TEXT("sk_stand_guard"), 0);
-	if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) || SkillHandler->CanUseSkill(guardSkillKey, LockonTarget))
+	if(!HasGameplayTag(FKMGameplayTagName::Block_Control_Tag) || SkillHandler->CanUseSkill(guardSkillKey, GetLockOnTarget()))
 	{
-		TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->UseSkill(guardSkillKey, LockonTarget);
+		TSharedPtr<FKMSkillInstance> guardSkillInstance = SkillHandler->UseSkill(guardSkillKey, GetLockOnTarget());
 		if (guardSkillInstance.IsValid())
 		{
 			TimingParry = MakeShared<FKMTimingParry>(this);
@@ -982,7 +994,7 @@ bool UKMGameObjectInstance::UseChargeSkillAction_Release()
 
 bool UKMGameObjectInstance::UseInteractionSkill()
 {
-	GetSkillHandler()->UseInteractionSkill(MakeShared<FKMLockOnCluster>(*InteractionTarget.Get()));
+	GetSkillHandler()->UseInteractionSkill(MakeShared<FKMLockOnCluster>(*GetInteractionTarget().Get()));
 	return true;
 }
 
@@ -990,81 +1002,6 @@ bool UKMGameObjectInstance::UseInteractionSkill_Release()
 {
 	GetSkillHandler()->UseSkill_Release();
 	return true;
-}
-
-void UKMGameObjectInstance::SetLockOnTagVisiblity(FKMLockOnCluster* lockOnCluster, bool bVisible)
-{
-	if (!bIsLockOnTagEnable || !lockOnCluster)
-	{
-		return;
-	}
-	
-	if (UKMGameObjectInstance* oldBestTargetObjectInstance = lockOnCluster->GetBestTarget())
-	{
-		if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(oldBestTargetObjectInstance->GetOwnerActor()))
-		{
-			if (UKMWidgetComponent* widgetComponent = pawnInterface->GetWidgetComponent())
-			{
-				if (UKMHeadTagWidget* headTagWidget = Cast<UKMHeadTagWidget>(widgetComponent->GetWidget()))
-				{
-					headTagWidget->SetVisibileLockOnImage(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
-				}
-			}
-		}
-	}
-}
-
-void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
-{
-	check(LockonTarget.IsValid());
-
-	SetLockOnTagVisiblity(LockonTarget.Get(), false);
-	
-	LockonTarget->Targets.Empty();
-	InteractionTarget->Targets.Empty();
-	for (auto actorItr = resultActors.CreateConstIterator(); actorItr; ++actorItr)
-	{
-		IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(*actorItr);
-		if (!pawnInterface)
-		{
-			continue;
-		}
-
-		UKMGameObjectInstance* targetGameObjectInstance = pawnInterface->GetGameObjectInstance();
-		if (!IsValid(targetGameObjectInstance))
-		{
-			continue;
-		}
-
-		const FKMTable_ObjectRow* objectTableRow = targetGameObjectInstance->GetTable();
-		if (!objectTableRow)
-		{
-			continue;
-		}
-		
-		if (targetGameObjectInstance->IsDead() ||
-			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Carried_Tag) ||
-			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Down_Tag))
-		{
-			continue;
-		}
-		if (objectTableRow->IsDestroy)
-		{
-			if (LockonTarget->Targets.IsEmpty())
-			{
-				LockonTarget->Targets.Emplace(targetGameObjectInstance->GetId());
-			}
-		}
-		if (IsRowA<FKMTable_Object_InteractiveRow>(objectTableRow))
-		{
-			if (InteractionTarget->Targets.IsEmpty())
-			{
-				InteractionTarget->Targets.Emplace(targetGameObjectInstance->GetId());
-			}
-		}
-	}
-
-	SetLockOnTagVisiblity(LockonTarget.Get(), true);
 }
 
 void UKMGameObjectInstance::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
@@ -1106,12 +1043,25 @@ UKMGameObjectInstance* UKMGameObjectInstance::GetCarriedGameObjectInstance() con
 
 void UKMGameObjectInstance::SetEnableLockOnTag(bool bEnable)
 {
-	bIsLockOnTagEnable = bEnable;
+	LockOnInstance->SetLockOnTagEnable(bEnable);
 }
 
 bool UKMGameObjectInstance::GetEnableLockOnTag() const
 {
-	return bIsLockOnTagEnable;
+	return LockOnInstance->IsLockOnTagEnable();
+}
+
+void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
+{
+	if (!GetSkillHandler()->IsUsedSkill()) 
+	{
+		UKMGameObjectInstance* bestTargetGameObject = GetLockOnTarget()->GetBestTarget();
+		if (!IsValid(bestTargetGameObject) || bestTargetGameObject->IsDead() ||
+			bestTargetGameObject->StateMachine->GetCurrentState()->GetStateTag() == FKMGameplayTagName::State_Idle_Tag)
+		{
+			LockOnInstance->OnProcessing(resultActors);
+		}
+	}
 }
 
 void UKMGameObjectInstance::Tick(float deltaSeconds)

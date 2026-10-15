@@ -11,7 +11,6 @@
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Skill/KMSkillHandler.h"
-#include "Skill/Ability/KMAbility.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
 #include "Stat/KMStatModifierBase.h"
@@ -715,7 +714,7 @@ void UKMCharacterInstance::RemoveGameplayTag(FGameplayTag Tag)
 	{
 		if (IsValid(SkillHandler))
 		{
-			SkillHandler->ActivatedNextComboSkill(LockonTarget);
+			SkillHandler->ActivatedNextComboSkill(GetLockOnTarget());
 		}
 	}
 }
