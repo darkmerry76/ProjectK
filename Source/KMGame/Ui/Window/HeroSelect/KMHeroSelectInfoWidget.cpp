@@ -60,7 +60,7 @@ void UKMHeroSelectInfoWidget::SelectHero(const FName& heroTableId)
 			}
 			if (itemIndex == 0)
 			{
-				static const UEnum* fightStyleTypeEnum = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMFightStyleType"), true);
+				static const UEnum* fightStyleTypeEnum = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMFightStyleType"), EFindObjectFlags::None);
 				check(IsValid(fightStyleTypeEnum));
 
 				FText fightStyleDisplayText = fightStyleTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(heroTableRow->FightStyle));
@@ -69,7 +69,7 @@ void UKMHeroSelectInfoWidget::SelectHero(const FName& heroTableId)
 			}
 			else if (itemIndex == 1)
 			{
-				static const UEnum* coreArmamentType = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMCoreArmamentType"), true);
+				static const UEnum* coreArmamentType = FindObject<UEnum>(nullptr, TEXT("/Script/KMGame.EKMCoreArmamentType"), EFindObjectFlags::None);
 				check(IsValid(coreArmamentType));
 
 				FText coreArmamentDisplayText = coreArmamentType->GetDisplayNameTextByValue(static_cast<int64>(heroTableRow->CoreArmament));

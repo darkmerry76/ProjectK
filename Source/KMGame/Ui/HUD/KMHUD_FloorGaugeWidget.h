@@ -41,7 +41,7 @@ protected:
 	float GaugeColorWeight = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FLinearColor BackgroundColor = FLinearColor(1.f, 1.f, 1.f, 0.2);
+	FLinearColor BackgroundColor = FLinearColor(1.f, 1.f, 1.f, 0.2f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Percent = 0.5f;
