@@ -10,10 +10,10 @@ class KMGAME_API AKMGameModeBase : public AEMGameModeBase
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="/Script/Engine.World"))
 	FSoftObjectPath InitMap;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="World"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true", AllowedClasses="/Script/Engine.World"))
 	bool bIsAutoAttachStateWidget = true;
 	
 	UPROPERTY()

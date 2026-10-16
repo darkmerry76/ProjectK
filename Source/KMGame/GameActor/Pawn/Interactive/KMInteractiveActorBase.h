@@ -44,6 +44,8 @@ protected:
 	ECollisionResponse PawnResponse = ECollisionResponse::ECR_Block;
 	FHitResult LastWallHitResult;
 
+	int32 LasteLandedFrameCount = 0;
+	
 public:
 	virtual void PossessedByGameObjectInstance(class UKMGameObjectInstance* newGameObjectInstance) override;
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
@@ -113,6 +115,12 @@ public:
 
 	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
 
+	virtual void SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode = 0) override;
+
+protected:
+	virtual float GetScaledRadius_Implementation() const override;
+	virtual float GetScaledHalfHeight_Implementation() const override;
+	
 protected:
 	virtual class UPawnMovementComponent* GetMovementComponent() const override;
 

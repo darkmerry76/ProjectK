@@ -10,7 +10,7 @@
 
 void FKMEditorModule::StartupModule()
 {
-	FCoreDelegates::OnPostEngineInit.AddLambda([this]()
+	FCoreDelegates::GetOnPostEngineInit().AddLambda([this]()
 	{
 		if (GUnrealEd)
 		{
@@ -18,9 +18,8 @@ void FKMEditorModule::StartupModule()
 			GUnrealEd->RegisterComponentVisualizer(UKMSpringArmComponent::StaticClass()->GetFName(), visualizer);
 			visualizer->OnRegister();
 		}
-
-		FEMMartialArtsEditorModule* martialArtsEditorModule = FModuleManager::GetModulePtr<FEMMartialArtsEditorModule>("EMMartialArtsEditor");
-		if (martialArtsEditorModule)
+		
+		if (FEMMartialArtsEditorModule* martialArtsEditorModule = FModuleManager::GetModulePtr<FEMMartialArtsEditorModule>("EMMartialArtsEditor"))
 		{
 			martialArtsEditorModule->GetCreateMartialArtsEditorDelegate().BindLambda([]()
 			{

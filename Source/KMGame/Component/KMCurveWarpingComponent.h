@@ -8,4 +8,7 @@ UCLASS(Blueprintable, BlueprintType, meta=(BlueprintSpawnableComponent))
 class KMGAME_API UKMCurveWarpingComponent : public UEMCurveWarpingComponent
 {
 	GENERATED_UCLASS_BODY()
+
+protected:
+	virtual void SetOwnerMovementMode(EMovementMode newMovementMode) override;
 };

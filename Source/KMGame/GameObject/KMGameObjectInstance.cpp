@@ -124,7 +124,7 @@ TSharedPtr<FKMLockOnCluster> UKMGameObjectInstance::GetLockOnTarget() const
 
 TSharedPtr<FKMLockOnCluster> UKMGameObjectInstance::GetInteractionTarget() const
 {
-	return LockOnInstance->GetLockonTarget();
+	return LockOnInstance->GetInteractionTarget();
 }
 
 FTransform UKMGameObjectInstance::GetTransform() const
@@ -1053,11 +1053,11 @@ bool UKMGameObjectInstance::GetEnableLockOnTag() const
 
 void UKMGameObjectInstance::OnSensorResult(const TArray<AActor*>& resultActors)
 {
-	if (!GetSkillHandler()->IsUsedSkill()) 
+	UKMGameObjectInstance* bestTargetGameObject = GetLockOnTarget()->GetBestTarget();
+	//if (!GetSkillHandler()->IsUsedSkill()) 
 	{
-		UKMGameObjectInstance* bestTargetGameObject = GetLockOnTarget()->GetBestTarget();
-		if (!IsValid(bestTargetGameObject) || bestTargetGameObject->IsDead() ||
-			bestTargetGameObject->StateMachine->GetCurrentState()->GetStateTag() == FKMGameplayTagName::State_Idle_Tag)
+		//if (!IsValid(bestTargetGameObject) || bestTargetGameObject->IsDead() ||
+			//bestTargetGameObject->StateMachine->GetCurrentState()->GetStateTag() == FKMGameplayTagName::State_Idle_Tag)
 		{
 			LockOnInstance->OnProcessing(resultActors);
 		}

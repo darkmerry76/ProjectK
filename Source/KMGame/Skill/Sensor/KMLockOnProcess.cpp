@@ -40,7 +40,7 @@ TSharedPtr<FKMLockOnCluster> UKMLockOnProcessBase::GetLockonTarget() const
 
 TSharedPtr<FKMLockOnCluster> UKMLockOnProcessBase::GetInteractionTarget() const
 {
-	return InteractionTarget;
+	return LockonTarget;
 }
 
 void UKMLockOnProcessBase::OnProcessing(const TArray<AActor*>& actors)
@@ -88,11 +88,6 @@ float UKMLockOnProcess::GetScoreTarget(const UKMGameObjectInstance* prevTarget, 
 {
 	float score = 0.0f;
 	
-	if (IsValid(prevTarget))
-	{
-		//score += static_cast<float>(prevTarget == currTarget) * 10.f;
-	}
-
 	FVector ownerForward = GetOwnerGamneObject()->GetOwnerActor()->GetActorForwardVector();
 	FVector targetToDirection = currTarget->GetOwnerActor()->GetActorLocation() - GetOwnerGamneObject()->GetOwnerActor()->GetActorLocation();
 
@@ -102,6 +97,7 @@ float UKMLockOnProcess::GetScoreTarget(const UKMGameObjectInstance* prevTarget, 
 	if (FMath::Abs(angleDeg) < 90.f)
 	{
 		score += (1.f - (FMath::Abs(angleDeg) / 90.f)) * 5.f;
+		score += static_cast<float>(prevTarget == currTarget) * 5.f;
 	}
 
 	score += (1.f - (targetToDirection.Length() / 1000.f)) * 5.f;
@@ -111,7 +107,7 @@ float UKMLockOnProcess::GetScoreTarget(const UKMGameObjectInstance* prevTarget, 
 
 void UKMLockOnProcess::OnProcessing(const TArray<AActor*>& actors)
 {
-	const UKMGameObjectInstance* prevTargetGameInstance = LockonTarget->GetBestTarget();
+	const UKMGameObjectInstance* prevTargetGameInstance = LockOnGameObjectInstance;
 	
 	LockonTarget->Targets.Empty();
 	InteractionTarget->Targets.Empty();
@@ -142,14 +138,13 @@ void UKMLockOnProcess::OnProcessing(const TArray<AActor*>& actors)
 		}
 		
 		if (targetGameObjectInstance->IsDead() ||
-			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Carried_Tag) ||
-			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Down_Tag))
+			targetGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Carried_Tag))
 		{
 			continue;
 		}
 
 		float currScore = GetScoreTarget(prevTargetGameInstance, targetGameObjectInstance);
-		if (objectTableRow->IsDestroy)
+		//if (objectTableRow->IsDestroy)
 		{
 			if (currScore > bestScore)
 			{
@@ -158,37 +153,33 @@ void UKMLockOnProcess::OnProcessing(const TArray<AActor*>& actors)
 			}
 		}
 		
-		if (IsRowA<FKMTable_Object_InteractiveRow>(objectTableRow))
+/*		if (IsRowA<FKMTable_Object_InteractiveRow>(objectTableRow))
 		{
 			if (currScore > bestInteractionScore)
 			{
 				bestInteractionScore = currScore;
 				bestInteractionGameInstance = targetGameObjectInstance;
 			}
-
-			if (InteractionTarget->Targets.IsEmpty())
-			{
-				InteractionTarget->Targets.Emplace(targetGameObjectInstance->GetId());
-			}
-		}
-	}
-
-	if (prevTargetGameInstance != bestTargetGameInstance)
-	{
-		SetLockOnTagVisiblity(prevTargetGameInstance, false);
+		}*/
 	}
 	
 	if (IsValid(bestTargetGameInstance))
 	{
-		if (prevTargetGameInstance != bestTargetGameInstance)
-		{
-			SetLockOnTagVisiblity(bestTargetGameInstance, true);
-		}
 		LockonTarget->Targets.Emplace(bestTargetGameInstance->GetId());
+		LockOnGameObjectInstance = bestTargetGameInstance;
 	}
 
 	if (IsValid(bestInteractionGameInstance))
 	{
 		InteractionTarget->Targets.Emplace(bestInteractionGameInstance->GetId());
+		LockOnGameObjectInstance = bestInteractionGameInstance;
 	}
+
+	if (prevTargetGameInstance != LockOnGameObjectInstance)
+	{
+		SetLockOnTagVisiblity(prevTargetGameInstance, false);
+		SetLockOnTagVisiblity(LockOnGameObjectInstance, true);
+	}
+
+	
 }

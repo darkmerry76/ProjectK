@@ -166,6 +166,13 @@ UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const
 	return CurveWarpingComponent;
 }
 
+void AKMCharacter::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
+{
+	if (UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		characterMovementComponent->SetMovementMode(newMovementMode);
+	}
+}
 
 UMeshComponent* AKMCharacter::GetPlacementMeshComponent() const
 {
@@ -189,6 +196,16 @@ bool AKMCharacter::IsAir() const
 bool AKMCharacter::IsLand() const
 {
 	return !IsAir();
+}
+
+float AKMCharacter::GetScaledRadius_Implementation() const
+{
+	return GetCapsuleComponent()->GetScaledCapsuleRadius();
+}
+
+float AKMCharacter::GetScaledHalfHeight_Implementation() const
+{
+	return GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 }
 
 USceneComponent* AKMCharacter::GetCameraTarget() const

@@ -6,6 +6,7 @@
 #include "Component/KMPawnMovementComponent.h"
 #include "Component/KMWidgetComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
+#include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
 
@@ -77,6 +78,16 @@ UKMGameObjectInstance* AKMInteractiveActorBase::GetGameObjectInstance() const
 	return InteractiveInstance.Get();
 };
 
+float AKMInteractiveActorBase::GetScaledRadius_Implementation() const
+{
+	return MoveShapeComponent->GetScaledCapsuleRadius();
+}
+
+float AKMInteractiveActorBase::GetScaledHalfHeight_Implementation() const
+{
+	return MoveShapeComponent->GetScaledCapsuleHalfHeight();
+}
+
 void AKMInteractiveActorBase::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
 {
 	InteractiveInstance = Cast<UKMInteractiveInstance>(newGameObjectInstance);
@@ -122,6 +133,14 @@ UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedComponent() co
 UPawnMovementComponent* AKMInteractiveActorBase::GetMovementComponent() const
 {
 	return MovementComponent;
+}
+
+void AKMInteractiveActorBase::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
+{
+	if (UKMPawnMovementComponent* pawnMovementComponent = Cast<UKMPawnMovementComponent>(MovementComponent))
+	{
+		pawnMovementComponent->SetMovementMode(newMovementMode);
+	}
 }
 
 void AKMInteractiveActorBase::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
@@ -173,6 +192,17 @@ void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGa
 
 void AKMInteractiveActorBase::LandHit(const FHitResult& hitResult)
 {
+	if (UKMGameObjectInstance* gameObjectInstance = GetGameObjectInstance())
+	{
+		if (UKMSkillHandler* skillHandler = gameObjectInstance->GetSkillHandler())
+		{
+			if (GFrameCounter - LasteLandedFrameCount > 1)
+			{
+				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
+				LasteLandedFrameCount = GFrameCounter;
+			}
+		}
+	}
 }
 
 void AKMInteractiveActorBase::WallHit(const FHitResult& hitResult)

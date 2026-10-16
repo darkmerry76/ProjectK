@@ -11,6 +11,9 @@ protected:
 	TSharedPtr<class FKMLockOnCluster> LockonTarget;
 	TSharedPtr<class FKMLockOnCluster> InteractionTarget;
 
+	UPROPERTY()
+	class UKMGameObjectInstance* LockOnGameObjectInstance = nullptr;
+
 	bool bIsLockOnTagEnable = false;
 	
 public:

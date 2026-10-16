@@ -104,6 +104,8 @@ public:
 
 	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
 
+	virtual void SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode = 0) override;
+
 	void SetMirror(bool bMirror);
 	bool GetMirror() const;
 
@@ -151,7 +153,7 @@ public:
 	virtual void LandHit(const FHitResult& HitResult) override;
 	virtual void WallHit(const FHitResult& HitResult) override;
 	virtual void CeilingHit(const FHitResult& HitResult) override;
-	\
+
 	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -179,6 +181,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+
+	virtual float GetScaledRadius_Implementation() const override;
+	virtual float GetScaledHalfHeight_Implementation() const override;
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarry")
 	void Receive_OnStartCarry(class UKMGameObjectInstance* carryGameObjectInstance);

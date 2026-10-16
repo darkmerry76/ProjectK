@@ -97,11 +97,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnregisterMoveBlockReflection(class AKMCharacter* targetCharacter);
 	
+	virtual void SetMovementMode(EMovementMode NewMovementMode, uint8 NewCustomMode = 0) override;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
-
-	virtual void SetMovementMode(EMovementMode NewMovementMode, uint8 NewCustomMode = 0) override;
 	
 	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction *thisTickFunction) override;
 	virtual void PerformMovement(float deltaTime) override;

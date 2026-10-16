@@ -24,14 +24,23 @@ public:
 
 	virtual class UMeshComponent* GetPlacementMeshComponent() const = 0;
 	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const = 0;
+	
 	virtual bool IsAir() const = 0;
 	virtual bool IsLand() const = 0;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	float GetScaledRadius() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	float GetScaledHalfHeight() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FTransform GetCarryOffsetTransform() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	const FHitResult GetLatestWallHitResult() const;
+
+	virtual void SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode = 0) = 0;
 
 	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) = 0;
 	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) = 0;

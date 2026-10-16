@@ -57,6 +57,7 @@ bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)
 	targetActor->AttachToComponent(ownerActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 	{
+		targetWorldTransform.SetScale3D(FVector::One());
 		targetAttachedBlendingComponent->StartBlending(ownerCharacter->GetMesh(), attackSocket, targetWorldTransform, blendingDuration);
 	}
 	return true;

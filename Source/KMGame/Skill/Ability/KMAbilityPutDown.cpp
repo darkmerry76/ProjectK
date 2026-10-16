@@ -225,6 +225,7 @@ bool UKMAbilityPutDown::StartPutDown(FName attackSocket, float blendingDuration)
 	{
 		if (UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawnInterface->GetAttachedBlendingComponent())
 		{
+			carriedWorldTransform.SetScale3D(FVector::One() / carriedAttachedBlendingComponent->GetOffsetTransform().GetScale3D());
 			carriedAttachedBlendingComponent->StartBlending(ownerCharacter->GetMesh(), attackSocket, carriedWorldTransform, blendingDuration * -1.f);
 		}
 	}

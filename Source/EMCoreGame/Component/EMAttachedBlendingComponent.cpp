@@ -57,7 +57,7 @@ void UEMAttachedBlendingComponent::UpdateTransform(float deltaTime)
 		
 		SetWorldLocation(worldTransform.GetLocation());
 		SetWorldRotation(worldTransform.GetRotation());
-		SetWorldScale3D(worldTransform.GetScale3D());
+		SetRelativeScale3D(TargetWorldTransform.GetScale3D() * OffsetTransform.GetScale3D());
 	}
 	
 	BlendElipsedTime += deltaTime;

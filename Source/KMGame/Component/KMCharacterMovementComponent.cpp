@@ -659,11 +659,7 @@ bool UKMCharacterMovementComponent::CustomMovementFalling(const FVector& adjuste
 				{
 					if (hitResult.ImpactNormal.Z < 0.3f && hitResult.ImpactNormal.Z > -0.5f)
 					{
-						FVector slideDelta = ComputeSlideVector(
-							finalAdjusted,
-							1.f - hitResult.Time,
-							hitResult.Normal,
-							hitResult
+						FVector slideDelta = ComputeSlideVector(finalAdjusted,1.f - hitResult.Time, hitResult.Normal, hitResult
 						);
 
 						const float moveDistance = finalAdjusted.Size();
@@ -778,14 +774,8 @@ bool UKMCharacterMovementComponent::IsOnGround() const
 
 		FFindFloorResult floorResult;
 		//FindFloor(UpdatedComponent->GetComponentLocation(), FloorResult, false);
-
-		ComputeFloorDist(
-			UpdatedComponent->GetComponentLocation(),
-	MaxStepHeight,
-	MaxStepHeight,
-		floorResult,
-		CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius(),
-	nullptr);
+		ComputeFloorDist(UpdatedComponent->GetComponentLocation(),MaxStepHeight,MaxStepHeight,
+			floorResult, CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius(),nullptr);
 
 		if (floorResult.IsWalkableFloor())
 		{

@@ -18,10 +18,10 @@ void UKMAbilityBlow::Trigger(const FGameplayTag& eventTag)
 {
 	Super::Trigger(eventTag);
 
-	AKMCharacter* ownerCharacter = GetOwnerCharacter();
-	check(IsValid(ownerCharacter));
+	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
+	check(IsValid(ownerGameObjectInstance));
 
-	UKMSkillHandler* skillHandler = ownerCharacter->GetCharacterInstance()->GetSkillHandler();
+	UKMSkillHandler* skillHandler = ownerGameObjectInstance->GetSkillHandler();
 	if (!IsValid(skillHandler))
 	{
 		return;
