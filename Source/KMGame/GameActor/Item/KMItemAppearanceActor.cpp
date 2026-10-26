@@ -331,11 +331,11 @@ void AKMItemAppearanceChainActor::Tick(float deltaTime)
 			TWeakObjectPtr<UKMChainAnimInstance> chainAnimInstance = Cast<UKMChainAnimInstance>(ChainMesh->GetAnimInstance());
 			if (chainAnimInstance.IsValid())
 			{
-				if (IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(TargetGameObejctInstance.Pin()->GetOwnerActor()))
+				if (AKMPawnBase* targetPawn = Cast<AKMPawnBase>(TargetGameObejctInstance.Pin()->GetOwnerActor()))
 				{
 					if (IsValid(EndMesh))
 					{
-						FTransform newTargetTransform = targetPawnInterface->GetApproachPullPoint();
+						FTransform newTargetTransform = targetPawn->GetApproachPullPoint();
 						newTargetTransform.SetRotation(EndMesh->GetComponentToWorld().GetRotation());
 						newTargetTransform.SetScale3D(EndMesh->GetComponentToWorld().GetScale3D());
 						chainAnimInstance->SetTargetLocation(newTargetTransform.GetLocation());

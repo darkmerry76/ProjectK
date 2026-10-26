@@ -1,7 +1,7 @@
 #include "KMAnimNotifyState_PairBlend.h"
-#include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Component/KMPawnMoverComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/Ability/KMAbilityPaired.h"
 #include "Skill/Ability/KMAbilitySkill.h"
@@ -101,8 +101,8 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 		return;
 	}
 	
-	UKMCharacterMovementComponent* ownerCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(ownerCharacterMovementComponent))
+	UKMPawnMoverComponent* ownerPawnMoverComponent = ownerCharacter->GetMoverComponent();
+	if (!IsValid(ownerPawnMoverComponent))
 	{
 		return;
 	}
@@ -126,22 +126,22 @@ void UKMAnimNotifyState_PairBlend::NotifyBegin(USkeletalMeshComponent* meshComp,
 			{
 				return;
 			}
-			UKMCharacterMovementComponent* casterCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(casterCharacter->GetCharacterMovement());
-			if (!IsValid(casterCharacterMovementComponent))
+			UKMPawnMoverComponent* casterPawnMoverComponent = casterCharacter->GetMoverComponent();
+			if (!IsValid(casterPawnMoverComponent))
 			{
 				return;
 			}
 
 			if (bIsStartBlend)
 			{
-				ownerCharacterMovementComponent->StartFollowActor(casterCharacter, LeaderMontageInstanceTag, FollowMontageInstanceTag, FTransform(PairOffset), StartBlendTime);
+				ownerPawnMoverComponent->StartFollowActor(casterCharacter, LeaderMontageInstanceTag, FollowMontageInstanceTag, FTransform(PairOffset), StartBlendTime);
 				//FVector warpLocation = casterCharacter->GetActorLocation() + (casterCharacter->GetActorForwardVector() * PairOffset.X) + (casterCharacter->GetActorRightVector() * PairOffset.Y);
 				//curveWarpingComponent->PlayLinearWarp(warpLocation, 0.1f);
 				
 			}
 			if (bIsBlockReflection)
 			{
-				casterCharacterMovementComponent->RegisterMoveBlockReflection(ownerCharacter);
+				casterPawnMoverComponent->RegisterMoveBlockReflection(ownerCharacter);
 			}
 		}
 	}
@@ -163,8 +163,8 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 		return;
 	}
 	
-	UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(characterMovementComponent))
+	UKMPawnMoverComponent* ownerPawnMoverComponent = ownerCharacter->GetMoverComponent();
+	if (!IsValid(ownerPawnMoverComponent))
 	{
 		return;
 	}
@@ -180,20 +180,20 @@ void UKMAnimNotifyState_PairBlend::NotifyEnd(USkeletalMeshComponent* meshComp, U
 			{
 				return;
 			}
-			UKMCharacterMovementComponent* casterCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(casterCharacter->GetCharacterMovement());
-			if (!IsValid(casterCharacterMovementComponent))
+			UKMPawnMoverComponent* casterPawnMoverComponent = casterCharacter->GetMoverComponent();
+			if (!IsValid(casterPawnMoverComponent))
 			{
 				return;
 			}
 			
 			if (bIsStartBlend)
 			{
-				characterMovementComponent->StopFollowActor(casterCharacter, 0.2f);
+				ownerPawnMoverComponent->StopFollowActor(casterCharacter, 0.2f);
 			}
 			
 			if (bIsBlockReflection)
 			{
-				casterCharacterMovementComponent->UnregisterMoveBlockReflection(ownerCharacter);
+				casterPawnMoverComponent->UnregisterMoveBlockReflection(ownerCharacter);
 			}
 		}
 	}

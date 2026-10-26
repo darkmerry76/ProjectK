@@ -7,7 +7,6 @@
 #include "Ability/KMAbilityEffect.h"
 #include "Ability/KMAbilitySkill.h"
 #include "DataAsset/KMAssetManager.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Stat/KMStatModifierBase.h"
 #include "System/KMGameObjectSubsystem.h"

@@ -65,7 +65,7 @@ public:
 	virtual FTransform GetTransform() const override;
 
 	virtual void SetDirectionVisual(float newDirection, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr) override;
-	virtual void SetDirection(float newDirection, bool bForceRotate = false) override;
+	virtual bool SetDirection(float newDirection, bool bForceRotate = false) override;
 	virtual float GetDirection() const override;
 	
 	UFUNCTION(BlueprintPure)

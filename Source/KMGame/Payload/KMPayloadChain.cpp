@@ -1,4 +1,5 @@
 ﻿#include "KMPayloadChain.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMPayloadChain::UKMPayloadChain(const FObjectInitializer& objectInitializer) : Super(objectInitializer)

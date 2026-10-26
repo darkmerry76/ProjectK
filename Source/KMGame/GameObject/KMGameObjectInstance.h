@@ -143,7 +143,7 @@ public:
 	virtual void SetDirectionVisual(float newDirection, bool bForceRotate = false, class USkeletalMeshComponent* otherSkeletalMeshComp = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void SetDirection(float newDirection, bool bForceRotate = false);
+	virtual bool SetDirection(float newDirection, bool bForceRotate = false);
 
 	UFUNCTION(BlueprintPure)
 	virtual float GetDirection() const;

@@ -17,7 +17,7 @@ void UKMAnimNotifyState_Movement::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
 	{
-		ownerCharacter->GetCharacterMovement()->SetMovementMode(MovementMode);
+		//ownerCharacter->GetCharacterMovement()->SetMovementMode(MovementMode);
 	}
 }
 
@@ -25,6 +25,6 @@ void UKMAnimNotifyState_Movement::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 {
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(MeshComp->GetOwner()))
 	{
-		ownerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		//ownerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	}
 }

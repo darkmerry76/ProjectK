@@ -1,13 +1,13 @@
 #include "KMAbility.h"
 #include "KMAbilityBlow.h"
 #include "Animation/KMAnimInstance.h"
-#include "Component/KMCharacterMovementComponent.h"
 #include "Component/KMCurveWarpingComponent.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Component/KMMoveShapeComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
-#include "GameActor/Pawn/Character/KMCharacterAnimInstance.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
 #include "Skill/KMSkillHandler.h"
@@ -52,6 +52,11 @@ AActor* UKMAbility::GetOwnerActor() const
 	}
 	
 	return gameGameObjectInstance->GetOwnerActor();
+}
+
+AKMPawnBase* UKMAbility::GetOwnerPawn() const
+{
+	return Cast<AKMPawnBase>(GetOwnerActor());
 }
 
 AKMCharacter* UKMAbility::GetOwnerCharacter() const
@@ -103,9 +108,9 @@ void UKMAbility::Activate()
 	AActor* ownerActor = GetOwnerActor();
 	check(IsValid(ownerActor));
 
-	if(IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
+	if(AKMPawnBase* pawn = Cast<AKMPawnBase>(ownerActor))
 	{
-		if (UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarpingComponent())
+		if (UKMCurveWarpingComponent* curveWarping = pawn->GetCurveWarpingComponent())
 		{
 			if (IsValid(BlowCurve))
 			{
@@ -144,9 +149,9 @@ void UKMAbility::Deactivate(bool bCancel)
 	AActor* ownerActor = GetOwnerActor();
 	check(IsValid(ownerActor));
 
-	if(IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor))
+	if(AKMPawnBase* pawn = Cast<AKMPawnBase>(ownerActor))
 	{
-		UKMCurveWarpingComponent* curveWarping = pawnInterface->GetCurveWarpingComponent();
+		UKMCurveWarpingComponent* curveWarping = pawn->GetCurveWarpingComponent();
 		if (bIsClearCurve && IsValid(curveWarping))
 		{
 			if (CurveWapingInstanceId != INDEX_NONE)
@@ -178,13 +183,13 @@ void UKMAbility::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta
 
 void UKMAbility::PlayMartialArts(TSharedPtr<UE::Anim::IAnimNotifyEventContextDataInterface> newContextData, float newRate, bool bLooping)
 {
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	if (!pawnInterface)
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if (!IsValid(pawn))
 	{
 		return;
 	}
 	
-	UKMMartialArtsComponent* martialArtsComponent = pawnInterface->GetMartialArtsComponent();
+	UKMMartialArtsComponent* martialArtsComponent = pawn->GetMartialArtsComponent();
 	if (!IsValid(martialArtsComponent))
 	{
 		return;
@@ -229,13 +234,13 @@ void UKMAbility::K2_OnMartialArtsEnd_Implementation(int instanceId)
 
 void UKMAbility::StopMartialArts()
 {
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	if (!pawnInterface)
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if (!IsValid(pawn))
 	{
 		return;
 	}
 	
-	UKMMartialArtsComponent* martialArtsComponent = pawnInterface->GetMartialArtsComponent();
+	UKMMartialArtsComponent* martialArtsComponent = pawn->GetMartialArtsComponent();
 	if (!IsValid(martialArtsComponent))
 	{
 		return;
@@ -314,7 +319,7 @@ FAnimMontageInstance* UKMAbility::PlayMontage(UAnimMontage* montage, float playR
 
 	if (UKMAnimInstance* animInstance = Cast<UKMAnimInstance>(GetOwnerCharacter()->GetMesh()->GetAnimInstance()))
 	{
-		animInstance->Montage_Play(usedMontage, playRate);
+		animInstance->Montage_PlayForRootMotion(usedMontage, playRate);
 		if (slotType == EKMAnimSlotType::DefaultSlot)
 		{
 			animInstance->BlendSlot(slotType, 0.f, slotBlendTime);
@@ -509,7 +514,7 @@ FVector UKMAbility::GetOffsetOwnerAlongTargetDirection(float offsetDistance, flo
 	targetToOwner.Normalize();
 
 	FVector result = ownerActor->GetActorLocation() + (targetToOwner * offsetDistance * weight);
-	return FVector(result.X, result.Y, bIgnoreZ ? targetActor->GetActorLocation().Z : result.Z);
+	return FVector(result.X, result.Y, bIgnoreZ ? ownerActor->GetActorLocation().Z : result.Z);
 }
 
 FVector UKMAbility::GetOffsetTargetAlongOwnerDirection(float offsetDistance, float weight, bool bIgnoreZ) const
@@ -540,9 +545,9 @@ FVector UKMAbility::GetOwnerFootLocation(float offsetHeight) const
 	check(IsValid(ownerActor));
 	
 	FVector footLocation = ownerActor->GetActorLocation();
-	if (ACharacter* ownerCharacter = Cast<ACharacter>(ownerActor))
+	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 	{
-		footLocation.Z -= ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + offsetHeight;
+		footLocation.Z -= ownerCharacter->GetMovementShapeComponent()->GetScaledCapsuleHalfHeight() + offsetHeight;
 	}
 
 	return footLocation;
@@ -564,13 +569,13 @@ void UKMAbility::AddOwnerMotionWarpingLocation(FName targetName, FVector targetL
 
 void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurveBase* newCurveAsset, FVector newTargetLocation, float newPlayLength, float newZScale, bool bIgnoreZ)
 {
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	if(!ownerPawnInterface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if(!IsValid(ownerPawn))
 	{
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerPawnInterface->GetCurveWarpingComponent();
+	UKMCurveWarpingComponent* curveWarping = ownerPawn->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayCurveWarping(movementMode, newCurveAsset, newTargetLocation, newPlayLength, newZScale, bIgnoreZ);
@@ -578,13 +583,13 @@ void UKMAbility::PlayOwnerCurveWarping(EEMCustomMovementMode movementMode, UCurv
 
 void UKMAbility::PlayOwnerLinearWarping(FVector newTargetLocation, float newPlayLength)
 {
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	if(!ownerPawnInterface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if(!IsValid(ownerPawn))
 	{
 		return;
 	}
 
-	UKMCurveWarpingComponent* curveWarping = ownerPawnInterface->GetCurveWarpingComponent();
+	UKMCurveWarpingComponent* curveWarping = ownerPawn->GetCurveWarpingComponent();
 	check(IsValid(curveWarping));
 
 	curveWarping->PlayLinearWarp(newTargetLocation, newPlayLength);

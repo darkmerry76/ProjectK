@@ -9,7 +9,7 @@ class KMGAME_API AKMCharacterMonster : public AKMCharacter
 {
 	GENERATED_BODY()
 	
-private:
+protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 };

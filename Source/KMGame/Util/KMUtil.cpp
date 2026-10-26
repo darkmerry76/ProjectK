@@ -8,13 +8,13 @@
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMCharacterPDA.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMHeroInstance.h"
 #include "GameObject/KMMonsterInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tables/Generated/KMTable_Object_Beast.h"
 #include "Tables/Generated/KMTable_Object_Character.h"
 #include "BoneContainer.h"
+#include "Component/KMSkeletalMeshComponent.h"
 
 double UKMUtil::GameElipsedStartTime = 0.f;
 
@@ -268,7 +268,7 @@ UKMCharacterInstance* UKMUtil::SpawnCharacterObjectByTable(UObject* worldContext
 	}
 #endif
 	
-	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	//newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	return newCharacterInstance;
 }

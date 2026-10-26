@@ -1,5 +1,6 @@
 #include "KMSpawnActor.h"
 
+#include "Component/KMMoveShapeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
@@ -38,29 +39,13 @@ void AKMSpawnInteractive::BeginPlay()
 	UKMInteractiveInstance* interactiveInstance = gameObjectSubsystem->SpawnInteractiveObject(InteractiveId, GetActorTransform());
 	check(IsValid(interactiveInstance));
 
-	AActor* ownerActor = interactiveInstance->GetOwnerActor();
 	AKMInteractiveActorBase* interactiveActor = Cast<AKMInteractiveActorBase>(interactiveInstance->GetOwnerActor());
 	check(IsValid(interactiveActor));
 
-	float halfHeight = 0.f;
-
-	if(UCapsuleComponent* capsuleComponent = Cast<UCapsuleComponent>(interactiveActor->GetMovementShapeComponent()))
-	{
-		halfHeight = capsuleComponent->GetScaledCapsuleHalfHeight();
-	}
-	else if (UBoxComponent* boxComponent = Cast<UBoxComponent>(interactiveActor->GetMovementShapeComponent()))
-	{
-		halfHeight = boxComponent->GetScaledBoxExtent().Z;
-	}
-	else if (USphereComponent* sphereComponent = Cast<USphereComponent>(interactiveActor->GetMovementShapeComponent()))
-	{
-		halfHeight = sphereComponent->GetScaledSphereRadius();
-	}
+	float halfHeight = interactiveActor->GetMovementShapeComponent()->GetScaledCapsuleHalfHeight();
 
 	FVector startLocation = GetActorLocation() + FVector(0.f, 0.f, halfHeight);
 	FVector targetLocation = startLocation + FVector(0.f, 0.f, -10000.f);
-
-	FHitResult hitResult;
 
 	FCollisionObjectQueryParams objectQueryParams;
 	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
@@ -71,6 +56,8 @@ void AKMSpawnInteractive::BeginPlay()
 		FCollisionQueryParams queryParams;
 		queryParams.AddIgnoredActor(interactiveActor);
 
+		FHitResult hitResult;
+		
 		bool bHit = GetWorld()->LineTraceSingleByObjectType(hitResult, startLocation,targetLocation, objectQueryParams, queryParams);
 		if (bHit == true)
 		{

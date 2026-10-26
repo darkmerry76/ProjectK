@@ -12,8 +12,4 @@ class EMCOREGAME_API AEMCharacterBase : public ACharacter
 public:
 	virtual void BeginPlay() override;
 	static const FName MovementComponentName;
-
-protected:
-	UPROPERTY(Category = Character, EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<class UEMCharacterMovementComponent> MovementComponent = nullptr;
 };

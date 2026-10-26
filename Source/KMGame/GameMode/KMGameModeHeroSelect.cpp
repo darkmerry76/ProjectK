@@ -1,7 +1,7 @@
 #include "KMGameModeHeroSelect.h"
-#include "Components/CapsuleComponent.h"
+#include "Component/KMMoveShapeComponent.h"
+#include "Component/KMPawnMoverComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMHeroInstance.h"
 #include "System/KMGameObjectSubsystem.h"
 
@@ -55,8 +55,8 @@ void AKMGameModeHeroSelect::OnSpawnHeroInstance_Implementation(UKMHeroInstance* 
 	{
 		if (AKMCharacter* character = newHeroInstance->GetCharacter())
 		{
-			character->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-			character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+			character->GetMovementShapeComponent()->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+			character->GetMoverComponent()->QueueNextMode(TEXT(""));
 		}
 		newHeroInstance->OnHeroSelected();
 	}

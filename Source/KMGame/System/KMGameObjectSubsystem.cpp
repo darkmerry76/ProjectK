@@ -6,7 +6,6 @@
 #include "GameActor/Camera/KMCameraActor.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameActor/Pawn/Interactive/KMInteractiveActorBase.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameObject/KMActorInstance.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "GameObject/KMMonsterInstance.h"
@@ -86,10 +85,9 @@ UKMCharacterInstance* UKMGameObjectSubsystem::SpawnCharacterObject(FName charact
 		characterPDA->CharacterClass, finalTransform, nullptr, nullptr);
 	check(IsValid(newCharacter));
 
-	newCharacter->SetMirror(bFlipY);
 	newCharacter->PossessedByGameObjectInstance(newCharacterInstance);
 	newCharacter->FinishSpawning(finalTransform, false);
-	newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	//newCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	
 	AddGameObject(newCharacterInstance);
 

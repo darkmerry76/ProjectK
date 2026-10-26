@@ -1,17 +1,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/EMCharacterBase.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
-#include "GameObject/KMCharacterInstance.h"
+#include "KMPawnBase.h"
 #include "KMCharacter.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, abstract)
-class KMGAME_API AKMCharacter : public AEMCharacterBase, public IKMPawnInterface
+class KMGAME_API AKMCharacter : public AKMPawnBase
 {
 	GENERATED_UCLASS_BODY()
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UKMSkeletalMeshComponent> SkeletalMeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UKMWidgetComponent> WidgetComponent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName DefaultWeaponItem = NAME_None;
 
@@ -22,25 +26,10 @@ protected:
 	TObjectPtr<class UKMSoundSetTag> SoundsetTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMCurveWarpingComponent> CurveWarpingComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMMartialArtsComponent> MartialArtsComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UKMWidgetComponent> WidgetComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UAudioComponent> AudioComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USceneComponent> CameraTarget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag TakeTag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag TakenTag;
 
 	UPROPERTY(Transient, BlueprintReadOnly)
 	TObjectPtr<class UKMItemAppearanceInstance> WeaponInstance;
@@ -64,50 +53,19 @@ protected:
 	uint64 LasteWallHitFrameCount = 0;
 	uint64 LastetCeilingHitFrameCount = 0;
 
-	FHitResult LastWallHitResult; 
-
 public:
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetCharacterInstance() const;
 
 	UFUNCTION(BlueprintPure)
-	virtual class UKMGameObjectInstance* GetGameObjectInstance() const override;
-	
-	virtual void PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance) override;
+	class UKMSkeletalMeshComponent* GetMesh() const;
 
-	UFUNCTION(BlueprintPure)
-	virtual class UPrimitiveComponent* GetMovementShapeComponent() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual class UKMMartialArtsComponent* GetMartialArtsComponent() const override;
-
-	UFUNCTION(BlueprintPure)
 	virtual class UKMWidgetComponent* GetWidgetComponent() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual class UKMCurveWarpingComponent* GetCurveWarpingComponent() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual class UMeshComponent* GetPlacementMeshComponent() const override;
-	
-	UFUNCTION(BlueprintPure)
-	virtual class UKMAttachedBlendingComponent* GetAttachedBlendingComponent() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual bool IsAir() const override;
-
-	UFUNCTION(BlueprintPure)
-	virtual bool IsLand() const override;
 	
 	UFUNCTION(BlueprintPure)
 	class USceneComponent* GetCameraTarget() const;
 
 	virtual FTransform GetCarryOffsetTransform_Implementation() const override;
-
-	virtual void SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode = 0) override;
-
-	void SetMirror(bool bMirror);
-	bool GetMirror() const;
 
 	UFUNCTION(BlueprintPure)
 	const FVector& GetInputVelocity() const;
@@ -127,6 +85,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float MontqagePlay(class UAnimMontage* animMontage, float playRate = 1.f,
 		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
+
+	UFUNCTION(BlueprintCallable)
+	void StopAnimMontage(class UAnimMontage* animMontage);
 
 	UFUNCTION(BlueprintPure)
 	class UAnimMontage* GetAnimationTagOriginal(FGameplayTag tag) const;
@@ -149,53 +110,16 @@ public:
 	void SetBeastPDA(const class UKMBeastPDA* newBeastPDA);
 	const class UKMBeastPDA* GetBeastPDA() const;
 
-	virtual void Landed(const FHitResult& hitResult) override;
-	virtual void LandHit(const FHitResult& HitResult) override;
-	virtual void WallHit(const FHitResult& HitResult) override;
-	virtual void CeilingHit(const FHitResult& HitResult) override;
-
-	virtual void OnImpact(const TSharedPtr<class FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag) override;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void Receive_OnImpact(const FName& skillEffectName, const FVector& hitClosestPoint, const FName& hitTag);
-	
-	virtual void OnDeath() override;
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void Receive_OnDeath();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void StartCrarry(class UKMGameObjectInstance* carriedGameObjectInstance) override;
-	
-	UFUNCTION(BlueprintCallable)
-	virtual void StartCrarried(class UKMGameObjectInstance* carryGameObjectInstance) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void ComplatePutdown(class UKMGameObjectInstance* putDownedGameObjectInstance) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void ComplatePutdowned(class UKMGameObjectInstance* putDownGameObjectInstance) override;
-
 	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+	virtual void OnConstruction(const FTransform& transform) override;
 
-	virtual float GetScaledRadius_Implementation() const override;
-	virtual float GetScaledHalfHeight_Implementation() const override;
+	virtual void StartJump() override;
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarry")
-	void Receive_OnStartCarry(class UKMGameObjectInstance* carryGameObjectInstance);
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnStartCarried")
-	void Receive_OnStartCarried(class UKMGameObjectInstance* carryGameObjectInstance);
-
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdown")
-	void Receive_OnComplatePutdown(class UKMGameObjectInstance* downGameObjectInstance);
-
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnComplatePutdowned")
-	void Receive_OnComplatePutdowned(class UKMGameObjectInstance* downGameObjectInstance);
-protected:
-	bool bIsMirror = false;
+	virtual void LandHit(const FHitResult& hitResult) override;
 };

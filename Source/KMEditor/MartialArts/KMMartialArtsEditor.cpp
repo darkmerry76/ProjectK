@@ -8,6 +8,7 @@
 #include "KMMartialArtsEditorMode.h"
 #include "CharacterOutliner/KMCharacterOutlinerHierarchy.h"
 #include "Component/KMMartialArtsComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Notify/KMAnimNotifyState_Animation.h"
 #include "Skill/KMSkillHandler.h"
@@ -156,7 +157,7 @@ bool FKMMartialArtsEditor::DestroyCharacterInstance(UKMCharacterInstance* charac
 
 	if (OwnerCharacterInstance == characterInstance)
 	{
-		if (ACharacter* character = OwnerCharacterInstance->GetCharacter())
+		if (AKMCharacter* character = OwnerCharacterInstance->GetCharacter())
 		{
 			if (AController* controller = character->GetController())
 			{
@@ -214,7 +215,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_ObjectRow*
 		{
 			if (IsValid(previewActor))
 			{
-				previewActor->SetAdjustCharacter(nullptr);
+				previewActor->SetAdjustPawn(nullptr);
 			}
 			OwnerCharacterInstance = nullptr;
 		}
@@ -246,7 +247,7 @@ void FKMMartialArtsEditor::SpawnOwnerCharacterInstance(const FKMTable_ObjectRow*
 
 	if (IsValid(previewActor))
 	{
-		previewActor->SetAdjustCharacter(OwnerCharacterInstance->GetCharacter());
+		previewActor->SetAdjustPawn(OwnerCharacterInstance->GetCharacter());
 	}
 
 	if (AKMCharacter* character = Cast<AKMCharacter>(OwnerCharacterInstance->GetCharacter()))

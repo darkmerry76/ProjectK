@@ -3,8 +3,11 @@
 #include "Animation/AnimNode_AssetPlayerBase.h"
 #include "Camera/KMCameraActorBase.h"
 #include "Camera/KMPlayerCameraManager.h"
-#include "Component/KMCharacterMovementComponent.h"
+#include "Component/EMMoverLayer.h"
+#include "Component/KMPawnMoverComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "Core/KMGameplayTag.h"
+#include "DefaultMovementSet/LayeredMoves/AnimRootMotionLayeredMove.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMCharacterInstance.h"
 #include "Util/KMUtil.h"
@@ -130,7 +133,7 @@ float UKMAnimInstance::GetNextDirection() const
 
 void UKMAnimInstance::BlendPairPosition(const FTransform& startWorldTransform, const FVector& targetWorldOffset, float newDuration)
 {
-	ACharacter* ownerCharacter = Cast<ACharacter>(GetSkelMeshComponent()->GetOwner());
+	AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetSkelMeshComponent()->GetOwner());
 	if (!IsValid(ownerCharacter))
 	{
 		return;
@@ -215,7 +218,7 @@ void UKMAnimInstance::TickPairBlend(float deltaTime)
 
 FTransform UKMAnimInstance::GetPairBlendWorldTransform() const
 {
-	if (ACharacter* ownerCharacter = Cast<ACharacter>(GetOwningActor()))
+	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetOwningActor()))
 	{
 		return ownerCharacter->GetMesh()->GetSocketTransform(TEXT("Root"));
 	}
@@ -333,13 +336,13 @@ bool UKMAnimInstance::IsCustomWalking() const
 	{
 		return false;
 	}
-	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(characterMovement))
+	UKMPawnMoverComponent* pawnMoverComponent = ownerCharacter->GetMoverComponent();
+	if (!IsValid(pawnMoverComponent))
 	{
 		return false;
 	}
 
-	return characterMovement->MovementMode == EMovementMode::MOVE_Walking; 
+	return pawnMoverComponent->IsOnGround(); 
 }
 
 const FKMMultiSlotBlendInfo& UKMAnimInstance::GetSlotBlendInfo() const
@@ -410,4 +413,69 @@ void UKMAnimInstance::OnMontageInstanceStopped(FAnimMontageInstance& stoppedMont
 	}
 }
 
-#endif	
+void UKMAnimInstance::Montage_PlayForRootMotion(UAnimMontage* montage, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
+{
+	if (!IsValid(montage))
+	{
+		return;
+	}
+
+	Montage_Play(montage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
+	if (montage->HasRootMotion())
+	{
+		UKMPawnMoverComponent* pawnMoverComponent = GetOwningActor()->FindComponentByClass<UKMPawnMoverComponent>();
+		if (!IsValid(pawnMoverComponent))
+		{
+			return;
+		}
+		
+		pawnMoverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage,true);
+		
+		TSharedPtr<FEMLayeredMove_AnimRootMotion> newAnimRootMotion = MakeShared<FEMLayeredMove_AnimRootMotion>();
+		newAnimRootMotion->MixMode = EMoveMixMode::OverrideVelocity;
+		newAnimRootMotion->Priority = 1;
+		newAnimRootMotion->MontageState.Montage = montage;
+		newAnimRootMotion->MontageState.PlayRate = playRate;
+		newAnimRootMotion->MontageState.CurrentPosition = 0.f;
+		newAnimRootMotion->MontageState.bEnableAutoBlendOut = montage->bEnableAutoBlendOut;
+		newAnimRootMotion->MontageState.BlendOutTimeSeconds = montage->BlendOut.GetBlendTime();
+		newAnimRootMotion->DurationMs = -1.f;
+
+		pawnMoverComponent->QueueLayeredMove(newAnimRootMotion);
+	}
+}
+
+float UKMAnimInstance::Montage_PlayWithBlendInForRootMotion(UAnimMontage* montage, const FAlphaBlendArgs& blendIn, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
+{
+	if (!IsValid(montage))
+	{
+		return 0.f;
+	}
+
+	float result = Montage_PlayWithBlendIn(montage, blendIn, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
+	if (montage->HasRootMotion())
+	{
+		UKMPawnMoverComponent* pawnMoverComponent = GetOwningActor()->FindComponentByClass<UKMPawnMoverComponent>();
+		if (!IsValid(pawnMoverComponent))
+		{
+			return 0.f;
+		}
+		
+		pawnMoverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage,true);
+		
+		TSharedPtr<FEMLayeredMove_AnimRootMotion> newAnimRootMotion = MakeShared<FEMLayeredMove_AnimRootMotion>();
+		newAnimRootMotion->Priority = 1;
+		newAnimRootMotion->MixMode = EMoveMixMode::AdditiveVelocity;
+		newAnimRootMotion->MontageState.Montage = montage;
+		newAnimRootMotion->MontageState.PlayRate = playRate;
+		newAnimRootMotion->MontageState.CurrentPosition = 0.f;
+		newAnimRootMotion->MontageState.bEnableAutoBlendOut = montage->bEnableAutoBlendOut;
+		newAnimRootMotion->MontageState.BlendOutTimeSeconds = montage->BlendOut.GetBlendTime();
+		newAnimRootMotion->DurationMs = -1.f;
+
+		pawnMoverComponent->QueueLayeredMove(newAnimRootMotion);
+	}
+	return result;
+}
+
+#endif

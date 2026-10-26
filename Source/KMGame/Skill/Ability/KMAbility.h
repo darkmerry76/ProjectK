@@ -4,7 +4,6 @@
 #include "EMCurveWarpingComponent.h"
 #include "EMMartialArts.h"
 #include "GameplayTagContainer.h"
-#include "Component/KMCharacterMovementComponent.h"
 #include "Core/KMDefine.h"
 #include "KMAbility.generated.h"
 
@@ -103,6 +102,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	class AActor* GetOwnerActor() const;
+
+	UFUNCTION(BlueprintPure)
+	class AKMPawnBase* GetOwnerPawn() const;
 	
 	UFUNCTION(BlueprintPure)
 	class AKMCharacter* GetOwnerCharacter() const;

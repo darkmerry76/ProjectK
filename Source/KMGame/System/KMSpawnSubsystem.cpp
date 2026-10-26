@@ -2,6 +2,7 @@
 #include "KMGameObjectSubsystem.h"
 #include "KMPlayerSubsystem.h"
 #include "KMTargetSubsystem.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameActor/Projectile/KMProjectileActorBase.h"

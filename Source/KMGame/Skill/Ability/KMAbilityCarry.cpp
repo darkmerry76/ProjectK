@@ -1,6 +1,6 @@
 #include "KMAbilityCarry.h"
 #include "Component/KMAttachedBlendingComponent.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 
 UKMAbilityCarry::UKMAbilityCarry(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -25,8 +25,8 @@ bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)
 		return false;
 	}
 	
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	if (!ownerPawnInterface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if (!IsValid(ownerPawn))
 	{
 		return false;
 	}
@@ -37,13 +37,13 @@ bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)
 		return false;
 	}
 	
-	IKMPawnInterface* targetPawnInterface = Cast<IKMPawnInterface>(targetActor);
-	if (!targetPawnInterface)
+	AKMPawnBase* targetPawn = Cast<AKMPawnBase>(targetActor);
+	if (!IsValid(targetPawn))
 	{
 		return false;
 	}
 	
-	UKMAttachedBlendingComponent* targetAttachedBlendingComponent = targetPawnInterface->GetAttachedBlendingComponent();
+	UKMAttachedBlendingComponent* targetAttachedBlendingComponent = targetPawn->GetAttachedBlendingComponent();
 	if (!IsValid(targetAttachedBlendingComponent))
 	{
 		return false;
@@ -52,7 +52,7 @@ bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)
 	FTransform targetWorldTransform = targetAttachedBlendingComponent->GetComponentToWorld();
 	if (UKMGameObjectInstance* targetGameObjectInstance = GetTargetGameObjectInstance())
 	{
-		targetGameObjectInstance->StartCrarried(ownerPawnInterface->GetGameObjectInstance());
+		targetGameObjectInstance->StartCrarried(ownerPawn->GetGameObjectInstance());
 	}
 	targetActor->AttachToComponent(ownerActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))

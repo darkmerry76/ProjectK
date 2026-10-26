@@ -1,5 +1,10 @@
 #include "KMCurveWarpingComponent.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
+#include "Component/EMMoverCurveWarpingFallingMode.h"
+#include "Component/EMMoverLayer.h"
+#include "Component/EMPawnMoverComponent.h"
+#include "DefaultMovementSet/LayeredMoves/BasicLayeredMoves.h"
+#include "DefaultMovementSet/LayeredMoves/LaunchMove.h"
+#include "GameActor/Pawn/Character/KMPawnBase.h"
 
 UKMCurveWarpingComponent::UKMCurveWarpingComponent(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -7,8 +12,35 @@ UKMCurveWarpingComponent::UKMCurveWarpingComponent(const FObjectInitializer& obj
 
 void UKMCurveWarpingComponent::SetOwnerMovementMode(EMovementMode newMovementMode)
 {
-	if (IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwner()))
+	if (AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwner()))
 	{
-		ownerPawnInterface->SetMovementMode(MOVE_Custom);
+		ownerPawn->SetMovementMode(MOVE_Custom);
 	}
+	else if (UEMPawnMoverComponent* moverComponent = GetOwner()->FindComponentByClass<UEMPawnMoverComponent>())
+	{
+		if (newMovementMode == MOVE_Custom)
+		{
+			moverComponent->QueueNextMode(UEMMoverCurveWarpingFallingMode::ModeName);
+		}
+	}
+}
+
+int32 UKMCurveWarpingComponent::PlayLinearWarp(FVector targetWarpLocation, float newDuration)
+{
+	if (UEMPawnMoverComponent* moverComponent = GetOwner()->FindComponentByClass<UEMPawnMoverComponent>())
+	{
+		TSharedPtr<FEMLayeredMove_MoveTo> newMoveTo = MakeShared<FEMLayeredMove_MoveTo>();
+
+		newMoveTo->MixMode = EMoveMixMode::OverrideVelocity;
+		newMoveTo->StartLocation = GetOwner()->GetActorLocation();
+		newMoveTo->TargetLocation = targetWarpLocation;
+		newMoveTo->DurationMs = newDuration * 1000.f;
+		newMoveTo->bRestrictSpeedToExpected = false;
+		newMoveTo->Priority = 5;
+
+		moverComponent->QueueLayeredMove(newMoveTo);
+			
+		return INDEX_NONE;
+	}
+	return Super::PlayLinearWarp(targetWarpLocation, newDuration);
 }

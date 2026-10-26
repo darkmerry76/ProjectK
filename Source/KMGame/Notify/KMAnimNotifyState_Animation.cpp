@@ -120,11 +120,11 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 						FAlphaBlendArgs blendArg;
 						blendArg.BlendOption = EAlphaBlendOption::Linear;
 						blendArg.BlendTime = 0.f;
-						targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
+						targetAnimInstance->Montage_PlayWithBlendInForRootMotion(newContext->ActivatedMontage, blendArg);
 					}
 					else
 					{
-						targetAnimInstance->Montage_Play(newContext->ActivatedMontage);	
+						targetAnimInstance->Montage_PlayForRootMotion(newContext->ActivatedMontage);	
 					}
 					targetAnimInstance->BlendSlot(EKMAnimSlotType::OverrideSlot, 1.f, SlotBlendInTime);
 				}
@@ -135,11 +135,11 @@ void UKMAnimNotifyState_Animation::NotifyBegin(USkeletalMeshComponent* meshComp,
 						FAlphaBlendArgs blendArg;
 						blendArg.BlendOption = EAlphaBlendOption::Linear;
 						blendArg.BlendTime = 0.f;
-						targetAnimInstance->Montage_PlayWithBlendIn(newContext->ActivatedMontage, blendArg);
+						targetAnimInstance->Montage_PlayWithBlendInForRootMotion(newContext->ActivatedMontage, blendArg);
 					}
 					else
 					{
-						targetAnimInstance->Montage_Play(newContext->ActivatedMontage);
+						targetAnimInstance->Montage_PlayForRootMotion(newContext->ActivatedMontage);
 					}
 				}
 

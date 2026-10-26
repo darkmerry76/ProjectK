@@ -2,14 +2,13 @@
 #include <Tables/Generated/KMTable_Object_Beast.h>
 #include "Animation/KMAnimInstance.h"
 #include "Camera/KMPlayerCameraManager.h"
-#include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMMoveShapeComponent.h"
+#include "Component/KMPawnMoverComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
 #include "GameActor/Item/KMItemAppearanceActor.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/Parry/KMTiming.h"
 #include "Skill/Sensor/KMSensor.h"
@@ -158,8 +157,8 @@ void UKMCharacterInstance::RevertFromBest()
 		return;
 	}
 
-	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(characterMovement))
+	UKMPawnMoverComponent* pawnMoverComponent = ownerCharacter->GetMoverComponent();
+	if (!IsValid(pawnMoverComponent))
 	{
 		return;
 	}
@@ -214,8 +213,8 @@ void UKMCharacterInstance::RevertFromBest()
 			StatModifier->Compact();
 		}
 
-		characterMovement->ClearCustomWalkingAnimation();
-		characterMovement->DisableCustomWalking();
+		pawnMoverComponent->ClearCustomWalkingAnimation();
+		pawnMoverComponent->DisableCustomWalking();
 
 		OnRevertFromBest();
 	}
@@ -258,8 +257,8 @@ void UKMCharacterInstance::TransformToBeast()
 		return;
 	}
 
-	UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(characterMovement))
+	UKMPawnMoverComponent* pawnMoverComponent = ownerCharacter->GetMoverComponent();
+	if (!IsValid(pawnMoverComponent))
 	{
 		return;
 	}
@@ -323,8 +322,8 @@ void UKMCharacterInstance::TransformToBeast()
 			float minRange = 0.f, maxRange = 0.f;
 			UKMUtil::GetMinMaxValueBlendSpace1D(animInstance->MoveBlend, minRange, maxRange);
 			UAnimSequence* animSequence = UKMUtil::GetAnimSequenceWithBlendSpace1D(animInstance->MoveBlend, maxRange);
-			characterMovement->SetCustomWalkingAnimation(animSequence);
-			characterMovement->EnableCustomWalking();
+			pawnMoverComponent->SetCustomWalkingAnimation(animSequence);
+			pawnMoverComponent->EnableCustomWalking();
 		}
 		OnTransformToBeast();
 	}
@@ -506,7 +505,7 @@ void UKMCharacterInstance::OnDeath()
 
 	if (AKMCharacter* ownerCharacter = GetCharacter())
 	{
-		ownerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		ownerCharacter->GetMovementShapeComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	}
 	StartForceMove(0.f);
 }
@@ -528,12 +527,7 @@ bool UKMCharacterInstance::IsAir() const
 	{
 		return false;
 	}
-	UKMCharacterMovementComponent* ownerCharacterMovementComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-	if (!IsValid(ownerCharacterMovementComponent))
-	{
-		return false;
-	}
-	return ownerCharacterMovementComponent->IsAir();
+	return ownerCharacter->IsAir();
 }
 
 void UKMCharacterInstance::Tick(float deltaSeconds)
@@ -545,11 +539,11 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 	{
 		if (IsRun())
 		{
-			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
+			//ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
 		}
 		else
 		{
-			ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
+			//ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
 		}
 		SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
 
@@ -664,34 +658,15 @@ void UKMCharacterInstance::SetDirectionVisual(float newDirection, bool bForceRot
 	}
 }
 
-void UKMCharacterInstance::SetDirection(float newDirection, bool bForceRotate)
+bool UKMCharacterInstance::SetDirection(float newDirection, bool bForceRotate)
 {
-	if (IsDead())
+	if(!Super::SetDirection(newDirection, bForceRotate))
 	{
-		return;
+		return false;
 	}
-
-	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
-	{
-		return;
-	}
-
-	if (FMath::IsNearlyEqual(Direction, newDirection) && !bForceRotate)
-	{
-		return;
-	}
-	Super::SetDirection(newDirection, bForceRotate);
 	
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(GetCharacter()))
 	{
-		float angle = Direction * PI * 2.f;
-
-		FVector newForwardVector(FMath::Cos(angle), FMath::Sin(angle),0.f);
-
-		FRotator newRotation = newForwardVector.Rotation();
-		ownerCharacter->SetActorRotation(newRotation);
-		ownerCharacter->GetRootComponent()->UpdateComponentToWorld();
-
 		SetDirectionVisual(newDirection, bForceRotate);
 		if (!ownerCharacter->GetMesh()->IsPostEvaluatingAnimation())
 		{
@@ -699,6 +674,8 @@ void UKMCharacterInstance::SetDirection(float newDirection, bool bForceRotate)
 			ownerCharacter->GetMesh()->RefreshBoneTransforms();
 		}
 	}
+
+	return true;
 }
 
 float UKMCharacterInstance::GetDirection() const
@@ -734,8 +711,8 @@ void UKMCharacterInstance::OnAddGameplayTag_Implementation(const FGameplayTag& n
 
 	if (newTag == FKMGameplayTagName::State_Thrown_OverlapDamage_Tag)
 	{
-		UKMCharacterMovementComponent* characterMoveComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-		if (!characterMoveComponent)
+		UKMPawnMoverComponent* pawnMoverComponent = ownerCharacter->GetMoverComponent();
+		if (!IsValid(pawnMoverComponent))
 		{
 			return;
 		}
@@ -743,8 +720,8 @@ void UKMCharacterInstance::OnAddGameplayTag_Implementation(const FGameplayTag& n
 		if (GetGameplayTagCount(newTag) == 1)
 		{
 			ThrowOverlapActors.Reset();
-			characterMoveComponent->SweepPawnHitDelegate.RemoveAll(this);
-			characterMoveComponent->SweepPawnHitDelegate.AddUObject(this, &ThisClass::OnUpdatePawnThrowOverlapResults);
+			pawnMoverComponent->SweepPawnHitDelegate.RemoveAll(this);
+			pawnMoverComponent->SweepPawnHitDelegate.AddUObject(this, &ThisClass::OnUpdatePawnThrowOverlapResults);
 		}
 	}
 	else if (newTag == FKMGameplayTagName::Event_Item_Launch)
@@ -766,8 +743,8 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 	
 	if (removedTag == FKMGameplayTagName::State_Thrown_OverlapDamage_Tag)
 	{
-		UKMCharacterMovementComponent* characterMoveComponent = Cast<UKMCharacterMovementComponent>(ownerCharacter->GetCharacterMovement());
-		if (!characterMoveComponent)
+		UKMPawnMoverComponent* pawnMoverComponent = ownerCharacter->GetMoverComponent();
+		if (!pawnMoverComponent)
 		{
 			return;
 		}
@@ -775,7 +752,7 @@ void UKMCharacterInstance::OnRemoveGameplayTag_Implementation(const FGameplayTag
 		if (GetGameplayTagCount(removedTag) == 0)
 		{
 			ThrowOverlapActors.Reset();
-			characterMoveComponent->SweepPawnHitDelegate.RemoveAll(this);
+			pawnMoverComponent->SweepPawnHitDelegate.RemoveAll(this);
 		}
 	}
 	else if (removedTag == FKMGameplayTagName::Event_Item_Launch)

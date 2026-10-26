@@ -165,6 +165,14 @@ public:
 	UFUNCTION(BlueprintPure, meta=(BlueprintThreadSafe))
 	FTransform GetPairBlendWorldTransform() const;
 
+	UFUNCTION(BlueprintCallable)
+	void Montage_PlayForRootMotion(class UAnimMontage* montage, float playRate = 1.f,
+		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
+
+	UFUNCTION(BlueprintCallable)
+	float Montage_PlayWithBlendInForRootMotion(UAnimMontage* montageToPlay, const FAlphaBlendArgs& blendIn,
+		float playRate = 1.f, EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
+
 protected:
 	void TickSlotBlend(float deltaTime);
 	void TickShake(float deltaTime);

@@ -94,13 +94,13 @@ void UKMAnimNotifyState_Hit::DoHit(const USceneComponent* ownerComponent, const 
 		return;
 	}
 	
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(ownerActor);
-	if (!pawnInterface)
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(ownerActor);
+	if (!IsValid(pawn))
 	{
 		return;
 	}
 
-	UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance();
+	UKMGameObjectInstance* ownerGameObjectInstance = pawn->GetGameObjectInstance();
 	if (!IsValid(ownerGameObjectInstance))
 	{
 		return;
@@ -221,9 +221,9 @@ void UKMAnimNotifyState_Hit::OnNotifyEnd(AActor* actor, const USceneComponent* s
 
 void UKMAnimNotifyState_Hit::HitCheckClear(AActor* actor)
 {
-	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(actor))
+	if (AKMPawnBase* pawn = Cast<AKMPawnBase>(actor))
 	{
-		if (UKMGameObjectInstance* ownerGameObjectInstance = pawnInterface->GetGameObjectInstance())
+		if (UKMGameObjectInstance* ownerGameObjectInstance = pawn->GetGameObjectInstance())
 		{
 			ownerGameObjectInstance->HitCheckClear(HitCheckLayerId);
 		}

@@ -3,7 +3,6 @@
 #include "Component/KMWidgetComponent.h"
 #include "FSM/KMStateMachine.h"
 #include "Tables/Generated/KMTable_Object.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
@@ -58,9 +57,9 @@ void UKMGameObjectInstance::BeginPlay()
 		SensorInstance->Init();
 	}
 
-	if (IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	if (AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor()))
 	{
-		if (UKMWidgetComponent* widgetComponent = ownerPawnInterface->GetWidgetComponent())
+		if (UKMWidgetComponent* widgetComponent = ownerPawn->GetWidgetComponent())
 		{
 			if (UKMHeadTagWidget* headTagWidget = Cast<UKMHeadTagWidget>(widgetComponent->GetWidget()))
 			{
@@ -174,13 +173,13 @@ bool UKMGameObjectInstance::HasGameplayTag(FGameplayTag tag) const
 {
 	if (tag == FKMGameplayTagName::State_Air_Tag || tag == FKMGameplayTagName::State_Land_Tag)
 	{
-		if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+		if (AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor()))
 		{
-			if (pawnInterface->IsAir() && tag == FKMGameplayTagName::State_Air_Tag)
+			if (ownerPawn->IsAir() && tag == FKMGameplayTagName::State_Air_Tag)
 			{
 				return true;
 			}
-			else if (pawnInterface->IsLand() && tag == FKMGameplayTagName::State_Land_Tag)
+			else if (ownerPawn->IsLand() && tag == FKMGameplayTagName::State_Land_Tag)
 			{
 				return true;
 			}
@@ -307,9 +306,9 @@ bool UKMGameObjectInstance::Hit(UKMGameObjectInstance* attackerGameObjectInstanc
 			impactTransform.SetLocation(hitClosestPoint);
 			abilityEffect->Impact(impactTransform);
 
-			if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(abilityEffect->GetOwnerActor()))
+			if (AKMPawnBase* pawn = Cast<AKMPawnBase>(abilityEffect->GetOwnerActor()))
 			{
-				pawnInterface->OnImpact(skillEffectInstance, hitClosestPoint, hitTag);
+				pawn->OnImpact(skillEffectInstance, hitClosestPoint, hitTag);
 			}
 		}
 		
@@ -360,13 +359,13 @@ bool UKMGameObjectInstance::HitCollection(const TWeakPtr<FKMSkillInstance>& adju
 		return false;
 	}
 
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(hitActor);
-	if (!pawnInterface)
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(hitActor);
+	if (!IsValid(pawn))
 	{
 		return false;
 	}
 
-	UKMGameObjectInstance* hitGameObjectInstance = pawnInterface->GetGameObjectInstance();
+	UKMGameObjectInstance* hitGameObjectInstance = pawn->GetGameObjectInstance();
 	check(IsValid(hitGameObjectInstance));
 
 	if (hitGameObjectInstance->IsDead() || hitGameObjectInstance->HasGameplayTag(FKMGameplayTagName::State_Intangible_Tag))
@@ -454,9 +453,9 @@ void UKMGameObjectInstance::ResolveNearestHitResult(const FTransform& orientatio
 		FVector toTarget = hitResult.ImpactPoint - origin;
 		const float distance = toTarget.Size();
 
-		if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(hitResult.GetActor()))
+		if (AKMPawnBase* pawn = Cast<AKMPawnBase>(hitResult.GetActor()))
 		{
-			if (UKMGameObjectInstance* gameObjectInstance = pawnInterface->GetGameObjectInstance())
+			if (UKMGameObjectInstance* gameObjectInstance = pawn->GetGameObjectInstance())
 			{
 				if (gameObjectInstance->IsDead())
 				{
@@ -620,9 +619,9 @@ void UKMGameObjectInstance::OnDeath()
 		}
 	}
 
-	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	if (AKMPawnBase* pawn = Cast<AKMPawnBase>(GetOwnerActor()))
 	{
-		pawnInterface->OnDeath();			
+		pawn->OnDeath();			
 	}
 
 	GetDeathDelegate().Broadcast(this);
@@ -695,8 +694,8 @@ void UKMGameObjectInstance::RemoveTimeDilation(const FName& layerName)
 
 float UKMGameObjectInstance::GetHorizontalDistanceTo(const UKMGameObjectInstance* toGameObjectInstance) const
 {
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	check(ownerPawnInterface);
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	check(IsValid(ownerPawn));
 	
 	AActor* targetActor = toGameObjectInstance->GetOwnerActor();
 	if (!IsValid(targetActor))
@@ -704,14 +703,14 @@ float UKMGameObjectInstance::GetHorizontalDistanceTo(const UKMGameObjectInstance
 		return 0.f;
 	}
 	
-	const IKMPawnInterface* pawnTargetInterface = Cast<IKMPawnInterface>(toGameObjectInstance->GetOwnerActor());
-	if (!pawnTargetInterface)
+	const AKMPawnBase* pawnTarget = Cast<AKMPawnBase>(toGameObjectInstance->GetOwnerActor());
+	if (!IsValid(pawnTarget))
 	{
 		return 0.f;
 	}
 
-	UPrimitiveComponent* ownerShapeComponent = ownerPawnInterface->GetMovementShapeComponent();
-	UPrimitiveComponent* targetShapeComponent = pawnTargetInterface->GetMovementShapeComponent();
+	UPrimitiveComponent* ownerShapeComponent = ownerPawn->GetMovementShapeComponent();
+	UPrimitiveComponent* targetShapeComponent = pawnTarget->GetMovementShapeComponent();
 
 	if (UKMMoveShapeComponent* moveShapeComponent = Cast<UKMMoveShapeComponent>(targetShapeComponent))
 	{
@@ -733,17 +732,17 @@ float UKMGameObjectInstance::GetHorizontalDistanceTo(const UKMGameObjectInstance
 
 float UKMGameObjectInstance::GetVerticalDistanceTo(const UKMGameObjectInstance* toGameObjectInstance) const
 {
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	check(ownerPawnInterface);
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	check(ownerPawn);
 
-	const IKMPawnInterface* pawnTargetInterface = Cast<IKMPawnInterface>(toGameObjectInstance->GetOwnerActor());
-	if (!pawnTargetInterface)
+	const AKMPawnBase* pawnTarget = Cast<AKMPawnBase>(toGameObjectInstance->GetOwnerActor());
+	if (!IsValid(pawnTarget))
 	{
 		return 0.f;
 	}
 
-	UPrimitiveComponent* ownerShapeComponent = ownerPawnInterface->GetMovementShapeComponent();
-	UPrimitiveComponent* targetShapeComponent = pawnTargetInterface->GetMovementShapeComponent();
+	UPrimitiveComponent* ownerShapeComponent = ownerPawn->GetMovementShapeComponent();
+	UPrimitiveComponent* targetShapeComponent = pawnTarget->GetMovementShapeComponent();
 
 	if (UKMMoveShapeComponent* targetMoveShapeComponent = Cast<UKMMoveShapeComponent>(targetShapeComponent))
 	{
@@ -774,9 +773,34 @@ void UKMGameObjectInstance::SetDirectionVisual(float newDirection, bool bForceRo
 	
 }
 	
-void UKMGameObjectInstance::SetDirection(float newDirection, bool bForceRotate)
+bool UKMGameObjectInstance::SetDirection(float newDirection, bool bForceRotate)
 {
+	if (IsDead())
+	{
+		return false;
+	}
+
+	if (HasGameplayTag(FKMGameplayTagName::Block_Control_Rotation_Tag))
+	{
+		return false;
+	}
+
+	if (FMath::IsNearlyEqual(Direction, newDirection) && !bForceRotate)
+	{
+		return false;
+	}
+
 	Direction = newDirection;
+
+	float angle = Direction * PI * 2.f;
+
+	FVector newForwardVector(FMath::Cos(angle), FMath::Sin(angle),0.f);
+
+	FRotator newRotation = newForwardVector.Rotation();
+	GetOwnerActor()->SetActorRotation(newRotation);
+	GetOwnerActor()->GetRootComponent()->UpdateComponentToWorld();
+
+	return true;
 }
 
 float UKMGameObjectInstance::GetDirection() const
@@ -1006,28 +1030,29 @@ bool UKMGameObjectInstance::UseInteractionSkill_Release()
 
 void UKMGameObjectInstance::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
 {
-	if (IKMPawnInterface* carryPawnInterface = Cast<IKMPawnInterface>(carryGameObjectInstance->GetOwnerActor()))
+	if (AKMPawnBase* carryPawn = Cast<AKMPawnBase>(carryGameObjectInstance->GetOwnerActor()))
 	{
 		carryGameObjectInstance->CarriedObject = this;
-		carryPawnInterface->StartCrarry(this);
+		carryPawn->StartCrarry(this);
 	}
 	
-	if (IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	if (AKMPawnBase* carriedPawn = Cast<AKMPawnBase>(GetOwnerActor()))
 	{
-		carriedPawnInterface->StartCrarried(carryGameObjectInstance);
+		carriedPawn->StartCrarried(carryGameObjectInstance);
 	}
 }
 
 void UKMGameObjectInstance::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
 {
-	if (IKMPawnInterface* carryPawnInterface = Cast<IKMPawnInterface>(putDownGameObjectInstance->GetOwnerActor()))
+	if (AKMPawnBase* carryPawn = Cast<AKMPawnBase>(putDownGameObjectInstance->GetOwnerActor()))
 	{
 		putDownGameObjectInstance->CarriedObject = nullptr;;
-		carryPawnInterface->ComplatePutdown(this);
+		carryPawn->ComplatePutdown(this);
 	}
-	if (IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(GetOwnerActor()))
+	
+	if (AKMPawnBase* carriedPawn = Cast<AKMPawnBase>(GetOwnerActor()))
 	{
-		carriedPawnInterface->ComplatePutdowned(putDownGameObjectInstance);	
+		carriedPawn->ComplatePutdowned(putDownGameObjectInstance);	
 	}
 }
 

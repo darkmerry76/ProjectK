@@ -1,12 +1,8 @@
 #include "KMCharacter.h"
 #include "Animation/AnimSet/KMAnimationSetTag.h"
-#include "Component/KMCapsuleComponent.h"
-#include "Component/KMCharacterMovementComponent.h"
-#include "Component/KMCurveWarpingComponent.h"
-#include "Component/KMMartialArtsComponent.h"
+#include "Component/KMPawnMoverComponent.h"
 #include "Component/KMSkeletalMeshComponent.h"
 #include "Component/KMWidgetComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DataAsset/KMAssetManager.h"
 #include "DataAsset/KMBeastPDA.h"
@@ -14,31 +10,19 @@
 #include "GameActor/Item/KMItemAppearanceActor.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/KMHeroInstance.h"
-#include "Skill/KMSkillHandler.h"
 #include "Sound/KMSoundSetTag.h"
 #include "Tables/Generated/KMTable_Item.h"
-#include "Tables/Generated/KMTable_SkillEffect.h"
 
-AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) :
-	Super(objectInitializer.SetDefaultSubobjectClass<UKMSkeletalMeshComponent>(ACharacter::MeshComponentName).
-		SetDefaultSubobjectClass<UKMCharacterMovementComponent>(ACharacter::CharacterMovementComponentName).
-		SetDefaultSubobjectClass<UKMCapsuleComponent>(ACharacter::CapsuleComponentName))
+AKMCharacter::AKMCharacter(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
-	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
-	WidgetComponent	= CreateDefaultSubobject<UKMWidgetComponent>(TEXT("Widget"));
+	SkeletalMeshComponent = CreateDefaultSubobject<UKMSkeletalMeshComponent>(TEXT("Mesh"));
+	SkeletalMeshComponent->SetupAttachment(RootComponent);
+	
 	CameraTarget = CreateDefaultSubobject<USceneComponent>(TEXT("CameraTarget"));
+	CameraTarget->SetupAttachment(SkeletalMeshComponent);
 
-	WidgetComponent->SetupAttachment(GetMesh());
-	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		characterMovement->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
-	}
-
-	GetMesh()->SetCustomDepthStencilValue(1);
-	GetMesh()->SetRenderCustomDepth(true);
-
-	CameraTarget->SetupAttachment(GetMesh());
+	WidgetComponent = CreateDefaultSubobject<UKMWidgetComponent>(TEXT("Widget"));
+	WidgetComponent->SetupAttachment(SkeletalMeshComponent);
 }
 
 void AKMCharacter::BeginPlay()
@@ -81,79 +65,11 @@ void AKMCharacter::EndPlay(const EEndPlayReason::Type endPlayReason)
 	}
 }
 
-void AKMCharacter::Landed(const FHitResult& hitResult)
+void AKMCharacter::OnConstruction(const FTransform& transform)
 {
-	Super::Landed(hitResult);
-	
-	LandHit(hitResult);
-}
+	Super::OnConstruction(transform);
 
-void AKMCharacter::LandHit(const FHitResult& hitResult)
-{
-	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
-	{
-		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
-		{
-			if (GFrameCounter - LasteLandedFrameCount > 1)
-			{
-				MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
-				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
-				LasteLandedFrameCount = GFrameCounter;
-			}
-		}
-	}
-}
-
-void AKMCharacter::WallHit(const FHitResult& hitResult)
-{
-	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
-	{
-		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
-		{
-			if (GFrameCounter - LasteWallHitFrameCount > 1)
-			{
-				LastWallHitResult = hitResult;
-				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_WallHit_Tag);
-				LasteWallHitFrameCount = GFrameCounter;
-			}
-		}
-	}
-}
-
-void AKMCharacter::CeilingHit(const FHitResult& hitResult)
-{
-	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
-	{
-		if (UKMSkillHandler* skillHandler = characterInstance->GetSkillHandler())
-		{
-			if (GFrameCounter - LastetCeilingHitFrameCount > 1)
-			{
-				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_CeilingHit_Tag);
-				LastetCeilingHitFrameCount = GFrameCounter;
-			}
-		}
-	}
-}
-
-void AKMCharacter::OnImpact(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag)
-{
-	check(skillEffectInstance.IsValid() && skillEffectInstance->GetEffectTableRecord());
-	Receive_OnImpact(skillEffectInstance->GetEffectTableRecord()->Id, hitClosestPoint, hitTag);	
-}
-
-void AKMCharacter::OnDeath()
-{
-	Receive_OnDeath();
-}
-
-UPrimitiveComponent* AKMCharacter::GetMovementShapeComponent() const
-{
-	return ACharacter::GetCapsuleComponent();
-}
-
-UKMMartialArtsComponent* AKMCharacter::GetMartialArtsComponent() const
-{
-	return MartialArtsComponent;
+	MoverComponent->SetPrimaryVisualComponent(SkeletalMeshComponent);
 }
 
 UKMWidgetComponent* AKMCharacter::GetWidgetComponent() const
@@ -161,71 +77,19 @@ UKMWidgetComponent* AKMCharacter::GetWidgetComponent() const
 	return WidgetComponent;
 }
 
-UKMCurveWarpingComponent* AKMCharacter::GetCurveWarpingComponent() const
-{
-	return CurveWarpingComponent;
-}
-
-void AKMCharacter::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
-{
-	if (UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		characterMovementComponent->SetMovementMode(newMovementMode);
-	}
-}
-
-UMeshComponent* AKMCharacter::GetPlacementMeshComponent() const
-{
-	return GetMesh();
-}
-
-UKMAttachedBlendingComponent* AKMCharacter::GetAttachedBlendingComponent() const
-{
-	return nullptr;
-}
-
-bool AKMCharacter::IsAir() const
-{
-	if (UKMCharacterMovementComponent* characterMovement = Cast<UKMCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		return characterMovement->IsAir();
-	}
-	return false;
-}
-
-bool AKMCharacter::IsLand() const
-{
-	return !IsAir();
-}
-
-float AKMCharacter::GetScaledRadius_Implementation() const
-{
-	return GetCapsuleComponent()->GetScaledCapsuleRadius();
-}
-
-float AKMCharacter::GetScaledHalfHeight_Implementation() const
-{
-	return GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-}
-
 USceneComponent* AKMCharacter::GetCameraTarget() const
 {
 	return CameraTarget;
 }
 
+UKMSkeletalMeshComponent* AKMCharacter::GetMesh() const
+{
+	return SkeletalMeshComponent;
+}
+
 FTransform AKMCharacter::GetCarryOffsetTransform_Implementation() const
 {
 	return FTransform::Identity;
-}
-
-void AKMCharacter::SetMirror(bool bMirror)
-{
-	bIsMirror = bMirror;
-}
-
-bool AKMCharacter::GetMirror() const
-{
-	return bIsMirror;
 }
 
 const FVector& AKMCharacter::GetInputVelocity() const
@@ -248,22 +112,6 @@ UKMCharacterInstance* AKMCharacter::GetCharacterInstance() const
 	return Cast<UKMCharacterInstance>(GetGameObjectInstance());
 }
 
-UKMGameObjectInstance* AKMCharacter::GetGameObjectInstance() const
-{
-	if (!CharacterInstance.IsValid())
-	{
-		return nullptr;
-	}
-	return CharacterInstance.Get();
-}
-
-void AKMCharacter::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
-{
-	CharacterInstance = Cast<UKMCharacterInstance>(newGameObjectInstance);
-	check(CharacterInstance.IsValid());
-	CharacterInstance->SetOwnerActor(this);
-}
-
 UAnimMontage* AKMCharacter::GetAnimationTagOriginal(FGameplayTag tag) const
 {
 	if (UKMCharacterInstance* characterInstance = GetCharacterInstance())
@@ -276,6 +124,12 @@ UAnimMontage* AKMCharacter::GetAnimationTagOriginal(FGameplayTag tag) const
 		}
 	}
 	return AnimsetTag->GetAnimation(tag);
+}
+
+void AKMCharacter::LandHit(const FHitResult& hitResult)
+{
+	Super::LandHit(hitResult);
+	MontqagePlayTag(FKMGameplayTagName::Anim_Landing_0);
 }
 
 UAnimMontage* AKMCharacter::GetAnimationTag(FGameplayTag tag) const
@@ -303,6 +157,23 @@ float AKMCharacter::MontqagePlay(UAnimMontage* animMontage, float playRate, EMon
 	}
 	return animInstance->Montage_Play(animMontage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
 }
+
+void AKMCharacter::StopAnimMontage(UAnimMontage* animMontage)
+{
+	UAnimInstance* animInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(animInstance))
+	{
+		return;
+	}
+
+	bool bShouldStopMontage = !animInstance->Montage_GetIsStopped(animMontage);
+
+	if ( bShouldStopMontage )
+	{
+		animInstance->Montage_Stop(animMontage->BlendOut.GetBlendTime(), animMontage);
+	}
+}
+
 
 float AKMCharacter::MontqagePlayTag(FGameplayTag tag, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
 {
@@ -389,50 +260,6 @@ const UKMBeastPDA* AKMCharacter::GetBeastPDA() const
 	return BeastPDA;
 }
 
-void AKMCharacter::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
-{
-	Receive_OnStartCarry(carriedGameObjectInstance);
-}
-
-void AKMCharacter::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
-{
-	if (IsValid(carryGameObjectInstance))
-	{
-		carryGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carry_Tag);
-		carryGameObjectInstance->AddGameplayTag(TakeTag);
-	}
-
-	if (UKMGameObjectInstance* carriedGameObjectInstance = GetGameObjectInstance())
-	{
-		carriedGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		carriedGameObjectInstance->AddGameplayTag(TakenTag);
-	}
-
-	Receive_OnStartCarried(carryGameObjectInstance);
-}
-
-void AKMCharacter::ComplatePutdown(UKMGameObjectInstance* putDownedGameObjectInstance)
-{
-	Receive_OnComplatePutdown(putDownedGameObjectInstance);
-}
-
-void AKMCharacter::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
-{
-	if (IsValid(putDownGameObjectInstance))
-	{
-		putDownGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carry_Tag);
-		putDownGameObjectInstance->RemoveGameplayTag(TakeTag);
-	}
-
-	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
-	{
-		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		putDownedGameObjectInstance->RemoveGameplayTag(TakenTag);
-	}
-	
-	Receive_OnComplatePutdowned(putDownGameObjectInstance);
-}
-
 FTransform AKMCharacter::GetApproachPullPoint(EKMApproachPullPointType approachPullPointType) const
 {
 	USkeletalMeshComponent* skeletalMeshComponent = GetMesh();
@@ -441,4 +268,14 @@ FTransform AKMCharacter::GetApproachPullPoint(EKMApproachPullPointType approachP
 		return GetActorTransform();
 	}
 	return skeletalMeshComponent->GetSocketTransform(TEXT("PullPointNeckSocket"));
+}
+
+void AKMCharacter::StartJump()
+{
+	MontqagePlayTag(FKMGameplayTagName::Anim_Jump_0);
+}
+
+void AKMCharacter::AddMovementInput(FVector worldDirection, float scaleValue, bool bForce)
+{
+	Super::AddMovementInput(worldDirection, scaleValue, bForce);
 }

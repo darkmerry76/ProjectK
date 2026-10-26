@@ -8,10 +8,7 @@
 UCLASS(Blueprintable, BlueprintType, Abstract)
 class KMGAME_API AKMCharacterHero : public AKMCharacter
 {
-	GENERATED_BODY()
-	
-public:
-	AKMCharacterHero();
+	GENERATED_UCLASS_BODY()
 	
 public:
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -80,7 +77,6 @@ protected:
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* playerInputComponent) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void StopJumping() override;
 	
 	void StartCustomJump();
 	
@@ -111,9 +107,6 @@ protected:
 	void OnDebug3Action();
 	void OnDebug3Action_Release();
 	
-	UFUNCTION(BlueprintCallable)
-	void PendingJump();
-
 	bool bCombatTriggered = false;
 	bool bTechniqueTriggered = false;
 

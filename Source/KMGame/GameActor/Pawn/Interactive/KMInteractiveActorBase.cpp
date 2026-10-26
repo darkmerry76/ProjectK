@@ -1,38 +1,15 @@
 #include "KMInteractiveActorBase.h"
-#include "Component/KMAttachedBlendingComponent.h"
-#include "Component/KMCurveWarpingComponent.h"
-#include "Component/KMMartialArtsComponent.h"
 #include "Component/KMMoveShapeComponent.h"
-#include "Component/KMPawnMovementComponent.h"
+#include "Component/KMPawnMoverComponent.h"
 #include "Component/KMWidgetComponent.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
-#include "Skill/KMSkillHandler.h"
 #include "Skill/KMSkillTypes.h"
 #include "Tables/Generated/KMTable_SkillEffect.h"
 
 AKMInteractiveActorBase::AKMInteractiveActorBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
-	MoveShapeComponent = CreateDefaultSubobject<UKMMoveShapeComponent>(TEXT("Capsule"));
-	SetRootComponent(MoveShapeComponent);
-
-	MovementComponent = CreateDefaultSubobject<UKMPawnMovementComponent>(TEXT("Movement"));
-	MovementComponent->SetUpdatedComponent(MoveShapeComponent);
-
-	AttachedComponent = CreateDefaultSubobject<UKMAttachedBlendingComponent>(TEXT("AttachedBlending"));
-	AttachedComponent->SetupAttachment(GetRootComponent());
-
-	CurveWarpingComponent  = CreateDefaultSubobject<UKMCurveWarpingComponent>(TEXT("CurveWarping"));
-	MartialArtsComponent = CreateDefaultSubobject<UKMMartialArtsComponent>(TEXT("MartialArts"));
-
 	WidgetComponent = CreateDefaultSubobject<UKMWidgetComponent>(TEXT("Widget"));
 	WidgetComponent->SetupAttachment(GetRootComponent());
-
-	MovementComponent->CustomMovementDelegate.AddUObject(CurveWarpingComponent, &UEMCurveWarpingComponent::OnCustomMovement);
-}
-
-UKMMartialArtsComponent* AKMInteractiveActorBase::GetMartialArtsComponent() const
-{
-	return MartialArtsComponent;
 }
 
 UKMWidgetComponent* AKMInteractiveActorBase::GetWidgetComponent() const
@@ -40,43 +17,10 @@ UKMWidgetComponent* AKMInteractiveActorBase::GetWidgetComponent() const
 	return WidgetComponent;
 }
 
-UMeshComponent* AKMInteractiveActorBase::GetPlacementMeshComponent() const
-{
-	return PlacementMeshComponent;
-}
-
-UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedBlendingComponent() const
-{
-	return AttachedComponent;
-}
-
-FTransform AKMInteractiveActorBase::GetCarryOffsetTransform_Implementation() const
-{
-	return AttachedComponent->GetOffsetTransform();
-}
-
-UKMCurveWarpingComponent* AKMInteractiveActorBase::GetCurveWarpingComponent() const
-{
-	return CurveWarpingComponent;
-}
-
 UKMInteractiveInstance* AKMInteractiveActorBase::GetInteractiveInstance() const
 {
-	if (!InteractiveInstance.IsValid())
-	{
-		return nullptr;
-	}
-	return InteractiveInstance.Get();
+	return Cast<UKMInteractiveInstance>(GetGameObjectInstance());
 }
-
-UKMGameObjectInstance* AKMInteractiveActorBase::GetGameObjectInstance() const
-{
-	if (!InteractiveInstance.IsValid())
-	{
-		return nullptr;
-	}
-	return InteractiveInstance.Get();
-};
 
 float AKMInteractiveActorBase::GetScaledRadius_Implementation() const
 {
@@ -86,13 +30,6 @@ float AKMInteractiveActorBase::GetScaledRadius_Implementation() const
 float AKMInteractiveActorBase::GetScaledHalfHeight_Implementation() const
 {
 	return MoveShapeComponent->GetScaledCapsuleHalfHeight();
-}
-
-void AKMInteractiveActorBase::PossessedByGameObjectInstance(UKMGameObjectInstance* newGameObjectInstance)
-{
-	InteractiveInstance = Cast<UKMInteractiveInstance>(newGameObjectInstance);
-	check(InteractiveInstance.IsValid());
-	InteractiveInstance->SetOwnerActor(this);
 }
 
 void AKMInteractiveActorBase::OnImpact(const TSharedPtr<FKMSkillEffectInstance>& skillEffectInstance, const FVector& hitClosestPoint, const FName& hitTag)
@@ -108,9 +45,9 @@ void AKMInteractiveActorBase::OnDeath()
 		MoveShapeComponent->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	}
 
-	if (IsValid(MovementComponent))
+	if (IsValid(MoverComponent))
 	{
-		MovementComponent->Deactivate();
+		MoverComponent->Deactivate();
 	}
 	Receive_OnDeath();
 }
@@ -118,118 +55,6 @@ void AKMInteractiveActorBase::OnDeath()
 FBoxSphereBounds AKMInteractiveActorBase::GetMasterBounds() const
 {
 	return FBoxSphereBounds();
-}
-
-UPrimitiveComponent* AKMInteractiveActorBase::GetMovementShapeComponent() const
-{
-	return 	MoveShapeComponent;
-}
-
-UKMAttachedBlendingComponent* AKMInteractiveActorBase::GetAttachedComponent() const
-{
-	return AttachedComponent;
-}
-
-UPawnMovementComponent* AKMInteractiveActorBase::GetMovementComponent() const
-{
-	return MovementComponent;
-}
-
-void AKMInteractiveActorBase::SetMovementMode(EMovementMode newMovementMode, uint8 newCustomMode)
-{
-	if (UKMPawnMovementComponent* pawnMovementComponent = Cast<UKMPawnMovementComponent>(MovementComponent))
-	{
-		pawnMovementComponent->SetMovementMode(newMovementMode);
-	}
-}
-
-void AKMInteractiveActorBase::StartCrarry(UKMGameObjectInstance* carriedGameObjectInstance)
-{
-	Receive_OnStartCarry(carriedGameObjectInstance);
-}
-
-void AKMInteractiveActorBase::StartCrarried(UKMGameObjectInstance* carryGameObjectInstance)
-{
-	if (IsValid(carryGameObjectInstance))
-	{
-		carryGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carry_Tag);
-		carryGameObjectInstance->AddGameplayTag(TakeTag);
-	}
-
-	if (UKMGameObjectInstance* carriedGameObjectInstance = GetGameObjectInstance())
-	{
-		carriedGameObjectInstance->AddGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		carriedGameObjectInstance->AddGameplayTag(TakenTag);
-	}
-	
-	PawnResponse = MoveShapeComponent->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
-	
-	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	Receive_OnStartCarried(carryGameObjectInstance);
-}
-
-void AKMInteractiveActorBase::ComplatePutdown(UKMGameObjectInstance* putDownedGameObjectInstance)
-{
-	Receive_OnComplatePutdown(putDownedGameObjectInstance);
-}
-
-void AKMInteractiveActorBase::ComplatePutdowned(UKMGameObjectInstance* putDownGameObjectInstance)
-{
-	if (IsValid(putDownGameObjectInstance))
-	{
-		putDownGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carry_Tag);
-		putDownGameObjectInstance->RemoveGameplayTag(TakeTag);
-	}
-
-	if (UKMGameObjectInstance* putDownedGameObjectInstance = GetGameObjectInstance())
-	{
-		putDownedGameObjectInstance->RemoveGameplayTag(FKMGameplayTagName::State_Carried_Tag);
-		putDownedGameObjectInstance->RemoveGameplayTag(TakenTag);
-	}
-	MoveShapeComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, PawnResponse);
-	Receive_OnComplatePutdowned(putDownGameObjectInstance);
-}
-
-void AKMInteractiveActorBase::LandHit(const FHitResult& hitResult)
-{
-	if (UKMGameObjectInstance* gameObjectInstance = GetGameObjectInstance())
-	{
-		if (UKMSkillHandler* skillHandler = gameObjectInstance->GetSkillHandler())
-		{
-			if (GFrameCounter - LasteLandedFrameCount > 1)
-			{
-				skillHandler->TriggerEvent(FKMGameplayTagName::Event_Move_Landing_Tag);
-				LasteLandedFrameCount = GFrameCounter;
-			}
-		}
-	}
-}
-
-void AKMInteractiveActorBase::WallHit(const FHitResult& hitResult)
-{
-}
-
-void AKMInteractiveActorBase::CeilingHit(const FHitResult& hitResult)
-{
-}
-
-bool AKMInteractiveActorBase::IsAir() const
-{
-	if (UKMPawnMovementComponent* pawnMovementComponent = Cast<UKMPawnMovementComponent>(GetMovementComponent()))
-	{
-		return pawnMovementComponent->IsAir();
-	}
-	return false;
-}
-
-bool AKMInteractiveActorBase::IsLand() const
-{
-	return !IsAir();	
-}
-
-const FHitResult AKMInteractiveActorBase::GetLatestWallHitResult_Implementation() const
-{
-	return LastWallHitResult;	
 }
 
 FTransform AKMInteractiveActorBase::GetApproachPullPoint(EKMApproachPullPointType approachPullPointType) const

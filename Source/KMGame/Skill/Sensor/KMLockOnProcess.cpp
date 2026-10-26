@@ -1,11 +1,9 @@
 #include "KMLockOnProcess.h"
-
 #include "Component/KMWidgetComponent.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
+#include "GameActor/Pawn/Character/KMPawnBase.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "System/KMTargetSubsystem.h"
 #include "Tables/Generated/KMTable_Object.h"
-#include "Tables/Generated/KMTable_Object_Interactive.h"
 #include "Ui/Component/KMHeadTagWidget.h"
 
 UKMLockOnProcessBase::UKMLockOnProcessBase(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -63,13 +61,13 @@ void UKMLockOnProcess::SetLockOnTagVisiblity(const UKMGameObjectInstance* target
 		return;
 	}
 
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(targetObjectInstance->GetOwnerActor());
-	if (!pawnInterface)
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(targetObjectInstance->GetOwnerActor());
+	if (!IsValid(pawn))
 	{
 		return;
 	}
 
-	UKMWidgetComponent* widgetComponent = pawnInterface->GetWidgetComponent();
+	UKMWidgetComponent* widgetComponent = pawn->GetWidgetComponent();
 	if (!IsValid(widgetComponent))
 	{
 		return;
@@ -87,9 +85,21 @@ void UKMLockOnProcess::SetLockOnTagVisiblity(const UKMGameObjectInstance* target
 float UKMLockOnProcess::GetScoreTarget(const UKMGameObjectInstance* prevTarget, const UKMGameObjectInstance* currTarget) const
 {
 	float score = 0.0f;
+
+	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGamneObject();
+	if (!IsValid(ownerGameObjectInstance))
+	{
+		return 0.f;
+	}
+
+	AActor* ownerActor = ownerGameObjectInstance->GetOwnerActor();
+	if (!IsValid(ownerActor))
+	{
+		return 0.f;
+	}
 	
-	FVector ownerForward = GetOwnerGamneObject()->GetOwnerActor()->GetActorForwardVector();
-	FVector targetToDirection = currTarget->GetOwnerActor()->GetActorLocation() - GetOwnerGamneObject()->GetOwnerActor()->GetActorLocation();
+	FVector ownerForward = ownerActor->GetActorForwardVector();
+	FVector targetToDirection = currTarget->GetOwnerActor()->GetActorLocation() - ownerActor->GetActorLocation();
 
 	FVector targetToNormal = targetToDirection.GetSafeNormal();
 	float dot = FVector::DotProduct(ownerForward, targetToNormal);
@@ -119,13 +129,13 @@ void UKMLockOnProcess::OnProcessing(const TArray<AActor*>& actors)
 	float bestInteractionScore = 0.0f;
 	for (auto actorItr = actors.CreateConstIterator(); actorItr; ++actorItr)
 	{
-		IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(*actorItr);
-		if (!pawnInterface)
+		AKMPawnBase* pawn = Cast<AKMPawnBase>(*actorItr);
+		if (!IsValid(pawn))
 		{
 			continue;
 		}
 
-		UKMGameObjectInstance* targetGameObjectInstance = pawnInterface->GetGameObjectInstance();
+		UKMGameObjectInstance* targetGameObjectInstance = pawn->GetGameObjectInstance();
 		if (!IsValid(targetGameObjectInstance))
 		{
 			continue;

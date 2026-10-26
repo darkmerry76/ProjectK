@@ -35,7 +35,8 @@ public class KMGame : ModuleRules
 			"TemplateSequence",
 			"MediaAssets",
 			"GeometryCollectionEngine",
-			"FieldSystemEngine"
+			"FieldSystemEngine",
+			"Mover"
 		});
 
 		if (Target.bBuildEditor == true)

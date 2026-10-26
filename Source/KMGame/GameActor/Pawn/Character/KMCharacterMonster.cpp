@@ -2,6 +2,7 @@
 
 #include "AI/KMAIController.h"
 #include "Animation/KMAnimInstance.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "Util/KMUtil.h"
 
 void AKMCharacterMonster::BeginPlay()

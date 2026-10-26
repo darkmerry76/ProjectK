@@ -20,7 +20,9 @@ public class EMCoreGame : ModuleRules
 			"Landscape",
 			"Niagara",
 			"EMCurveWarping",
-			"MotionWarping"
+			"MotionWarping",
+			"Mover",
+			"GameplayTags"
 		});
 		
 		PublicIncludePaths.Add("EMCoreGame");

@@ -1,5 +1,6 @@
 #include "KMAbilityInteraction.h"
 #include "Component/KMAttachedBlendingComponent.h"
+#include "Component/KMMoveShapeComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Skill/KMSkillHandler.h"
@@ -53,8 +54,8 @@ bool UKMAbilityInteraction::StartInteraction(FName attackSocket, float blendingD
 		return false;
 	}
 	
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(ownerActor);
-	if (!ownerPawnInterface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(ownerActor);
+	if (!IsValid(ownerPawn))
 	{
 		return false;
 	}
@@ -71,8 +72,8 @@ bool UKMAbilityInteraction::StartInteraction(FName attackSocket, float blendingD
 		return false;
 	}
 	
-	IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(carriedActor);
-	if (!carriedPawnInterface)
+	AKMPawnBase* carriedPawn = Cast<AKMPawnBase>(carriedActor);
+	if (!IsValid(carriedPawn))
 	{
 		return false;
 	}
@@ -81,7 +82,7 @@ bool UKMAbilityInteraction::StartInteraction(FName attackSocket, float blendingD
 	carriedWorldTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 	{
-		if (UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawnInterface->GetAttachedBlendingComponent())
+		if (UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawn->GetAttachedBlendingComponent())
 		{
 			//carriedAttachedBlendingComponent->StartBlending(ownerCharacter->GetMesh(), attackSocket, carriedWorldTransform, 0.f);
 			carriedAttachedBlendingComponent->StopBlending();
@@ -91,7 +92,7 @@ bool UKMAbilityInteraction::StartInteraction(FName attackSocket, float blendingD
 
 	carriedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	carriedGameObjectInstance->ComplatePutdowned(GetOwnerGameObjectInstance());
-	carriedPawnInterface->GetMovementShapeComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	carriedPawn->GetMovementShapeComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	
 	OnStartInteraction();
 	return true;

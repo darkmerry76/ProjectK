@@ -1,8 +1,7 @@
 #include "KMAbilityWallBlow.h"
 #include "EMCurveWarpingComponent.h"
 #include "Core/KMGameplayTag.h"
-#include "GameActor/Pawn/KMPawnInterface.h"
-#include "GameObject/KMGameObjectInstance.h"
+#include "GameActor/Pawn/Character/KMPawnBase.h"
 #include "Skill/KMSkillHandler.h"
 
 UKMAbilityWallBlow::UKMAbilityWallBlow(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
@@ -16,10 +15,10 @@ void UKMAbilityWallBlow::Activate()
 
 void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode movementMode)
 {
-	IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(GetOwnerActor());
-	check(pawnInterface);
+	AKMPawnBase* pawn = Cast<AKMPawnBase>(GetOwnerActor());
+	check(IsValid(pawn));
 
-	UKMSkillHandler* skillHandler = pawnInterface->GetGameObjectInstance()->GetSkillHandler();
+	UKMSkillHandler* skillHandler = pawn->GetGameObjectInstance()->GetSkillHandler();
 	if (IsValid(skillHandler))
 	{
 		switch(movementMode)

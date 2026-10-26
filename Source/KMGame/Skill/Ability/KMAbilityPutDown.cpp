@@ -1,6 +1,7 @@
 #include "KMAbilityPutDown.h"
 #include "Animation/KMAnimInstance.h"
 #include "Component/KMAttachedBlendingComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -48,15 +49,15 @@ void UKMAbilityPutDown::Activate()
 
 	bIsAvailableItem = CalcAvailableTargetTransform(ItemTargetTransform);
 
-	if (IKMPawnInterface* pawnInterface = Cast<IKMPawnInterface>(carriedActor))
+	if (AKMPawnBase* pawn = Cast<AKMPawnBase>(carriedActor))
 	{
-		UMeshComponent* originPlacementMeshComponent = pawnInterface->GetPlacementMeshComponent();
+		UMeshComponent* originPlacementMeshComponent = pawn->GetPlacementMeshComponent();
 		if (IsValid(originPlacementMeshComponent))
 		{
 			UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
 			check(IsValid(indicatorSubsystem));
 
-			FTransform newTransform = pawnInterface->GetCarryOffsetTransform_Implementation() * ItemTargetTransform;
+			FTransform newTransform = pawn->GetCarryOffsetTransform_Implementation() * ItemTargetTransform;
 			newTransform.SetRotation(FRotator(0.f, 0.f, 0.f).Quaternion());
 			PlacementMeshcomponentId = indicatorSubsystem->SpawnPlacementMeshComponent(originPlacementMeshComponent, newTransform);
 			if (UMeshComponent* newPlacementComponent = indicatorSubsystem->GetMeshComponent(PlacementMeshcomponentId))
@@ -192,8 +193,8 @@ bool UKMAbilityPutDown::StartPutDown(FName attackSocket, float blendingDuration)
 		return false;
 	}
 	
-	IKMPawnInterface* ownerPawnInterface = Cast<IKMPawnInterface>(ownerActor);
-	if (!ownerPawnInterface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(ownerActor);
+	if (!IsValid(ownerPawn))
 	{
 		return false;
 	}
@@ -210,8 +211,8 @@ bool UKMAbilityPutDown::StartPutDown(FName attackSocket, float blendingDuration)
 		return false;
 	}
 	
-	IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(carriedActor);
-	if (!carriedPawnInterface)
+	AKMPawnBase* carriedPawn = Cast<AKMPawnBase>(carriedActor);
+	if (!IsValid(carriedPawn))
 	{
 		return false;
 	}
@@ -223,7 +224,7 @@ bool UKMAbilityPutDown::StartPutDown(FName attackSocket, float blendingDuration)
 	carriedActor->AttachToComponent(ownerActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, NAME_None);
 	if (AKMCharacter* ownerCharacter = Cast<AKMCharacter>(ownerActor))
 	{
-		if (UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawnInterface->GetAttachedBlendingComponent())
+		if (UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawn->GetAttachedBlendingComponent())
 		{
 			carriedWorldTransform.SetScale3D(FVector::One() / carriedAttachedBlendingComponent->GetOffsetTransform().GetScale3D());
 			carriedAttachedBlendingComponent->StartBlending(ownerCharacter->GetMesh(), attackSocket, carriedWorldTransform, blendingDuration * -1.f);
@@ -248,9 +249,9 @@ void UKMAbilityPutDown::CompletePutDown()
 		return;
 	}
 	
-	if (IKMPawnInterface* carriedPawnInterface = Cast<IKMPawnInterface>(carriedActor))
+	if (AKMPawnBase* carriedPawn = Cast<AKMPawnBase>(carriedActor))
 	{
-		UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawnInterface->GetAttachedBlendingComponent();
+		UKMAttachedBlendingComponent* carriedAttachedBlendingComponent = carriedPawn->GetAttachedBlendingComponent();
 		if (IsValid(carriedAttachedBlendingComponent))
 		{
 			carriedAttachedBlendingComponent->StopBlending();
@@ -273,13 +274,13 @@ void UKMAbilityPutDown::Tick(float deltaTime)
 		return;
 	}
 	
-	IKMPawnInterface* ownerPawnInteface = Cast<IKMPawnInterface>(ownerActor);
-	if (!ownerPawnInteface)
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(ownerActor);
+	if (!IsValid(ownerPawn))
 	{
 		return;
 	}
 
-	UKMGameObjectInstance* ownerGameObjectInstance = ownerPawnInteface->GetGameObjectInstance();
+	UKMGameObjectInstance* ownerGameObjectInstance = ownerPawn->GetGameObjectInstance();
 	if (!IsValid(ownerGameObjectInstance))
 	{
 		return;

@@ -1,14 +1,14 @@
 #include "KMCharacterHero.h"
 #include "EnhancedInputComponent.h"
 #include "Animation/KMAnimInstance.h"
-#include "Component/KMCharacterMovementComponent.h"
+#include "Component/KMPawnMoverComponent.h"
+#include "Component/KMSkeletalMeshComponent.h"
 #include "Core/KMGameplayTag.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "System/KMTargetSubsystem.h"
 #include "Util/KMUtil.h"
 
-AKMCharacterHero::AKMCharacterHero() : Super()
+AKMCharacterHero::AKMCharacterHero(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = ETickingGroup::TG_PrePhysics; 
@@ -70,10 +70,9 @@ void AKMCharacterHero::StartCustomJump()
 		return;
 	}
 
-	UKMCharacterMovementComponent* characterMovementComponent = Cast<UKMCharacterMovementComponent>(GetCharacterMovement());
-	if(IsValid(characterMovementComponent))
+	if(IsValid(MoverComponent))
 	{
-		characterMovementComponent->CustomJump();
+		MoverComponent->JumpCurveWarping();
 	}
 }
 
@@ -156,19 +155,6 @@ void AKMCharacterHero::RunReleased()
 
 void AKMCharacterHero::OnDoubleTap_Implementation(float direction)
 {
-}
-
-void AKMCharacterHero::PendingJump()
-{
-	if (CanJump())
-	{
-		PressedJumpReady = true;
-	}
-}
-
-void AKMCharacterHero::StopJumping()
-{
-	Super::StopJumping();
 }
 
 void AKMCharacterHero::Tick(float DeltaTime)
@@ -266,9 +252,7 @@ void AKMCharacterHero::ExecuteCombatSkill()
 {
 	bCombatTriggered = false;
 
-	UKMTargetSubsystem* targetSystem =
-		UKMTargetSubsystem::GetTargetSubsystem(this);
-
+	UKMTargetSubsystem* targetSystem = UKMTargetSubsystem::GetTargetSubsystem(this);
 	check(IsValid(targetSystem));
 
 	GetCharacterInstance()->UseCombatSkill();
@@ -278,9 +262,7 @@ void AKMCharacterHero::ExecuteTechniqueSkill()
 {
 	bTechniqueTriggered = false;
 
-	UKMTargetSubsystem* targetSystem =
-		UKMTargetSubsystem::GetTargetSubsystem(this);
-
+	UKMTargetSubsystem* targetSystem = UKMTargetSubsystem::GetTargetSubsystem(this);
 	check(IsValid(targetSystem));
 
 	GetCharacterInstance()->UseTechniqueSkill();
@@ -288,9 +270,7 @@ void AKMCharacterHero::ExecuteTechniqueSkill()
 
 void AKMCharacterHero::ExecuteUltimate()
 {
-	UKMTargetSubsystem* targetSystem =
-		UKMTargetSubsystem::GetTargetSubsystem(this);
-
+	UKMTargetSubsystem* targetSystem = UKMTargetSubsystem::GetTargetSubsystem(this);
 	check(IsValid(targetSystem));
 
 	GetCharacterInstance()->UseUltimateSkill();
@@ -302,5 +282,4 @@ void AKMCharacterHero::OnEnterGame_Implementation()
 
 void AKMCharacterHero::OnHeroSelected_Implementation()
 {
-	
 }
