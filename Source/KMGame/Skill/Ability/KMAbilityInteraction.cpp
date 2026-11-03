@@ -9,15 +9,15 @@ UKMAbilityInteraction::UKMAbilityInteraction(const FObjectInitializer& objectIni
 {
 }
 
-void UKMAbilityInteraction::Activate()
+void UKMAbilityInteraction::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 	PostActivated();
 }
 
-void UKMAbilityInteraction::Deactivate(bool bCancel)
+void UKMAbilityInteraction::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 }
 
 void UKMAbilityInteraction::OnRequestEnd_Implementation()

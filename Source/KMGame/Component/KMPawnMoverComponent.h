@@ -3,10 +3,17 @@
 #include "CoreMinimal.h"
 #include "EMCurveWarpingInterface.h"
 #include "Component/EMPawnMoverComponent.h"
+#include "Core/KMDefine.h"
 #include "KMPawnMoverComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnMoverHitDelegate, const TArray<FHitResult>& hitResults);
+struct KMGAME_API FKMBlockReflectionData
+{
+	int32 RefCount = 1;
+	bool bHasResolvedBlockMove = false;
+	TWeakObjectPtr<class AKMCharacter> Character;
+};
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FKMSweepPawnMoverHitDelegate, const TArray<FHitResult>& hitResults);
 UCLASS(Blueprintable, BlueprintType, DisplayName="PawnMoverComponent", meta=(BlueprintSpawnableComponent))
 class KMGAME_API UKMPawnMoverComponent : public UEMPawnMoverComponent
 {
@@ -35,10 +42,16 @@ protected:
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimSequence> CustomWalkingAnimSequence;
 
-public:
+	TArray<TSharedPtr<FKMBlockReflectionData>> BlockReflections;
+
+	FKMFollowerMovementData FollowerMovementData;
+
 	FHitResult BlockHitResult;
 	FVector BlockMoveDelta = FVector::ZeroVector;
 
+	FTransform DefaultBaseVisualTransform;
+	
+public:
 	FKMSweepPawnMoverHitDelegate SweepPawnHitDelegate;
 	FEMCustomMovementDelegate CustomMovementDelegate;
 	
@@ -75,6 +88,17 @@ public:
 	UFUNCTION()
 	void OnMoverModeChanged(const FName& previousMode, const FName& newMode);
 
+	UFUNCTION(BlueprintCallable)
+	class AKMCharacter* GetOwnerCharacter() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RestoreDefaultVisualTransform();
+
 protected:
-	virtual void OnRegister() override;
+	virtual void BeginPlay() override;
+	
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	void MoveFollowProcessing(float deltaTime, int32 iterations);
+	bool StartedFollowActor();
 };

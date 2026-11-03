@@ -259,6 +259,7 @@ UENUM(Blueprintable, BlueprintType)
 enum class EKMFollowerMovementStateType : uint8
 {
 	None,
+	Started,
 	Paried,
 	Stoped,
 };

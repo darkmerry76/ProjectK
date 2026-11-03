@@ -191,6 +191,11 @@ void UEMTickerSubsystem::Tick(UWorld* world, ELevelTick levelTick, float deltaTi
 	{
 		return;
 	}
+
+	if (GetWorld()->IsPaused())
+	{
+		return;
+	}
 	
 	float worldDeltaSeconds = GetWorld()->GetTimeSeconds();
 

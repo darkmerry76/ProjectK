@@ -75,8 +75,8 @@ public:
 	float TargetDistance = 200.f;
 
 public:
-	virtual void Activate() override;
-	virtual void Deactivate(bool bCancel = false) override;
+	virtual void Activated() override;
+	virtual void Deactivated(bool bCancel = false) override;
 
 	UFUNCTION(BlueprintPure)
 	FGameplayTag Get8WayDirectionAnimTag(EKM8WayDirection direction) const;

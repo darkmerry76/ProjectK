@@ -8,9 +8,9 @@ UKMAbilityWallBlow::UKMAbilityWallBlow(const FObjectInitializer& objectInitializ
 {
 }
 
-void UKMAbilityWallBlow::Activate()
+void UKMAbilityWallBlow::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilityWallBlow::OnCurveWarpingInterrupt_Implementation(const FVector& moveDelta, float deltaTime, const FEMCurveWarpingInstance& curveWarpingInstance, EEMCurveWarpingInteruptType interuptType, EEMCustomMovementMode movementMode)
@@ -34,7 +34,7 @@ void UKMAbilityWallBlow::Impact(const FTransform& newImpactTransform)
 	Super::Impact(newImpactTransform);
 }
 
-void UKMAbilityWallBlow::Deactivate(bool bCancel)
+void UKMAbilityWallBlow::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 }

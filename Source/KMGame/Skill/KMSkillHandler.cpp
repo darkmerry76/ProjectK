@@ -1382,18 +1382,14 @@ void UKMSkillHandler::Tick(float deltaSeconds)
 
 			if (pendingNewAbility->IsA<FKMSkillInstance>())
 			{
-				if (!FinalizeUseSkill(StaticCastSharedPtr<FKMSkillInstance>(pendingNewAbility)))
-				{
-					continue;
-				}
+				FinalizeUseSkill(StaticCastSharedPtr<FKMSkillInstance>(pendingNewAbility));
 			}
 			else if(pendingNewAbility->IsA<FKMSkillEffectInstance>())
 			{
-				if (!FinalizeApplyEffect(StaticCastSharedPtr<FKMSkillEffectInstance>(pendingNewAbility)))
-				{
-					continue;
-				}
+				FinalizeApplyEffect(StaticCastSharedPtr<FKMSkillEffectInstance>(pendingNewAbility));
 			}
+
+			pendingNewAbility->PostEnter();
 			OnAddAbilityInstance(pendingNewAbility);
 
 			if (!UpdateAbilitiy(pendingNewAbility, deltaSeconds))

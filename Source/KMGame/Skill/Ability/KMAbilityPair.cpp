@@ -7,9 +7,9 @@ UKMAbilityPair::UKMAbilityPair(const FObjectInitializer& objectInitializer) : Su
 {
 }
 
-void UKMAbilityPair::Activate()
+void UKMAbilityPair::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilityPair::PostActivated()
@@ -41,7 +41,7 @@ void UKMAbilityPair::PostActivated()
 	}
 }
 
-void UKMAbilityPair::Deactivate(bool bCancel)
+void UKMAbilityPair::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 }

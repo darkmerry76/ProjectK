@@ -1,5 +1,7 @@
 #include "EMMoverLayer.h"
 
+#include "EMMoveShapeComponent.h"
+#include "EMPawnMoverComponent.h"
 #include "MotionWarpingComponent.h"
 #include "MoverComponent.h"
 #include "MoverTypes.h"
@@ -174,7 +176,12 @@ bool FEMLayeredMove_AnimRootMotion::GenerateMove(const FMoverTickStartData& simS
 	const float extractionStartPosition = MontageState.StartingMontagePosition + scaledSecondsSinceMontageStarted;
 	const float extractionEndPosition   = extractionStartPosition + (deltaSeconds * MontageState.PlayRate * montageRateScale);
 
-	const FTransform localRootMotion = IsValid(MontageState.Montage) ? UMotionWarpingUtilities::ExtractRootMotionFromAnimation(MontageState.Montage, extractionStartPosition, extractionEndPosition) : FTransform::Identity;
+	FTransform localRootMotion = IsValid(MontageState.Montage) ? UMotionWarpingUtilities::ExtractRootMotionFromAnimation(MontageState.Montage, extractionStartPosition, extractionEndPosition) : FTransform::Identity;
+
+	if (const UEMPawnMoverComponent* pawnMoverComponent = Cast<UEMPawnMoverComponent>(moverComp))
+	{
+		localRootMotion.SetLocation(localRootMotion.GetLocation() * pawnMoverComponent->GetAnimRootMotionTranslationScale());
+	}
 
 	FMotionWarpingUpdateContext warpingContext;
 	warpingContext.Animation = MontageState.Montage;
@@ -206,7 +213,6 @@ bool FEMLayeredMove_AnimRootMotion::GenerateMove(const FMoverTickStartData& simS
 		}
 	
 		outProposedMove.AngularVelocityDegrees = UMovementUtils::ComputeAngularVelocityDegrees(syncState->GetOrientation_WorldSpace(), IntendedOrientation_WorldSpace, deltaSeconds, -1.f);
-
 	}
 
 	MontageState.CurrentPosition = extractionEndPosition;

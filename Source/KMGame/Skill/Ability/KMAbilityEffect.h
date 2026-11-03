@@ -47,9 +47,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetCasterCharacterInstance() const;
 	
-	virtual void Activate() override;
-	virtual void PostActivated();
-	virtual void Deactivate(bool bCancel = false) override;
+	virtual void Activated() override;
+	virtual void PostActivated() override;
+	virtual void Deactivated(bool bCancel = false) override;
 	virtual void Impact(const FTransform& newImpactTransform) override;
 
 	UFUNCTION(BlueprintPure)

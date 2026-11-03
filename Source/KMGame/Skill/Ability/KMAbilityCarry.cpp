@@ -7,14 +7,14 @@ UKMAbilityCarry::UKMAbilityCarry(const FObjectInitializer& objectInitializer) : 
 {
 }
 
-void UKMAbilityCarry::Activate()
+void UKMAbilityCarry::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 }
 
-void UKMAbilityCarry::Deactivate(bool bCancel)
+void UKMAbilityCarry::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 }
 
 bool UKMAbilityCarry::StartCarried(FName attackSocket, float blendingDuration)

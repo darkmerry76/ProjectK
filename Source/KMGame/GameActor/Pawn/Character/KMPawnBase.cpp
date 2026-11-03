@@ -287,11 +287,34 @@ void AKMPawnBase::ProduceInput_Implementation(int32 simTimeMs, FMoverInputCmdCon
 	FVector inputDirection = ConsumeInputVector();
 	
 	UMoverDataModelBlueprintLibrary::SetDirectionalInput(DefaultInputs, inputDirection);
-	
+
 	DefaultInputs.OrientationIntent = GetActorForwardVector();
 
 	FMoverDataCollection inputDataCollection;
 	inputDataCollection.AddDataByCopy(&DefaultInputs);
 	
 	inputCmdResult.InputCollection = inputDataCollection;
+}
+
+void AKMPawnBase::ApplyCapsuleFootAlignment(float addFootHeight)
+{
+	if (UKMPawnMoverComponent* moverComponent = GetMoverComponent())
+	{
+		FTransform baseVisualRelativeTransform = moverComponent->GetBaseVisualComponentTransform();
+		baseVisualRelativeTransform.SetLocation(FVector(baseVisualRelativeTransform.GetLocation().X, baseVisualRelativeTransform.GetLocation().Y, baseVisualRelativeTransform.GetLocation().Z - addFootHeight));
+		moverComponent->SetBaseVisualComponentTransform(baseVisualRelativeTransform);
+	}
+}
+	
+void AKMPawnBase::RestoreCapsuleFootAlignment()
+{
+	if (UKMPawnMoverComponent* moverComponent = GetMoverComponent())
+	{
+		moverComponent->RestoreDefaultVisualTransform();
+	}
+	
+	if (UKMMoveShapeComponent* moveShapeComponent = GetMovementShapeComponent())
+	{
+		moveShapeComponent->RevertOriginSize();
+	}
 }

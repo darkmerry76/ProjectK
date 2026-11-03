@@ -8,9 +8,9 @@ UKMAbilityPaired::UKMAbilityPaired(const FObjectInitializer& objectInitializer) 
 {
 }
 
-void UKMAbilityPaired::Activate()
+void UKMAbilityPaired::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilityPaired::PostActivated()
@@ -55,9 +55,9 @@ void UKMAbilityPaired::PostActivated()
 	}
 }
 
-void UKMAbilityPaired::Deactivate(bool bCancel)
+void UKMAbilityPaired::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 	
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	if (!IsValid(ownerCharacter))

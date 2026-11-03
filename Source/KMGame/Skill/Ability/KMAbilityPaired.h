@@ -14,8 +14,8 @@ protected:
 	FVector2D PairOffset = FVector2D::ZeroVector;
 
 public:
-	virtual void Activate() override;
-	virtual void Deactivate(bool bCancel) override;
+	virtual void Activated() override;
+	virtual void Deactivated(bool bCancel) override;
 
 protected:
 	virtual void PostActivated() override;

@@ -120,6 +120,12 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent)
 	float GetScaledHalfHeight() const;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void ApplyCapsuleFootAlignment(float addFootHeight);
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void RestoreCapsuleFootAlignment();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;

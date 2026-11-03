@@ -59,13 +59,19 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual void Activate();
+	virtual void Activated();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnActivated();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate(bool bCancel = false);
+	virtual void PostActivated();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnPostActivated();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Deactivated(bool bCancel = false);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnDeacivated(bool bCancel);

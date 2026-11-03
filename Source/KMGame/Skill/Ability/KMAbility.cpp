@@ -103,7 +103,7 @@ AKMCharacter* UKMAbility::GetTargetCharacter() const
 	return Cast<AKMCharacter>(GetTargetActor());
 }
 
-void UKMAbility::Activate()
+void UKMAbility::Activated()
 {
 	AActor* ownerActor = GetOwnerActor();
 	check(IsValid(ownerActor));
@@ -141,7 +141,15 @@ void UKMAbility::OnActivated_Implementation()
 {
 }
 
-void UKMAbility::Deactivate(bool bCancel)
+void UKMAbility::PostActivated()
+{
+}
+
+void UKMAbility::OnPostActivated_Implementation()
+{
+}
+
+void UKMAbility::Deactivated(bool bCancel)
 {
 	UEMMartialArts* martialArts = GetMartialArts();
 	check(IsValid(martialArts));

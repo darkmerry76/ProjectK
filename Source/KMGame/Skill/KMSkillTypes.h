@@ -66,6 +66,7 @@ public:
 	virtual void Init();
 	virtual void Reset() { };
 	virtual void Enter();
+	virtual void PostEnter();
 	virtual void Leave();
 	
 	virtual float GetElipsedTime() const;

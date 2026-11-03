@@ -164,11 +164,14 @@ void UKMAnimInstance::SetStopOffsetTransform()
 
 void UKMAnimInstance::TickPairBlend(float deltaTime)
 {
+	PairBlendInfo.bIsEnableBlend = false;
+	
 	if (!FollowerMovementData.IsValid())
 	{
 		return;		
 	}
 
+	PairBlendInfo.bIsEnableBlend = true;
 	float blendAlpha = (FollowerMovementData.Duration < 0.0001f) ? 1.f : FMath::Min(1.f, FollowerMovementData.ElipsedTime / FollowerMovementData.Duration);
 
 	PairBlendInfo.OffsetTransform = FTransform::Identity;

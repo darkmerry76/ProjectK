@@ -10,8 +10,8 @@ class UKMAbilityCarry : public UKMAbilitySkill
 	GENERATED_UCLASS_BODY()
 
 public:
-	virtual void Activate() override;
-	virtual void Deactivate(bool bCancel) override;
+	virtual void Activated() override;
+	virtual void Deactivated(bool bCancel) override;
 	
 	bool StartCarried(FName attackSocket, float blendingDuration = 0.2f);
 	void CompleteCarried();

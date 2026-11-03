@@ -47,7 +47,15 @@ void FKMAbilityInstanceBase::Enter()
 	bIsEnter = true;
 	for (auto ability : AbilitieAssets)
 	{
-		ability->Activate();
+		ability->Activated();
+	}
+}
+
+void FKMAbilityInstanceBase::PostEnter()
+{
+	for (auto ability : AbilitieAssets)
+	{
+		ability->PostActivated();
 	}
 }
 
@@ -160,7 +168,7 @@ void FKMAbilityInstanceBase::RemoveAllAbilityAsset(bool bDeactivateEvent, bool b
 	{
 		for (auto ability : AbilitieAssets)
 		{
-			ability->Deactivate(bCancel);
+			ability->Deactivated(bCancel);
 		}
 	}
 	AbilitieAssets.Empty();
@@ -240,7 +248,7 @@ void FKMSkillInstance::InitAbilityAsset(bool bAutoActivate)
 			newAbilitySkill->SetSkillInstance(SharedThis(this));
 			if (bAutoActivate)
 			{
-				newAbilitySkill->Activate();
+				newAbilitySkill->Activated();
 			}
 		}
 	}
@@ -482,7 +490,7 @@ void FKMSkillEffectInstance::InitAbilityAsset(bool bAutoActivate)
 		newEffectAbility->SetCastObjectKey(OwnerSkillInstance->Caster);
 		if (bAutoActivate)
 		{
-			newEffectAbility->Activate();
+			newEffectAbility->Activated();
 		}
 	}
 }

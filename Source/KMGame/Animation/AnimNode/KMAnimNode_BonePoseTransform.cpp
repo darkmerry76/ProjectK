@@ -75,8 +75,11 @@ void FKMAnimNode_BonePoseTransform::Evaluate_AnyThread(FPoseContext& output)
 		if (PairRootBoneIndex.IsValid())
 		{
 			const FKMPairPositionBlendInfo& pairData = animInstanceProxy.GetPairBlendInfo();
-			FTransform rootBoneTM = output.Pose[PairRootBoneIndex];
-			output.Pose[PairRootBoneIndex] = rootBoneTM * pairData.OffsetTransform;
+			if (pairData.IsValid())
+			{
+				FTransform rootBoneTM = output.Pose[PairRootBoneIndex];
+				output.Pose[PairRootBoneIndex] = rootBoneTM * pairData.OffsetTransform;
+			}
 		}
 	}
 }

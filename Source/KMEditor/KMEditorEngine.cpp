@@ -1,7 +1,11 @@
 #include "KMEditorEngine.h"
 
-void UKMEditorEngine::Init(IEngineLoop* InEngineLoop)
+void UKMEditorEngine::Init(IEngineLoop* engineLoop)
 {
-	Super::Init(InEngineLoop);
+	Super::Init(engineLoop);
 }
 
+void UKMEditorEngine::Tick(float deltaSeconds, bool bIsEditor)
+{
+	Super::Tick(deltaSeconds, bIsEditor);
+}

@@ -13,8 +13,8 @@ public:
 	bool StartInteraction(FName attackSocket, float blendingDuration = 0.2f);
 	
 protected:	
-	virtual void Activate() override;
-	virtual void Deactivate(bool bCancel) override;
+	virtual void Activated() override;
+	virtual void Deactivated(bool bCancel) override;
 
 protected:
 	virtual void OnRequestEnd_Implementation() override;

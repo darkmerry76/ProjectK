@@ -53,6 +53,8 @@ protected:
 	uint64 LasteWallHitFrameCount = 0;
 	uint64 LastetCeilingHitFrameCount = 0;
 
+	FVector RootMotionTranslationScale = FVector::One();
+
 public:
 	UFUNCTION(BlueprintPure)
 	class UKMCharacterInstance* GetCharacterInstance() const;
@@ -107,11 +109,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveMovementOverrideMontage();
 
+	UFUNCTION(BlueprintCallable)
 	void SetBeastPDA(const class UKMBeastPDA* newBeastPDA);
+
+	UFUNCTION(BlueprintPure)
 	const class UKMBeastPDA* GetBeastPDA() const;
 
+	UFUNCTION(BlueprintPure)
 	virtual FTransform GetApproachPullPoint(EKMApproachPullPointType approachPullPointType = EKMApproachPullPointType::Auto) const override;
 
+	virtual void ApplyCapsuleFootAlignment(float addFootHeight) override;
+	virtual void RestoreCapsuleFootAlignment() override;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;

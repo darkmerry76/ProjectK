@@ -8,16 +8,16 @@ UKMAbilitySkill::UKMAbilitySkill(const FObjectInitializer& objectInitializer) : 
 {
 }
 
-void UKMAbilitySkill::Activate()
+void UKMAbilitySkill::Activated()
 {
 	PlayMartialArts(nullptr, Rate, bIsLoop);
 	PostActivated();
-
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilitySkill::PostActivated()
 {
+	Super::PostActivated();
 	if (bIsDirectionFallow)
 	{
 		if (UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance())
@@ -34,9 +34,9 @@ void UKMAbilitySkill::PostActivated()
 	}
 }
 
-void UKMAbilitySkill::Deactivate(bool bCancel)
+void UKMAbilitySkill::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 
 	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
 	if(!IsValid(ownerGameObjectInstance))

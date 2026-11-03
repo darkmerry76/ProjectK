@@ -9,5 +9,6 @@ class KMGAME_API UKMGameEngine : public UEMCoreGameEngine
 {
 	GENERATED_BODY()
 public:
-	virtual void Init(IEngineLoop* InEngineLoop) override;
+	virtual void Init(IEngineLoop* engineLoop) override;
+	virtual void Tick(float deltaSeconds, bool bIdleMode) override;
 };

@@ -7,17 +7,16 @@ UKMAbilitySkillDirectionTag::UKMAbilitySkillDirectionTag(const FObjectInitialize
 {
 }
 
-void UKMAbilitySkillDirectionTag::Activate()
+void UKMAbilitySkillDirectionTag::Activated()
 {
 	PlayMartialArts(nullptr, Rate, bIsLoop);
 	PostActivated();
-	
-	UKMAbility::Activate();
+	UKMAbility::Activated();
 }
 
-void UKMAbilitySkillDirectionTag::Deactivate(bool bCancel)
+void UKMAbilitySkillDirectionTag::Deactivated(bool bCancel)
 {
-	UKMAbility::Deactivate(bCancel);
+	UKMAbility::Deactivated(bCancel);
 }
 
 FGameplayTag UKMAbilitySkillDirectionTag::Get8WayDirectionAnimTag(EKM8WayDirection direction) const

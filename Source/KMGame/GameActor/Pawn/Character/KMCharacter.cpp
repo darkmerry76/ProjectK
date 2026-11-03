@@ -279,3 +279,26 @@ void AKMCharacter::AddMovementInput(FVector worldDirection, float scaleValue, bo
 {
 	Super::AddMovementInput(worldDirection, scaleValue, bForce);
 }
+
+void AKMCharacter::ApplyCapsuleFootAlignment(float addFootHeight)
+{
+	Super::ApplyCapsuleFootAlignment(addFootHeight);
+	
+	if (UKMSkeletalMeshComponent* skeletalMeshComponent = GetMesh())
+	{
+		FTransform skeltalRelativeTransform = skeletalMeshComponent->GetRelativeTransform();
+
+		skeltalRelativeTransform.SetLocation(FVector(skeltalRelativeTransform.GetLocation().X, skeltalRelativeTransform.GetLocation().Y, skeltalRelativeTransform.GetLocation().Z - addFootHeight));
+		skeletalMeshComponent->SetRelativeTransform(skeltalRelativeTransform);
+	}
+}
+	
+void AKMCharacter::RestoreCapsuleFootAlignment()
+{
+	Super::RestoreCapsuleFootAlignment();
+
+	if (UKMSkeletalMeshComponent* skeletalMeshComponent = GetMesh())
+	{
+		skeletalMeshComponent->RestoreDefaultRelativeTransform();
+	}
+}

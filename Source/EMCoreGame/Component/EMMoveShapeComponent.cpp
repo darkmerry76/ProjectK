@@ -16,12 +16,47 @@ void UEMMoveShapeComponent::OnRegister()
 
 	if (CollisionShapeType == EEMCollisionShapeType::Box)
 	{
+		CapsuleRadius = FMath::Abs(BoxExtent.X) > FMath::Abs(BoxExtent.Y) ? BoxExtent.X : BoxExtent.X;
+		CapsuleHalfHeight = BoxExtent.Z;
+	}
+	else if (CollisionShapeType == EEMCollisionShapeType::Sphere)
+	{
+		CapsuleRadius = SphereRadius;
+		CapsuleHalfHeight = SphereRadius;
+	}
+
+	OriginBoxExtent = BoxExtent;
+	OriginCapsuleRadius = CapsuleRadius;
+	OriginCapsuleHalfHeight = CapsuleHalfHeight;
+}
+
+void UEMMoveShapeComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void UEMMoveShapeComponent::RevertOriginSize()
+{
+	FVector offsetDelta(0.f, 0.f, OriginCapsuleHalfHeight - CapsuleHalfHeight);
+
+	BoxExtent = OriginBoxExtent;
+	
+	CapsuleRadius = OriginCapsuleRadius;
+	CapsuleHalfHeight = OriginCapsuleHalfHeight;
+
+	if (CollisionShapeType == EEMCollisionShapeType::Box)
+	{
 		CapsuleHalfHeight = BoxExtent.Z;
 	}
 	else if (CollisionShapeType == EEMCollisionShapeType::Sphere)
 	{
 		CapsuleHalfHeight = SphereRadius;	
 	}
+
+	SetCapsuleRadius(CapsuleRadius);
+	SetCapsuleHalfHeight(CapsuleHalfHeight);
+	AddWorldOffset(offsetDelta);
+	UpdateComponentToWorld();
 }
 
 FPrimitiveSceneProxy* UEMMoveShapeComponent::CreateSceneProxy()

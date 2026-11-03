@@ -32,10 +32,10 @@ protected:
 	TWeakPtr<class FKMSkillInstance> SkillInstance;
 
 public:
-	virtual void Activate() override;
-	virtual void Deactivate(bool bCancel) override;
+	virtual void Activated() override;
+	virtual void Deactivated(bool bCancel) override;
 
-	virtual void PostActivated();
+	virtual void PostActivated() override;
 
 	void SetSkillInstance(const TSharedPtr<class FKMSkillInstance>& newSkillInstance);
 	TWeakPtr<class FKMSkillInstance> GetSkillInstance() const;

@@ -13,9 +13,9 @@ UKMAbilityPutDown::UKMAbilityPutDown(const FObjectInitializer& objectInitializer
 {
 }
 
-void UKMAbilityPutDown::Activate()
+void UKMAbilityPutDown::Activated()
 {
-	UKMAbility::Activate();
+	UKMAbility::Activated();
 
 	check(SearchAngleInterval > 0.f);
 
@@ -72,9 +72,9 @@ void UKMAbilityPutDown::Activate()
 	PostActivated();
 }
 
-void UKMAbilityPutDown::Deactivate(bool bCancel)
+void UKMAbilityPutDown::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 
 	UKMIndicatorSubsystem* indicatorSubsystem = UKMIndicatorSubsystem::GetIndicatorSubsystem(this);
 	check(IsValid(indicatorSubsystem));

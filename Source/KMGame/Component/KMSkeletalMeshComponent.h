@@ -18,7 +18,7 @@ public:
 	void AttachTransformUpdateComponent(class UActorComponent* newActorComponent);
 	void DetachTransformUpdateComponent(class UActorComponent* actorComponent);
 
-	void RevertOriginTransform();
+	void RestoreDefaultRelativeTransform();
 	
 protected:
 	virtual void BeginPlay() override;

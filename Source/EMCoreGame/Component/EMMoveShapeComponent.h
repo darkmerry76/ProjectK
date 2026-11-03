@@ -33,6 +33,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="CollisionShapeType==EEMCollisionShapeType::Sphere"), Category=Shape)
 	float SphereRadius = 32.f;
 
+	float OriginCapsuleRadius = CapsuleRadius;
+	float OriginCapsuleHalfHeight = CapsuleHalfHeight;
+	FVector OriginBoxExtent = BoxExtent;
+
 public:
 	UFUNCTION(BlueprintPure)
 	float GetHorizontalDistance(const class UPrimitiveComponent* otherShapeComponent) const;
@@ -46,11 +50,15 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetBottomLocationZ() const;
 
+	UFUNCTION(BlueprintCallable)
+	void RevertOriginSize();
+
 protected:
 	virtual void UpdateBodySetup() override;
 	virtual class FPrimitiveSceneProxy* CreateSceneProxy() override;
 	
 	virtual void OnRegister() override;
+	virtual void BeginPlay() override;
 
 	float GetHorizontalRadiusInternal(const FVector& directionLocation) const;
 	float GetVerticalExtentInternal() const;

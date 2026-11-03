@@ -1,6 +1,7 @@
 #include "KMSkeletalMeshComponent.h"
 
 #include "KMAttachedBlendingComponent.h"
+#include "KMPawnMoverComponent.h"
 #include "Animation/KMAnimInstance.h"
 #include "Core/KMParameterLayerSystem.h"
 
@@ -90,7 +91,7 @@ void UKMSkeletalMeshComponent::FinalizeBoneTransform()
 	Super::FinalizeBoneTransform();
 }
 
-void UKMSkeletalMeshComponent::RevertOriginTransform()
+void UKMSkeletalMeshComponent::RestoreDefaultRelativeTransform()
 {
 	SetRelativeTransform(OriginRelativeTransform);
 

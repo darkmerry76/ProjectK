@@ -9,9 +9,9 @@ UKMAbilityBlow::UKMAbilityBlow(const FObjectInitializer& objectInitializer) : Su
 {
 }
 
-void UKMAbilityBlow::Activate()
+void UKMAbilityBlow::Activated()
 {
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilityBlow::Trigger(const FGameplayTag& eventTag)
@@ -45,9 +45,9 @@ void UKMAbilityBlow::Impact(const FTransform& newImpactTransform)
 	OnImpact(newImpactTransform);
 }
 
-void UKMAbilityBlow::Deactivate(bool bCancel)
+void UKMAbilityBlow::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 	
 	AKMCharacter* ownerCharacter = GetOwnerCharacter();
 	if(!IsValid(ownerCharacter))

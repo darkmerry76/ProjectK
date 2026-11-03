@@ -1,17 +1,24 @@
 #include "KMPawnMoverComponent.h"
 #include "KMCurveWarpingComponent.h"
+#include "KMMoveShapeComponent.h"
+#include "KMSkeletalMeshComponent.h"
+#include "Animation/KMAnimInstance.h"
 #include "Component/EMMoverCurveWarpingFallingMode.h"
 #include "Curves/CurveVector.h"
+#include "GameActor/Pawn/Character/KMCharacter.h"
 #include "GameActor/Pawn/Character/KMPawnBase.h"
 
 UKMPawnMoverComponent::UKMPawnMoverComponent() : Super()
 {
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UKMPawnMoverComponent::OnRegister()
+void UKMPawnMoverComponent::BeginPlay()
 {
-	Super::OnRegister();
+	Super::BeginPlay();
+	
 	OnMovementModeChanged.AddDynamic(this, &UKMPawnMoverComponent::OnMoverModeChanged);
+	DefaultBaseVisualTransform = BaseVisualComponentTransform;
 }
 
 void UKMPawnMoverComponent::JumpCurveWarping()
@@ -66,16 +73,43 @@ void UKMPawnMoverComponent::DisableCustomWalking()
 	bIsEnableCustomWalking = false;
 }
 
+AKMCharacter* UKMPawnMoverComponent::GetOwnerCharacter() const
+{
+	return Cast<AKMCharacter>(GetOwner());
+}
+
 void UKMPawnMoverComponent::StartFollowActor(AActor* newLeaderActor, FName leaderMontageInstanceId, FName followMontageInstanceId, const FTransform& offsetTransform, float duration)
 {
-/*	if (!IsValid(newLeaderActor))
+	if (!IsValid(newLeaderActor))
 	{
 		return;
 	}
 	
 	AKMCharacter* followerCharacter = GetOwnerCharacter();
+	if (!IsValid(followerCharacter))
+	{
+		return;
+	}
+	
 	AKMCharacter* leaderCharacter = Cast<AKMCharacter>(newLeaderActor);
-	FollowerMovementData.State = EKMFollowerMovementStateType::Paried;
+	if (!IsValid(leaderCharacter))
+	{
+		return;
+	}
+
+	UKMAnimInstance* leaderAnimInstance = Cast<UKMAnimInstance>(leaderCharacter->GetMesh()->GetAnimInstance());
+	if(!IsValid(leaderAnimInstance))
+	{
+		return;
+	}
+
+	UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance());
+	if(!IsValid(followerAnimInstance))
+	{
+		return;
+	}
+	
+	FollowerMovementData.State = EKMFollowerMovementStateType::Started;
 	FollowerMovementData.LeaderActor = newLeaderActor;
 	FollowerMovementData.FollowActor = GetOwner();
 	FollowerMovementData.LeaderMontageInstanceId = leaderMontageInstanceId;
@@ -85,68 +119,87 @@ void UKMPawnMoverComponent::StartFollowActor(AActor* newLeaderActor, FName leade
 	FollowerMovementData.ElipsedTime = 0.f;
 	FollowerMovementData.HeightOffset = 0.f;
 	FollowerMovementData.Duration = duration;
+}
+
+bool UKMPawnMoverComponent::StartedFollowActor()
+{
+	AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor);
+	if (!IsValid(followerCharacter))
+	{
+		return false;
+	}
+
+	AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor);
+	if (!IsValid(leaderCharacter))
+	{
+		return false;
+	}
+
+	UKMAnimInstance* leaderAnimInstance = Cast<UKMAnimInstance>(leaderCharacter->GetMesh()->GetAnimInstance());
+	if(!IsValid(leaderAnimInstance))
+	{
+		return false;
+	}
+
+	UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance());
+	if(!IsValid(followerAnimInstance))
+	{
+		return false;
+	}
 
 	float maxRadius = 0.f;
 	float maxHeight = 0.f;
 
-	if (IsValid(followerCharacter))
+	FollowerMovementData.StartWorldTransform = followerCharacter->GetMesh()->GetComponentToWorld() * followerAnimInstance->GetPairBlendInfo().OffsetTransform;
+	followerAnimInstance->SetPairOffsetTransform(FollowerMovementData);
+
+	if (UKMPawnMoverComponent* followerPawnMoverComponent = followerCharacter->GetMoverComponent())
 	{
-		UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance());
-		check(IsValid(followerAnimInstance));
+		followerPawnMoverComponent->SetAnimRootMotionTranslationScale(FVector::Zero());
+	}
 
-		FollowerMovementData.StartWorldTransform = followerCharacter->GetMesh()->GetComponentToWorld() * followerAnimInstance->GetPairBlendInfo().OffsetTransform;
-		followerAnimInstance->SetPairOffsetTransform(FollowerMovementData);
-		//followerCharacter->SetAnimRootMotionTranslationScale(0.f);
-
-		//maxRadius = followerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
-		//maxHeight = followerCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+	maxRadius = followerCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleRadius();
+	maxHeight = followerCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleHalfHeight();
+	
+	float prevHeight = leaderCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleHalfHeight();
+	
+	if (maxRadius > leaderCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleRadius())
+	{
+		leaderCharacter->GetMovementShapeComponent()->SetCapsuleRadius(maxRadius);
+	}
+	else
+	{
+		maxRadius = leaderCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleRadius();
 	}
 	
-	if (IsValid(leaderCharacter))
+	if (maxHeight > leaderCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleHalfHeight())
 	{
-		float prevHeight = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-		
-		if (maxRadius > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius())
-		{
-			leaderCharacter->GetCapsuleComponent()->SetCapsuleRadius(maxRadius);
-		}
-		else
-		{
-			maxRadius = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
-		}
-		
-		if (maxHeight > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight())
-		{
-			leaderCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(maxHeight);
-		}
-		else
-		{
-			maxHeight = leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-		}
-
-		FVector newLeaderMeshRelativeLocation = leaderCharacter->GetMesh()->GetRelativeLocation();
-		newLeaderMeshRelativeLocation.Z -= maxHeight - prevHeight;
-		leaderCharacter->GetMesh()->SetRelativeLocation(newLeaderMeshRelativeLocation);
-		leaderCharacter->SetActorLocation(leaderCharacter->GetActorLocation() + FVector(0.f, 0.f, maxHeight - prevHeight));
-		
-		FollowerMovementData.HeightOffset = followerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - leaderCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		leaderCharacter->GetMovementShapeComponent()->SetCapsuleHalfHeight(maxHeight);
+	}
+	else
+	{
+		maxHeight = leaderCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleHalfHeight();
 	}
 
-	if (IsValid(followerCharacter))
-	{
-		FVector newLeaderMeshRelativeLocation = leaderCharacter->GetMesh()->GetRelativeLocation();
-		if (maxHeight > leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight())
-		{
-			newLeaderMeshRelativeLocation.Z -= maxHeight - leaderCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-		}
-		
-		leaderCharacter->GetMesh()->SetRelativeLocation(newLeaderMeshRelativeLocation);
-	}*/
+	leaderCharacter->ApplyCapsuleFootAlignment(maxHeight - prevHeight);
+	FollowerMovementData.HeightOffset = followerCharacter->GetMovementShapeComponent()->GetScaledCapsuleHalfHeight() - leaderCharacter->GetMovementShapeComponent()->GetScaledCapsuleHalfHeight();
+	FollowerMovementData.LeaderActor->SetActorLocation(FollowerMovementData.LeaderActor->GetActorLocation() + FVector(0.f, 0.f, maxHeight - prevHeight));
+	
+	followerCharacter->ApplyCapsuleFootAlignment(maxHeight - followerCharacter->GetMovementShapeComponent()->GetUnscaledCapsuleHalfHeight());
+	
+	FollowerMovementData.FollowActor->SetActorLocation(FVector(FollowerMovementData.LeaderActor->GetActorLocation().X, FollowerMovementData.LeaderActor->GetActorLocation().Y, FollowerMovementData.FollowActor->GetActorLocation().Z));
+	FollowerMovementData.FollowActor->SetActorRotation((FollowerMovementData.LeaderActor->GetActorForwardVector() * -1.f).Rotation());
+	FollowerMovementData.LatestRootWorldTransform = followerCharacter->GetMesh()->GetSocketTransform(TEXT("Root"));
+
+	followerAnimInstance->UpdateAnimation(0.f, true);
+	followerCharacter->GetMesh()->RefreshBoneTransforms();
+
+	return true;
 }
 
 void UKMPawnMoverComponent::StopFollowActor(AActor* followActor, float duration)
 {
-/*	if (!FollowerMovementData.IsValid() || FollowerMovementData.LeaderActor != followActor)
+	if (!FollowerMovementData.IsValid() || FollowerMovementData.LeaderActor != followActor)
 	{
 		return;
 	}
@@ -157,15 +210,7 @@ void UKMPawnMoverComponent::StopFollowActor(AActor* followActor, float duration)
 
 	if (AKMCharacter* leaderCharacter = Cast<AKMCharacter>(FollowerMovementData.LeaderActor))
 	{
-		if (UKMCapsuleComponent* leaderCapsuleComponent = Cast<UKMCapsuleComponent>(leaderCharacter->GetCapsuleComponent()))
-		{
-			leaderCapsuleComponent->RevertOrigin();	
-		}
-		
-		if (UKMSkeletalMeshComponent* leaderSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(leaderCharacter->GetMesh()))
-		{
-			leaderSkeletalMeshComponent->RevertOriginTransform();
-		}
+		leaderCharacter->RestoreCapsuleFootAlignment();
 	}
 
 	if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
@@ -175,34 +220,34 @@ void UKMPawnMoverComponent::StopFollowActor(AActor* followActor, float duration)
 		{
 			followerAnimInstance->SetStopOffsetTransform();
 		}
-
-		if (UKMCapsuleComponent* followerCapsuleComponent = Cast<UKMCapsuleComponent>(followerCharacter->GetCapsuleComponent()))
-		{
-			followerCapsuleComponent->RevertOrigin();
-		}
-
-		if (UKMSkeletalMeshComponent* followerSkeletalMeshComponent = Cast<UKMSkeletalMeshComponent>(followerCharacter->GetMesh()))
-		{
-			followerSkeletalMeshComponent->RevertOriginTransform();
-		}
+		
+		followerCharacter->RestoreCapsuleFootAlignment();
 		
 		FollowerMovementData.Reset();
-		followerCharacter->SetAnimRootMotionTranslationScale(1.f);
-	}*/
+		if (UKMPawnMoverComponent* followerPawnMoverComponent = followerCharacter->GetMoverComponent())
+		{
+			followerPawnMoverComponent->SetAnimRootMotionTranslationScale(FVector::One());
+		}
+	}
 }
 
-/*void UKMPawnMoverComponent::MoveFollowProcessing(float deltaTime, int32 iterations)
+void UKMPawnMoverComponent::MoveFollowProcessing(float deltaTime, int32 iterations)
 {
 	if (!FollowerMovementData.IsValid())
 	{
 		return;
 	}
-	
-	if (FollowerMovementData.State == EKMFollowerMovementStateType::Paried)
+
+	if (FollowerMovementData.State == EKMFollowerMovementStateType::Started)
+	{
+		if (StartedFollowActor())
+		{
+			FollowerMovementData.State = EKMFollowerMovementStateType::Paried;
+		}
+	}
+	else if (FollowerMovementData.State == EKMFollowerMovementStateType::Paried)
 	{
 		FollowerMovementData.FollowActor->SetActorLocation(FVector(FollowerMovementData.LeaderActor->GetActorLocation().X, FollowerMovementData.LeaderActor->GetActorLocation().Y, FollowerMovementData.FollowActor->GetActorLocation().Z));
-		FollowerMovementData.FollowActor->SetActorRotation((FollowerMovementData.LeaderActor->GetActorForwardVector() * -1.f).Rotation());
-
 		if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
 		{
 			FollowerMovementData.LatestRootWorldTransform = followerCharacter->GetMesh()->GetSocketTransform(TEXT("Root"));
@@ -213,22 +258,21 @@ void UKMPawnMoverComponent::StopFollowActor(AActor* followActor, float duration)
 	{
 		if (AKMCharacter* followerCharacter = Cast<AKMCharacter>(FollowerMovementData.FollowActor))
 		{
-			if (UKMAnimInstance* followerAnimInstance = Cast<UKMAnimInstance>(followerCharacter->GetMesh()->GetAnimInstance()))
+			followerCharacter->SetActorLocation(FVector(FollowerMovementData.LatestRootWorldTransform.GetLocation().X, FollowerMovementData.LatestRootWorldTransform.GetLocation().Y, followerCharacter->GetActorLocation().Z));
+			FollowerMovementData.Reset();
+			if (UKMPawnMoverComponent* followerPawnMoverComponent = followerCharacter->GetMoverComponent())
 			{
-				//followerCharacter->SetActorLocation(FVector(FollowerMovementData.LatestRootWorldTransform.GetLocation().X, FollowerMovementData.LatestRootWorldTransform.GetLocation().Y, followerCharacter->GetActorLocation().Z));
-				//FollowerMovementData.Reset();
-				//followerCharacter->SetAnimRootMotionTranslationScale(1.f);
+				followerPawnMoverComponent->SetAnimRootMotionTranslationScale(FVector::One());
 			}
 		}
 	}
 
 	FollowerMovementData.ElipsedTime += deltaTime;
-}*/
-
+}
 
 void UKMPawnMoverComponent::RegisterMoveBlockReflection(AKMCharacter* targetCharacter)
 {
-/*	TSharedPtr<FKMBlockReflectionData>* existBlockReflectData = BlockReflections.FindByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
+	TSharedPtr<FKMBlockReflectionData>* existBlockReflectData = BlockReflections.FindByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
 	{
 		return blockReflectionData->Character == targetCharacter;
 	});
@@ -243,12 +287,12 @@ void UKMPawnMoverComponent::RegisterMoveBlockReflection(AKMCharacter* targetChar
 		newBlockReflectionData->Character = targetCharacter;
 
 		BlockReflections.Emplace(newBlockReflectionData);
-	}*/
+	}
 }
 
 void UKMPawnMoverComponent::UnregisterMoveBlockReflection(AKMCharacter* targetCharacter)
 {
-/*	int32 existIndex = BlockReflections.IndexOfByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
+	int32 existIndex = BlockReflections.IndexOfByPredicate([targetCharacter](const TSharedPtr<FKMBlockReflectionData>& blockReflectionData)
 	{
 		return blockReflectionData->Character == targetCharacter;
 	});
@@ -262,7 +306,7 @@ void UKMPawnMoverComponent::UnregisterMoveBlockReflection(AKMCharacter* targetCh
 		return;
 	}
 	
-	BlockReflections.RemoveAt(existIndex);*/
+	BlockReflections.RemoveAt(existIndex);
 }
 
 void UKMPawnMoverComponent::OnMoverModeChanged(const FName& previousMode, const FName& newMode)
@@ -277,4 +321,16 @@ void UKMPawnMoverComponent::OnMoverModeChanged(const FName& previousMode, const 
 	{
 		ownerPawn->StartJump();		
 	}
+}
+
+void UKMPawnMoverComponent::RestoreDefaultVisualTransform()
+{
+	BaseVisualComponentTransform = DefaultBaseVisualTransform;
+}
+
+void UKMPawnMoverComponent::TickComponent(float deltaTime, enum ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)
+{
+	Super::TickComponent(deltaTime, tickType, thisTickFunction);
+
+	MoveFollowProcessing(deltaTime, 1);
 }

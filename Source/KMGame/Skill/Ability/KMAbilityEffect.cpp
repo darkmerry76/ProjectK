@@ -9,14 +9,13 @@ UKMAbilityEffect::UKMAbilityEffect(const FObjectInitializer& objectInitializer) 
 {
 }
 
-void UKMAbilityEffect::Activate()
+void UKMAbilityEffect::Activated()
 {
 	CasterGameObject = Cast<UKMGameObjectInstance>(UKMGameObjectSubsystem::GetGameObjectSubsystem(this)->GetGameObject(CastObjectKey));
 	
 	PlayMartialArts(nullptr, Rate, bIsLoop);
 	PostActivated();
-	
-	Super::Activate();
+	Super::Activated();
 }
 
 void UKMAbilityEffect::PostActivated()
@@ -49,9 +48,9 @@ void UKMAbilityEffect::Impact(const FTransform& newImpactTransform)
 	Super::Impact(newImpactTransform);
 }
 
-void UKMAbilityEffect::Deactivate(bool bCancel)
+void UKMAbilityEffect::Deactivated(bool bCancel)
 {
-	Super::Deactivate(bCancel);
+	Super::Deactivated(bCancel);
 	
 	UKMGameObjectInstance* ownerGameObjectInstance = GetOwnerGameObjectInstance();
 	check(IsValid(ownerGameObjectInstance));
