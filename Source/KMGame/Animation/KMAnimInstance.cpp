@@ -416,36 +416,46 @@ void UKMAnimInstance::OnMontageInstanceStopped(FAnimMontageInstance& stoppedMont
 	}
 }
 
-void UKMAnimInstance::Montage_PlayForRootMotion(UAnimMontage* montage, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
+bool UKMAnimInstance::Montage_PlayAnimRootMotion(UAnimMontage* montage, float playRate)
+{
+	UKMPawnMoverComponent* pawnMoverComponent = GetOwningActor()->FindComponentByClass<UKMPawnMoverComponent>();
+	if (!IsValid(pawnMoverComponent))
+	{
+		return false;
+	}
+	
+	pawnMoverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage, true);
+	
+	if (!montage->HasRootMotion())
+	{
+		return false;
+	}
+	
+	TSharedPtr<FEMLayeredMove_AnimRootMotion> newAnimRootMotion = MakeShared<FEMLayeredMove_AnimRootMotion>();
+	newAnimRootMotion->Priority = 1;
+	newAnimRootMotion->MixMode = EMoveMixMode::OverrideAll;
+	newAnimRootMotion->MontageState.Montage = montage;
+	newAnimRootMotion->MontageState.PlayRate = playRate;
+	newAnimRootMotion->MontageState.CurrentPosition = 0.f;
+	newAnimRootMotion->MontageState.bEnableAutoBlendOut = montage->bEnableAutoBlendOut;
+	newAnimRootMotion->MontageState.BlendOutTimeSeconds = montage->BlendOut.GetBlendTime();
+	newAnimRootMotion->DurationMs = -1.f;
+
+	pawnMoverComponent->QueueLayeredMove(newAnimRootMotion);
+	
+	return true;
+}
+
+float UKMAnimInstance::Montage_PlayForRootMotion(UAnimMontage* montage, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
 {
 	if (!IsValid(montage))
 	{
-		return;
+		return 0.f;
 	}
+	
+	Montage_PlayAnimRootMotion(montage, playRate);
 
-	Montage_Play(montage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
-	if (montage->HasRootMotion())
-	{
-		UKMPawnMoverComponent* pawnMoverComponent = GetOwningActor()->FindComponentByClass<UKMPawnMoverComponent>();
-		if (!IsValid(pawnMoverComponent))
-		{
-			return;
-		}
-		
-		pawnMoverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage,true);
-		
-		TSharedPtr<FEMLayeredMove_AnimRootMotion> newAnimRootMotion = MakeShared<FEMLayeredMove_AnimRootMotion>();
-		newAnimRootMotion->MixMode = EMoveMixMode::OverrideVelocity;
-		newAnimRootMotion->Priority = 1;
-		newAnimRootMotion->MontageState.Montage = montage;
-		newAnimRootMotion->MontageState.PlayRate = playRate;
-		newAnimRootMotion->MontageState.CurrentPosition = 0.f;
-		newAnimRootMotion->MontageState.bEnableAutoBlendOut = montage->bEnableAutoBlendOut;
-		newAnimRootMotion->MontageState.BlendOutTimeSeconds = montage->BlendOut.GetBlendTime();
-		newAnimRootMotion->DurationMs = -1.f;
-
-		pawnMoverComponent->QueueLayeredMove(newAnimRootMotion);
-	}
+	return Montage_Play(montage, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
 }
 
 float UKMAnimInstance::Montage_PlayWithBlendInForRootMotion(UAnimMontage* montage, const FAlphaBlendArgs& blendIn, float playRate, EMontagePlayReturnType returnValueType, float timeToStartMontageAt, bool bStopAllMontages)
@@ -455,30 +465,9 @@ float UKMAnimInstance::Montage_PlayWithBlendInForRootMotion(UAnimMontage* montag
 		return 0.f;
 	}
 
-	float result = Montage_PlayWithBlendIn(montage, blendIn, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
-	if (montage->HasRootMotion())
-	{
-		UKMPawnMoverComponent* pawnMoverComponent = GetOwningActor()->FindComponentByClass<UKMPawnMoverComponent>();
-		if (!IsValid(pawnMoverComponent))
-		{
-			return 0.f;
-		}
-		
-		pawnMoverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage,true);
-		
-		TSharedPtr<FEMLayeredMove_AnimRootMotion> newAnimRootMotion = MakeShared<FEMLayeredMove_AnimRootMotion>();
-		newAnimRootMotion->Priority = 1;
-		newAnimRootMotion->MixMode = EMoveMixMode::AdditiveVelocity;
-		newAnimRootMotion->MontageState.Montage = montage;
-		newAnimRootMotion->MontageState.PlayRate = playRate;
-		newAnimRootMotion->MontageState.CurrentPosition = 0.f;
-		newAnimRootMotion->MontageState.bEnableAutoBlendOut = montage->bEnableAutoBlendOut;
-		newAnimRootMotion->MontageState.BlendOutTimeSeconds = montage->BlendOut.GetBlendTime();
-		newAnimRootMotion->DurationMs = -1.f;
+	Montage_PlayAnimRootMotion(montage, playRate);
 
-		pawnMoverComponent->QueueLayeredMove(newAnimRootMotion);
-	}
-	return result;
+	return Montage_PlayWithBlendIn(montage, blendIn, playRate, returnValueType, timeToStartMontageAt, bStopAllMontages);
 }
 
 #endif

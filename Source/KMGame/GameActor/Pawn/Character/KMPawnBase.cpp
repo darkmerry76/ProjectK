@@ -8,6 +8,7 @@
 #include "Component/KMWidgetComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "DefaultMovementSet/Modes/SimpleWalkingMode.h"
 #include "GameObject/KMGameObjectInstance.h"
 #include "GameObject/Interactive/KMInteractiveInstance.h"
 #include "Skill/KMSkillHandler.h"
@@ -278,6 +279,8 @@ FVector AKMPawnBase::ConsumeInputVector()
 {
 	FVector inputVector = APawn::Internal_ConsumeMovementInputVector();
 
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, *FString::Printf(TEXT("ConsumeInputVector X=%.3f Y=%.3f Z=%.3f"), inputVector.X, inputVector.Y, inputVector.Z));
+
 	FVector finalInputDirection =  GetControlRotation().RotateVector(inputVector);
 	return finalInputDirection;
 }
@@ -316,5 +319,16 @@ void AKMPawnBase::RestoreCapsuleFootAlignment()
 	if (UKMMoveShapeComponent* moveShapeComponent = GetMovementShapeComponent())
 	{
 		moveShapeComponent->RevertOriginSize();
+	}
+}
+
+void AKMPawnBase::SetGroundSpeed(float newSpeed)
+{
+	if (UKMPawnMoverComponent* moverComponent = GetMoverComponent())
+	{
+		if (USimpleWalkingMode* walkingMode = moverComponent->FindMode_Mutable<USimpleWalkingMode>())
+		{
+			//walkingMode->MaxSpeedOverride = newSpeed;
+		}
 	}
 }

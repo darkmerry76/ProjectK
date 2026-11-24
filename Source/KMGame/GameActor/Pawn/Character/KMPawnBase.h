@@ -5,7 +5,7 @@
 #include "GameObject/KMCharacterInstance.h"
 #include "KMPawnBase.generated.h"
 
-UCLASS(Blueprintable, BlueprintType, abstract)
+UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API AKMPawnBase : public APawn, public IMoverInputProducerInterface
 {
 	GENERATED_UCLASS_BODY()
@@ -125,6 +125,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void RestoreCapsuleFootAlignment();
+
+	UFUNCTION(BlueprintCallable)
+	void SetGroundSpeed(float newSpeed);
 
 protected:
 	virtual void BeginPlay() override;

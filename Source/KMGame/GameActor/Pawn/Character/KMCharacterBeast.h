@@ -4,7 +4,7 @@
 #include "KMCharacter.h"
 #include "KMCharacterBeast.generated.h"
 
-UCLASS(Blueprintable, BlueprintType, Abstract)
+UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API AKMCharacterBeast : public AKMCharacter
 {
 	GENERATED_BODY()

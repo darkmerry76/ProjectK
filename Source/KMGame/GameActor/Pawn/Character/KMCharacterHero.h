@@ -5,7 +5,7 @@
 #include "InputActionValue.h"
 #include "KMCharacterHero.generated.h"
 
-UCLASS(Blueprintable, BlueprintType, Abstract)
+UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API AKMCharacterHero : public AKMCharacter
 {
 	GENERATED_UCLASS_BODY()

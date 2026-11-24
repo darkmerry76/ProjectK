@@ -29,14 +29,16 @@ int32 UKMCurveWarpingComponent::PlayLinearWarp(FVector targetWarpLocation, float
 {
 	if (UEMPawnMoverComponent* moverComponent = GetOwner()->FindComponentByClass<UEMPawnMoverComponent>())
 	{
+		//moverComponent->CancelFeaturesWithTag(Mover_AnimRootMotion_Montage, true);
+		
 		TSharedPtr<FEMLayeredMove_MoveTo> newMoveTo = MakeShared<FEMLayeredMove_MoveTo>();
 
-		newMoveTo->MixMode = EMoveMixMode::OverrideVelocity;
+		newMoveTo->MixMode = EMoveMixMode::OverrideAllExceptVerticalVelocity;
 		newMoveTo->StartLocation = GetOwner()->GetActorLocation();
 		newMoveTo->TargetLocation = targetWarpLocation;
 		newMoveTo->DurationMs = newDuration * 1000.f;
-		newMoveTo->bRestrictSpeedToExpected = false;
-		newMoveTo->Priority = 5;
+		newMoveTo->bRestrictSpeedToExpected = true;
+		newMoveTo->Priority = 2;
 
 		moverComponent->QueueLayeredMove(newMoveTo);
 			

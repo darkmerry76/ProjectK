@@ -37,7 +37,9 @@ public class KMEditor : ModuleRules
 			"EMMartialArts",
 			"EMMartialArtsEditor",
 			"Persona",
-			"GameplayTags"
+			"SkeletalMeshUtilitiesCommon",
+			"GameplayTags",
+			"Json"
 		});
 		
 		PublicIncludePaths.Add("KMEditor");

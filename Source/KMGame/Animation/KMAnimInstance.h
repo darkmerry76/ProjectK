@@ -166,7 +166,7 @@ public:
 	FTransform GetPairBlendWorldTransform() const;
 
 	UFUNCTION(BlueprintCallable)
-	void Montage_PlayForRootMotion(class UAnimMontage* montage, float playRate = 1.f,
+	float Montage_PlayForRootMotion(class UAnimMontage* montage, float playRate = 1.f,
 		EMontagePlayReturnType returnValueType = EMontagePlayReturnType::MontageLength, float timeToStartMontageAt=0.f, bool bStopAllMontages = true);
 
 	UFUNCTION(BlueprintCallable)
@@ -177,6 +177,8 @@ protected:
 	void TickSlotBlend(float deltaTime);
 	void TickShake(float deltaTime);
 	void TickPairBlend(float deltaTime);
+
+	bool Montage_PlayAnimRootMotion(class UAnimMontage* montage, float playRate);
 
 	UFUNCTION()
 	virtual void OnMontageStarted_Internal(class UAnimMontage* montage);

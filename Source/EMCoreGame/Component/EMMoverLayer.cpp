@@ -1,6 +1,4 @@
 #include "EMMoverLayer.h"
-
-#include "EMMoveShapeComponent.h"
 #include "EMPawnMoverComponent.h"
 #include "MotionWarpingComponent.h"
 #include "MoverComponent.h"
@@ -202,17 +200,17 @@ bool FEMLayeredMove_AnimRootMotion::GenerateMove(const FMoverTickStartData& simS
 		const FQuat shortestArcRootRotation = worldSpaceRootMotion.GetRotation().GetShortestArcWith(FQuat::Identity);
 		outProposedMove.AngularVelocityDegrees   = FMath::RadiansToDegrees(shortestArcRootRotation.ToRotationVector() / deltaSeconds);
 
-		FRotator IntendedOrientation_WorldSpace;
+		FRotator intendedOrientation_WorldSpace;
 		if (!characterInputs || characterInputs->OrientationIntent.IsNearlyZero())
 		{
-			IntendedOrientation_WorldSpace = syncState->GetOrientation_WorldSpace();
+			intendedOrientation_WorldSpace = syncState->GetOrientation_WorldSpace();
 		}
 		else
 		{
-			IntendedOrientation_WorldSpace = characterInputs->GetOrientationIntentDir_WorldSpace().ToOrientationRotator();
+			intendedOrientation_WorldSpace = characterInputs->GetOrientationIntentDir_WorldSpace().ToOrientationRotator();
 		}
 	
-		outProposedMove.AngularVelocityDegrees = UMovementUtils::ComputeAngularVelocityDegrees(syncState->GetOrientation_WorldSpace(), IntendedOrientation_WorldSpace, deltaSeconds, -1.f);
+		outProposedMove.AngularVelocityDegrees = UMovementUtils::ComputeAngularVelocityDegrees(syncState->GetOrientation_WorldSpace(), intendedOrientation_WorldSpace, deltaSeconds, -1.f);
 	}
 
 	MontageState.CurrentPosition = extractionEndPosition;

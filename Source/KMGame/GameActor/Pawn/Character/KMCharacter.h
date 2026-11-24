@@ -4,7 +4,7 @@
 #include "KMPawnBase.h"
 #include "KMCharacter.generated.h"
 
-UCLASS(Blueprintable, BlueprintType, abstract)
+UCLASS(Blueprintable, BlueprintType)
 class KMGAME_API AKMCharacter : public AKMPawnBase
 {
 	GENERATED_UCLASS_BODY()

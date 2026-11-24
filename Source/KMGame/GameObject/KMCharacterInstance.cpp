@@ -534,18 +534,18 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
 	
-	AKMCharacter* ownerCharacter = GetCharacter();
-	if (IsValid(ownerCharacter))
+	AKMPawnBase* ownerPawn = Cast<AKMPawnBase>(GetOwnerActor());
+	if (IsValid(ownerPawn))
 	{
 		if (IsRun())
 		{
-			//ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetRun();
+			ownerPawn->SetGroundSpeed(GetStatModifier()->GetEffectiveStat().GetRun());
 		}
 		else
 		{
-			//ownerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetStatModifier()->GetEffectiveStat().GetMov();
+			ownerPawn->SetGroundSpeed(GetStatModifier()->GetEffectiveStat().GetMov());
 		}
-		SensorInstance->SetCenterTransform(ownerCharacter->GetActorTransform());
+		SensorInstance->SetCenterTransform(ownerPawn->GetActorTransform());
 
 		if (InflectPowerType != EKMDamagePowerType::None)
 		{
@@ -561,7 +561,7 @@ void UKMCharacterInstance::Tick(float deltaSeconds)
 					
 					if (IsValid(cameraShakeClass))
 					{
-						playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerCharacter->GetActorLocation(), 1500.f, 1500.f, false);
+						playerCameraManager->PlayWorldCameraShake(GetWorld(), cameraShakeClass, ownerPawn->GetActorLocation(), 1500.f, 1500.f, false);
 					}
 				}
 			}
